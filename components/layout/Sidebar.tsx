@@ -135,15 +135,15 @@ export function Sidebar() {
   const W = collapsed ? 64 : 280;
 
   return (
-    <motion.aside
-      animate={{ width: W }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
+    <aside
       className="relative flex flex-col h-full flex-shrink-0 overflow-hidden"
       style={{
+        width:        W,
         background:   '#090d1e',
         borderRight:  '1px solid rgba(99,179,237,0.1)',
         boxShadow:    '1px 0 0 rgba(99,179,237,0.06), 4px 0 24px rgba(0,0,0,0.2)',
         zIndex:       40,
+        transition:   'width 0.3s ease',
       }}
     >
       {/* ── Top logo ──────────────────────────────────────────────── */}
@@ -364,6 +364,6 @@ export function Sidebar() {
           </motion.div>
         </button>
       </div>
-    </motion.aside>
+    </aside>
   );
 }
