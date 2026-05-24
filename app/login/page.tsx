@@ -264,7 +264,7 @@ export default function LoginPage() {
         ref={cardRef}
         initial={{ opacity: 0, y: 32, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{ duration: 0.55, ease: 'easeOut' }}
         className={`relative z-10 w-full max-w-md mx-4 ${shaking ? 'shake' : ''}`}
         style={{
           // Dynamic border: red on error, default otherwise

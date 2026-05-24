@@ -101,7 +101,7 @@ export function KPICard({
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      transition={{ delay: index * 0.07, duration: 0.4, ease: 'easeOut' }}
       whileHover={{ y: -2 }}
       style={{
         background:   'rgba(9,13,30,0.72)',

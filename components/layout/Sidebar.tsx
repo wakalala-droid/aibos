@@ -137,7 +137,7 @@ export function Sidebar() {
   return (
     <motion.aside
       animate={{ width: W }}
-      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="relative flex flex-col h-full flex-shrink-0 overflow-hidden"
       style={{
         background:   '#090d1e',

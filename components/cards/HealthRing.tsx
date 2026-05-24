@@ -69,7 +69,7 @@ export function HealthRing() {
             strokeDasharray={C}
             initial={{ strokeDashoffset: C }}
             animate={{ strokeDashoffset: arc }}
-            transition={{ duration: 1.4, delay: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 1.4, delay: 0.25, ease: 'easeOut' }}
             transform="rotate(-90 68 68)"
             filter="url(#glow)"
           />
