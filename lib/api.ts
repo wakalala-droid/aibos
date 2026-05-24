@@ -4,7 +4,7 @@
  * Replace MOCK data in store.ts with these once API is deployed.
  */
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+const API = (process.env.NEXT_PUBLIC_API_URL ?? 'https://aibos-api-production.up.railway.app').replace(/\/$/, '');
 
 // ─── Types mirror engine.py return shapes ─────────────────────────────────────
 
