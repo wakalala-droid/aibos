@@ -24,11 +24,11 @@ const BotIcon = () => (
 
 const SUGGESTIONS = [
   'What drove the September cost spike?',
-  'What's our cash runway forecast?',
+  "What's our cash runway forecast?",
   'Which months had margin compression?',
-  'What's causing Q3 underperformance?',
+  "What's causing Q3 underperformance?",
   'Summarise our financial health',
-  'What's the revenue forecast for next quarter?',
+  "What's the revenue forecast for next quarter?",
 ];
 
 // ─── AI response generator (client-side mock; replace with API call) ──────────
