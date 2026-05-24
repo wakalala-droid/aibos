@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
+import { useAuth } from '@/hooks/useAuth';
 import { formatCurrency } from '@/lib/utils';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -40,7 +41,24 @@ interface Message {
   timestamp: Date;
 }
 
-function generateResponse(question: string, kpi: ReturnType<typeof useStore.getState>['kpi'], alerts: ReturnType<typeof useStore.getState>['alerts']): string {
+async function getAIResponse(question: string, userId: string, pnl: any, alerts: any[]): Promise<string> {
+  try {
+    const { sendChatMessage } = await import('@/lib/api');
+    const result = await sendChatMessage({
+      question,
+      user_id: userId,
+      pnl,
+      alerts,
+      persist: true,
+    });
+    return result.answer;
+  } catch (e) {
+    console.error('[AIChat] API error:', e);
+    return generateFallback(question, pnl);
+  }
+}
+
+function generateFallback(question: string, kpi: any): string {
   const q = question.toLowerCase();
   if (q.includes('september') || q.includes('cost spike') || q.includes('sep')) {
     return `In September, operating costs reached ${formatCurrency(152000, true)} — a 34% overshoot vs the expected ${formatCurrency(113000, true)}. This pushed net margin to 22.8%, the lowest of the year (z-score: 3.8σ, flagged as critical). The most likely cause is a one-off operational event. I'd recommend investigating vendor invoices and payroll anomalies for that month.`;
@@ -60,7 +78,7 @@ function generateResponse(question: string, kpi: ReturnType<typeof useStore.getS
   if (q.includes('forecast') || q.includes('next quarter') || q.includes('revenue')) {
     return `Based on the Q4 trajectory (+18.4% YoY), Q1 next year is forecast at $281K–$307K revenue (midpoint $294K). The 3-month forward forecast shows continued growth: Jan $281K → Feb $296K → Mar $314K. Confidence interval widens at 90 days. Key risk: cost management — if costs track September levels, margin could compress to 26%.`;
   }
-  return `Based on your financial data: Revenue is ${formatCurrency(kpi.totalRevenue, true)} with ${kpi.avgMargin}% avg margin. The most notable issue is the September cost anomaly (z-score 3.8σ). Overall health score is 78/100. Would you like me to drill into a specific area — cash flow, variance, margins, or forecasting?`;
+  return `Based on your data: Revenue is ${formatCurrency(kpi?.totalRevenue ?? 0, true)} with ${kpi?.avgMargin ?? 0}% avg margin. Ask me about cash flow, variance, margins, or forecasting.`;
 }
 
 // ─── Typing animation ─────────────────────────────────────────────────────────
@@ -87,6 +105,7 @@ interface AIChatProps {
 }
 
 export function AIChat({ compact = false }: AIChatProps) {
+  const { user } = useAuth();
   const kpi    = useStore(s => s.kpi);
   const alerts = useStore(s => s.alerts);
 
@@ -116,16 +135,19 @@ export function AIChat({ compact = false }: AIChatProps) {
     setInput('');
     setThinking(true);
 
-    // Simulate thinking delay
-    await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
+    // Get response from API (or fallback)
+    let response: string;
+    try {
+      response = await getAIResponse(text, user?.id ?? 'anonymous', kpi, alerts);
+    } catch {
+      response = generateFallback(text, kpi);
+    }
     setThinking(false);
 
-    const response = generateResponse(text, kpi, alerts);
-
-    // Stream the response character by character
+    // Stream the response character by character for UX
     setStreaming('');
     for (let i = 0; i < response.length; i++) {
-      await new Promise(r => setTimeout(r, 12 + Math.random() * 8));
+      await new Promise(r => setTimeout(r, 10 + Math.random() * 6));
       setStreaming(response.slice(0, i + 1));
     }
 
