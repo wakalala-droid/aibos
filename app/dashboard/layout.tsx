@@ -5,7 +5,7 @@
  */
 
 import { redirect } from 'next/navigation';
-import { createServerComponentClient } from '@/lib/supabase';
+import { createServerComponentClient } from '@/lib/supabase-server';
 import { DashboardClient } from './DashboardClient';
 
 export default async function DashboardLayout({

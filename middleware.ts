@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createMiddlewareClient } from '@/lib/supabase';
+import { createMiddlewareClient } from '@/lib/supabase-server';
 
 // ─── Route Configuration ──────────────────────────────────────────────────────
 
