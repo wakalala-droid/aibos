@@ -304,7 +304,7 @@ export function Sidebar() {
             >
               {[
                 { role: 'ai', text: 'Revenue grew 18.4% YoY. Q4 is the strongest quarter on record.' },
-                { role: 'user', text: 'What's driving the September cost spike?' },
+                { role: "user", text: "What's driving the September cost spike?" },
                 { role: 'ai', text: 'Operating costs exceeded forecast by 34% — likely one-off event.' },
               ].map((msg, i) => (
                 <div key={i} style={{ marginBottom: i < 2 ? 6 : 0 }}>
