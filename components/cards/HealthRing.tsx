@@ -147,7 +147,7 @@ export function HealthRing() {
                   <motion.div
                     initial={{ scaleY: 0 }}
                     animate={{ scaleY: 1 }}
-                    transition={{ delay: 0.6 + i * 0.1, duration: 0.4, origin: '100% 100%' }}
+                    transition={{ delay: 0.6 + i * 0.1, duration: 0.4 }}
                     style={{
                       height: 4, borderRadius: 2,
                       background: i === 0 ? '#10b981' : i === 1 ? '#60a5fa' : i === 2 ? '#f59e0b' : '#06b6d4',
