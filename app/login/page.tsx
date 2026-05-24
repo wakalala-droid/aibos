@@ -266,10 +266,7 @@ export default function LoginPage() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.55, ease: 'easeOut' }}
         className={`relative z-10 w-full max-w-md mx-4 ${shaking ? 'shake' : ''}`}
-        style={{
-          // Dynamic border: red on error, default otherwise
-          ...(errorMsg && { '--card-border': 'rgba(239, 68, 68, 0.35)' }),
-        }}
+        style={{}}
       >
         {/* Glass card */}
         <div
