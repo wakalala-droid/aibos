@@ -73,7 +73,7 @@ function generateFallback(question: string, kpi: any): string {
     return `Q3 (July–September) averaged 29.6% margin vs Q2's 32.2% — a 2.6pp decline. September was the outlier (22.8% margin, cost spike of +34%). July and August performed well at 32–33%. Q3 revenue actually grew to $619K (Q2: $528K), but costs grew proportionally faster at $435K vs Q2's $369K.`;
   }
   if (q.includes('health') || q.includes('summar')) {
-    return `Financial health score: 78/100 (Healthy). Revenue grew 18.4% YoY to ${formatCurrency(kpi.totalRevenue, true)}. Net profit: ${formatCurrency(kpi.netProfit, true)} at a 32.4% avg margin. ${kpi.varianceAlerts} variance alerts active — ${alerts.filter(a => a.severity === 'critical').length} critical. Main risks: September cost anomaly and 14-month cash runway. Strengths: Q4 momentum, December record profit of $96K.`;
+    return `Financial health score: 78/100 (Healthy). Revenue grew 18.4% YoY to ${formatCurrency(kpi.totalRevenue, true)}. Net profit: ${formatCurrency(kpi.netProfit, true)} at a 32.4% avg margin. ${kpi?.varianceAlerts ?? 0} variance alerts active. Main risks: cost spikes and cash runway. Q4 momentum is strong.`;
   }
   if (q.includes('forecast') || q.includes('next quarter') || q.includes('revenue')) {
     return `Based on the Q4 trajectory (+18.4% YoY), Q1 next year is forecast at $281K–$307K revenue (midpoint $294K). The 3-month forward forecast shows continued growth: Jan $281K → Feb $296K → Mar $314K. Confidence interval widens at 90 days. Key risk: cost management — if costs track September levels, margin could compress to 26%.`;
