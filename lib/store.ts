@@ -185,6 +185,10 @@ interface AppStore {
   breakeven:  BreakevenData;
   cashflow:   CashFlowData;
 
+  // Currency
+  currency: string;
+  currencySymbol: string;
+
   // UI state
   sidebarCollapsed: boolean;
   activeTab:        string;
@@ -197,7 +201,9 @@ interface AppStore {
   setActiveTab:        (tab: string) => void;
   setUploadedFile:     (name: string | null) => void;
   setLoading:          (v: boolean) => void;
+  setCurrency:         (c: string, s: string) => void;
   updateData:          (data: Partial<Pick<AppStore, 'monthly' | 'kpi' | 'health' | 'alerts' | 'anomalies' | 'forecast' | 'breakeven' | 'cashflow'>>) => void;
+  setCurrency:         (c: string, s: string) => void;
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -215,6 +221,10 @@ export const useStore = create<AppStore>()(
       breakeven: MOCK_BREAKEVEN,
       cashflow:  MOCK_CASHFLOW,
 
+      // Currency
+      currency:       'USD',
+      currencySymbol: '$',
+
       // UI
       sidebarCollapsed: false,
       activeTab:        'overview',
@@ -227,6 +237,7 @@ export const useStore = create<AppStore>()(
       setActiveTab:        (tab) => set({ activeTab: tab }),
       setUploadedFile:     (name) => set({ uploadedFile: name }),
       setLoading:          (v) => set({ isLoading: v }),
+      setCurrency:         (c, s) => set({ currency: c, currencySymbol: s }),
       updateData:          (data) => set(data),
     }),
     {

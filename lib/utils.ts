@@ -4,17 +4,13 @@
 
 // ─── Currency / Number Formatters ─────────────────────────────────────────────
 
-export function formatCurrency(value: number, compact = false): string {
+export function formatCurrency(value: number, compact = false, symbol = '$'): string {
   if (compact) {
-    if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-    if (Math.abs(value) >= 1_000)     return `$${(value / 1_000).toFixed(0)}K`;
-    return `$${value.toLocaleString()}`;
+    if (Math.abs(value) >= 1_000_000) return `${symbol}${(value / 1_000_000).toFixed(1)}M`;
+    if (Math.abs(value) >= 1_000)     return `${symbol}${(value / 1_000).toFixed(0)}K`;
+    return `${symbol}${value.toLocaleString()}`;
   }
-  return new Intl.NumberFormat('en-US', {
-    style:    'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(value);
+  return `${symbol}${value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 }
 
 export function formatNumber(value: number, decimals = 0): string {

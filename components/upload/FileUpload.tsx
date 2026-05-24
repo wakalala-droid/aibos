@@ -48,6 +48,7 @@ export function FileUpload({ compact = false }: FileUploadProps) {
   const setUploadedFile = useStore(s => s.setUploadedFile);
   const updateData      = useStore(s => s.updateData);
   const setLoading      = useStore(s => s.setLoading);
+  const setCurrency     = useStore(s => s.setCurrency);
 
   const ACCEPTED = ['.csv', '.xlsx', '.xls'];
 

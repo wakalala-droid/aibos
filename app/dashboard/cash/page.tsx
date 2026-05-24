@@ -40,28 +40,35 @@ function Card({ children, delay = 0 }: { children: React.ReactNode; delay?: numb
 
 export default function CashPage() {
   const cf = useStore(s => s.cashflow);
+  const currency = useStore(s => s.currencySymbol);
   const AXIS = { tick: { fill: '#4a6285', fontSize: 11, fontFamily: 'DM Mono, monospace' }, axisLine: { stroke: 'rgba(99,179,237,0.1)' }, tickLine: false };
 
+  // Guard against empty data
+  const projections = (cf?.projections ?? []).filter(p => p && p.cash !== undefined);
+  const runway      = cf?.runway ?? 0;
+  const currentCash = cf?.currentCash ?? 0;
+  const monthlyBurn = cf?.monthlyBurn ?? 0;
+
   // Burn rate progress
-  const runwayPct  = Math.min((cf.runway / 24) * 100, 100);
-  const runwayColour = cf.runway >= 18 ? '#10b981' : cf.runway >= 12 ? '#f59e0b' : '#ef4444';
+  const runwayPct    = Math.min((runway / 24) * 100, 100);
+  const runwayColour = runway >= 18 ? '#10b981' : runway >= 12 ? '#f59e0b' : '#ef4444';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1400, margin: '0 auto' }}>
 
       {/* KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
-        <KPICard title="Cash Position"  value={cf.currentCash}  format="currency" compact colour="#06b6d4" index={0} />
-        <KPICard title="Monthly Burn"   value={cf.monthlyBurn}  format="currency" compact colour="#ef4444" index={1} />
-        <KPICard title="Cash Runway"    value={cf.runway}       format="months"   colour={runwayColour}   index={2} />
-        <KPICard title="6M Projection"  value={cf.projections[5].cash} format="currency" compact colour="#10b981" index={3} />
+        <KPICard title="Cash Position"  value={currentCash}  format="currency" compact colour="#06b6d4" index={0} />
+        <KPICard title="Monthly Burn"   value={monthlyBurn}  format="currency" compact colour="#ef4444" index={1} />
+        <KPICard title="Cash Runway"    value={runway}       format="months"   colour={runwayColour}   index={2} />
+        <KPICard title="6M Projection"  value={projections[5].cash} format="currency" compact colour="#10b981" index={3} />
       </div>
 
       {/* Runway gauge */}
       <Card delay={0.1}>
         <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 6px' }}>Cash Runway Status</h3>
         <p style={{ fontSize: '0.68rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 20px' }}>
-          {cf.runway} months remaining · Target: 18 months · {cf.runway >= 18 ? '✓ On target' : '⚠ Below target'}
+          {runway} months remaining · Target: 18 months · {runway >= 18 ? '✓ On target' : '⚠ Below target'}
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ flex: 1, height: 12, background: 'rgba(99,179,237,0.1)', borderRadius: 999, overflow: 'hidden' }}>
@@ -72,7 +79,7 @@ export default function CashPage() {
               style={{ height: '100%', borderRadius: 999, background: `linear-gradient(90deg, ${runwayColour}, ${runwayColour}cc)`, boxShadow: `0 0 12px ${runwayColour}60` }}
             />
           </div>
-          <span style={{ fontSize: '0.8rem', fontFamily: 'DM Mono, monospace', color: runwayColour, fontWeight: 500, flexShrink: 0 }}>{cf.runway}mo / 24mo</span>
+          <span style={{ fontSize: '0.8rem', fontFamily: 'DM Mono, monospace', color: runwayColour, fontWeight: 500, flexShrink: 0 }}>{runway}mo / 24mo</span>
         </div>
 
         {/* Month markers */}
@@ -88,7 +95,7 @@ export default function CashPage() {
         <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 4px' }}>Projected Cash Position</h3>
         <p style={{ fontSize: '0.68rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 20px' }}>6-month forward projection based on current trajectory</p>
         <ResponsiveContainer width="100%" height={240}>
-          <AreaChart data={cf.projections} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
+          <AreaChart data={projections} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
             <defs>
               <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4}/>
@@ -109,7 +116,7 @@ export default function CashPage() {
         <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 4px' }}>Inflow vs Outflow</h3>
         <p style={{ fontSize: '0.68rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 20px' }}>Monthly cash movements · 6-month projection</p>
         <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={cf.projections} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
+          <BarChart data={projections} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false}/>
             <XAxis dataKey="month" {...AXIS}/>
             <YAxis {...AXIS} tickFormatter={v => `$${v/1000}K`}/>
@@ -133,8 +140,8 @@ export default function CashPage() {
               </tr>
             </thead>
             <tbody>
-              {cf.projections.map((row, i) => {
-                const prev = i === 0 ? cf.currentCash : cf.projections[i - 1].cash;
+              {projections.map((row, i) => {
+                const prev = i === 0 ? currentCash : projections[i - 1].cash;
                 const net  = row.inflow - row.outflow;
                 return (
                   <motion.tr
