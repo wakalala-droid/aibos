@@ -165,7 +165,7 @@ export function MarginChart() {
         <LineChart data={monthly} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false} />
           <XAxis dataKey="month" tick={{ fill: '#4a6285', fontSize: 11, fontFamily: 'DM Mono, monospace' }} axisLine={{ stroke: 'rgba(99,179,237,0.1)' }} tickLine={false} />
-          <YAxis tick={{ fill: '#4a6285', fontSize: 11, fontFamily: 'DM Mono, monospace' }} axisLine={{ stroke: 'rgba(99,179,237,0.1)' }} tickLine={false} tickFormatter={v => `${v}%`} />
+          <YAxis tick={{ fill: '#4a6285', fontSize: 11, fontFamily: 'DM Mono, monospace' }} axisLine={{ stroke: 'rgba(99,179,237,0.1)' }} tickLine={false} tickFormatter={v => `${sym}${v}%`} />
           <Tooltip content={<CustomTooltip />} />
           <defs>
             <linearGradient id="gradMargin" x1="0" y1="0" x2="0" y2="1">

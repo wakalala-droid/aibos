@@ -41,12 +41,12 @@ function BETooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: 'rgba(9,13,30,0.96)', border: '1px solid rgba(99,179,237,0.25)', borderRadius: 10, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
-      <p style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', margin: '0 0 8px' }}>Revenue: {formatCurrency(label, true)}</p>
+      <p style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', margin: '0 0 8px' }}>Revenue: {formatCurrency(label, true, sym)}</p>
       {payload.map((e: any) => (
         <div key={e.name} style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: e.stroke || e.color, marginTop: 3, flexShrink: 0 }}/>
           <span style={{ fontSize: '0.7rem', color: '#4a6285', fontFamily: 'DM Mono, monospace' }}>{e.name}:</span>
-          <span style={{ fontSize: '0.76rem', color: e.value >= 0 ? '#e2eeff' : '#ef4444', fontFamily: 'Outfit, sans-serif', fontWeight: 500 }}>{formatCurrency(e.value, true)}</span>
+          <span style={{ fontSize: '0.76rem', color: e.value >= 0 ? '#e2eeff' : '#ef4444', fontFamily: 'Outfit, sans-serif', fontWeight: 500 }}>{formatCurrency(e.value, true, sym)}</span>
         </div>
       ))}
     </div>
@@ -114,13 +114,13 @@ export default function BreakevenPage() {
               </span>
             </div>
             <p style={{ fontSize: '0.72rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 20px', lineHeight: 1.6 }}>
-              Current revenue of {formatCurrency(be.currentRevenue, true)} exceeds the breakeven point of {formatCurrency(be.breakevenRevenue, true)} by {formatCurrency(be.gap, true)} ({((be.gap / be.breakevenRevenue) * 100).toFixed(0)}% safety margin).
+              Current revenue of {formatCurrency(be.currentRevenue, true, sym)} exceeds the breakeven point of {formatCurrency(be.breakevenRevenue, true, sym)} by {formatCurrency(be.gap, true, sym)} ({((be.gap / be.breakevenRevenue) * 100).toFixed(0)}% safety margin).
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
               {[
-                { label: 'Current Revenue', value: formatCurrency(be.currentRevenue, true), colour: '#60a5fa' },
-                { label: 'Breakeven Point', value: formatCurrency(be.breakevenRevenue, true), colour: '#f59e0b' },
-                { label: 'Safety Margin',   value: `+${formatCurrency(be.gap, true)}`, colour: '#10b981' },
+                { label: 'Current Revenue', value: formatCurrency(be.currentRevenue, true, sym), colour: '#60a5fa' },
+                { label: 'Breakeven Point', value: formatCurrency(be.breakevenRevenue, true, sym), colour: '#f59e0b' },
+                { label: 'Safety Margin',   value: `+${formatCurrency(be.gap, true, sym)}`, colour: '#10b981' },
               ].map(item => (
                 <div key={item.label} style={{ background: 'rgba(99,179,237,0.04)', borderRadius: 10, padding: '12px 14px' }}>
                   <p style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', textTransform: 'uppercase', margin: '0 0 4px' }}>{item.label}</p>
@@ -149,9 +149,9 @@ export default function BreakevenPage() {
             <YAxis {...AXIS} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}K`}/>
             <Tooltip content={<BETooltip/>}/>
             <ReferenceLine x={be.breakevenRevenue} stroke="rgba(245,158,11,0.5)" strokeDasharray="6 3"
-              label={{ value: `BE: ${formatCurrency(be.breakevenRevenue, true)}`, fill: '#f59e0b', fontSize: 10, fontFamily: 'DM Mono, monospace' }}/>
+              label={{ value: `BE: ${formatCurrency(be.breakevenRevenue, true, sym)}`, fill: '#f59e0b', fontSize: 10, fontFamily: 'DM Mono, monospace' }}/>
             <ReferenceLine x={be.currentRevenue} stroke="rgba(96,165,250,0.5)" strokeDasharray="6 3"
-              label={{ value: `Now: ${formatCurrency(be.currentRevenue, true)}`, fill: '#60a5fa', fontSize: 10, fontFamily: 'DM Mono, monospace' }}/>
+              label={{ value: `Now: ${formatCurrency(be.currentRevenue, true, sym)}`, fill: '#60a5fa', fontSize: 10, fontFamily: 'DM Mono, monospace' }}/>
             <Line type="monotone" dataKey="revenue"   name="Revenue"     stroke="#60a5fa" strokeWidth={2.5} dot={false}/>
             <Line type="monotone" dataKey="totalCost" name="Total Costs" stroke="#ef4444" strokeWidth={2.5} dot={false} strokeDasharray="8 4"/>
             <Line type="monotone" dataKey="fixedCost" name="Fixed Costs" stroke="#f59e0b" strokeWidth={1.5} dot={false} strokeDasharray="4 4" opacity={0.6}/>
@@ -173,7 +173,7 @@ export default function BreakevenPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <span style={{ fontSize: '0.75rem', color: '#d4ddf0', fontFamily: 'Outfit, sans-serif' }}>{item.label}</span>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <span style={{ fontSize: '0.75rem', color: item.colour, fontFamily: 'Outfit, sans-serif', fontWeight: 600 }}>{formatCurrency(item.value, true)}</span>
+                  <span style={{ fontSize: '0.75rem', color: item.colour, fontFamily: 'Outfit, sans-serif', fontWeight: 600 }}>{formatCurrency(item.value, true, sym)}</span>
                   <span style={{ fontSize: '0.65rem', color: '#4a6285', fontFamily: 'DM Mono, monospace' }}>{item.pct}%</span>
                 </div>
               </div>
@@ -221,9 +221,9 @@ export default function BreakevenPage() {
                   <td style={{ padding: '9px 10px', fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: row.delta === '0%' ? '#60a5fa' : '#d4ddf0', fontWeight: row.delta === '0%' ? 600 : 400 }}>
                     {row.delta === '0%' ? `${row.delta} (Base)` : row.delta}
                   </td>
-                  <td style={{ padding: '9px 10px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff', fontWeight: 500 }}>{formatCurrency(row.breakevenRevenue, true)}</td>
+                  <td style={{ padding: '9px 10px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff', fontWeight: 500 }}>{formatCurrency(row.breakevenRevenue, true, sym)}</td>
                   <td style={{ padding: '9px 10px', fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: row.change <= 0 ? '#10b981' : '#ef4444', fontWeight: 500 }}>
-                    {row.change === 0 ? '—' : (row.change > 0 ? '+' : '') + formatCurrency(row.change, true)}
+                    {row.change === 0 ? '—' : (row.change > 0 ? '+' : '') + formatCurrency(row.change, true, sym)}
                   </td>
                 </motion.tr>
               ))}

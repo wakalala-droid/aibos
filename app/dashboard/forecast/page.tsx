@@ -33,7 +33,7 @@ function ForecastTooltip({ active, payload, label }: any) {
         <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: e.color || e.stroke, flexShrink: 0 }} />
           <span style={{ fontSize: '0.7rem', color: '#4a6285', fontFamily: 'DM Mono, monospace' }}>{e.name}:</span>
-          <span style={{ fontSize: '0.76rem', color: '#e2eeff', fontFamily: 'Outfit, sans-serif', fontWeight: 600 }}>{formatCurrency(e.value, true)}</span>
+          <span style={{ fontSize: '0.76rem', color: '#e2eeff', fontFamily: 'Outfit, sans-serif', fontWeight: 600 }}>{formatCurrency(e.value, true, sym)}</span>
         </div>
       ))}
     </div>
@@ -164,13 +164,13 @@ export default function ForecastPage() {
                 {[['Jan+1', q1], ['Feb+1', q2], ['Mar+1', q3]].map(([m, v]) => (
                   <div key={m as string} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                     <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: '#4a6285' }}>{m}</span>
-                    <span style={{ fontSize: '0.76rem', fontFamily: 'Outfit, sans-serif', color: '#d4ddf0', fontWeight: 500 }}>{formatCurrency(v as number, true)}</span>
+                    <span style={{ fontSize: '0.76rem', fontFamily: 'Outfit, sans-serif', color: '#d4ddf0', fontWeight: 500 }}>{formatCurrency(v as number, true, sym)}</span>
                   </div>
                 ))}
                 <div style={{ height: 1, background: `${s.colour}25`, margin: '10px 0' }}/>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: '#4a6285' }}>Q Total</span>
-                  <span style={{ fontSize: '0.84rem', fontFamily: 'Outfit, sans-serif', color: s.colour, fontWeight: 700 }}>{formatCurrency(total, true)}</span>
+                  <span style={{ fontSize: '0.84rem', fontFamily: 'Outfit, sans-serif', color: s.colour, fontWeight: 700 }}>{formatCurrency(total, true, sym)}</span>
                 </div>
               </motion.div>
             );
@@ -212,10 +212,10 @@ export default function ForecastPage() {
                         {isForecast ? 'Forecast' : 'Historical'}
                       </span>
                     </td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.82rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff', fontWeight: 600 }}>{formatCurrency(rev, true)}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#4a6285' }}>{isForecast ? formatCurrency(lower, true) : '—'}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#4a6285' }}>{isForecast ? formatCurrency(upper, true) : '—'}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: '#f59e0b' }}>{isForecast ? formatCurrency(upper - lower, true) : '—'}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '0.82rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff', fontWeight: 600 }}>{formatCurrency(rev, true, sym)}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#4a6285' }}>{isForecast ? formatCurrency(lower, true, sym) : '—'}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#4a6285' }}>{isForecast ? formatCurrency(upper, true, sym) : '—'}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: '#f59e0b' }}>{isForecast ? formatCurrency(upper - lower, true, sym) : '—'}</td>
                   </motion.tr>
                 );
               })}

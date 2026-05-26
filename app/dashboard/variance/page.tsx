@@ -27,7 +27,7 @@ function VarianceTooltip({ active, payload, label }: any) {
       <p style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', margin: '0 0 6px' }}>{label}</p>
       {payload.map((e: any) => (
         <div key={e.name} style={{ fontSize: '0.76rem', color: e.value >= 0 ? '#10b981' : '#ef4444', fontFamily: 'DM Mono, monospace' }}>
-          {e.name}: {e.value >= 0 ? '+' : ''}{formatCurrency(e.value, true)}
+          {e.name}: {e.value >= 0 ? '+' : ''}{formatCurrency(e.value, true, sym)}
         </div>
       ))}
     </div>
@@ -76,7 +76,7 @@ export default function VariancePage() {
           >
             <p style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' }}>{item.label}</p>
             <p style={{ fontSize: '1.6rem', fontWeight: 700, fontFamily: 'Outfit, sans-serif', color: item.isCount ? '#f59e0b' : (item.value >= 0 ? '#10b981' : '#ef4444'), margin: 0, letterSpacing: '-0.02em' }}>
-              {item.isCount ? item.value : (item.value >= 0 ? '+' : '') + formatCurrency(item.value, true)}
+              {item.isCount ? item.value : (item.value >= 0 ? '+' : '') + formatCurrency(item.value, true, sym)}
             </p>
             <p style={{ fontSize: '0.62rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: 0, marginTop: 4 }}>vs budget FY</p>
           </motion.div>
@@ -91,7 +91,7 @@ export default function VariancePage() {
           <BarChart data={varianceData} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false}/>
             <XAxis dataKey="month" {...AXIS}/>
-            <YAxis {...AXIS} tickFormatter={v => `${v >= 0 ? '+' : ''}$${v/1000}K`}/>
+            <YAxis {...AXIS} tickFormatter={v => `${sym}${v >= 0 ? '+' : ''}$${v/1000}K`}/>
             <Tooltip content={<VarianceTooltip/>}/>
             <ReferenceLine y={0} stroke="rgba(99,179,237,0.3)" strokeWidth={1}/>
             <Bar dataKey="profitVariance" name="Profit Variance" radius={[3,3,0,0]}>
@@ -140,12 +140,12 @@ export default function VariancePage() {
                     onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                   >
                     <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: '#d4ddf0', fontWeight: 500 }}>{row.month}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#4a6285' }}>{formatCurrency(row.budgetRevenue, true)}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff' }}>{formatCurrency(row.revenue, true)}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: rv >= 0 ? '#10b981' : '#ef4444', fontWeight: 500 }}>{rv >= 0 ? '+' : ''}{formatCurrency(rv, true)}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff' }}>{formatCurrency(row.costs, true)}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#4a6285' }}>{formatCurrency(row.budgetCosts, true)}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: cv >= 0 ? '#10b981' : '#ef4444', fontWeight: 500 }}>{cv >= 0 ? '+' : ''}{formatCurrency(cv, true)}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#4a6285' }}>{formatCurrency(row.budgetRevenue, true, sym)}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff' }}>{formatCurrency(row.revenue, true, sym)}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: rv >= 0 ? '#10b981' : '#ef4444', fontWeight: 500 }}>{rv >= 0 ? '+' : ''}{formatCurrency(rv, true, sym)}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff' }}>{formatCurrency(row.costs, true, sym)}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#4a6285' }}>{formatCurrency(row.budgetCosts, true, sym)}</td>
+                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: cv >= 0 ? '#10b981' : '#ef4444', fontWeight: 500 }}>{cv >= 0 ? '+' : ''}{formatCurrency(cv, true, sym)}</td>
                     <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: row.margin >= 32 ? '#10b981' : row.margin >= 28 ? '#f59e0b' : '#ef4444', fontWeight: 500 }}>{row.margin.toFixed(1)}%</td>
                   </motion.tr>
                 );
