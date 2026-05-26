@@ -8,7 +8,6 @@ import {
 } from 'recharts';
 import { useStore } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
-import { useStore } from '@/lib/store';
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
 
