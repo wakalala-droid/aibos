@@ -203,7 +203,6 @@ interface AppStore {
   setLoading:          (v: boolean) => void;
   setCurrency:         (c: string, s: string) => void;
   updateData:          (data: Partial<Pick<AppStore, 'monthly' | 'kpi' | 'health' | 'alerts' | 'anomalies' | 'forecast' | 'breakeven' | 'cashflow'>>) => void;
-  setCurrency:         (c: string, s: string) => void;
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
