@@ -65,6 +65,7 @@ function buildScatterData(monthly: ReturnType<typeof useStore.getState>['monthly
 }
 
 function AnomalyTooltip({ active, payload }: any) {
+  const sym = useStore(s => s.currencySymbol);
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (

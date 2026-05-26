@@ -38,6 +38,7 @@ function buildBreakevenCurve(fixed: number, varRate: number) {
 }
 
 function BETooltip({ active, payload, label }: any) {
+  const sym = useStore(s => s.currencySymbol);
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: 'rgba(9,13,30,0.96)', border: '1px solid rgba(99,179,237,0.25)', borderRadius: 10, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>

@@ -126,8 +126,8 @@ function AlertsPanel() {
                 </p>
                 {alert.value && alert.expected && (
                   <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
-                    <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: '#ef4444' }}>Actual: {formatCurrency(alert.value, true)}</span>
-                    <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: '#4a6285' }}>Expected: {formatCurrency(alert.expected, true)}</span>
+                    <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: '#ef4444' }}>Actual: {formatCurrency(alert.value, true, sym)}</span>
+                    <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: '#4a6285' }}>Expected: {formatCurrency(alert.expected, true, sym)}</span>
                   </div>
                 )}
               </div>
@@ -143,6 +143,7 @@ function AlertsPanel() {
 
 export default function DashboardPage() {
   const kpi     = useStore(s => s.kpi);
+  const sym     = useStore(s => s.currencySymbol);
   const monthly = useStore(s => s.monthly);
   const revenueSparkline = monthly.map(m => m.revenue);
   const costsSparkline   = monthly.map(m => m.costs);

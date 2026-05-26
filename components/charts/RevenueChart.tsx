@@ -156,7 +156,6 @@ export function RevenueChart() {
 // ─── Margin Chart ─────────────────────────────────────────────────────────────
 
 export function MarginChart() {
-  const sym = useStore(s => s.currencySymbol);
   const monthly = useStore(s => s.monthly);
 
   return (
@@ -183,7 +182,6 @@ export function MarginChart() {
 // ─── Monthly Profit Bar ───────────────────────────────────────────────────────
 
 export function ProfitBarChart() {
-  const sym = useStore(s => s.currencySymbol);
   const monthly = useStore(s => s.monthly);
 
   return (
