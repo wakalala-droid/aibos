@@ -39,6 +39,7 @@ function Card({ children, delay = 0 }: { children: React.ReactNode; delay?: numb
 }
 
 export default function CashPage() {
+  const sym = useStore(s => s.currencySymbol);
   const cf = useStore(s => s.cashflow);
   const currency = useStore(s => s.currencySymbol);
   const AXIS = { tick: { fill: '#4a6285', fontSize: 11, fontFamily: 'DM Mono, monospace' }, axisLine: { stroke: 'rgba(99,179,237,0.1)' }, tickLine: false };
