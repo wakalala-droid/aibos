@@ -70,6 +70,7 @@ const Rec = ({ text, priority, icon }: { text: string; priority: 'High' | 'Mediu
 
 export default function BriefPage() {
   const kpi       = useStore(s => s.kpi);
+  const sym = useStore(s => s.currencySymbol);
   const health    = useStore(s => s.health);
   const anomalies = useStore(s => s.anomalies);
   const breakeven = useStore(s => s.breakeven);

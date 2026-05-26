@@ -42,6 +42,7 @@ function ForecastTooltip({ active, payload, label }: any) {
 
 export default function ForecastPage() {
   const forecast = useStore(s => s.forecast);
+  const sym = useStore(s => s.currencySymbol);
   const monthly  = useStore(s => s.monthly);
   const kpi      = useStore(s => s.kpi);
 
@@ -101,7 +102,7 @@ export default function ForecastPage() {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false}/>
             <XAxis dataKey="month" {...AXIS}/>
-            <YAxis {...AXIS} tickFormatter={v => `$${v/1000}K`}/>
+            <YAxis {...AXIS} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}K`}/>
             <Tooltip content={<ForecastTooltip/>}/>
             <ReferenceLine x="Dec" stroke="rgba(99,179,237,0.3)" strokeDasharray="6 3" label={{ value: 'Forecast →', fill: '#4a6285', fontSize: 10, fontFamily: 'DM Mono, monospace' }}/>
 

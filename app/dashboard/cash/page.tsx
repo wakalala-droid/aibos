@@ -104,7 +104,7 @@ export default function CashPage() {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false}/>
             <XAxis dataKey="month" {...AXIS}/>
-            <YAxis {...AXIS} tickFormatter={v => `$${v/1000}K`}/>
+            <YAxis {...AXIS} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}K`}/>
             <Tooltip content={<CustomTooltip/>}/>
             <Area type="monotone" dataKey="cash" name="Cash Balance" stroke="#06b6d4" strokeWidth={2.5} fill="url(#cashGrad)"/>
           </AreaChart>
@@ -119,7 +119,7 @@ export default function CashPage() {
           <BarChart data={projections} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false}/>
             <XAxis dataKey="month" {...AXIS}/>
-            <YAxis {...AXIS} tickFormatter={v => `$${v/1000}K`}/>
+            <YAxis {...AXIS} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}K`}/>
             <Tooltip content={<CustomTooltip/>}/>
             <Bar dataKey="inflow"  name="Inflow"  fill="#10b981" fillOpacity={0.8} radius={[3,3,0,0]}/>
             <Bar dataKey="outflow" name="Outflow" fill="#ef4444" fillOpacity={0.7} radius={[3,3,0,0]}/>

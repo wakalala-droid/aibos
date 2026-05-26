@@ -79,6 +79,7 @@ function ContribGauge({ pct, colour }: { pct: number; colour: string }) {
 
 export default function BreakevenPage() {
   const be = useStore(s => s.breakeven);
+  const sym = useStore(s => s.currencySymbol);
   const varRate = 1 - be.contributionMargin / 100;
   const curve = buildBreakevenCurve(be.fixedCosts, varRate);
 
@@ -144,8 +145,8 @@ export default function BreakevenPage() {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" />
-            <XAxis dataKey="revenue" {...AXIS} tickFormatter={v => `$${v/1000}K`}/>
-            <YAxis {...AXIS} tickFormatter={v => `$${v/1000}K`}/>
+            <XAxis dataKey="revenue" {...AXIS} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}K`}/>
+            <YAxis {...AXIS} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}K`}/>
             <Tooltip content={<BETooltip/>}/>
             <ReferenceLine x={be.breakevenRevenue} stroke="rgba(245,158,11,0.5)" strokeDasharray="6 3"
               label={{ value: `BE: ${formatCurrency(be.breakevenRevenue, true)}`, fill: '#f59e0b', fontSize: 10, fontFamily: 'DM Mono, monospace' }}/>

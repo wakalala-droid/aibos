@@ -36,6 +36,7 @@ function VarianceTooltip({ active, payload, label }: any) {
 
 export default function VariancePage() {
   const monthly = useStore(s => s.monthly);
+  const sym = useStore(s => s.currencySymbol);
   const alerts  = useStore(s => s.alerts);
   const [sortCol, setSortCol] = useState<'month' | 'revenue' | 'costs' | 'profit' | 'margin'>('month');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');

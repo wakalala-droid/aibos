@@ -78,6 +78,7 @@ function AnomalyTooltip({ active, payload }: any) {
 
 export default function AnomalyPage() {
   const anomalies = useStore(s => s.anomalies);
+  const sym = useStore(s => s.currencySymbol);
   const monthly   = useStore(s => s.monthly);
   const scatterData = buildScatterData(monthly);
 
@@ -191,7 +192,7 @@ export default function AnomalyPage() {
           <ScatterChart margin={{ top: 8, right: 8, bottom: 0, left: -10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)"/>
             <XAxis dataKey="x" {...AXIS} label={{ value: 'Month Index', fill: '#4a6285', fontSize: 10, fontFamily: 'DM Mono, monospace', position: 'insideBottom', offset: -2 }}/>
-            <YAxis dataKey="y" {...AXIS} tickFormatter={v => `$${v/1000}K`}/>
+            <YAxis dataKey="y" {...AXIS} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}K`}/>
             <Tooltip content={<AnomalyTooltip/>}/>
             {/* ±2σ band */}
             <ReferenceLine y={130000} stroke="rgba(245,158,11,0.3)" strokeDasharray="6 3" label={{ value: '+2σ', fill: '#f59e0b', fontSize: 9, fontFamily: 'DM Mono, monospace' }}/>
