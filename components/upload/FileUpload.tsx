@@ -177,18 +177,22 @@ export function FileUpload({ compact = false }: FileUploadProps) {
         gap:                   be.margin_of_safety          ?? 0,
       } : undefined;
 
-      // Map cashflow
+      // Map cashflow — API now enriches with inflow/outflow/month
       const cfProjections = (result.cashflow ?? []).map((c: any) => ({
-        month:   `M+${c.month_ahead}`,
-        cash:    c.projected_cash ?? 0,
-        inflow:  monthly.slice(-1)[0]?.revenue ?? 0,
-        outflow: monthly.slice(-1)[0]?.costs   ?? 0,
+        month:   c.month ?? `M+${c.month_ahead ?? 1}`,
+        cash:    Number(c.projected_cash) || 0,
+        inflow:  Number(c.inflow)  || 0,
+        outflow: Number(c.outflow) || 0,
       }));
 
+      const avgBurn = monthly.length > 0
+        ? monthly.slice(-3).reduce((s, m) => s + (m.costs || 0), 0) / Math.min(3, monthly.length)
+        : 0;
+
       const cashflow = {
-        runway:       result.runway_months ?? 0,
+        runway:       Number(result.runway_months) || 0,
         currentCash:  50000,
-        monthlyBurn:  monthly.slice(-3).reduce((s, m) => s + m.costs, 0) / 3,
+        monthlyBurn:  avgBurn,
         projections:  cfProjections,
       };
 
