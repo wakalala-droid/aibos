@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { useCounter } from '@/hooks/useCounter';
 import { formatCurrency, formatPercent } from '@/lib/utils';
+import { useStore } from '@/lib/store';
 
 interface KPICardProps {
   title:       string;
@@ -84,13 +85,14 @@ export function KPICard({
   title, value, delta, format = 'currency', compact = true,
   suffix, icon, sparkline, index = 0, colour = '#60a5fa', subtitle,
 }: KPICardProps) {
+  const sym      = useStore(s => s.currencySymbol);
   // Animated counter – runs once on mount (and re-runs if value changes)
   const decimals = format === 'percent' ? 1 : format === 'months' ? 0 : 0;
   const animated = useCounter(value, { duration: 1100, delay: index * 80, decimals });
 
   const displayValue = (() => {
     switch (format) {
-      case 'currency': return compact ? formatCurrency(animated, true) : formatCurrency(animated);
+      case 'currency': return compact ? formatCurrency(animated, true, sym) : formatCurrency(animated, false, sym);
       case 'percent':  return `${animated.toFixed(1)}%`;
       case 'months':   return `${Math.round(animated)}${suffix ?? 'mo'}`;
       default:         return `${Math.round(animated)}${suffix ?? ''}`;

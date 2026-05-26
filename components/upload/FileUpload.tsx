@@ -102,16 +102,16 @@ export function FileUpload({ compact = false }: FileUploadProps) {
       const pnl = result.pnl as any;
 
       const kpi = {
-        totalRevenue:    pnl.total_revenue    ?? 0,
-        totalCosts:      pnl.total_costs      ?? 0,
-        netProfit:       pnl.total_profit     ?? 0,
-        avgMargin:       pnl.avg_margin       ?? 0,
+        totalRevenue:    Number(pnl.total_revenue)  || 0,
+        totalCosts:      Number(pnl.total_costs)    || 0,
+        netProfit:       Number(pnl.total_profit)   || 0,
+        avgMargin:       Number(pnl.avg_margin)     || 0,
         varianceAlerts:  (result.alerts ?? []).length,
-        cashRunway:      result.runway_months ?? 0,
-        revenueDelta:    pnl.revenue_growth   ?? 0,
-        costsDelta:      pnl.cost_growth      ?? 0,
-        profitDelta:     pnl.profit_growth    ?? 0,
-        marginDelta:     pnl.margin_change    ?? 0,
+        cashRunway:      Number(result.runway_months) || 0,
+        revenueDelta:    Number(pnl.revenue_delta)  || 0,
+        costsDelta:      Number(pnl.costs_delta)    || 0,
+        profitDelta:     Number(pnl.profit_delta)   || 0,
+        marginDelta:     Number(pnl.margin_delta)   || 0,
       };
 
       const score  = result.health_score ?? 0;

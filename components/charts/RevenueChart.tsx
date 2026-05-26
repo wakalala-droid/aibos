@@ -8,10 +8,12 @@ import {
 } from 'recharts';
 import { useStore } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
+import { useStore } from '@/lib/store';
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
 
 function CustomTooltip({ active, payload, label }: any) {
+  const sym = useStore(s => s.currencySymbol);
   if (!active || !payload?.length) return null;
   return (
     <div style={{
@@ -28,7 +30,7 @@ function CustomTooltip({ active, payload, label }: any) {
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: entry.color, flexShrink: 0 }} />
           <span style={{ fontSize: '0.72rem', color: '#4a6285', fontFamily: 'DM Mono, monospace' }}>{entry.name}:</span>
           <span style={{ fontSize: '0.78rem', color: '#e2eeff', fontFamily: 'Outfit, sans-serif', fontWeight: 600 }}>
-            {formatCurrency(entry.value, true)}
+            {formatCurrency(entry.value, true, sym)}
           </span>
         </div>
       ))}
@@ -90,6 +92,7 @@ function TabBtn({ label, active, onClick }: { label: string; active: boolean; on
 // ─── Revenue Chart ────────────────────────────────────────────────────────────
 
 export function RevenueChart() {
+  const sym = useStore(s => s.currencySymbol);
   const monthly = useStore(s => s.monthly);
   const [view, setView] = useState<'area' | 'bar'>('area');
 
@@ -127,7 +130,7 @@ export function RevenueChart() {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false} />
             <XAxis dataKey="month" {...COMMON_AXIS} />
-            <YAxis {...COMMON_AXIS} tickFormatter={v => `$${v / 1000}K`} />
+            <YAxis {...COMMON_AXIS} tickFormatter={v => `${sym}${v / 1000}K`} />
             <Tooltip content={<CustomTooltip />} />
             <Legend wrapperStyle={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', paddingTop: 12 }} />
             <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#60a5fa" strokeWidth={2} fill="url(#gradRevenue)" />
@@ -138,7 +141,7 @@ export function RevenueChart() {
           <BarChart data={monthly} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false} />
             <XAxis dataKey="month" {...COMMON_AXIS} />
-            <YAxis {...COMMON_AXIS} tickFormatter={v => `$${v / 1000}K`} />
+            <YAxis {...COMMON_AXIS} tickFormatter={v => `${sym}${v / 1000}K`} />
             <Tooltip content={<CustomTooltip />} />
             <Legend wrapperStyle={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', paddingTop: 12 }} />
             <Bar dataKey="revenue" name="Revenue" fill="#60a5fa" fillOpacity={0.8} radius={[3, 3, 0, 0]} />
@@ -154,6 +157,7 @@ export function RevenueChart() {
 // ─── Margin Chart ─────────────────────────────────────────────────────────────
 
 export function MarginChart() {
+  const sym = useStore(s => s.currencySymbol);
   const monthly = useStore(s => s.monthly);
 
   return (
@@ -180,6 +184,7 @@ export function MarginChart() {
 // ─── Monthly Profit Bar ───────────────────────────────────────────────────────
 
 export function ProfitBarChart() {
+  const sym = useStore(s => s.currencySymbol);
   const monthly = useStore(s => s.monthly);
 
   return (
@@ -188,7 +193,7 @@ export function ProfitBarChart() {
         <BarChart data={monthly} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false} />
           <XAxis dataKey="month" tick={{ fill: '#4a6285', fontSize: 11, fontFamily: 'DM Mono, monospace' }} axisLine={{ stroke: 'rgba(99,179,237,0.1)' }} tickLine={false} />
-          <YAxis tick={{ fill: '#4a6285', fontSize: 11, fontFamily: 'DM Mono, monospace' }} axisLine={{ stroke: 'rgba(99,179,237,0.1)' }} tickLine={false} tickFormatter={v => `$${v / 1000}K`} />
+          <YAxis tick={{ fill: '#4a6285', fontSize: 11, fontFamily: 'DM Mono, monospace' }} axisLine={{ stroke: 'rgba(99,179,237,0.1)' }} tickLine={false} tickFormatter={v => `${sym}${v / 1000}K`} />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="profit" name="Net Profit" radius={[4, 4, 0, 0]}>
             {monthly.map((entry, index) => (
