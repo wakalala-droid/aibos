@@ -61,6 +61,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
 // ─── Alerts Panel ─────────────────────────────────────────────────────────────
 
 function AlertsPanel() {
+  const sym = useStore(s => s.currencySymbol);
   const alerts = useStore(s => s.alerts);
 
   return (
