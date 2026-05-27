@@ -20,8 +20,8 @@ function Card({ children, delay = 0 }: { children: React.ReactNode; delay?: numb
   );
 }
 
-function VarianceTooltip({
-  const sym = useStore(s => s.currencySymbol); active, payload, label }: any) {
+function VarianceTooltip({active, payload, label }: any) {
+  const sym = useStore(s => s.currencySymbol);
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: 'rgba(9,13,30,0.95)', border: '1px solid rgba(99,179,237,0.25)', borderRadius: 10, padding: '10px 14px' }}>
@@ -37,7 +37,6 @@ function VarianceTooltip({
 
 export default function VariancePage() {
   const monthly = useStore(s => s.monthly);
-  const sym = useStore(s => s.currencySymbol);
   const alerts  = useStore(s => s.alerts);
   const [sortCol, setSortCol] = useState<'month' | 'revenue' | 'costs' | 'profit' | 'margin'>('month');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');

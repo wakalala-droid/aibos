@@ -24,7 +24,6 @@ function Card({ children, delay = 0 }: { children: React.ReactNode; delay?: numb
 }
 
 function CustomTooltip({ active, payload, label }: any) {
-  const sym = useStore(s => s.currencySymbol);
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: 'rgba(9,13,30,0.96)', border: '1px solid rgba(99,179,237,0.25)', borderRadius: 10, padding: '10px 14px' }}>
@@ -44,7 +43,6 @@ function CustomTooltip({ active, payload, label }: any) {
 
 export default function CashPage() {
   const cf  = useStore(s => s.cashflow);
-  const sym = useStore(s => s.currencySymbol);
 
   // Full null safety — never crash on empty/undefined data
   const rawProjections = cf?.projections ?? [];

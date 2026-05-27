@@ -12,7 +12,6 @@ import { formatCurrency } from '@/lib/utils';
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
 
 function CustomTooltip({ active, payload, label }: any) {
-  const sym = useStore(s => s.currencySymbol);
   if (!active || !payload?.length) return null;
   return (
     <div style={{
@@ -91,7 +90,6 @@ function TabBtn({ label, active, onClick }: { label: string; active: boolean; on
 // ─── Revenue Chart ────────────────────────────────────────────────────────────
 
 export function RevenueChart() {
-  const sym = useStore(s => s.currencySymbol);
   const monthly = useStore(s => s.monthly);
   const [view, setView] = useState<'area' | 'bar'>('area');
 

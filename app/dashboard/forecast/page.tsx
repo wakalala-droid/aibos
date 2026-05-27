@@ -24,7 +24,6 @@ function Card({ children, delay = 0, style = {} }: { children: React.ReactNode; 
 }
 
 function ForecastTooltip({ active, payload, label }: any) {
-  const sym = useStore(s => s.currencySymbol);
   if (!active || !payload?.length) return null;
   const relevant = payload.filter((p: any) => p.value !== null && p.value !== undefined);
   return (
@@ -43,7 +42,6 @@ function ForecastTooltip({ active, payload, label }: any) {
 
 export default function ForecastPage() {
   const forecast = useStore(s => s.forecast);
-  const sym = useStore(s => s.currencySymbol);
   const monthly  = useStore(s => s.monthly);
   const kpi      = useStore(s => s.kpi);
 

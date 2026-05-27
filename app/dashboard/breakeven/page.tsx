@@ -80,7 +80,6 @@ function ContribGauge({ pct, colour }: { pct: number; colour: string }) {
 
 export default function BreakevenPage() {
   const be = useStore(s => s.breakeven);
-  const sym = useStore(s => s.currencySymbol);
   const varRate = 1 - be.contributionMargin / 100;
   const curve = buildBreakevenCurve(be.fixedCosts, varRate);
 

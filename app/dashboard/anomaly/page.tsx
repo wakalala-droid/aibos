@@ -79,7 +79,6 @@ function AnomalyTooltip({ active, payload }: any) {
 
 export default function AnomalyPage() {
   const anomalies = useStore(s => s.anomalies);
-  const sym = useStore(s => s.currencySymbol);
   const monthly   = useStore(s => s.monthly);
   const scatterData = buildScatterData(monthly);
 
