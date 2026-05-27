@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { uploadFile } from '@/lib/api';
+import { setCurrencyGlobal } from '@/lib/utils';
 
 function UploadIcon() {
   return (

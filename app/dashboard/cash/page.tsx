@@ -137,7 +137,7 @@ export default function CashPage() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false}/>
               <XAxis dataKey="month" {...AXIS}/>
-              <YAxis {...AXIS} tickFormatter={v => `${sym}${(Number(v)/1000).toFixed(0)}K`}/>
+              <YAxis {...AXIS} tickFormatter={v => `$${(Number(v)/1000).toFixed(0)}K`}/>
               <Tooltip content={<CustomTooltip/>}/>
               <Area type="monotone" dataKey="cash" name="Cash Balance" stroke="#06b6d4" strokeWidth={2.5} fill="url(#cashGrad)"/>
             </AreaChart>
@@ -162,7 +162,7 @@ export default function CashPage() {
             <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false}/>
               <XAxis dataKey="month" {...AXIS}/>
-              <YAxis {...AXIS} tickFormatter={v => `${sym}${(Number(v)/1000).toFixed(0)}K`}/>
+              <YAxis {...AXIS} tickFormatter={v => `$${(Number(v)/1000).toFixed(0)}K`}/>
               <Tooltip content={<CustomTooltip/>}/>
               <Bar dataKey="inflow"  name="Inflow"  fill="#10b981" fillOpacity={0.8} radius={[3,3,0,0]}/>
               <Bar dataKey="outflow" name="Outflow" fill="#ef4444" fillOpacity={0.7} radius={[3,3,0,0]}/>
@@ -208,16 +208,16 @@ export default function CashPage() {
                         {row.month ?? `M+${row.month_ahead ?? i+1}`}
                       </td>
                       <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#10b981' }}>
-                        {formatCurrency(inflow, true, sym)}
+                        {formatCurrency(inflow, true)}
                       </td>
                       <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#ef4444' }}>
-                        {formatCurrency(outflow, true, sym)}
+                        {formatCurrency(outflow, true)}
                       </td>
                       <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: net >= 0 ? '#10b981' : '#ef4444', fontWeight: 500 }}>
-                        {net >= 0 ? '+' : ''}{formatCurrency(net, true, sym)}
+                        {net >= 0 ? '+' : ''}{formatCurrency(net, true)}
                       </td>
                       <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff', fontWeight: 500 }}>
-                        {formatCurrency(cash, true, sym)}
+                        {formatCurrency(cash, true)}
                       </td>
                     </motion.tr>
                   );

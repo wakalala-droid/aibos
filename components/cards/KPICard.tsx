@@ -92,7 +92,7 @@ export function KPICard({
 
   const displayValue = (() => {
     switch (format) {
-      case 'currency': return compact ? formatCurrency(animated, true, sym) : formatCurrency(animated, false, sym);
+      case 'currency': return compact ? formatCurrency(animated, true) : formatCurrency(animated);
       case 'percent':  return `${animated.toFixed(1)}%`;
       case 'months':   return `${Math.round(animated)}${suffix ?? 'mo'}`;
       default:         return `${Math.round(animated)}${suffix ?? ''}`;

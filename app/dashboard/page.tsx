@@ -126,8 +126,8 @@ function AlertsPanel() {
                 </p>
                 {alert.value && alert.expected && (
                   <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
-                    <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: '#ef4444' }}>Actual: {formatCurrency(alert.value, true, sym)}</span>
-                    <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: '#4a6285' }}>Expected: {formatCurrency(alert.expected, true, sym)}</span>
+                    <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: '#ef4444' }}>Actual: {formatCurrency(alert.value, true)}</span>
+                    <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: '#4a6285' }}>Expected: {formatCurrency(alert.expected, true)}</span>
                   </div>
                 )}
               </div>
