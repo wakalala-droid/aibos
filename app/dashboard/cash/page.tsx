@@ -33,7 +33,7 @@ function CustomTooltip({ active, payload, label }: any) {
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: e.color || e.stroke, marginTop: 3, flexShrink: 0 }} />
           <span style={{ fontSize: '0.7rem', color: '#4a6285', fontFamily: 'DM Mono, monospace' }}>{e.name}:</span>
           <span style={{ fontSize: '0.76rem', color: '#e2eeff', fontFamily: 'Outfit, sans-serif', fontWeight: 500 }}>
-            {formatCurrency(Number(e.value) || 0, true, sym)}
+            {formatCurrency(Number(e.value) || 0, true)}
           </span>
         </div>
       ))}
