@@ -209,6 +209,12 @@ export function FileUpload({ compact = false }: FileUploadProps) {
         cashflow,
       });
 
+      // ── Sync currency symbol (Zustand → reactive re-render + module global) ──
+      const apiCurrency = String(result.currency        ?? 'USD');
+      const apiSymbol   = String(result.currency_symbol ?? '$');
+      setCurrency(apiCurrency, apiSymbol);
+      setCurrencyGlobal(apiSymbol);
+
       setUploadedFile(file.name);
       setState('success');
 
