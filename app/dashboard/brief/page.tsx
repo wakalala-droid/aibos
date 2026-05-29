@@ -76,6 +76,7 @@ export default function BriefPage() {
   const cashflow  = useStore(s => s.cashflow);
   const monthly   = useStore(s => s.monthly);
   const forecast  = useStore(s => s.forecast).filter(f => f.forecast);
+  const sym       = useStore(s => s.currencySymbol);
 
   const [copied, setCopied] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -86,7 +87,7 @@ export default function BriefPage() {
   const q4QoQ  = ((q4Rev - q3Rev) / q3Rev * 100).toFixed(1);
 
   const handleCopy = async () => {
-    const text = `AI-BOS Strategic Brief — ${today}\n\nRevenue: ${formatCurrency(kpi.totalRevenue)}\nNet Profit: ${formatCurrency(kpi.netProfit)}\nAvg Margin: ${kpi.avgMargin}%\nHealth Score: ${health.score}/100\nCash Runway: ${cashflow.runway} months`;
+    const text = `AI-BOS Strategic Brief — ${today}\n\nRevenue: ${formatCurrency(kpi.totalRevenue, false, sym)}\nNet Profit: ${formatCurrency(kpi.netProfit, false, sym)}\nAvg Margin: ${kpi.avgMargin}%\nHealth Score: ${health.score}/100\nCash Runway: ${cashflow.runway} months`;
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -155,15 +156,15 @@ export default function BriefPage() {
         {/* Left column: full narrative */}
         <Card delay={0.08}>
           <BriefSection icon={<span style={{fontSize:'11px'}}>📊</span>} title="Executive Summary" delay={0.1}>
-            <Insight colour="#60a5fa" text={`Full-year revenue reached ${formatCurrency(kpi.totalRevenue)}, representing an 18.4% YoY increase. Net profit was ${formatCurrency(kpi.netProfit)} at an average margin of ${kpi.avgMargin}%.`}/>
-            <Insight colour="#60a5fa" text={`Q4 was the strongest quarter on record, with December generating ${formatCurrency(monthly[11]?.profit ?? 0, true)} in net profit — the highest single-month result. Q4 revenue of ${formatCurrency(q4Rev, true)} was ${q4QoQ}% above Q3.`}/>
+            <Insight colour="#60a5fa" text={`Full-year revenue reached ${formatCurrency(kpi.totalRevenue, false, sym)}, representing an 18.4% YoY increase. Net profit was ${formatCurrency(kpi.netProfit, false, sym)} at an average margin of ${kpi.avgMargin}%.`}/>
+            <Insight colour="#60a5fa" text={`Q4 was the strongest quarter on record, with December generating ${formatCurrency(monthly[11]?.profit ?? 0, true, sym)} in net profit — the highest single-month result. Q4 revenue of ${formatCurrency(q4Rev, true, sym)} was ${q4QoQ}% above Q3.`}/>
             <Insight colour="#f59e0b" text={`Q3 underperformed due to a critical cost anomaly in September (operating costs +34% vs budget, z-score 3.8σ). This depressed Q3 margins to an average of 27.1% vs Q2's 32.2%.`}/>
-            <Insight colour="#10b981" text={`The business is above breakeven with a ${formatCurrency(breakeven.gap, true)} safety margin (${((breakeven.gap / breakeven.breakevenRevenue) * 100).toFixed(0)}%). Contribution margin stands at ${breakeven.contributionMargin}%.`}/>
+            <Insight colour="#10b981" text={`The business is above breakeven with a ${formatCurrency(breakeven.gap, true, sym)} safety margin (${((breakeven.gap / breakeven.breakevenRevenue) * 100).toFixed(0)}%). Contribution margin stands at ${breakeven.contributionMargin}%.`}/>
           </BriefSection>
 
           <BriefSection icon={<span style={{fontSize:'11px'}}>💰</span>} title="Revenue Performance" delay={0.15}>
             <Insight colour="#60a5fa" text={`Revenue grew in 9 of 12 months. The three months of decline (April, June, September) were linked to specific operational events rather than structural demand weakness.`}/>
-            <Insight colour="#60a5fa" text={`The revenue CAGR implied by the trajectory is approximately 18–22% annualised. Forward forecast for Q1 next year is ${formatCurrency(forecast[0]?.forecast ?? 281000, true)} (base case), with a 95% confidence interval of ${formatCurrency(forecast[0]?.lower ?? 255000, true)}–${formatCurrency(forecast[0]?.upper ?? 307000, true)}.`}/>
+            <Insight colour="#60a5fa" text={`The revenue CAGR implied by the trajectory is approximately 18–22% annualised. Forward forecast for Q1 next year is ${formatCurrency(forecast[0]?.forecast ?? 281000, true, sym)} (base case), with a 95% confidence interval of ${formatCurrency(forecast[0]?.lower ?? 255000, true, sym)}–${formatCurrency(forecast[0]?.upper ?? 307000, true, sym)}.`}/>
           </BriefSection>
 
           <BriefSection icon={<span style={{fontSize:'11px'}}>⚠️</span>} title="Risk Factors" delay={0.2}>
@@ -182,8 +183,8 @@ export default function BriefPage() {
 
           {/* Remove last border */}
           <BriefSection icon={<span style={{fontSize:'11px'}}>🔮</span>} title="Forward Outlook" delay={0.3}>
-            <Insight colour="#a78bfa" text={`Base case: Q1 next year revenue of ${formatCurrency(forecast[0]?.forecast ?? 281000, true)}, growing to ${formatCurrency(forecast[2]?.forecast ?? 314000, true)} by Q1 end. Full-year implied revenue: $3.2M–$3.6M.`}/>
-            <Insight colour="#a78bfa" text={`Bull case scenario (variable costs -10%): breakeven drops to ${formatCurrency(133000, true)}, safety margin widens significantly, runway extends to 18+ months by Q2.`}/>
+            <Insight colour="#a78bfa" text={`Base case: Q1 next year revenue of ${formatCurrency(forecast[0]?.forecast ?? 281000, true, sym)}, growing to ${formatCurrency(forecast[2]?.forecast ?? 314000, true, sym)} by Q1 end. Full-year implied revenue: ${sym}3.2M–${sym}3.6M.`}/>
+            <Insight colour="#a78bfa" text={`Bull case scenario (variable costs -10%): breakeven drops to ${formatCurrency(133000, true, sym)}, safety margin widens significantly, runway extends to 18+ months by Q2.`}/>
             <Insight colour="#f59e0b" text="Key risk to watch: if the September cost pattern recurs in Q1, it would compress Q1 margins to ~24% and delay the runway improvement target by 2–3 months."/>
           </BriefSection>
         </Card>
@@ -193,16 +194,16 @@ export default function BriefPage() {
 
           <Card delay={0.12} style={{ padding: '20px' }}>
             <h3 style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Key Metrics</h3>
-            <Metric label="Total Revenue"    value={formatCurrency(kpi.totalRevenue, true)} colour="#60a5fa"/>
-            <Metric label="Total Costs"      value={formatCurrency(kpi.totalCosts, true)}   colour="#f59e0b"/>
-            <Metric label="Net Profit"       value={formatCurrency(kpi.netProfit, true)}     colour="#10b981"/>
+            <Metric label="Total Revenue"    value={formatCurrency(kpi.totalRevenue, true, sym)} colour="#60a5fa"/>
+            <Metric label="Total Costs"      value={formatCurrency(kpi.totalCosts, true, sym)}   colour="#f59e0b"/>
+            <Metric label="Net Profit"       value={formatCurrency(kpi.netProfit, true, sym)}     colour="#10b981"/>
             <Metric label="Avg Net Margin"   value={`${kpi.avgMargin}%`}                     colour="#a78bfa"/>
             <Metric label="YoY Growth"       value="+18.4%"                                   colour="#10b981"/>
-            <Metric label="Best Month"       value={`Dec (${formatCurrency(96000, true)})`}   colour="#10b981"/>
+            <Metric label="Best Month"       value={`Dec (${formatCurrency(96000, true, sym)})`}   colour="#10b981"/>
             <Metric label="Worst Margin"     value="Sep (22.8%)"                              colour="#ef4444"/>
             <Metric label="Cash Runway"      value={`${cashflow.runway} months`}              colour="#06b6d4"/>
-            <Metric label="Breakeven Rev."   value={formatCurrency(breakeven.breakevenRevenue, true)} colour="#f59e0b"/>
-            <Metric label="Safety Margin"    value={formatCurrency(breakeven.gap, true)}      colour="#10b981"/>
+            <Metric label="Breakeven Rev."   value={formatCurrency(breakeven.breakevenRevenue, true, sym)} colour="#f59e0b"/>
+            <Metric label="Safety Margin"    value={formatCurrency(breakeven.gap, true, sym)}      colour="#10b981"/>
             <Metric label="Contrib. Margin"  value={`${breakeven.contributionMargin}%`}       colour="#10b981"/>
             <Metric label="Anomalies"        value={`${anomalies.length} detected`}            colour="#ef4444"/>
           </Card>
@@ -213,8 +214,8 @@ export default function BriefPage() {
               <div key={f.month} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '7px 0', borderBottom: '1px solid rgba(99,179,237,0.05)' }}>
                 <span style={{ fontSize: '0.72rem', color: '#4a6285', fontFamily: 'DM Mono, monospace' }}>{f.month}</span>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '0.82rem', color: '#a78bfa', fontFamily: 'Outfit, sans-serif', fontWeight: 600 }}>{formatCurrency(f.forecast!, true)}</div>
-                  <div style={{ fontSize: '0.58rem', color: '#2d4a70', fontFamily: 'DM Mono, monospace' }}>{formatCurrency(f.lower!, true)}–{formatCurrency(f.upper!, true)}</div>
+                  <div style={{ fontSize: '0.82rem', color: '#a78bfa', fontFamily: 'Outfit, sans-serif', fontWeight: 600 }}>{formatCurrency(f.forecast!, true, sym)}</div>
+                  <div style={{ fontSize: '0.58rem', color: '#2d4a70', fontFamily: 'DM Mono, monospace' }}>{formatCurrency(f.lower!, true, sym)}–{formatCurrency(f.upper!, true, sym)}</div>
                 </div>
               </div>
             ))}

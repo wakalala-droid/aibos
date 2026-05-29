@@ -64,13 +64,13 @@ function buildScatterData(monthly: ReturnType<typeof useStore.getState>['monthly
   }));
 }
 
-function AnomalyTooltip({ active, payload }: any) {
+function AnomalyTooltip({ active, payload, sym }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
     <div style={{ background: 'rgba(9,13,30,0.95)', border: '1px solid rgba(99,179,237,0.25)', borderRadius: 10, padding: '10px 14px' }}>
       <p style={{ fontSize: '0.78rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 4px' }}>{d.month}</p>
-      <p style={{ fontSize: '0.7rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 3px' }}>Costs: {formatCurrency(d.y, true)}</p>
+      <p style={{ fontSize: '0.7rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 3px' }}>Costs: {formatCurrency(d.y, true, sym)}</p>
       <p style={{ fontSize: '0.7rem', color: d.colour, fontFamily: 'DM Mono, monospace', margin: 0 }}>Z-score: {d.z.toFixed(2)}σ</p>
     </div>
   );
@@ -79,6 +79,7 @@ function AnomalyTooltip({ active, payload }: any) {
 export default function AnomalyPage() {
   const anomalies = useStore(s => s.anomalies);
   const monthly   = useStore(s => s.monthly);
+  const sym       = useStore(s => s.currencySymbol);
   const scatterData = buildScatterData(monthly);
 
   const critCount = anomalies.filter(a => a.severity === 'critical').length;
@@ -154,13 +155,13 @@ export default function AnomalyPage() {
                   <div style={{ background: 'rgba(99,179,237,0.04)', borderRadius: 8, padding: '10px 12px' }}>
                     <p style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', margin: '0 0 4px', textTransform: 'uppercase' }}>Actual</p>
                     <p style={{ fontSize: '1rem', fontWeight: 700, color: cfg.colour, fontFamily: 'Outfit, sans-serif', margin: 0 }}>
-                      {anomaly.field.includes('Margin') ? `${anomaly.value}%` : formatCurrency(anomaly.value, true)}
+                      {anomaly.field.includes('Margin') ? `${anomaly.value}%` : formatCurrency(anomaly.value, true, sym)}
                     </p>
                   </div>
                   <div style={{ background: 'rgba(99,179,237,0.04)', borderRadius: 8, padding: '10px 12px' }}>
                     <p style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', margin: '0 0 4px', textTransform: 'uppercase' }}>Expected</p>
                     <p style={{ fontSize: '1rem', fontWeight: 700, color: '#4a6285', fontFamily: 'Outfit, sans-serif', margin: 0 }}>
-                      {anomaly.field.includes('Margin') ? `${anomaly.expected}%` : formatCurrency(anomaly.expected, true)}
+                      {anomaly.field.includes('Margin') ? `${anomaly.expected}%` : formatCurrency(anomaly.expected, true, sym)}
                     </p>
                   </div>
                 </div>
@@ -191,8 +192,8 @@ export default function AnomalyPage() {
           <ScatterChart margin={{ top: 8, right: 8, bottom: 0, left: -10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)"/>
             <XAxis dataKey="x" {...AXIS} label={{ value: 'Month Index', fill: '#4a6285', fontSize: 10, fontFamily: 'DM Mono, monospace', position: 'insideBottom', offset: -2 }}/>
-            <YAxis dataKey="y" {...AXIS} tickFormatter={v => `$${(v/1000).toFixed(0)}K`}/>
-            <Tooltip content={<AnomalyTooltip/>}/>
+            <YAxis dataKey="y" {...AXIS} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}K`}/>
+            <Tooltip content={<AnomalyTooltip sym={sym}/>}/>
             {/* ±2σ band */}
             <ReferenceLine y={130000} stroke="rgba(245,158,11,0.3)" strokeDasharray="6 3" label={{ value: '+2σ', fill: '#f59e0b', fontSize: 9, fontFamily: 'DM Mono, monospace' }}/>
             <ReferenceLine y={140000} stroke="rgba(239,68,68,0.3)" strokeDasharray="6 3" label={{ value: '+3σ', fill: '#ef4444', fontSize: 9, fontFamily: 'DM Mono, monospace' }}/>
@@ -234,10 +235,10 @@ export default function AnomalyPage() {
                     <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: '#d4ddf0', fontWeight: 500 }}>{a.month}</td>
                     <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#d4ddf0' }}>{a.field}</td>
                     <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff', fontWeight: 500 }}>
-                      {a.field.includes('Margin') ? `${a.value}%` : formatCurrency(a.value, true)}
+                      {a.field.includes('Margin') ? `${a.value}%` : formatCurrency(a.value, true, sym)}
                     </td>
                     <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#4a6285' }}>
-                      {a.field.includes('Margin') ? `${a.expected}%` : formatCurrency(a.expected, true)}
+                      {a.field.includes('Margin') ? `${a.expected}%` : formatCurrency(a.expected, true, sym)}
                     </td>
                     <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: a.value > a.expected ? '#ef4444' : '#10b981', fontWeight: 500 }}>
                       {a.value > a.expected ? '+' : ''}{dev}%
