@@ -9,32 +9,38 @@ const PROXY = '/api/proxy';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface UploadResult {
-  ok:            boolean;
-  rows:          number;
-  columns:       string[];
-  records:       Record<string, unknown>[];
-  pnl:           PNL;
-  health_score:  number;
-  health_label:  string;
-  alerts:        Alert[];
-  cashflow:      CashflowMonth[];
-  runway_months: number;
-  forecast:      ForecastResult;
-  anomalies:     Anomaly[];
-  breakeven:     Breakeven;
+  ok:              boolean;
+  rows:            number;
+  columns:         string[];
+  records:         Record<string, unknown>[];
+  pnl:             PNL;
+  health_score:    number;
+  health_label:    string;
+  alerts:          Alert[];
+  cashflow:        CashflowMonth[];
+  runway_months:   number;
+  forecast:        ForecastResult;
+  anomalies:       Anomaly[];
+  breakeven:       Breakeven;
+  currency:        string;          // e.g. "ZMW" | "USD" | "EUR" | "GBP"
+  currency_symbol: string;          // e.g. "K"   | "$"   | "€"   | "£"
 }
 
 export interface PNL {
-  total_revenue: number;
-  total_costs:   number;
-  total_profit:  number;
-  avg_margin:    number;
-  best_month:    string;
-  worst_month:   string;
+  total_revenue:  number;
+  total_costs:    number;
+  total_profit:   number;
+  avg_margin:     number;
+  best_month:     string;
+  worst_month:    string;
   revenue_growth?: number;
   cost_growth?:    number;
   profit_growth?:  number;
   margin_change?:  number;
+  revenue_delta?:  number;
+  costs_delta?:    number;
+  profit_delta?:   number;
+  margin_delta?:   number;
 }
 
 export interface Alert {
