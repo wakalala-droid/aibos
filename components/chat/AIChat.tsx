@@ -121,8 +121,11 @@ export function AIChat({ compact = false }: AIChatProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
+  // Only scroll after user has sent a message — prevents the Overview
+  // page from jumping to the bottom of the chat on initial mount.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length <= 1 && !streaming && !thinking) return;
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, [messages, streaming, thinking]);
 
   const sendMessage = useCallback(async (text: string) => {
