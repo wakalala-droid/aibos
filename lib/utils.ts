@@ -40,6 +40,13 @@ export function formatPct(value: number, decimals = 1): string {
 }
 
 /**
+ * Backward-compatible alias used across dashboard pages.
+ */
+export function formatPercent(value: number, decimals = 1): string {
+  return formatPct(value, decimals);
+}
+
+/**
  * Clamp a number between min and max.
  */
 export function clamp(val: number, min: number, max: number): number {
@@ -68,6 +75,14 @@ export function getGlobalSym(): string {
 
 export function setGlobalSym(sym: string) {
   _globalSym = sym;
+}
+
+/**
+ * Ease-out curve for animated counters and chart labels.
+ */
+export function easeOutQuart(t: number): number {
+  const clamped = clamp(t, 0, 1);
+  return 1 - Math.pow(1 - clamped, 4);
 }
 
 // ---------------------------------------------------------------------------

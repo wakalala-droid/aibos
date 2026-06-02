@@ -44,10 +44,16 @@ export interface PNL {
 }
 
 export interface Alert {
+  id?:        string;
   month:      string;
   change_pct: number;
   direction:  string;
   type?:      string;
+  severity?:  string;
+  title?:     string;
+  description?: string;
+  value?:     number;
+  expected?:  number;
 }
 
 export interface CashflowMonth {
@@ -72,6 +78,7 @@ export interface ForecastResult {
 }
 
 export interface Anomaly {
+  id?:        string;
   month:      string;
   metric:     string;
   type:       string;
@@ -80,6 +87,10 @@ export interface Anomaly {
   z_score:    number;
   severity:   string;
   root_cause?: string;
+  field?:     string;
+  value?:     number;
+  expected?:  number;
+  zScore?:    number;
 }
 
 export interface Breakeven {

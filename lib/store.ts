@@ -18,6 +18,7 @@ export interface KPIData {
   totalRevenue: number;
   totalCosts: number;
   totalProfit: number;
+  netProfit: number;
   avgMargin: number;
   revenueGrowth?: number;
   profitGrowth?: number;
@@ -31,6 +32,51 @@ export interface HealthScore {
   bestMonth: string;
   worstMonth: string;
 }
+
+export const severityConfig = {
+  critical: {
+    label: 'Critical',
+    colour: '#EF4444',
+    bg: 'rgba(239,68,68,0.08)',
+    border: 'rgba(239,68,68,0.28)',
+  },
+  high: {
+    label: 'High',
+    colour: '#F59E0B',
+    bg: 'rgba(245,158,11,0.08)',
+    border: 'rgba(245,158,11,0.28)',
+  },
+  warning: {
+    label: 'Warning',
+    colour: '#F59E0B',
+    bg: 'rgba(245,158,11,0.08)',
+    border: 'rgba(245,158,11,0.28)',
+  },
+  medium: {
+    label: 'Medium',
+    colour: '#60A5FA',
+    bg: 'rgba(96,165,250,0.08)',
+    border: 'rgba(96,165,250,0.28)',
+  },
+  low: {
+    label: 'Low',
+    colour: '#34D399',
+    bg: 'rgba(52,211,153,0.08)',
+    border: 'rgba(52,211,153,0.28)',
+  },
+  info: {
+    label: 'Info',
+    colour: '#06B6D4',
+    bg: 'rgba(6,182,212,0.08)',
+    border: 'rgba(6,182,212,0.28)',
+  },
+  success: {
+    label: 'Success',
+    colour: '#34D399',
+    bg: 'rgba(52,211,153,0.08)',
+    border: 'rgba(52,211,153,0.28)',
+  },
+} as const;
 
 // ---------------------------------------------------------------------------
 // Currency helper — always ZMW / K for AI-BOS Zambia
@@ -59,6 +105,7 @@ const MOCK_KPI: KPIData = {
   totalRevenue: 1_216_279,
   totalCosts:    881_300,
   totalProfit:   334_979,
+  netProfit:     334_979,
   avgMargin:      27.5,
 };
 
@@ -435,6 +482,7 @@ export const useStore = create<AIBOSStore>()(
           totalRevenue: pnl.total_revenue,
           totalCosts:   pnl.total_costs,
           totalProfit:  pnl.total_profit,
+          netProfit:    pnl.total_profit,
           avgMargin:    pnl.avg_margin,
         };
 

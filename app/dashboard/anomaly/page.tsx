@@ -153,6 +153,19 @@ function buildScatterData(monthly: ReturnType<typeof useStore.getState>['monthly
   };
 }
 
+function normalizeAnomaly(anomaly: any, index: number) {
+  const severity = anomaly.severity ?? 'info';
+  return {
+    id: anomaly.id ?? `anomaly-${index}`,
+    month: anomaly.month ?? 'N/A',
+    field: anomaly.field ?? anomaly.metric ?? 'Metric',
+    value: Number(anomaly.value ?? anomaly.change_pct ?? 0),
+    expected: Number(anomaly.expected ?? 0),
+    zScore: Number(anomaly.zScore ?? anomaly.z_score ?? 0),
+    severity,
+  };
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 export default function AnomalyPage() {
   const anomalies  = useStore(s => s.anomalies);
@@ -160,10 +173,11 @@ export default function AnomalyPage() {
   const sym        = useStore(s => s.currencySymbol);
   const { data: scatterData, mean, std } = buildScatterData(monthly);
 
-  const critCount = anomalies.filter(a => a.severity === 'critical').length;
-  const highCount = anomalies.filter(a => a.severity === 'high').length;
-  const avgZ      = anomalies.length
-    ? +(anomalies.reduce((s, a) => s + a.zScore, 0) / anomalies.length).toFixed(1)
+  const normalizedAnomalies = anomalies.map(normalizeAnomaly);
+  const critCount = normalizedAnomalies.filter(a => a.severity === 'critical').length;
+  const highCount = normalizedAnomalies.filter(a => a.severity === 'high').length;
+  const avgZ      = normalizedAnomalies.length
+    ? +(normalizedAnomalies.reduce((s, a) => s + a.zScore, 0) / normalizedAnomalies.length).toFixed(1)
     : 0;
 
   const sigma2 = mean + 2 * std;
@@ -189,14 +203,14 @@ export default function AnomalyPage() {
       {/* ── Anomaly cards ─────────────────────────────────────────────── */}
       <section>
         <h2 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 16px', letterSpacing: '-0.01em' }}>Detected Anomalies</h2>
-        {anomalies.length === 0 ? (
+        {normalizedAnomalies.length === 0 ? (
           <Card>
             <p style={{ fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', textAlign: 'center', padding: '24px 0' }}>No anomalies detected</p>
           </Card>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
-            {anomalies.map((anomaly, i) => {
-              const cfg       = severityConfig[anomaly.severity];
+            {normalizedAnomalies.map((anomaly, i) => {
+              const cfg = severityConfig[anomaly.severity as keyof typeof severityConfig] ?? severityConfig.info;
               const deviation = ((anomaly.value - anomaly.expected) / (anomaly.expected || 1) * 100).toFixed(1);
               const isOver    = anomaly.value > anomaly.expected;
               return (
@@ -320,8 +334,8 @@ export default function AnomalyPage() {
               </tr>
             </thead>
             <tbody>
-              {anomalies.map((a, i) => {
-                const cfg = severityConfig[a.severity];
+              {normalizedAnomalies.map((a, i) => {
+                const cfg = severityConfig[a.severity as keyof typeof severityConfig] ?? severityConfig.info;
                 const dev = ((a.value - a.expected) / (a.expected || 1) * 100).toFixed(1);
                 return (
                   <motion.tr

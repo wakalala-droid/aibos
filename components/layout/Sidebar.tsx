@@ -83,7 +83,7 @@ const ENGINE_COL = { 2: 'var(--e2)', 3: 'var(--e3)' } as const;
 // Component
 // ---------------------------------------------------------------------------
 
-export default function Sidebar() {
+export function Sidebar() {
   const pathname = usePathname();
   const { sidebarCollapsed, toggleSidebar, hasEngine2Data, hasEngine3Data, uploadedFile } = useStore();
   const collapsed = sidebarCollapsed;
@@ -291,3 +291,5 @@ export default function Sidebar() {
     </motion.aside>
   );
 }
+
+export default Sidebar;
