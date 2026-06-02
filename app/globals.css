@@ -1,0 +1,230 @@
+/* ==========================================================================
+   AI-BOS — Global Theme System
+   Dark mode (default) + Light Premium mode
+   Font stack: Outfit (display) + DM Mono (data/labels)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@300;400;500&display=swap');
+
+/* --------------------------------------------------------------------------
+   DARK MODE — Deep navy-black (existing, unchanged)
+   -------------------------------------------------------------------------- */
+:root,
+[data-theme="dark"] {
+  /* Backgrounds */
+  --bg-base:        #07090f;
+  --bg-surface:     rgba(9, 13, 30, 0.82);
+  --bg-surface-2:   rgba(9, 13, 30, 0.88);
+  --bg-hover:       rgba(99, 179, 237, 0.03);
+  --bg-active:      rgba(99, 179, 237, 0.06);
+
+  /* Borders */
+  --border-subtle:  rgba(99, 179, 237, 0.10);
+  --border-medium:  rgba(99, 179, 237, 0.18);
+  --border-strong:  rgba(99, 179, 237, 0.30);
+
+  /* Shimmer line (top edge accent) */
+  --shimmer:        linear-gradient(90deg, transparent, rgba(99,179,237,0.25), transparent);
+
+  /* Typography */
+  --text-primary:   #E2EEFF;
+  --text-secondary: #D4DDF0;
+  --text-muted:     #4a6285;
+  --text-faint:     #2D4A70;
+
+  /* Sidebar */
+  --sidebar-bg:     rgba(7, 9, 15, 0.97);
+  --sidebar-border: rgba(99, 179, 237, 0.07);
+
+  /* Scrollbar */
+  --scrollbar-bg:   rgba(99,179,237,0.06);
+  --scrollbar-thumb:rgba(99,179,237,0.18);
+
+  /* Shadow */
+  --shadow-card:    0 4px 32px rgba(0, 0, 0, 0.40);
+  --shadow-glow:    0 0 40px;
+
+  /* Engine accent colours — SAME in both modes */
+  --e1:   #00d4ff;
+  --e2:   #f97316;
+  --e3:   #10b981;
+  --good: #34D399;
+  --warn: #FBBF24;
+  --crit: #EF4444;
+  --info: #60A5FA;
+  --purple: #A78BFA;
+
+  /* Logo gradient */
+  --logo-grad: linear-gradient(135deg, #0097b2, #00d4ff);
+
+  /* Tooltip bg */
+  --tooltip-bg:     rgba(7, 10, 24, 0.97);
+  --tooltip-border: rgba(0, 212, 255, 0.15);
+
+  /* Table row hover */
+  --table-hover:    rgba(99,179,237,0.03);
+  --table-border:   rgba(99,179,237,0.05);
+  --table-head:     rgba(99,179,237,0.08);
+
+  /* Upload zone */
+  --upload-border:  rgba(99,179,237,0.18);
+  --upload-bg:      rgba(9,13,30,0.82);
+
+  /* Input */
+  --input-bg:       rgba(9,13,30,0.70);
+  --input-border:   rgba(99,179,237,0.15);
+
+  /* Backdrop filter */
+  --blur:           blur(20px);
+
+  /* Lock overlay */
+  --lock-overlay:   rgba(7, 10, 24, 0.78);
+}
+
+/* --------------------------------------------------------------------------
+   LIGHT PREMIUM MODE — warm cream-white, deep ink, Apple x Linear x Paper
+   -------------------------------------------------------------------------- */
+[data-theme="light"] {
+  /* Backgrounds */
+  --bg-base:        #F5F3EE;
+  --bg-surface:     rgba(255, 253, 248, 0.92);
+  --bg-surface-2:   rgba(255, 253, 248, 0.98);
+  --bg-hover:       rgba(15, 23, 42, 0.03);
+  --bg-active:      rgba(15, 23, 42, 0.05);
+
+  /* Borders */
+  --border-subtle:  rgba(15, 23, 42, 0.08);
+  --border-medium:  rgba(15, 23, 42, 0.14);
+  --border-strong:  rgba(15, 23, 42, 0.25);
+
+  /* Shimmer line */
+  --shimmer:        linear-gradient(90deg, transparent, rgba(15,23,42,0.10), transparent);
+
+  /* Typography */
+  --text-primary:   #0F172A;
+  --text-secondary: #1E293B;
+  --text-muted:     #64748B;
+  --text-faint:     #94A3B8;
+
+  /* Sidebar */
+  --sidebar-bg:     rgba(248, 246, 240, 0.98);
+  --sidebar-border: rgba(15, 23, 42, 0.08);
+
+  /* Scrollbar */
+  --scrollbar-bg:   rgba(15,23,42,0.04);
+  --scrollbar-thumb:rgba(15,23,42,0.14);
+
+  /* Shadow — soft paper elevation */
+  --shadow-card:    0 2px 16px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(15,23,42,0.05);
+  --shadow-glow:    0 0 24px;
+
+  /* Engine colours — slightly deeper for contrast on light bg */
+  --e1:   #0097b2;
+  --e2:   #ea6500;
+  --e3:   #059669;
+  --good: #059669;
+  --warn: #d97706;
+  --crit: #dc2626;
+  --info: #2563eb;
+  --purple: #7c3aed;
+
+  /* Logo gradient */
+  --logo-grad: linear-gradient(135deg, #0097b2, #00bcd4);
+
+  /* Tooltip */
+  --tooltip-bg:     rgba(255, 253, 248, 0.99);
+  --tooltip-border: rgba(15, 23, 42, 0.12);
+
+  /* Table */
+  --table-hover:    rgba(15,23,42,0.03);
+  --table-border:   rgba(15,23,42,0.06);
+  --table-head:     rgba(15,23,42,0.05);
+
+  /* Upload zone */
+  --upload-border:  rgba(15,23,42,0.14);
+  --upload-bg:      rgba(255,253,248,0.95);
+
+  /* Input */
+  --input-bg:       rgba(255,253,248,0.98);
+  --input-border:   rgba(15,23,42,0.14);
+
+  /* Backdrop filter */
+  --blur:           blur(20px);
+
+  /* Lock overlay */
+  --lock-overlay:   rgba(245, 243, 238, 0.82);
+}
+
+/* --------------------------------------------------------------------------
+   BASE RESET
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Outfit', system-ui, sans-serif;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.2s ease;
+}
+
+/* --------------------------------------------------------------------------
+   SCROLLBAR
+   -------------------------------------------------------------------------- */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: var(--scrollbar-bg); }
+::-webkit-scrollbar-thumb  {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+/* --------------------------------------------------------------------------
+   SELECTION
+   -------------------------------------------------------------------------- */
+::selection {
+  background: rgba(0, 212, 255, 0.18);
+  color: var(--text-primary);
+}
+
+/* --------------------------------------------------------------------------
+   TYPOGRAPHY HELPERS
+   -------------------------------------------------------------------------- */
+.font-display { font-family: 'Outfit', sans-serif; }
+.font-mono    { font-family: 'DM Mono', monospace; }
+
+/* --------------------------------------------------------------------------
+   TRANSITION HELPER — applied to all theme-aware elements
+   -------------------------------------------------------------------------- */
+.theme-transition {
+  transition:
+    background-color 0.25s ease,
+    border-color     0.25s ease,
+    color            0.2s ease,
+    box-shadow       0.25s ease;
+}
+
+/* --------------------------------------------------------------------------
+   LIGHT MODE — paper texture overlay (subtle grain)
+   -------------------------------------------------------------------------- */
+[data-theme="light"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px;
+}

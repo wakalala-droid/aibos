@@ -1,392 +1,297 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRef, useState, useCallback } from 'react';
 import { useStore } from '@/lib/store';
 import { uploadFile } from '@/lib/api';
-import { setCurrencyGlobal } from '@/lib/utils';
+import { tokens } from '@/lib/utils';
+import type { BusinessType } from '@/lib/api';
 
-function UploadIcon() {
-  return (
-    <svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-      <polyline points="17,8 12,3 7,8"/>
-      <line x1="12" y1="3" x2="12" y2="15"/>
-    </svg>
-  );
-}
-function CheckIcon() {
-  return (
-    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20,6 9,17 4,12"/>
-    </svg>
-  );
-}
-function ErrorIcon() {
-  return (
-    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" y1="8" x2="12" y2="12"/>
-      <line x1="12" y1="16" x2="12.01" y2="16"/>
-    </svg>
-  );
-}
+const BUSINESS_TYPES: Array<{ value: BusinessType; emoji: string; label: string; hint: string }> = [
+  { value: 'QSR',         emoji: '🍕', label: 'Restaurant / QSR', hint: 'Fast food, casual dining' },
+  { value: 'Retail',      emoji: '🛍️', label: 'Retail',           hint: 'Shops, supermarkets'     },
+  { value: 'Services',    emoji: '💼', label: 'Services',          hint: 'Professional services'   },
+  { value: 'Hospitality', emoji: '🏨', label: 'Hospitality',       hint: 'Hotels, lodges'          },
+];
 
-type UploadState = 'idle' | 'dragging' | 'uploading' | 'success' | 'error';
+type UploadStep = 'idle' | 'select-type' | 'uploading' | 'done' | 'error';
 
-interface FileUploadProps {
-  compact?: boolean;
-}
-
-export function FileUpload({ compact = false }: FileUploadProps) {
-  const [state, setState]       = useState<UploadState>('idle');
-  const [progress, setProgress] = useState(0);
-  const [filename, setFilename] = useState<string | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+export default function FileUpload() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [step, setStep]               = useState<UploadStep>('idle');
+  const [selectedType, setSelectedType] = useState<BusinessType>('QSR');
+  const [pendingFile, setPendingFile]   = useState<File | null>(null);
+  const [progress, setProgress]         = useState(0);
+  const [errorMsg, setErrorMsg]         = useState('');
+  const [dragOver, setDragOver]         = useState(false);
 
-  // Store actions — update live data after upload
-  const setUploadedFile = useStore(s => s.setUploadedFile);
-  const updateData      = useStore(s => s.updateData);
-  const setLoading      = useStore(s => s.setLoading);
-  const setCurrency     = useStore(s => s.setCurrency);
+  const { hydrateFromUpload, setCurrency, setBusinessType, setUploadedFile, setLoading } = useStore();
 
-  const ACCEPTED = ['.csv', '.xlsx', '.xls'];
+  const handleFilePicked = useCallback((file: File) => {
+    if (!file) return;
+    setPendingFile(file);
+    setStep('select-type');
+  }, []);
 
-  const validate = (file: File): string | null => {
-    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
-    if (!ACCEPTED.includes(ext)) return 'Unsupported type. Use CSV or Excel.';
-    if (file.size > 50 * 1024 * 1024) return 'File too large. Max 50MB.';
-    return null;
-  };
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFilePicked(file);
+  }, [handleFilePicked]);
 
-  const processFile = useCallback(async (file: File) => {
-    const err = validate(file);
-    if (err) { setState('error'); setErrorMsg(err); return; }
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFilePicked(file);
+    e.target.value = '';
+  }, [handleFilePicked]);
 
-    setFilename(file.name);
-    setState('uploading');
+  const handleUpload = useCallback(async () => {
+    if (!pendingFile) return;
+    setStep('uploading');
     setProgress(0);
+    setErrorMsg('');
     setLoading(true);
+    setBusinessType(selectedType);
 
-    // Animate progress bar while API call runs
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 85) { clearInterval(progressInterval); return prev; }
-        return prev + Math.random() * 12;
-      });
-    }, 300);
+    const ticker = setInterval(() => setProgress(p => Math.min(p + 6, 88)), 280);
 
     try {
-      // ── Real API call to FastAPI /upload ──────────────────────────
-      const result = await uploadFile(file, {
-        current_cash:   50000,
-        months_ahead:   3,
-        z_threshold:    2.0,
-        fixed_cost_pct: 0.40,
-      });
-
-      clearInterval(progressInterval);
+      const result = await uploadFile(pendingFile, { businessType: selectedType });
+      clearInterval(ticker);
       setProgress(100);
-
-      if (!result.ok) throw new Error('Analysis failed');
-
-      // ── Map API response to store shape ───────────────────────────
-      const monthly = (result.records as any[]).map((r: any) => ({
-        month:      r.month,
-        revenue:    Number(r.revenue)    || 0,
-        costs:      Number(r.costs)      || 0,
-        profit:     Number(r.profit)     || 0,
-        margin:     Number(r.margin_pct) || 0,
-      }));
-
-      const pnl = result.pnl as any;
-
-      const kpi = {
-        totalRevenue:    Number(pnl.total_revenue)  || 0,
-        totalCosts:      Number(pnl.total_costs)    || 0,
-        netProfit:       Number(pnl.total_profit)   || 0,
-        avgMargin:       Number(pnl.avg_margin)     || 0,
-        varianceAlerts:  (result.alerts ?? []).length,
-        cashRunway:      Number(result.runway_months) || 0,
-        revenueDelta:    Number(pnl.revenue_delta)  || 0,
-        costsDelta:      Number(pnl.costs_delta)    || 0,
-        profitDelta:     Number(pnl.profit_delta)   || 0,
-        marginDelta:     Number(pnl.margin_delta)   || 0,
-      };
-
-      const score  = result.health_score ?? 0;
-      const label  = result.health_label ?? 'Healthy';
-      const colour = score >= 80 ? '#10b981' : score >= 60 ? '#3b82f6' : score >= 40 ? '#f59e0b' : '#ef4444';
-
-      // Best/worst month from monthly data
-      const sortedByProfit = [...monthly].sort((a, b) => b.profit - a.profit);
-      const bestMonth  = sortedByProfit[0];
-      const worstMonth = sortedByProfit[sortedByProfit.length - 1];
-
-      const health = {
-        score,
-        label:      label as any,
-        colour,
-        bestMonth:  bestMonth?.month  ?? '',
-        bestValue:  bestMonth?.profit ?? 0,
-        worstMonth: worstMonth?.month  ?? '',
-        worstValue: worstMonth?.profit ?? 0,
-      };
-
-      // Map alerts
-      const alerts = (result.alerts ?? []).map((a: any, i: number) => ({
-        id:          String(i),
-        severity:    (a.change_pct > 30 ? 'critical' : a.change_pct > 15 ? 'high' : 'medium') as any,
-        title:       a.type ?? (a.direction === 'drop' ? 'Revenue drop' : 'Cost spike'),
-        description: `${a.month}: ${Math.abs(a.change_pct).toFixed(1)}% ${a.direction}`,
-        month:       a.month,
-      }));
-
-      // Map anomalies
-      const anomalies = (result.anomalies ?? []).map((a: any, i: number) => ({
-        id:       String(i),
-        month:    a.month,
-        field:    a.metric,
-        value:    a.value     ?? 0,
-        expected: a.expected  ?? 0,
-        zScore:   a.z_score   ?? 0,
-        severity: a.severity  ?? 'medium',
-      }));
-
-      // Map forecast
-      const forecastRaw = (result.forecast as any)?.forecast ?? [];
-      const forecastData = [
-        ...monthly.map(m => ({ month: m.month, historical: m.revenue })),
-        ...forecastRaw.map((f: any) => ({
-          month:    f.month,
-          forecast: f.predicted,
-          lower:    f.low,
-          upper:    f.high,
-        })),
-      ];
-
-      // Map breakeven
-      const be = result.breakeven as any;
-      const breakeven = be ? {
-        breakevenRevenue:      be.breakeven_revenue         ?? 0,
-        currentRevenue:        be.current_avg_revenue       ?? 0,
-        fixedCosts:            be.fixed_costs               ?? 0,
-        variableCosts:         be.variable_costs            ?? 0,
-        contributionMargin:    be.contribution_margin_ratio ? be.contribution_margin_ratio * 100 : 0,
-        status:               (be.margin_of_safety > 0 ? 'above' : 'below') as any,
-        gap:                   be.margin_of_safety          ?? 0,
-      } : undefined;
-
-      // Map cashflow — API now enriches with inflow/outflow/month
-      const cfProjections = (result.cashflow ?? []).map((c: any) => ({
-        month:   c.month ?? `M+${c.month_ahead ?? 1}`,
-        cash:    Number(c.projected_cash) || 0,
-        inflow:  Number(c.inflow)  || 0,
-        outflow: Number(c.outflow) || 0,
-      }));
-
-      const avgBurn = monthly.length > 0
-        ? monthly.slice(-3).reduce((s, m) => s + (m.costs || 0), 0) / Math.min(3, monthly.length)
-        : 0;
-
-      const cashflow = {
-        runway:       Number(result.runway_months) || 0,
-        currentCash:  50000,
-        monthlyBurn:  avgBurn,
-        projections:  cfProjections,
-      };
-
-      // ── Push everything to Zustand ────────────────────────────────
-      updateData({
-        monthly,
-        kpi,
-        health,
-        alerts,
-        anomalies,
-        forecast:  forecastData,
-        ...(breakeven ? { breakeven } : {}),
-        cashflow,
-      });
-
-      // ── Sync currency symbol (Zustand → reactive re-render + module global) ──
-      const apiCurrency = String(result.currency        ?? 'USD');
-      const apiSymbol   = String(result.currency_symbol ?? '$');
-      setCurrency(apiCurrency, apiSymbol);
-      setCurrencyGlobal(apiSymbol);
-
-      setUploadedFile(file.name);
-      setState('success');
-
-    } catch (e: any) {
-      clearInterval(progressInterval);
-      console.error('[FileUpload] API error:', e);
-
-      // Friendly error messages
-      const msg = e.message ?? '';
-      if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed to fetch')) {
-        setErrorMsg('Cannot reach the API server. Check NEXT_PUBLIC_API_URL is set correctly.');
-      } else if (msg.includes('422') || msg.includes('Missing columns')) {
-        setErrorMsg('Wrong file format. Ensure your file has: month, revenue, costs columns.');
-      } else {
-        setErrorMsg(msg || 'Analysis failed. Please try again.');
-      }
-      setState('error');
+      hydrateFromUpload(result);
+      setCurrency(result.currency || 'ZMW', result.currency_symbol || 'K');
+      setUploadedFile(pendingFile.name);
+      setStep('done');
+      setTimeout(() => setStep('idle'), 2800);
+    } catch (err) {
+      clearInterval(ticker);
+      setErrorMsg(err instanceof Error ? err.message : 'Upload failed');
+      setStep('error');
     } finally {
       setLoading(false);
     }
-  }, [setUploadedFile, updateData, setLoading]);
+  }, [pendingFile, selectedType, hydrateFromUpload, setCurrency, setBusinessType, setUploadedFile, setLoading]);
 
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setState('idle');
-    const file = e.dataTransfer.files[0];
-    if (file) processFile(file);
-  }, [processFile]);
-
-  const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) processFile(file);
-  }, [processFile]);
-
-  const reset = () => {
-    setState('idle');
-    setProgress(0);
-    setFilename(null);
-    setErrorMsg(null);
-    setUploadedFile(null);
-    if (inputRef.current) inputRef.current.value = '';
-  };
-
-  const isDragging  = state === 'dragging';
-  const isUploading = state === 'uploading';
-  const isSuccess   = state === 'success';
-  const isError     = state === 'error';
-
-  const borderColour = isDragging ? 'rgba(96,165,250,0.7)'
-    : isSuccess ? 'rgba(16,185,129,0.5)'
-    : isError   ? 'rgba(239,68,68,0.5)'
-    : 'rgba(99,179,237,0.18)';
+  const handleBack  = () => { setStep('idle'); setPendingFile(null); };
+  const handleRetry = () => { setStep('idle'); setErrorMsg(''); setPendingFile(null); };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      style={{
-        background:     'rgba(9,13,30,0.72)',
-        backdropFilter: 'blur(16px)',
-        border:         '1px solid rgba(99,179,237,0.12)',
-        borderRadius:   16,
-        padding:        compact ? 16 : 24,
-        boxShadow:      '0 4px 24px rgba(0,0,0,0.3)',
-        position:       'relative',
-        overflow:       'hidden',
-      }}
-    >
-      <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: 'linear-gradient(90deg,transparent,rgba(99,179,237,0.3),transparent)' }} />
-
-      {!compact && (
-        <div style={{ marginBottom: 16 }}>
-          <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: 0 }}>Upload Financial Data</h3>
-          <p style={{ fontSize: '0.68rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '3px 0 0' }}>
-            CSV or Excel · month, revenue, costs columns required
-          </p>
-        </div>
-      )}
-
+    <div style={{ position: 'relative', width: '100%' }}>
       <AnimatePresence mode="wait">
 
-        {/* ── Idle / Drag zone ──────────────────────────────────── */}
-        {!isUploading && !isSuccess && !isError && (
-          <motion.div
-            key="drop"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onDragOver={e => { e.preventDefault(); setState('dragging'); }}
-            onDragLeave={() => setState('idle')}
-            onDrop={onDrop}
-            onClick={() => inputRef.current?.click()}
+        {/* ── IDLE ─────────────────────────────────────────────────────── */}
+        {step === 'idle' && (
+          <motion.div key="idle"
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}
+          >
+            <input ref={inputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleInputChange} style={{ display: 'none' }} />
+            <div
+              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => inputRef.current?.click()}
+              style={{
+                border: `2px dashed ${dragOver ? tokens.e1 : tokens.border}`,
+                borderRadius: 16, padding: '28px 24px', cursor: 'pointer',
+                background: dragOver
+                  ? `color-mix(in srgb, ${tokens.e1} 5%, var(--bg-surface))`
+                  : tokens.bgSurface,
+                backdropFilter: tokens.blur,
+                transition: 'all 0.2s ease', textAlign: 'center',
+                position: 'relative', overflow: 'hidden',
+              }}
+            >
+              <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: tokens.shimmer }} />
+              <div style={{ marginBottom: 12 }}>
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{ margin: '0 auto', display: 'block' }}>
+                  <circle cx="18" cy="18" r="18" fill={`color-mix(in srgb, ${tokens.e1} 8%, transparent)`} />
+                  <path d="M18 10v12M13 15l5-5 5 5" stroke="var(--e1)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M11 24h14" stroke="var(--e1)" strokeWidth="1.5" strokeLinecap="round" opacity=".5" />
+                </svg>
+              </div>
+              <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: tokens.textPrimary, margin: '0 0 4px' }}>
+                Drop your data file here
+              </p>
+              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: tokens.textMuted, margin: 0, letterSpacing: '0.04em' }}>
+                P&amp;L CSV · Transaction Excel · POS Export · XLS/XLSX
+              </p>
+              <div style={{
+                marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: `color-mix(in srgb, ${tokens.e1} 10%, transparent)`,
+                border: `1px solid color-mix(in srgb, ${tokens.e1} 20%, transparent)`,
+                borderRadius: 8, padding: '7px 16px',
+              }}>
+                <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.78rem', color: tokens.e1 }}>Browse files</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── SELECT TYPE ───────────────────────────────────────────────── */}
+        {step === 'select-type' && (
+          <motion.div key="select-type"
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}
             style={{
-              border:       `2px dashed ${borderColour}`,
-              borderRadius: 12,
-              padding:      compact ? '20px 16px' : '36px 24px',
-              background:   isDragging ? 'rgba(59,130,246,0.08)' : 'rgba(9,13,30,0.4)',
-              textAlign:    'center',
-              cursor:       'pointer',
-              transition:   'all 0.2s ease',
+              background: tokens.bgSurface2, backdropFilter: tokens.blur,
+              border: `1px solid ${tokens.border}`, borderRadius: 16,
+              padding: '22px 20px', position: 'relative', overflow: 'hidden',
+              boxShadow: tokens.shadow,
             }}
           >
-            <input ref={inputRef} type="file" accept=".csv,.xlsx,.xls" onChange={onFileChange} style={{ display: 'none' }} />
-            <div style={{ color: isDragging ? '#60a5fa' : '#4a6285', marginBottom: 10, display: 'inline-block' }}>
-              <UploadIcon />
+            <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: tokens.shimmer }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M3 2h6l3 3v8H3V2z" stroke={tokens.info} strokeWidth="1.2" strokeLinejoin="round" />
+              </svg>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: tokens.textMuted, letterSpacing: '0.04em' }}>
+                {pendingFile?.name}
+              </span>
             </div>
-            <p style={{ fontSize: compact ? '0.78rem' : '0.88rem', fontWeight: 500, color: isDragging ? '#60a5fa' : '#d4ddf0', fontFamily: 'Outfit, sans-serif', margin: '0 0 4px' }}>
-              {isDragging ? 'Drop to analyse' : 'Drop file or click to browse'}
+            <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', fontWeight: 700, color: tokens.textPrimary, margin: '0 0 4px' }}>
+              What type of business is this?
             </p>
-            <p style={{ fontSize: '0.65rem', color: '#2d4a70', fontFamily: 'DM Mono, monospace', margin: 0 }}>
-              CSV · XLSX · XLS · max 50MB
+            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: tokens.textMuted, letterSpacing: '0.04em', margin: '0 0 16px' }}>
+              Sets the benchmark config for Engine 3
             </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 18 }}>
+              {BUSINESS_TYPES.map(bt => {
+                const sel = selectedType === bt.value;
+                return (
+                  <button key={bt.value} onClick={() => setSelectedType(bt.value)}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                      gap: 2, padding: '11px 13px',
+                      background: sel
+                        ? `color-mix(in srgb, ${tokens.e1} 10%, var(--bg-surface))`
+                        : tokens.bgSurface,
+                      border: `1px solid ${sel ? tokens.e1 : tokens.border}`,
+                      borderRadius: 10, cursor: 'pointer', transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>{bt.emoji}</span>
+                    <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.75rem', fontWeight: 600, color: sel ? tokens.e1 : tokens.textSecondary }}>
+                      {bt.label}
+                    </span>
+                    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: tokens.textMuted }}>{bt.hint}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={handleBack} style={{
+                flex: '0 0 auto', padding: '9px 14px', background: 'transparent',
+                border: `1px solid ${tokens.border}`, borderRadius: 9, cursor: 'pointer',
+                fontFamily: 'Outfit, sans-serif', fontSize: '0.78rem', color: tokens.textMuted,
+                transition: 'all 0.15s ease',
+              }}>← Back</button>
+              <button onClick={handleUpload} style={{
+                flex: 1, padding: '9px 14px',
+                background: 'var(--logo-grad)', border: 'none', borderRadius: 9, cursor: 'pointer',
+                fontFamily: 'Outfit, sans-serif', fontSize: '0.82rem', fontWeight: 700,
+                color: '#fff',
+                boxShadow: `0 4px 20px color-mix(in srgb, ${tokens.e1} 30%, transparent)`,
+              }}>Analyse →</button>
+            </div>
           </motion.div>
         )}
 
-        {/* ── Uploading ─────────────────────────────────────────── */}
-        {isUploading && (
-          <motion.div key="uploading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ padding: '28px 0', textAlign: 'center' }}>
-            <p style={{ fontSize: '0.84rem', fontWeight: 500, color: '#d4ddf0', fontFamily: 'Outfit, sans-serif', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 260, marginInline: 'auto' }}>
-              {filename}
-            </p>
-            <p style={{ fontSize: '0.65rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 20px' }}>
-              Running financial analysis…
-            </p>
-            <div style={{ background: 'rgba(99,179,237,0.1)', borderRadius: 999, height: 6, overflow: 'hidden', maxWidth: 280, marginInline: 'auto' }}>
+        {/* ── UPLOADING ─────────────────────────────────────────────────── */}
+        {step === 'uploading' && (
+          <motion.div key="uploading"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              background: tokens.bgSurface2, backdropFilter: tokens.blur,
+              border: `1px solid ${tokens.border}`, borderRadius: 16,
+              padding: '28px 24px', textAlign: 'center',
+              position: 'relative', overflow: 'hidden', boxShadow: tokens.shadow,
+            }}
+          >
+            <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: tokens.shimmer }} />
+            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}>
               <motion.div
-                animate={{ width: `${Math.min(progress, 100)}%` }}
-                transition={{ duration: 0.4, ease: 'easeOut' }}
-                style={{ height: '100%', borderRadius: 999, background: 'linear-gradient(90deg,#60a5fa,#06b6d4)' }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+                style={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  border: `2px solid color-mix(in srgb, ${tokens.e1} 15%, transparent)`,
+                  borderTop: `2px solid ${tokens.e1}`,
+                }}
               />
             </div>
-            <p style={{ fontSize: '0.62rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', marginTop: 8 }}>
-              {Math.round(Math.min(progress, 100))}%
+            <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', fontWeight: 600, color: tokens.textPrimary, margin: '0 0 6px' }}>
+              Analysing your data…
+            </p>
+            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: tokens.textMuted, margin: '0 0 16px', letterSpacing: '0.04em' }}>
+              Running {selectedType} intelligence pipeline
+            </p>
+            <div style={{ height: 3, borderRadius: 3, background: tokens.tableHead, overflow: 'hidden' }}>
+              <motion.div
+                style={{ height: '100%', background: 'var(--logo-grad)', borderRadius: 3 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+              />
+            </div>
+            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: tokens.textFaint, margin: '8px 0 0', letterSpacing: '0.04em' }}>
+              {progress}% complete
             </p>
           </motion.div>
         )}
 
-        {/* ── Success ───────────────────────────────────────────── */}
-        {isSuccess && (
-          <motion.div key="success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ padding: '24px 0', textAlign: 'center' }}>
-            <motion.div
-              initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(16,185,129,0.15)', border: '2px solid rgba(16,185,129,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginInline: 'auto', marginBottom: 12, color: '#10b981' }}
-            >
-              <CheckIcon />
-            </motion.div>
-            <p style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 2px' }}>
-              Analysis Complete
+        {/* ── DONE ──────────────────────────────────────────────────────── */}
+        {step === 'done' && (
+          <motion.div key="done"
+            initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }} transition={{ duration: 0.25, type: 'spring', stiffness: 260, damping: 20 }}
+            style={{
+              background: tokens.bgSurface2, backdropFilter: tokens.blur,
+              border: `1px solid color-mix(in srgb, ${tokens.good} 25%, transparent)`,
+              borderRadius: 16, padding: '24px', textAlign: 'center',
+              position: 'relative', overflow: 'hidden', boxShadow: tokens.shadow,
+            }}
+          >
+            <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: `linear-gradient(90deg, transparent, color-mix(in srgb, ${tokens.good} 40%, transparent), transparent)` }} />
+            <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>✓</div>
+            <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: tokens.good, margin: '0 0 4px' }}>Analysis complete</p>
+            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: tokens.textMuted, margin: 0, letterSpacing: '0.04em' }}>
+              {pendingFile?.name} → {selectedType} intelligence
             </p>
-            <p style={{ fontSize: '0.68rem', color: '#10b981', fontFamily: 'DM Mono, monospace', margin: '0 0 4px' }}>{filename}</p>
-            <p style={{ fontSize: '0.65rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 16px' }}>
-              Dashboard updated with your data
-            </p>
-            <button onClick={reset} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: '#60a5fa', background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.25)', borderRadius: 7, padding: '6px 16px', cursor: 'pointer' }}>
-              Upload new file
-            </button>
           </motion.div>
         )}
 
-        {/* ── Error ─────────────────────────────────────────────── */}
-        {isError && (
-          <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '24px 0', textAlign: 'center' }}>
-            <div style={{ color: '#ef4444', marginBottom: 10, display: 'inline-block' }}><ErrorIcon /></div>
-            <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#ef4444', fontFamily: 'Outfit, sans-serif', margin: '0 0 6px' }}>Upload Failed</p>
-            <p style={{ fontSize: '0.7rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 16px', maxWidth: 260, marginInline: 'auto', lineHeight: 1.5 }}>
+        {/* ── ERROR ─────────────────────────────────────────────────────── */}
+        {step === 'error' && (
+          <motion.div key="error"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              background: tokens.bgSurface2, backdropFilter: tokens.blur,
+              border: `1px solid color-mix(in srgb, ${tokens.crit} 25%, transparent)`,
+              borderRadius: 16, padding: '24px', textAlign: 'center',
+              position: 'relative', overflow: 'hidden', boxShadow: tokens.shadow,
+            }}
+          >
+            <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>⚠</div>
+            <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', fontWeight: 700, color: tokens.crit, margin: '0 0 6px' }}>Analysis failed</p>
+            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: tokens.textMuted, margin: '0 0 16px', maxWidth: 260, marginLeft: 'auto', marginRight: 'auto' }}>
               {errorMsg}
             </p>
-            <button onClick={reset} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: '#60a5fa', background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.25)', borderRadius: 7, padding: '6px 16px', cursor: 'pointer' }}>
-              Try again
-            </button>
+            <button onClick={handleRetry} style={{
+              padding: '8px 20px',
+              background: `color-mix(in srgb, ${tokens.crit} 12%, transparent)`,
+              border: `1px solid color-mix(in srgb, ${tokens.crit} 25%, transparent)`,
+              borderRadius: 8, cursor: 'pointer',
+              fontFamily: 'Outfit, sans-serif', fontSize: '0.78rem', color: tokens.crit,
+              transition: 'all 0.15s ease',
+            }}>Try again</button>
           </motion.div>
         )}
+
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

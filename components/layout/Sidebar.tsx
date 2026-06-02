@@ -1,203 +1,139 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
+import ThemeToggle from './ThemeToggle';
 
-// ─── Icons (defined FIRST so NAV_ITEMS can reference them) ────────
+// ---------------------------------------------------------------------------
+// Nav types
+// ---------------------------------------------------------------------------
 
-function GridIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-      <rect x="14" y="3" width="7" height="7" rx="1.5"/>
-      <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-      <rect x="14" y="14" width="7" height="7" rx="1.5"/>
-    </svg>
-  );
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  engine?: 2 | 3;
 }
 
-function WaveIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="2,12 6,6 10,14 14,8 18,16 22,12"/>
-    </svg>
-  );
+interface EngineDivider {
+  type: 'divider';
+  engine: 2 | 3;
+  label: string;
+  colour: string;
 }
 
-function AlertIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-      <line x1="12" y1="9" x2="12" y2="13"/>
-      <line x1="12" y1="17" x2="12.01" y2="17"/>
-    </svg>
-  );
+type NavEntry = NavItem | EngineDivider;
+
+// ---------------------------------------------------------------------------
+// Inline SVG icons
+// ---------------------------------------------------------------------------
+
+const I = {
+  Overview:   <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" />,
+  Cash:       <><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H9m0 0h4.5a1.5 1.5 0 010 3H9" stroke="currentColor" strokeWidth="1.3" fill="none" strokeLinecap="round" /></>,
+  Variance:   <><path d="M3 18l7-7 4 4 7-8" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /><circle cx="21" cy="7" r="2" fill="currentColor" /></>,
+  Forecast:   <><path d="M2 12l5-5 4 4 5-6 4 3" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /><path d="M20 20H4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity=".5" /></>,
+  Anomaly:    <><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M12 8v5M12 16v.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></>,
+  Breakeven:  <><path d="M4 20L20 4M4 4h4v4M16 16h4v4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" /></>,
+  Brief:      <><path d="M4 4h16v16H4z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" /><path d="M8 9h8M8 13h5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /></>,
+  Customers:  <><circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M3 20c0-3.314 2.686-6 6-6h0c3.314 0 6 2.686 6 6" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" /><circle cx="17" cy="9" r="2" stroke="currentColor" strokeWidth="1.3" fill="none" /><path d="M20 20c0-2.21-1.343-4-3-4" stroke="currentColor" strokeWidth="1.3" fill="none" strokeLinecap="round" /></>,
+  Churn:      <><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></>,
+  Products:   <><rect x="3" y="3" width="7" height="7" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" /><rect x="14" y="3" width="7" height="7" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" /><rect x="3" y="14" width="7" height="7" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" /><rect x="14" y="14" width="7" height="7" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" /></>,
+  Market:     <><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" stroke="currentColor" strokeWidth="1.3" fill="none" /></>,
+  POS:        <><rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M2 10h20" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /><circle cx="7" cy="15" r="1" fill="currentColor" /><circle cx="12" cy="15" r="1" fill="currentColor" /></>,
+  Benchmarks: <><path d="M2 20h20M5 20V14M9 20V8M13 20V11M17 20V5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" /></>,
+  OpsBrief:   <><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></>,
+  Lock:       <><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.4" fill="none" /><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" /></>,
+};
+
+function Icon({ d }: { d: React.ReactNode }) {
+  return <svg width="16" height="16" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>{d}</svg>;
 }
 
-function TrendIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/>
-      <polyline points="17,6 23,6 23,12"/>
-    </svg>
-  );
-}
+// ---------------------------------------------------------------------------
+// Nav structure
+// ---------------------------------------------------------------------------
 
-function ScanIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8"/>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      <line x1="11" y1="8" x2="11" y2="14"/>
-      <line x1="8" y1="11" x2="14" y2="11"/>
-    </svg>
-  );
-}
+const NAV: NavEntry[] = [
+  { href: '/dashboard',           label: 'Overview',       icon: I.Overview   },
+  { href: '/dashboard/cash',      label: 'Cash Intel',     icon: I.Cash       },
+  { href: '/dashboard/variance',  label: 'Variance',       icon: I.Variance   },
+  { href: '/dashboard/forecast',  label: 'Forecast',       icon: I.Forecast   },
+  { href: '/dashboard/anomaly',   label: 'Anomaly Intel',  icon: I.Anomaly    },
+  { href: '/dashboard/breakeven', label: 'Breakeven',      icon: I.Breakeven  },
+  { href: '/dashboard/brief',     label: 'Strategic Brief',icon: I.Brief      },
 
-function TargetIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <circle cx="12" cy="12" r="6"/>
-      <circle cx="12" cy="12" r="2"/>
-    </svg>
-  );
-}
+  { type: 'divider', engine: 2, label: '⚡ ENGINE 2', colour: 'var(--e2)' },
+  { href: '/dashboard/customers', label: 'Customer Intel', icon: I.Customers, engine: 2 },
+  { href: '/dashboard/churn',     label: 'Churn Risk',     icon: I.Churn,     engine: 2 },
+  { href: '/dashboard/products',  label: 'Product Matrix', icon: I.Products,  engine: 2 },
+  { href: '/dashboard/market',    label: 'Market Intel',   icon: I.Market,    engine: 2 },
 
-function DocumentIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-      <polyline points="14,2 14,8 20,8"/>
-      <line x1="16" y1="13" x2="8" y2="13"/>
-      <line x1="16" y1="17" x2="8" y2="17"/>
-      <line x1="10" y1="9" x2="8" y2="9"/>
-    </svg>
-  );
-}
-
-function ChevronLeftIcon() {
-  return (
-    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="15,18 9,12 15,6"/>
-    </svg>
-  );
-}
-
-function UploadIcon() {
-  return (
-    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-      <polyline points="17,8 12,3 7,8"/>
-      <line x1="12" y1="3" x2="12" y2="15"/>
-    </svg>
-  );
-}
-
-function BotIcon() {
-  return (
-    <svg width={8} height={8} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="10" rx="2"/>
-      <path d="M12 11V6"/>
-      <circle cx="12" cy="4" r="2"/>
-    </svg>
-  );
-}
-
-function LogoMark() {
-  return (
-    <svg width={28} height={28} viewBox="0 0 48 48" fill="none">
-      <defs>
-        <linearGradient id="slg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#60a5fa"/>
-          <stop offset="100%" stopColor="#06b6d4"/>
-        </linearGradient>
-      </defs>
-      <circle cx="24" cy="24" r="22" stroke="url(#slg)" strokeWidth="1.5" opacity="0.35"/>
-      <path d="M24 8 L37.5 15.5 L37.5 30.5 L24 38 L10.5 30.5 L10.5 15.5 Z" stroke="url(#slg)" strokeWidth="1.5" fill="rgba(96,165,250,0.06)"/>
-      <circle cx="24" cy="24" r="3" fill="url(#slg)"/>
-      <circle cx="16" cy="18" r="2" fill="url(#slg)" opacity="0.7"/>
-      <circle cx="32" cy="18" r="2" fill="url(#slg)" opacity="0.7"/>
-      <circle cx="16" cy="30" r="2" fill="url(#slg)" opacity="0.7"/>
-      <circle cx="32" cy="30" r="2" fill="url(#slg)" opacity="0.7"/>
-      <line x1="24" y1="24" x2="16" y2="18" stroke="url(#slg)" strokeWidth="1" opacity="0.45"/>
-      <line x1="24" y1="24" x2="32" y2="18" stroke="url(#slg)" strokeWidth="1" opacity="0.45"/>
-      <line x1="24" y1="24" x2="16" y2="30" stroke="url(#slg)" strokeWidth="1" opacity="0.45"/>
-      <line x1="24" y1="24" x2="32" y2="30" stroke="url(#slg)" strokeWidth="1" opacity="0.45"/>
-    </svg>
-  );
-}
-
-// ─── Nav items (defined AFTER icons) ──────────────────────────────
-
-const NAV_ITEMS = [
-  { href: '/dashboard',           Icon: GridIcon,     label: 'Overview'        },
-  { href: '/dashboard/cash',      Icon: WaveIcon,     label: 'Cash Intel'      },
-  { href: '/dashboard/variance',  Icon: AlertIcon,    label: 'Variance'        },
-  { href: '/dashboard/forecast',  Icon: TrendIcon,    label: 'Forecast'        },
-  { href: '/dashboard/anomaly',   Icon: ScanIcon,     label: 'Anomaly Intel'   },
-  { href: '/dashboard/breakeven', Icon: TargetIcon,   label: 'Breakeven'       },
-  { href: '/dashboard/brief',     Icon: DocumentIcon, label: 'Strategic Brief' },
+  { type: 'divider', engine: 3, label: '⚡ ENGINE 3', colour: 'var(--e3)' },
+  { href: '/dashboard/pos',        label: 'POS Intelligence', icon: I.POS,        engine: 3 },
+  { href: '/dashboard/benchmarks', label: 'Benchmarks',       icon: I.Benchmarks, engine: 3 },
+  { href: '/dashboard/ops-brief',  label: 'Ops Brief',        icon: I.OpsBrief,   engine: 3 },
 ];
 
-// ─── Sidebar ───────────────────────────────────────────────────────
+const ENGINE_COL = { 2: 'var(--e2)', 3: 'var(--e3)' } as const;
 
-export function Sidebar() {
-  const pathname     = usePathname();
-  const collapsed    = useStore((s) => s.sidebarCollapsed);
-  const toggle       = useStore((s) => s.toggleSidebar);
-  const uploadedFile = useStore((s) => s.uploadedFile);
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
-  const sidebarWidth = collapsed ? 64 : 280;
+export default function Sidebar() {
+  const pathname = usePathname();
+  const { sidebarCollapsed, toggleSidebar, hasEngine2Data, hasEngine3Data, uploadedFile } = useStore();
+  const collapsed = sidebarCollapsed;
 
   return (
-    <aside
+    <motion.aside
+      initial={false}
+      animate={{ width: collapsed ? 56 : 210 }}
+      transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
       style={{
-        width:       sidebarWidth,
-        minWidth:    sidebarWidth,
-        height:      '100%',
-        display:     'flex',
-        flexDirection: 'column',
-        flexShrink:  0,
-        overflow:    'hidden',
-        background:  '#090d1e',
-        borderRight: '1px solid rgba(99,179,237,0.1)',
-        boxShadow:   '1px 0 0 rgba(99,179,237,0.06)',
-        zIndex:      40,
-        transition:  'width 0.3s ease, min-width 0.3s ease',
+        position: 'fixed', top: 0, left: 0, bottom: 0,
+        background: 'var(--sidebar-bg)',
+        borderRight: '1px solid var(--sidebar-border)',
+        display: 'flex', flexDirection: 'column',
+        zIndex: 50, overflow: 'hidden',
+        backdropFilter: 'var(--blur)',
+        transition: 'background 0.25s ease, border-color 0.25s ease',
       }}
     >
-      {/* Logo */}
-      <div style={{
-        height:       64,
-        display:      'flex',
-        alignItems:   'center',
-        gap:          12,
-        padding:      collapsed ? '0 18px' : '0 20px',
-        borderBottom: '1px solid rgba(99,179,237,0.08)',
-        flexShrink:   0,
-      }}>
-        <div style={{ flexShrink: 0 }}>
-          <LogoMark />
+      {/* ── Logo / collapse ─────────────────────────────────────────────── */}
+      <div
+        onClick={toggleSidebar}
+        style={{
+          height: 56, display: 'flex', alignItems: 'center',
+          padding: collapsed ? '0 15px' : '0 16px 0 18px',
+          borderBottom: '1px solid var(--sidebar-border)',
+          gap: 10, flexShrink: 0, cursor: 'pointer',
+          transition: 'border-color 0.25s ease',
+        }}
+      >
+        <div style={{
+          width: 26, height: 26, borderRadius: 7, flexShrink: 0,
+          background: 'var(--logo-grad)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.65rem', fontWeight: 800, color: '#fff' }}>
+            AI
+          </span>
         </div>
         <AnimatePresence>
           {!collapsed && (
             <motion.span
-              initial={{ opacity: 0, x: -8 }}
+              initial={{ opacity: 0, x: -6 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, x: -6 }}
+              transition={{ duration: 0.18 }}
               style={{
-                fontFamily:    'Outfit, sans-serif',
-                fontWeight:    800,
-                fontSize:      '1.125rem',
-                letterSpacing: '-0.03em',
-                whiteSpace:    'nowrap',
-                background:    'linear-gradient(90deg, #60a5fa, #06b6d4)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                fontFamily: 'Outfit, sans-serif', fontSize: '0.95rem', fontWeight: 800,
+                color: 'var(--text-primary)', letterSpacing: '-0.02em', whiteSpace: 'nowrap',
+                transition: 'color 0.2s ease',
               }}
             >
               AI-BOS
@@ -206,135 +142,152 @@ export function Sidebar() {
         </AnimatePresence>
       </div>
 
-      {/* Nav */}
-      <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '12px 0' }}>
-        {NAV_ITEMS.map(({ href, Icon, label }, i) => {
-          const isActive = pathname === href;
-          return (
-            <motion.div
-              key={href}
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.04, duration: 0.3 }}
-            >
-              <Link
-                href={href}
-                title={collapsed ? label : undefined}
-                style={{
-                  display:        'flex',
-                  alignItems:     'center',
-                  gap:            12,
-                  padding:        collapsed ? '10px 18px' : '10px 16px',
-                  margin:         '1px 8px',
-                  borderRadius:   10,
-                  position:       'relative',
-                  color:          isActive ? '#e2eeff' : '#4a6285',
-                  background:     isActive ? 'rgba(59,130,246,0.12)' : 'transparent',
-                  textDecoration: 'none',
-                  overflow:       'hidden',
-                  whiteSpace:     'nowrap',
-                  transition:     'color 0.18s, background 0.18s',
-                }}
-              >
-                {isActive && (
+      {/* ── Nav ─────────────────────────────────────────────────────────── */}
+      <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingTop: 6, paddingBottom: 8 }}>
+        {NAV.map((entry, i) => {
+
+          // Divider
+          if ('type' in entry && entry.type === 'divider') {
+            return (
+              <AnimatePresence key={`d-${i}`}>
+                {!collapsed && (
                   <motion.div
-                    layoutId="active-pill"
-                    style={{
-                      position:     'absolute',
-                      left:         0,
-                      top:          4,
-                      bottom:       4,
-                      width:        3,
-                      borderRadius: 2,
-                      background:   'linear-gradient(180deg,#60a5fa,#06b6d4)',
-                    }}
-                  />
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ padding: '10px 16px 5px', display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}
+                  >
+                    <div style={{ flex: 1, height: 1, background: `color-mix(in srgb, ${entry.colour} 25%, transparent)` }} />
+                    <span style={{
+                      fontFamily: 'DM Mono, monospace', fontSize: '0.57rem',
+                      color: entry.colour, textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap',
+                    }}>
+                      {entry.label}
+                    </span>
+                    <div style={{ flex: 1, height: 1, background: `color-mix(in srgb, ${entry.colour} 25%, transparent)` }} />
+                  </motion.div>
                 )}
-                <span style={{ color: isActive ? '#60a5fa' : 'inherit', flexShrink: 0 }}>
-                  <Icon />
-                </span>
-                <AnimatePresence>
-                  {!collapsed && (
+              </AnimatePresence>
+            );
+          }
+
+          // Nav item
+          const item = entry as NavItem;
+          const isActive  = pathname === item.href;
+          const eng       = item.engine;
+          const isLocked  = (eng === 2 && !hasEngine2Data) || (eng === 3 && !hasEngine3Data);
+          const accentCol = eng ? ENGINE_COL[eng] : 'var(--e1)';
+          const tipText   = eng === 2 ? 'Upload transaction data to unlock' : eng === 3 ? 'Upload POS data to unlock' : '';
+
+          return (
+            <div key={item.href} title={isLocked ? tipText : undefined}>
+              <Link
+                href={isLocked ? '#' : item.href}
+                onClick={e => { if (isLocked) e.preventDefault(); }}
+                style={{ textDecoration: 'none', display: 'block' }}
+              >
+                <div
+                  style={{
+                    display: 'flex', alignItems: 'center',
+                    gap: 10,
+                    padding: collapsed ? '9px 15px' : '8px 14px 8px 18px',
+                    borderRadius: 8, margin: '1px 6px',
+                    cursor: isLocked ? 'default' : 'pointer',
+                    background: isActive
+                      ? `color-mix(in srgb, ${accentCol} 10%, transparent)`
+                      : 'transparent',
+                    opacity: isLocked ? 0.4 : 1,
+                    position: 'relative',
+                    transition: 'background 0.15s ease, opacity 0.15s ease',
+                  }}
+                  onMouseEnter={e => {
+                    if (!isActive && !isLocked)
+                      (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)';
+                  }}
+                  onMouseLeave={e => {
+                    if (!isActive && !isLocked)
+                      (e.currentTarget as HTMLElement).style.background = 'transparent';
+                  }}
+                >
+                  {/* Active indicator — 2px line, not the forbidden 3px */}
+                  {isActive && (
+                    <div style={{
+                      position: 'absolute', left: 0, top: '20%', bottom: '20%',
+                      width: 2, borderRadius: 2, background: accentCol,
+                    }} />
+                  )}
+
+                  <span style={{ color: isActive ? accentCol : 'var(--text-muted)', flexShrink: 0, transition: 'color 0.15s' }}>
+                    <Icon d={item.icon} />
+                  </span>
+
+                  <AnimatePresence>
+                    {!collapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, x: -6 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -6 }}
+                        transition={{ duration: 0.16 }}
+                        style={{
+                          fontFamily: 'Outfit, sans-serif', fontSize: '0.8rem',
+                          fontWeight: isActive ? 600 : 400,
+                          color: isActive ? accentCol : 'var(--text-secondary)',
+                          whiteSpace: 'nowrap', flex: 1,
+                          transition: 'color 0.15s',
+                        }}
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+
+                  {isLocked && !collapsed && (
                     <motion.span
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                      style={{
-                        fontSize:   '0.875rem',
-                        fontWeight: isActive ? 500 : 400,
-                        fontFamily: 'Outfit, sans-serif',
-                      }}
+                      style={{ color: 'var(--text-faint)', flexShrink: 0 }}
                     >
-                      {label}
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none">{I.Lock}</svg>
                     </motion.span>
                   )}
-                </AnimatePresence>
+                </div>
               </Link>
-            </motion.div>
+            </div>
           );
         })}
-
-        {/* Divider */}
-        <div style={{ margin: '12px 16px', height: 1, background: 'rgba(99,179,237,0.08)' }} />
-
-        {/* Upload status */}
-        {!collapsed && (
-          <div style={{ padding: '4px 16px 8px' }}>
-            <p style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: '#2d4a70', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
-              Data Source
-            </p>
-            <div style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(99,179,237,0.12)', background: 'rgba(9,13,30,0.6)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ color: uploadedFile ? '#10b981' : '#4a6285', flexShrink: 0 }}>
-                <UploadIcon />
-              </span>
-              <div style={{ minWidth: 0 }}>
-                <p style={{ fontSize: '0.72rem', color: uploadedFile ? '#e2eeff' : '#4a6285', fontFamily: 'Outfit, sans-serif', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>
-                  {uploadedFile ?? 'No file loaded'}
-                </p>
-                <p style={{ fontSize: '0.6rem', color: '#2d4a70', fontFamily: 'DM Mono, monospace', margin: 0 }}>
-                  {uploadedFile ? 'Active' : 'Drop CSV or Excel'}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* AI CFO preview */}
-        {!collapsed && (
-          <div style={{ padding: '0 16px 8px' }}>
-            <p style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: '#2d4a70', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
-              AI CFO
-            </p>
-            <div style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(99,179,237,0.12)', background: 'rgba(9,13,30,0.6)' }}>
-              <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-                <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'linear-gradient(135deg,#60a5fa,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                  <BotIcon />
-                </div>
-                <p style={{ fontSize: '0.65rem', color: '#d4ddf0', fontFamily: 'Outfit, sans-serif', lineHeight: 1.4, margin: 0 }}>
-                  Revenue grew 18.4% YoY. Q4 is the strongest quarter on record.
-                </p>
-              </div>
-              <Link href="/dashboard" style={{ display: 'block', marginTop: 8, fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: '#60a5fa', textDecoration: 'none', borderTop: '1px solid rgba(99,179,237,0.1)', paddingTop: 6 }}>
-                Ask your CFO
-              </Link>
-            </div>
-          </div>
-        )}
       </nav>
 
-      {/* Collapse toggle */}
-      <div style={{ padding: '12px 8px', borderTop: '1px solid rgba(99,179,237,0.08)', flexShrink: 0 }}>
-        <button
-          onClick={toggle}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          style={{ width: '100%', height: 36, borderRadius: 8, border: '1px solid rgba(99,179,237,0.12)', background: 'transparent', color: '#4a6285', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-end', padding: '0 12px', transition: 'color 0.18s, background 0.18s' }}
-        >
-          <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={{ duration: 0.3 }}>
-            <ChevronLeftIcon />
-          </motion.div>
-        </button>
+      {/* ── Footer — theme toggle + file indicator ───────────────────────── */}
+      <div style={{
+        padding: collapsed ? '10px 12px' : '10px 14px 12px',
+        borderTop: '1px solid var(--sidebar-border)',
+        flexShrink: 0,
+        display: 'flex', alignItems: 'center',
+        gap: 8,
+        transition: 'border-color 0.25s ease',
+      }}>
+        <ThemeToggle variant="icon" />
+
+        <AnimatePresence>
+          {!collapsed && uploadedFile && (
+            <motion.p
+              initial={{ opacity: 0, x: -4 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              style={{
+                fontFamily: 'DM Mono, monospace', fontSize: '0.57rem',
+                color: 'var(--text-faint)', margin: 0,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                flex: 1,
+              }}
+            >
+              📄 {uploadedFile}
+            </motion.p>
+          )}
+        </AnimatePresence>
       </div>
-    </aside>
+    </motion.aside>
   );
 }
