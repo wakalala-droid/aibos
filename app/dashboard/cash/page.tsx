@@ -1,237 +1,172 @@
 'use client';
-
-export const dynamic = 'force-dynamic';
-
+import { useStore } from '@/lib/store';
+import { fmt } from '@/lib/utils';
+import KPICard from '@/components/ui/KPICard';
+import SectionCard from '@/components/ui/SectionCard';
+import ChartTooltip from '@/components/ui/ChartTooltip';
 import { motion } from 'framer-motion';
 import {
-  AreaChart, Area, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
-import { useStore } from '@/lib/store';
-import { KPICard } from '@/components/cards/KPICard';
-import { formatCurrency } from '@/lib/utils';
-
-function Card({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}
-      style={{ background: 'rgba(9,13,30,0.72)', backdropFilter: 'blur(16px)', border: '1px solid rgba(99,179,237,0.12)', borderRadius: 16, padding: '22px 24px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', position: 'relative', overflow: 'hidden' }}
-    >
-      <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: 'linear-gradient(90deg,transparent,rgba(99,179,237,0.3),transparent)' }} />
-      {children}
-    </motion.div>
-  );
-}
-
-function CustomTooltip({ active, payload, label, sym }: any) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{ background: 'rgba(9,13,30,0.96)', border: '1px solid rgba(99,179,237,0.25)', borderRadius: 10, padding: '10px 14px' }}>
-      <p style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', margin: '0 0 8px' }}>{label}</p>
-      {payload.map((e: any) => (
-        <div key={e.name} style={{ display: 'flex', gap: 8, marginBottom: 3 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: e.color || e.stroke, marginTop: 3, flexShrink: 0 }} />
-          <span style={{ fontSize: '0.7rem', color: '#4a6285', fontFamily: 'DM Mono, monospace' }}>{e.name}:</span>
-          <span style={{ fontSize: '0.76rem', color: '#e2eeff', fontFamily: 'Outfit, sans-serif', fontWeight: 500 }}>
-            {formatCurrency(Number(e.value) || 0, true, sym)}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export default function CashPage() {
-  const cf  = useStore(s => s.cashflow);
-  const sym = useStore(s => s.currencySymbol);
+  const { cashflow, monthly, kpi, currencySymbol } = useStore();
+  const sym = currencySymbol || 'K';
 
-  // Full null safety — never crash on empty/undefined data
-  const rawProjections = cf?.projections ?? [];
-  const projections    = rawProjections.filter((p: any) => p != null && typeof p.cash === 'number');
-  const runway         = Number(cf?.runway)      || 0;
-  const currentCash    = Number(cf?.currentCash) || 0;
-  const monthlyBurn    = Number(cf?.monthlyBurn) || 0;
+  // ── Null-safe: derive values from monthly if cashflow is null ────────────
+  const months      = Math.max(monthly.length, 1);
+  const monthlyBurn = kpi.totalCosts / months;
+  const currentCash = cashflow?.currentCash ?? 50000;
+  const runway      = cashflow?.runway      ?? (monthlyBurn > 0 ? Math.round(currentCash / monthlyBurn) : 0);
+  const projections = cashflow?.projections ?? [];
 
-  const runwayPct    = Math.min((runway / 24) * 100, 100);
-  const runwayColour = runway >= 18 ? '#10b981' : runway >= 12 ? '#f59e0b' : '#ef4444';
-
-  const lastCash = projections.length > 0
-    ? projections[projections.length - 1]?.cash ?? 0
-    : 0;
-
-  const AXIS = {
-    tick: { fill: '#4a6285', fontSize: 11, fontFamily: 'DM Mono, monospace' },
-    axisLine: { stroke: 'rgba(99,179,237,0.1)' },
-    tickLine: false,
-  };
-
-  // If no projection data, show placeholder chart data from monthly
-  const monthly = useStore(s => s.monthly);
+  // Build projection chart from monthly or stored projections
   const chartData = projections.length > 0
-    ? projections
-    : monthly.slice(-6).map((m, i) => ({
-        month:   m.month,
-        cash:    currentCash + (m.profit * (i + 1)),
-        inflow:  m.revenue,
-        outflow: m.costs,
-      }));
+    ? projections.map((p: any, i: number) => ({
+        label: `Month +${p.month_ahead ?? i + 1}`,
+        cash:  Math.round(Number(p.projected_cash) || 0),
+        inflow:  Math.round(Number(p.inflow)  || 0),
+        outflow: Math.round(Number(p.outflow) || 0),
+      }))
+    : monthly.slice(-6).map((m, i) => {
+        const rev  = Number(m.Revenue) || 0;
+        const cost = Number(m.Costs)   || 0;
+        const runningCash = currentCash + (rev - cost) * (i + 1);
+        return {
+          label:   String(m.Month),
+          cash:    Math.round(Math.max(runningCash, 0)),
+          inflow:  Math.round(rev),
+          outflow: Math.round(cost),
+        };
+      });
+
+  // Runway bar config
+  const runwayTarget = 18;
+  const runwayPct    = Math.min((runway / runwayTarget) * 100, 100);
+  const runwayColor  = runway >= 12 ? 'var(--good)' : runway >= 6 ? 'var(--warn)' : 'var(--crit)';
+
+  // 6-month projection total
+  const projTotal = chartData.length > 0 ? chartData[chartData.length - 1].cash : currentCash;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1400, margin: '0 auto' }}>
-
-      {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
-        <KPICard title="Cash Position"  value={currentCash} format="currency" compact colour="#06b6d4" index={0} />
-        <KPICard title="Monthly Burn"   value={monthlyBurn} format="currency" compact colour="#ef4444" index={1} />
-        <KPICard title="Cash Runway"    value={runway}      format="months"   colour={runwayColour}   index={2} />
-        <KPICard title="6M Projection"  value={lastCash}    format="currency" compact colour="#10b981" index={3} />
+    <>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
+        <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Cash Intelligence</h1>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Runway · burn rate · cash position · forward projections</p>
       </div>
 
-      {/* Runway gauge */}
-      <Card delay={0.1}>
-        <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 6px' }}>
-          Cash Runway Status
-        </h3>
-        <p style={{ fontSize: '0.68rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 20px' }}>
-          {runway > 0
-            ? `${runway} months remaining · ${runway >= 18 ? '✓ On target' : '⚠ Below 18mo target'}`
-            : 'Upload a file to see runway analysis'}
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ flex: 1, height: 12, background: 'rgba(99,179,237,0.1)', borderRadius: 999, overflow: 'hidden' }}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${runwayPct}%` }}
-              transition={{ duration: 1.2, delay: 0.3 }}
-              style={{ height: '100%', borderRadius: 999, background: runwayColour, boxShadow: `0 0 12px ${runwayColour}60` }}
-            />
+      {/* KPI cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+        <KPICard
+          label="CASH POSITION" value={fmt(currentCash, false, sym)} sub="current balance"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="var(--cyan)" strokeWidth="1.5" fill="none"/><path d="M2 10h20" stroke="var(--cyan)" strokeWidth="1.3" strokeLinecap="round"/><circle cx="8" cy="15" r="1.5" fill="var(--cyan)"/></svg>}
+          iconBg="rgba(0,212,255,0.12)"
+          sparkData={monthly.slice(-6).map((_, i) => currentCash * (1 + i * 0.05))}
+          sparkColor="var(--cyan)" delay={0}
+        />
+        <KPICard
+          label="MONTHLY BURN" value={fmt(monthlyBurn, false, sym)} sub="avg monthly spend"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2c0 0-6 5-6 10a6 6 0 0012 0c0-5-6-10-6-10z" stroke="var(--e2)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 12c0 0-2 1.5-2 3a2 2 0 004 0c0-1.5-2-3-2-3z" stroke="var(--e2)" strokeWidth="1.3" fill="none"/></svg>}
+          iconBg="rgba(249,115,22,0.15)"
+          sparkData={monthly.slice(-6).map(m => Number(m.Costs) || 0)}
+          sparkColor="var(--e2)" delay={0.06}
+        />
+        <KPICard
+          label="CASH RUNWAY" value={`${runway}mo`} sub={`vs ${runwayTarget}mo target`}
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6l6 6-6 6" stroke={runwayColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+          iconBg={`color-mix(in srgb, ${runwayColor} 15%, transparent)`}
+          sparkData={[runway*0.7, runway*0.8, runway*0.9, runway*0.95, runway, runway]}
+          sparkColor={runwayColor} delay={0.12}
+        />
+        <KPICard
+          label="6M PROJECTION" value={fmt(projTotal, false, sym)} sub="projected cash position"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12l4-4 4 4 4-6 4 4" stroke="var(--purple)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
+          iconBg="rgba(167,139,250,0.15)"
+          sparkData={chartData.slice(-6).map(d => d.cash)}
+          sparkColor="var(--purple)" delay={0.18}
+        />
+      </div>
+
+      {/* Runway status bar */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        style={{ background: 'var(--bg-card)', border: `1px solid var(--border)`, borderRadius: 12, padding: '20px 24px', marginBottom: 20, boxShadow: 'var(--shadow-card)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
+            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', margin: 0 }}>
+              {runway}mo remaining · {runway < runwayTarget ? `⚠ Below ${runwayTarget}mo target` : `✓ Above ${runwayTarget}mo target`}
+            </p>
           </div>
-          <span style={{ fontSize: '0.8rem', fontFamily: 'DM Mono, monospace', color: runwayColour, fontWeight: 500, flexShrink: 0 }}>
-            {runway}mo / 24mo
+          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: runwayColor }}>
+            {runway}mo <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-4)', fontWeight: 400 }}>/ {runwayTarget}mo</span>
           </span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-          {[0, 6, 12, 18, 24].map(m => (
-            <span key={m} style={{ fontSize: '0.6rem', color: m === 18 ? '#f59e0b' : '#2d4a70', fontFamily: 'DM Mono, monospace' }}>
-              {m}mo{m === 18 ? ' ⚑' : ''}
+        {/* Runway bar */}
+        <div style={{ position: 'relative', height: 8, borderRadius: 8, background: 'var(--border)', overflow: 'hidden', marginBottom: 10 }}>
+          <motion.div style={{ height: '100%', background: runwayColor, borderRadius: 8 }}
+            initial={{ width: 0 }} animate={{ width: `${runwayPct}%` }}
+            transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }} />
+          {/* Target marker */}
+          <div style={{ position: 'absolute', left: `${Math.min((12 / runwayTarget) * 100, 98)}%`, top: 0, bottom: 0, width: 2, background: 'var(--text-4)', opacity: 0.5 }} />
+        </div>
+        {/* Scale labels */}
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {[0, 6, 12, 18, 24].map(mo => (
+            <span key={mo} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: mo === 12 ? 'var(--warn)' : 'var(--text-4)' }}>
+              {mo}mo{mo === 12 ? ' ⚑' : ''}
             </span>
           ))}
         </div>
-      </Card>
+      </motion.div>
 
-      {/* Cash projection chart */}
-      <Card delay={0.15}>
-        <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 4px' }}>
-          Projected Cash Position
-        </h3>
-        <p style={{ fontSize: '0.68rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 20px' }}>
-          {projections.length > 0 ? 'Forward projection based on current trajectory' : 'Based on historical monthly data'}
-        </p>
-        {chartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
+      {/* Projected cash chart */}
+      {chartData.length > 0 && (
+        <SectionCard title="Projected Cash Position" subtitle="Forward projection based on current trajectory" delay={0.16} style={{ marginBottom: 20 }}>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4}/>
-                  <stop offset="100%" stopColor="#06b6d4" stopOpacity={0}/>
+                  <stop offset="0%" stopColor="var(--cyan)" stopOpacity={0.22} />
+                  <stop offset="100%" stopColor="var(--cyan)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false}/>
-              <XAxis dataKey="month" {...AXIS}/>
-              <YAxis {...AXIS} tickFormatter={v => `${sym}${(Number(v)/1000).toFixed(0)}K`}/>
-              <Tooltip content={<CustomTooltip sym={sym}/> }/>
-              <Area type="monotone" dataKey="cash" name="Cash Balance" stroke="#06b6d4" strokeWidth={2.5} fill="url(#cashGrad)"/>
+              <CartesianGrid stroke="var(--border)" vertical={false} />
+              <XAxis dataKey="label" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}k`} />
+              <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
+              <Area type="monotone" dataKey="cash" stroke="var(--cyan)" strokeWidth={2} fill="url(#cashGrad)" dot={false} name="Cash Position" />
+              <ReferenceLine y={0} stroke="var(--crit)" strokeDasharray="4 4" strokeWidth={1} />
             </AreaChart>
           </ResponsiveContainer>
-        ) : (
-          <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ color: '#4a6285', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem' }}>No projection data available</p>
-          </div>
-        )}
-      </Card>
+        </SectionCard>
+      )}
 
-      {/* Inflow vs Outflow */}
-      <Card delay={0.2}>
-        <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 4px' }}>
-          Inflow vs Outflow
-        </h3>
-        <p style={{ fontSize: '0.68rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 20px' }}>
-          Monthly cash movements
-        </p>
-        {chartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" vertical={false}/>
-              <XAxis dataKey="month" {...AXIS}/>
-              <YAxis {...AXIS} tickFormatter={v => `${sym}${(Number(v)/1000).toFixed(0)}K`}/>
-              <Tooltip content={<CustomTooltip sym={sym}/> }/>
-              <Bar dataKey="inflow"  name="Inflow"  fill="#10b981" fillOpacity={0.8} radius={[3,3,0,0]}/>
-              <Bar dataKey="outflow" name="Outflow" fill="#ef4444" fillOpacity={0.7} radius={[3,3,0,0]}/>
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ color: '#4a6285', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem' }}>No data available</p>
-          </div>
-        )}
-      </Card>
-
-      {/* Projection table */}
-      <Card delay={0.25}>
-        <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 16px' }}>
-          Monthly Detail
-        </h3>
-        {chartData.length > 0 ? (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(99,179,237,0.1)' }}>
-                  {['Month', 'Inflow', 'Outflow', 'Net', 'Cash Balance'].map(h => (
-                    <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: '0.63rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', textTransform: 'uppercase', fontWeight: 400 }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {chartData.map((row: any, i: number) => {
-                  const inflow  = Number(row.inflow)  || 0;
-                  const outflow = Number(row.outflow) || 0;
-                  const net     = inflow - outflow;
-                  const cash    = Number(row.cash)    || 0;
-                  return (
-                    <motion.tr
-                      key={i}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + i * 0.05 }}
-                      style={{ borderBottom: '1px solid rgba(99,179,237,0.05)' }}
-                    >
-                      <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: '#d4ddf0' }}>
-                        {row.month ?? `M+${row.month_ahead ?? i+1}`}
-                      </td>
-                      <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#10b981' }}>
-                        {formatCurrency(inflow, true, sym)}
-                      </td>
-                      <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#ef4444' }}>
-                        {formatCurrency(outflow, true, sym)}
-                      </td>
-                      <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: net >= 0 ? '#10b981' : '#ef4444', fontWeight: 500 }}>
-                        {net >= 0 ? '+' : ''}{formatCurrency(net, true, sym)}
-                      </td>
-                      <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff', fontWeight: 500 }}>
-                        {formatCurrency(cash, true, sym)}
-                      </td>
-                    </motion.tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p style={{ color: '#4a6285', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', textAlign: 'center', padding: '24px 0' }}>
-            Upload a financial file to see cash projections
-          </p>
-        )}
-      </Card>
-    </div>
+      {/* Monthly inflow/outflow table */}
+      {chartData.length > 0 && (
+        <SectionCard title="Cash Flow Details" subtitle="Monthly inflow, outflow and net position" delay={0.22}>
+          <table className="data-table">
+            <thead><tr><th>Period</th><th>Inflow</th><th>Outflow</th><th>Net</th><th>Cash Position</th></tr></thead>
+            <tbody>
+              {chartData.map((row, i) => {
+                const net = row.inflow - row.outflow;
+                return (
+                  <motion.tr key={i} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.28 + i * 0.04 }}>
+                    <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{row.label}</td>
+                    <td style={{ color: 'var(--good)' }}>{fmt(row.inflow, false, sym)}</td>
+                    <td style={{ color: 'var(--e2)' }}>{fmt(row.outflow, false, sym)}</td>
+                    <td style={{ color: net >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 700 }}>
+                      {net >= 0 ? '+' : ''}{fmt(net, false, sym)}
+                    </td>
+                    <td style={{ color: 'var(--cyan)', fontWeight: 600 }}>{fmt(row.cash, false, sym)}</td>
+                  </motion.tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </SectionCard>
+      )}
+    </>
   );
 }

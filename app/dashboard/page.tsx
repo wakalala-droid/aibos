@@ -1,151 +1,38 @@
 'use client';
-
-import { motion } from 'framer-motion';
-import Link from 'next/link';
 import { useStore } from '@/lib/store';
-import { formatCurrency, tokens } from '@/lib/utils';
+import { fmt, scoreColor } from '@/lib/utils';
+import KPICard from '@/components/ui/KPICard';
+import SectionCard from '@/components/ui/SectionCard';
+import InsightCard from '@/components/ui/InsightCard';
 import FileUpload from '@/components/upload/FileUpload';
-import ThemeToggle from '@/components/layout/ThemeToggle';
+import ChartTooltip from '@/components/ui/ChartTooltip';
+import { useTheme } from '@/lib/theme';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer,
 } from 'recharts';
 
-const FADE = (delay = 0) => ({
-  initial: { opacity: 0, y: 18 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.45, delay },
-});
+// Sun/Moon icons
+function SunIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.6"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>; }
+function MoonIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>; }
 
-function scoreColour(score: number) {
-  if (score >= 80) return tokens.good;
-  if (score >= 60) return tokens.info;
-  if (score >= 40) return tokens.warn;
-  return tokens.crit;
-}
-
-function CustomTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{
-      background: tokens.tooltipBg,
-      border: `1px solid ${tokens.tooltipBorder}`,
-      borderRadius: 12, padding: '10px 14px',
-      backdropFilter: tokens.blur,
-      boxShadow: tokens.shadow,
-    }}>
-      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.62rem', color: tokens.textMuted, margin: '0 0 4px' }}>{label}</p>
-      {payload.map((p: any) => (
-        <p key={p.dataKey} style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: p.stroke ?? p.fill, margin: '2px 0' }}>
-          {p.name}: {typeof p.value === 'number' ? formatCurrency(p.value, true) : p.value}
-        </p>
-      ))}
-    </div>
-  );
-}
-
-// Priority config uses CSS vars so they respect theme
-const PRIORITY_CFG = {
-  high:   { colour: tokens.crit, tag: 'HIGH'   },
-  medium: { colour: tokens.warn, tag: 'MEDIUM' },
-  low:    { colour: tokens.info, tag: 'LOW'    },
-};
-
-function EngineBadge({ engine }: { engine: string }) {
-  const colour = engine === 'E1' ? tokens.e1 : engine === 'E2' ? tokens.e2 : tokens.e3;
-  return (
-    <span style={{
-      fontFamily: 'DM Mono, monospace', fontSize: '0.57rem', fontWeight: 700,
-      padding: '1px 7px', borderRadius: 4, color: colour,
-      background: `color-mix(in srgb, ${colour} 14%, transparent)`,
-      border: `1px solid color-mix(in srgb, ${colour} 28%, transparent)`,
-    }}>
-      {engine}
-    </span>
-  );
-}
-
-function EngineCard({
-  label, score, colour, locked, href, hint,
-}: {
-  label: string; score: number; colour: string;
-  locked: boolean; href: string; hint: string;
-}) {
-  const barCol = locked ? tokens.textFaint : scoreColour(score);
+// Engine score card
+function EngineScoreCard({ label, sub, score, colour, href, locked }: { label: string; sub: string; score: number; colour: string; href: string; locked?: boolean }) {
+  const col = scoreColor(score);
   return (
     <Link href={locked ? '#' : href} onClick={e => { if (locked) e.preventDefault(); }} style={{ textDecoration: 'none' }}>
-      <motion.div
-        whileHover={{ scale: locked ? 1 : 1.02 }}
-        transition={{ type: 'spring', stiffness: 340, damping: 20 }}
-        style={{
-          background: tokens.bgSurface2,
-          border: `1px solid color-mix(in srgb, ${colour} 18%, var(--border-subtle))`,
-          borderRadius: 14, padding: '18px 20px',
-          cursor: locked ? 'default' : 'pointer',
-          opacity: locked ? 0.5 : 1,
-          position: 'relative', overflow: 'hidden',
-          boxShadow: tokens.shadow,
-          transition: 'all 0.25s ease',
-        }}
-      >
-        <div style={{ position: 'absolute', top: -28, right: -28, width: 90, height: 90, borderRadius: '50%', background: `color-mix(in srgb, ${colour} 10%, transparent)` }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10, position: 'relative' }}>
-          <div>
-            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: colour, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>{label}</p>
-            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: tokens.textMuted, margin: 0 }}>{hint}</p>
-          </div>
-          {locked
-            ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke={tokens.textMuted} strokeWidth="1.5" fill="none" /><path d="M8 11V7a4 4 0 018 0v4" stroke={tokens.textMuted} strokeWidth="1.5" fill="none" strokeLinecap="round" /></svg>
-            : <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke={colour} strokeWidth="1.5" fill="none" /><path d="M9 12l2 2 4-4" stroke={colour} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          }
-        </div>
-        <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '2.2rem', fontWeight: 800, color: barCol, letterSpacing: '-0.04em', margin: '0 0 8px', position: 'relative' }}>
+      <div className="kpi-card" style={{ opacity: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer' }}>
+        <p className="kpi-label" style={{ color: colour }}>{label}</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', margin: '2px 0 10px' }}>{sub}</p>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '2.4rem', fontWeight: 800, color: locked ? 'var(--text-4)' : col, letterSpacing: '-0.04em', margin: '0 0 10px' }}>
           {locked ? '—' : score}
         </p>
-        <div style={{ height: 3, borderRadius: 3, background: tokens.tableHead, overflow: 'hidden', position: 'relative' }}>
-          {!locked && (
-            <motion.div
-              style={{ height: '100%', background: barCol, borderRadius: 3 }}
-              initial={{ width: 0 }}
-              animate={{ width: `${score}%` }}
-              transition={{ duration: 1.1, ease: 'easeOut', delay: 0.4 }}
-            />
-          )}
+        <div className="progress-track">
+          {!locked && <div className="progress-fill" style={{ width: `${score}%`, background: col }} />}
         </div>
-      </motion.div>
-    </Link>
-  );
-}
-
-function NavCard({ href, icon, label, sub, colour }: { href: string; icon: React.ReactNode; label: string; sub: string; colour: string }) {
-  return (
-    <Link href={href} style={{ textDecoration: 'none' }}>
-      <motion.div
-        whileHover={{ scale: 1.025 }}
-        transition={{ type: 'spring', stiffness: 340, damping: 20 }}
-        style={{
-          background: tokens.bgSurface,
-          border: `1px solid ${tokens.border}`,
-          borderRadius: 12, padding: '13px 15px',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
-          boxShadow: tokens.shadow,
-          transition: 'all 0.2s ease',
-        }}
-      >
-        <div style={{
-          width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-          background: `color-mix(in srgb, ${colour} 12%, transparent)`,
-          border: `1px solid color-mix(in srgb, ${colour} 22%, transparent)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: colour,
-        }}>
-          {icon}
-        </div>
-        <div>
-          <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.82rem', fontWeight: 600, color: tokens.textPrimary, margin: 0 }}>{label}</p>
-          <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: tokens.textMuted, margin: 0 }}>{sub}</p>
-        </div>
-      </motion.div>
+      </div>
     </Link>
   );
 }
@@ -155,388 +42,297 @@ export default function OverviewPage() {
     kpi, health, monthly, alerts,
     intelligenceScores, crossInsights, unifiedBrief,
     engineFlags, hasEngine2Data, hasEngine3Data,
-    currencySymbol,
-    rfm, retention,
-    posGrandTotals, attachRates, benchmarks,
+    currencySymbol, rfm, retention, posGrandTotals, attachRates, benchmarks,
   } = useStore();
-
-  const sym     = currencySymbol || 'K';
-  const scores  = intelligenceScores;
+  const { toggle, isDark } = useTheme();
+  const sym = currencySymbol || 'K';
+  const scores = intelligenceScores;
 
   const chartData = monthly.slice(-6).map(m => ({
-    month: m.Month,
-    Revenue: Math.round(m.Revenue ?? 0),
-    Profit:  Math.round((m.Revenue ?? 0) - (m.Costs ?? 0)),
+    month: String(m.Month),
+    Revenue: Math.round(Number(m.Revenue) || 0),
+    Profit:  Math.round((Number(m.Revenue) || 0) - (Number(m.Costs) || 0)),
   }));
+
+  const revSpark = monthly.slice(-6).map(m => Number(m.Revenue) || 0);
+  const profSpark = monthly.slice(-6).map(m => (Number(m.Revenue) || 0) - (Number(m.Costs) || 0));
+  const marginSpark = monthly.slice(-6).map(m => {
+    const r = Number(m.Revenue) || 1;
+    const c = Number(m.Costs) || 0;
+    return Math.round(((r - c) / r) * 100);
+  });
 
   const champions  = rfm.filter(r => r.segment === 'Champion').length;
   const highChurn  = rfm.filter(r => r.churn_risk >= 70).length;
   const retRate    = retention?.retention_rate ?? 0;
-  const gt         = posGrandTotals;
   const drinkAttach = attachRates?.drink_attach_pct ?? 0;
   const warnB      = benchmarks.filter(b => b.status !== 'good').length;
+  const gt         = posGrandTotals;
 
   const orderedInsights = [
     ...crossInsights.filter(i => i.priority === 'high'),
     ...crossInsights.filter(i => i.priority === 'medium'),
     ...crossInsights.filter(i => i.priority === 'low'),
-  ].slice(0, 4);
+  ].slice(0, 5);
 
-  const briefLines = (unifiedBrief || '')
-    .split('\n').filter(l => l.trim())
-    .filter(l => /^\d+\./.test(l.trim()))
-    .slice(0, 5);
+  const briefLines = (unifiedBrief || '').split('\n').filter(l => /^\d+\./.test(l.trim())).slice(0, 5);
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: 1280, margin: '0 auto' }}>
-
-      {/* Header */}
-      <motion.div {...FADE(0)} style={{ marginBottom: 30 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <div style={{ width: 3, height: 20, borderRadius: 2, background: `linear-gradient(180deg, ${tokens.e1}, ${tokens.e3})` }} />
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: tokens.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                AI-BOS · Platform Overview
-              </span>
-            </div>
-            <h1 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.8rem', fontWeight: 800, color: tokens.textPrimary, margin: 0, letterSpacing: '-0.03em' }}>
-              Business Intelligence Overview
-            </h1>
-            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: tokens.textMuted, margin: '6px 0 0' }}>
-              Financial · Customer · Operations — unified Kwacha intelligence
-            </p>
-          </div>
-          {/* Theme toggle in header on overview */}
-          <ThemeToggle variant="pill" />
+    <>
+      {/* Page header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+        <div>
+          <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
+            Business Intelligence Overview
+          </h1>
+          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
+            Financial · Customer · Operations — unified Kwacha intelligence
+          </p>
         </div>
-      </motion.div>
+        <button
+          onClick={toggle}
+          style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)' }}
+        >
+          {isDark ? <SunIcon /> : <MoonIcon />}
+        </button>
+      </div>
 
-      {/* Composite score + engine cards */}
-      <motion.div {...FADE(0.08)} style={{
-        display: 'grid', gridTemplateColumns: 'auto 1fr 1fr 1fr', gap: 14, marginBottom: 20,
-      }}>
-        {/* Hero score */}
-        <div style={{
-          background: tokens.bgSurface2,
-          border: `1px solid color-mix(in srgb, ${tokens.e1} 20%, var(--border-subtle))`,
-          borderRadius: 16, padding: '24px 32px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          boxShadow: tokens.shadow,
-          position: 'relative', overflow: 'hidden', minWidth: 140,
-        }}>
-          <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: tokens.shimmer }} />
-          {scores ? (
-            <>
-              <motion.p
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 220, damping: 18, delay: 0.2 }}
-                style={{ fontFamily: 'Outfit, sans-serif', fontSize: '3.8rem', fontWeight: 800, color: scoreColour(scores.overall_score), letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}
-              >
-                {scores.overall_score}
-              </motion.p>
-              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: tokens.e1, margin: '5px 0 0', letterSpacing: '0.06em' }}>
-                {scores.overall_label.toUpperCase()}
-              </p>
-              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: tokens.textMuted, margin: '2px 0 0' }}>
-                HEALTH SCORE
-              </p>
-            </>
-          ) : (
-            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: tokens.textMuted, textAlign: 'center', margin: 0 }}>
-              Upload data to score
-            </p>
-          )}
+      {/* Engine score strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
+        {/* Overall hero */}
+        <div className="kpi-card" style={{ minWidth: 130, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 28px' }}>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '3.2rem', fontWeight: 900, color: scores ? scoreColor(scores.overall_score) : 'var(--text-4)', letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+            {scores?.overall_score ?? '—'}
+          </p>
+          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--cyan)', margin: '6px 0 0', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            {scores?.overall_label ?? 'No data'}
+          </p>
+          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.55rem', color: 'var(--text-4)', margin: '2px 0 0' }}>HEALTH SCORE</p>
         </div>
+        <EngineScoreCard label="ENGINE 1 · FINANCIAL"   sub="Cash · Forecast · P&L"    score={scores?.e1_score ?? 0} colour="var(--e1)" href="/dashboard/cash"       locked={!engineFlags.e1} />
+        <EngineScoreCard label="CUSTOMER INTELLIGENCE"  sub="RFM · CLV · Churn"         score={scores?.e2_score ?? 0} colour="var(--e2)" href="/dashboard/customers"  locked={!hasEngine2Data} />
+        <EngineScoreCard label="OPERATIONS"             sub="POS · Benchmarks · Velocity" score={scores?.e3_score ?? 0} colour="var(--e3)" href="/dashboard/pos"        locked={!hasEngine3Data} />
+      </div>
 
-        <EngineCard label="Engine 1 · Financial"  score={scores?.e1_score ?? 0} colour={tokens.e1} locked={!engineFlags.e1} href="/dashboard/cash"        hint="Cash · Forecast · P&L"    />
-        <EngineCard label="Engine 2 · Customer"   score={scores?.e2_score ?? 0} colour={tokens.e2} locked={!hasEngine2Data}  href="/dashboard/customers"    hint="RFM · CLV · Churn"       />
-        <EngineCard label="Engine 3 · Operations" score={scores?.e3_score ?? 0} colour={tokens.e3} locked={!hasEngine3Data}  href="/dashboard/pos"          hint="POS · Benchmarks · Velocity" />
-      </motion.div>
+      {/* KPI cards — matching E1 exactly */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+        <KPICard
+          label="TOTAL REVENUE" value={fmt(kpi.totalRevenue, true, sym)}
+          growth={8.4} sparkData={revSpark} sparkColor="var(--spark-revenue)"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--blue)" strokeWidth="1.8" fill="none"/><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H9m0 0h4.5a1.5 1.5 0 010 3H9" stroke="var(--blue)" strokeWidth="1.4" strokeLinecap="round"/></svg>}
+          iconBg="rgba(96,165,250,0.15)" delay={0}
+        />
+        <KPICard
+          label="TOTAL COSTS" value={fmt(kpi.totalCosts, true, sym)}
+          growth={5.2} sparkData={monthly.slice(-6).map(m => Number(m.Costs) || 0)} sparkColor="var(--spark-cost)"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 8h20v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8z" stroke="var(--orange)" strokeWidth="1.6" fill="none"/><path d="M2 8l2-4h16l2 4" stroke="var(--orange)" strokeWidth="1.5" strokeLinejoin="round"/></svg>}
+          iconBg="rgba(249,115,22,0.15)" delay={0.06}
+        />
+        <KPICard
+          label="NET PROFIT" value={fmt(kpi.totalProfit, true, sym)}
+          growth={12.1} sparkData={profSpark} sparkColor="var(--spark-profit)"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+          iconBg="rgba(52,211,153,0.15)" delay={0.12}
+        />
+        <KPICard
+          label="AVG NET MARGIN" value={`${kpi.avgMargin.toFixed(1)}%`}
+          growth={1.2} sparkData={marginSpark} sparkColor="var(--spark-margin)"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--purple)" strokeWidth="1.6" fill="none"/><path d="M12 8v4l3 3" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+          iconBg="rgba(167,139,250,0.15)" delay={0.18}
+        />
+      </div>
 
-      {/* Main grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16 }}>
+      {/* Main two-column layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20 }}>
 
         {/* LEFT */}
-        <div>
-          {/* KPI strip */}
-          <motion.div {...FADE(0.14)} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
-            {[
-              { label: 'TOTAL REVENUE', value: kpi.totalRevenue, colour: tokens.e1 },
-              { label: 'TOTAL PROFIT',  value: kpi.totalProfit,  colour: tokens.good },
-              { label: 'AVG MARGIN',    value: kpi.avgMargin,    colour: tokens.purple, pct: true },
-            ].map(card => (
-              <div key={card.label} style={{
-                background: tokens.bgSurface2,
-                border: `1px solid color-mix(in srgb, ${card.colour} 14%, var(--border-subtle))`,
-                borderRadius: 13, padding: '18px 20px',
-                boxShadow: tokens.shadow, position: 'relative', overflow: 'hidden',
-                transition: 'background 0.25s ease',
-              }}>
-                <div style={{ position: 'absolute', top: -24, right: -24, width: 80, height: 80, borderRadius: '50%', background: `color-mix(in srgb, ${card.colour} 12%, transparent)` }} />
-                <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: tokens.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 10px', position: 'relative' }}>
-                  {card.label}
-                </p>
-                <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.6rem', fontWeight: 700, color: card.colour, letterSpacing: '-0.03em', margin: 0, position: 'relative' }}>
-                  {(card as any).pct ? `${card.value.toFixed(1)}%` : formatCurrency(card.value, true, sym)}
-                </p>
-              </div>
-            ))}
-          </motion.div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
           {/* Revenue chart */}
           {chartData.length > 0 && (
-            <motion.div {...FADE(0.18)} style={{
-              background: tokens.bgSurface, backdropFilter: tokens.blur,
-              border: `1px solid ${tokens.border}`, borderRadius: 16,
-              padding: '20px 22px', marginBottom: 16,
-              position: 'relative', overflow: 'hidden',
-              boxShadow: tokens.shadow, transition: 'all 0.25s ease',
-            }}>
-              <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: tokens.shimmer }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: tokens.textPrimary, margin: 0 }}>Revenue Trend (ZMW)</p>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  {[[tokens.e1, 'Revenue'], [tokens.good, 'Profit']].map(([col, lbl]) => (
-                    <div key={lbl} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <div style={{ width: 8, height: 2, borderRadius: 2, background: col }} />
-                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: tokens.textMuted }}>{lbl}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <ResponsiveContainer width="100%" height={160}>
+            <SectionCard title="Revenue Intelligence" subtitle={`Monthly revenue & profit · ${sym} ZMW`} delay={0.1}>
+              <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={chartData}>
                   <defs>
-                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--e1)" stopOpacity={0.18} />
-                      <stop offset="100%" stopColor="var(--e1)" stopOpacity={0} />
+                    <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--spark-revenue)" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="var(--spark-revenue)" stopOpacity={0} />
                     </linearGradient>
-                    <linearGradient id="profGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--good)" stopOpacity={0.14} />
-                      <stop offset="100%" stopColor="var(--good)" stopOpacity={0} />
+                    <linearGradient id="gP" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--spark-profit)" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="var(--spark-profit)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid stroke="var(--table-head)" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontFamily: 'DM Mono, monospace', fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontFamily: 'DM Mono, monospace', fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={v => `K${(v/1000).toFixed(0)}k`} />
-                  <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--border-medium)', strokeWidth: 1 }} />
-                  <Area type="monotone" dataKey="Revenue" stroke="var(--e1)"   strokeWidth={1.8} fill="url(#revGrad)"  dot={false} name="Revenue" />
-                  <Area type="monotone" dataKey="Profit"  stroke="var(--good)" strokeWidth={1.5} fill="url(#profGrad)" dot={false} name="Profit"  />
+                  <CartesianGrid stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}k`} />
+                  <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
+                  <Area type="monotone" dataKey="Revenue" stroke="var(--spark-revenue)" strokeWidth={2} fill="url(#gR)" dot={false} name="Revenue" />
+                  <Area type="monotone" dataKey="Profit"  stroke="var(--spark-profit)"  strokeWidth={1.8} fill="url(#gP)" dot={false} name="Profit" />
                 </AreaChart>
               </ResponsiveContainer>
-            </motion.div>
+              {/* Legend */}
+              <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+                {[['var(--spark-revenue)', 'Revenue'], ['var(--spark-profit)', 'Profit']].map(([c, l]) => (
+                  <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div style={{ width: 12, height: 2, borderRadius: 2, background: c }} />
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-3)' }}>{l}</span>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
           )}
 
           {/* E2 + E3 quick stats */}
-          <motion.div {...FADE(0.22)} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-            {/* E2 */}
-            <div style={{
-              background: tokens.bgSurface, backdropFilter: tokens.blur,
-              border: `1px solid color-mix(in srgb, ${tokens.e2} 14%, var(--border-subtle))`,
-              borderRadius: 14, padding: '18px 20px',
-              position: 'relative', overflow: 'hidden',
-              opacity: !hasEngine2Data ? 0.55 : 1,
-              boxShadow: tokens.shadow, transition: 'all 0.25s ease',
-            }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, color-mix(in srgb, ${tokens.e2} 40%, transparent), transparent)` }} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            {/* Customer Intelligence quick */}
+            <SectionCard delay={0.15}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: tokens.e2, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Engine 2 · Customers</p>
-                <Link href="/dashboard/customers" style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: tokens.textMuted, textDecoration: 'none' }}>View →</Link>
+                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', fontWeight: 600, color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Customer Intelligence</p>
+                <Link href="/dashboard/customers" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', textDecoration: 'none' }}>View →</Link>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                 {[
-                  { label: 'Champions',  value: String(champions),              colour: tokens.good },
-                  { label: 'High Churn', value: String(highChurn),              colour: tokens.crit },
-                  { label: 'Retention',  value: `${retRate.toFixed(0)}%`,       colour: tokens.e2   },
+                  { l: 'Champions',  v: String(champions),         c: 'var(--good)' },
+                  { l: 'High Churn', v: String(highChurn),         c: 'var(--crit)' },
+                  { l: 'Retention',  v: `${retRate.toFixed(0)}%`,  c: 'var(--e2)'   },
                 ].map(item => (
-                  <div key={item.label}>
-                    <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: tokens.textMuted, margin: '0 0 3px' }}>{item.label}</p>
-                    <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.3rem', fontWeight: 700, color: item.colour, margin: 0 }}>{item.value}</p>
+                  <div key={item.l}>
+                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.l}</p>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>{item.v}</p>
                   </div>
                 ))}
               </div>
-            </div>
+            </SectionCard>
 
-            {/* E3 */}
-            <div style={{
-              background: tokens.bgSurface, backdropFilter: tokens.blur,
-              border: `1px solid color-mix(in srgb, ${tokens.e3} 14%, var(--border-subtle))`,
-              borderRadius: 14, padding: '18px 20px',
-              position: 'relative', overflow: 'hidden',
-              opacity: !hasEngine3Data ? 0.55 : 1,
-              boxShadow: tokens.shadow, transition: 'all 0.25s ease',
-            }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, color-mix(in srgb, ${tokens.e3} 40%, transparent), transparent)` }} />
+            {/* Operations quick */}
+            <SectionCard delay={0.18}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: tokens.e3, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Engine 3 · POS</p>
-                <Link href="/dashboard/pos" style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: tokens.textMuted, textDecoration: 'none' }}>View →</Link>
+                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', fontWeight: 600, color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Operations</p>
+                <Link href="/dashboard/pos" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', textDecoration: 'none' }}>View →</Link>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                 {[
-                  { label: 'Net Revenue',  value: formatCurrency(gt?.net_revenue ?? 0, true, sym), colour: tokens.e3   },
-                  { label: 'Drink Attach', value: `${drinkAttach.toFixed(0)}%`,                    colour: drinkAttach >= 80 ? tokens.good : tokens.warn },
-                  { label: 'Warn Metrics', value: String(warnB),                                   colour: warnB > 0 ? tokens.warn : tokens.good },
+                  { l: 'Net Revenue',   v: fmt(gt?.net_revenue ?? 0, true, sym), c: 'var(--e3)'   },
+                  { l: 'Drink Attach',  v: `${drinkAttach.toFixed(0)}%`,          c: drinkAttach >= 80 ? 'var(--good)' : 'var(--warn)' },
+                  { l: 'Benchmarks',    v: `${warnB} warn`,                       c: warnB > 0 ? 'var(--warn)' : 'var(--good)' },
                 ].map(item => (
-                  <div key={item.label}>
-                    <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: tokens.textMuted, margin: '0 0 3px' }}>{item.label}</p>
-                    <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: item.label === 'Net Revenue' ? '1rem' : '1.3rem', fontWeight: 700, color: item.colour, margin: 0, letterSpacing: '-0.02em' }}>
-                      {item.value}
-                    </p>
+                  <div key={item.l}>
+                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.l}</p>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>{item.v}</p>
                   </div>
                 ))}
               </div>
-            </div>
-          </motion.div>
+            </SectionCard>
+          </div>
 
-          {/* Cross-insights */}
+          {/* Cross-engine insights */}
           {orderedInsights.length > 0 && (
-            <motion.div {...FADE(0.28)} style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.62rem', color: tokens.e1, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>⚡ Cross-Engine Insights</p>
-                <Link href="/dashboard/ops-brief" style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: tokens.textMuted, textDecoration: 'none' }}>View all →</Link>
-              </div>
+            <SectionCard
+              title="Cross-Engine Intelligence"
+              subtitle="Compound insights derived from Financial · Customer · Operations data"
+              delay={0.22}
+              action={<Link href="/dashboard/ops-brief" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', textDecoration: 'none' }}>View all →</Link>}
+            >
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {orderedInsights.map((ins, i) => {
-                  const cfg = PRIORITY_CFG[ins.priority] ?? PRIORITY_CFG.low;
-                  return (
-                    <motion.div key={i}
-                      initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.34 + i * 0.06 }}
-                      style={{
-                        background: tokens.bgSurface, backdropFilter: tokens.blur,
-                        border: `1px solid color-mix(in srgb, ${cfg.colour} 20%, var(--border-subtle))`,
-                        borderRadius: 12, padding: '13px 16px',
-                        boxShadow: tokens.shadow, transition: 'all 0.2s ease',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                        <span style={{
-                          fontFamily: 'DM Mono, monospace', fontSize: '0.55rem', fontWeight: 700,
-                          padding: '1px 7px', borderRadius: 4, color: cfg.colour,
-                          background: `color-mix(in srgb, ${cfg.colour} 12%, transparent)`,
-                          border: `1px solid color-mix(in srgb, ${cfg.colour} 28%, transparent)`,
-                        }}>{cfg.tag}</span>
-                        {ins.source_engines.map(e => <EngineBadge key={e} engine={e} />)}
-                      </div>
-                      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: tokens.textSecondary, lineHeight: 1.6, margin: '0 0 6px' }}>{ins.insight}</p>
-                      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: cfg.colour, margin: 0 }}>→ {ins.action}</p>
-                    </motion.div>
-                  );
-                })}
+                {orderedInsights.map((ins, i) => (
+                  <InsightCard
+                    key={i} index={i}
+                    insight={ins.insight}
+                    action={ins.action}
+                    priority={ins.priority as 'high' | 'medium' | 'low'}
+                    sourceEngines={ins.source_engines}
+                  />
+                ))}
               </div>
-            </motion.div>
+            </SectionCard>
           )}
 
-          {/* Brief preview */}
+          {/* Executive brief preview */}
           {briefLines.length > 0 && (
-            <motion.div {...FADE(0.34)} style={{
-              background: tokens.bgSurface, backdropFilter: tokens.blur,
-              border: `1px solid color-mix(in srgb, ${tokens.e1} 18%, var(--border-subtle))`,
-              borderRadius: 16, padding: '20px 22px', marginBottom: 16,
-              position: 'relative', overflow: 'hidden', boxShadow: tokens.shadow,
-              transition: 'all 0.25s ease',
-            }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: tokens.shimmer }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: tokens.textPrimary, margin: 0 }}>Executive Action Plan</p>
-                <Link href="/dashboard/ops-brief" style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: tokens.textMuted, textDecoration: 'none' }}>Full brief →</Link>
-              </div>
+            <SectionCard
+              title="Executive Action Plan"
+              subtitle="AI-BOS unified brief · E1 + Customer Intelligence + Operations"
+              delay={0.26}
+              action={<Link href="/dashboard/ops-brief" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', textDecoration: 'none' }}>Full brief →</Link>}
+            >
               {briefLines.map((line, i) => (
-                <motion.div key={i}
-                  initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + i * 0.07 }}
-                  style={{
-                    display: 'flex', gap: 10, alignItems: 'flex-start',
-                    padding: '9px 0',
-                    borderTop: i > 0 ? `1px solid ${tokens.tableBorder}` : 'none',
-                  }}
-                >
+                <div key={i} style={{
+                  display: 'flex', gap: 12, alignItems: 'flex-start',
+                  padding: '10px 0',
+                  borderTop: i > 0 ? '1px solid var(--border)' : 'none',
+                }}>
                   <span style={{
-                    width: 18, height: 18, borderRadius: 5, flexShrink: 0,
-                    background: `color-mix(in srgb, ${tokens.e1} 15%, transparent)`,
-                    border: `1px solid color-mix(in srgb, ${tokens.e1} 25%, transparent)`,
+                    width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+                    background: 'var(--cyan-dim)', border: '1px solid rgba(0,212,255,0.25)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'DM Mono, monospace', fontSize: '0.55rem', fontWeight: 700, color: tokens.e1,
+                    fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', fontWeight: 700, color: 'var(--cyan)',
                   }}>{i + 1}</span>
-                  <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: tokens.textSecondary, lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>
                     {line.replace(/^\d+\.\s*/, '')}
                   </p>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </SectionCard>
           )}
         </div>
 
         {/* RIGHT */}
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
           {/* Upload */}
-          <motion.div {...FADE(0.1)} style={{ marginBottom: 16 }} id="upload-section">
-            <div style={{
-              background: tokens.bgSurface, backdropFilter: tokens.blur,
-              border: `1px solid ${tokens.border}`, borderRadius: 16, padding: '20px',
-              position: 'relative', overflow: 'hidden', boxShadow: tokens.shadow,
-              transition: 'all 0.25s ease',
-            }}>
-              <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: tokens.shimmer }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: tokens.e1 }} />
-                <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: tokens.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
-                  Upload & Analyse
-                </p>
-              </div>
+          <SectionCard title="Upload & Analyse" subtitle="CSV or Excel · month, revenue, costs columns" delay={0.08} style={{ overflow: 'hidden' }}>
+            <div id="upload-section">
               <FileUpload />
             </div>
-          </motion.div>
+          </SectionCard>
 
-          {/* Quick nav */}
-          <motion.div {...FADE(0.2)} style={{ marginBottom: 14 }}>
-            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: tokens.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>
-              Quick Access
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <NavCard href="/dashboard/customers" colour={tokens.e2} label="Customer Intelligence" sub="RFM · CLV · Segments"
-                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M3 20c0-3.314 2.686-6 6-6h0c3.314 0 6 2.686 6 6" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" /></svg>}
-              />
-              <NavCard href="/dashboard/pos" colour={tokens.e3} label="POS Intelligence" sub="Revenue · Velocity · BCG"
-                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M2 10h20" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /><circle cx="7" cy="15" r="1" fill="currentColor" /></svg>}
-              />
-              <NavCard href="/dashboard/benchmarks" colour={tokens.e3} label="Benchmarks" sub="QSR · Industry comparison"
-                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 20h20M5 20V14M9 20V8M13 20V11M17 20V5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" /></svg>}
-              />
-              <NavCard href="/dashboard/churn" colour={tokens.e2} label="Churn Risk" sub="Interventions · CLV at risk"
-                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-              />
-              <NavCard href="/dashboard/ops-brief" colour={tokens.e1} label="Full Intelligence Brief" sub="E1 + E2 + E3 synthesis"
-                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2z" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M12 8v4M12 16v.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>}
-              />
-            </div>
-          </motion.div>
-
-          {/* Alerts */}
+          {/* Active alerts */}
           {alerts.length > 0 && (
-            <motion.div {...FADE(0.28)}>
-              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: tokens.warn, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>
-                ⚠ Active Alerts ({alerts.length})
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {alerts.slice(0, 3).map((alert: any, i: number) => (
+            <SectionCard title={`Active Alerts`} subtitle="Variance & anomaly flags" delay={0.14}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {alerts.slice(0, 4).map((a: any, i: number) => (
                   <div key={i} style={{
-                    background: `color-mix(in srgb, ${tokens.warn} 5%, var(--bg-surface))`,
-                    border: `1px solid color-mix(in srgb, ${tokens.warn} 14%, var(--border-subtle))`,
-                    borderRadius: 9, padding: '9px 12px',
-                    transition: 'all 0.2s ease',
+                    padding: '10px 12px', borderRadius: 8,
+                    background: 'var(--bg-badge)', border: '1px solid var(--border)',
                   }}>
-                    <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: '0.76rem', fontWeight: 600, color: tokens.warn, margin: '0 0 2px' }}>{alert.title ?? alert.type}</p>
-                    <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.62rem', color: tokens.textMuted, margin: 0 }}>{alert.description ?? alert.month}</p>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>{a.title ?? a.type}</p>
+                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-3)', margin: 0 }}>{a.description ?? a.month}</p>
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </SectionCard>
           )}
+
+          {/* Quick access */}
+          <SectionCard title="Quick Access" delay={0.2}>
+            {[
+              { href: '/dashboard/customers', label: 'Customer Intelligence', sub: 'RFM · CLV · Segments',   colour: 'var(--e2)' },
+              { href: '/dashboard/pos',       label: 'POS Intelligence',      sub: 'Revenue · Velocity · BCG', colour: 'var(--e3)' },
+              { href: '/dashboard/benchmarks',label: 'Benchmarks',            sub: 'QSR · Industry targets',  colour: 'var(--e3)' },
+              { href: '/dashboard/churn',     label: 'Churn Risk',            sub: 'Interventions · CLV risk', colour: 'var(--e2)' },
+              { href: '/dashboard/ops-brief', label: 'Intelligence Brief',    sub: 'E1 + CI + Ops synthesis',  colour: 'var(--cyan)' },
+            ].map(item => (
+              <Link key={item.href} href={item.href} style={{ textDecoration: 'none', display: 'block', marginBottom: 6 }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+                  borderRadius: 8, border: '1px solid var(--border)',
+                  background: 'var(--bg-badge)', transition: 'border-color 0.15s ease',
+                }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-md)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'}
+                >
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: item.colour, flexShrink: 0 }} />
+                  <div>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{item.label}</p>
+                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', margin: 0 }}>{item.sub}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </SectionCard>
         </div>
       </div>
-    </div>
+    </>
   );
 }

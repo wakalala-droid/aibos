@@ -1,236 +1,128 @@
 'use client';
-
-export const dynamic = 'force-dynamic';
-
+import { useStore } from '@/lib/store';
+import { fmt } from '@/lib/utils';
+import KPICard from '@/components/ui/KPICard';
+import SectionCard from '@/components/ui/SectionCard';
+import ChartTooltip from '@/components/ui/ChartTooltip';
 import { motion } from 'framer-motion';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart
+  ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, ReferenceLine, Legend,
 } from 'recharts';
-import { useStore } from '@/lib/store';
-import { useCounter } from '@/hooks/useCounter';
-import { formatCurrency } from '@/lib/utils';
-
-function Card({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}
-      style={{ background: 'rgba(9,13,30,0.72)', backdropFilter: 'blur(16px)', border: '1px solid rgba(99,179,237,0.12)', borderRadius: 16, padding: '22px 24px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', position: 'relative', overflow: 'hidden' }}
-    >
-      <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(99,179,237,0.3), transparent)' }} />
-      {children}
-    </motion.div>
-  );
-}
-
-// Build breakeven chart data
-function buildBreakevenCurve(fixed: number, varRate: number) {
-  return Array.from({ length: 21 }, (_, i) => {
-    const revenue = i * 20000;
-    const totalCost = fixed + revenue * varRate;
-    return {
-      revenue,
-      totalCost,
-      fixedCost: fixed,
-      profit: revenue - totalCost,
-    };
-  });
-}
-
-function BETooltip({ active, payload, label, sym }: any) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{ background: 'rgba(9,13,30,0.96)', border: '1px solid rgba(99,179,237,0.25)', borderRadius: 10, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
-      <p style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', margin: '0 0 8px' }}>Revenue: {formatCurrency(label, true, sym)}</p>
-      {payload.map((e: any) => (
-        <div key={e.name} style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: e.stroke || e.color, marginTop: 3, flexShrink: 0 }}/>
-          <span style={{ fontSize: '0.7rem', color: '#4a6285', fontFamily: 'DM Mono, monospace' }}>{e.name}:</span>
-          <span style={{ fontSize: '0.76rem', color: e.value >= 0 ? '#e2eeff' : '#ef4444', fontFamily: 'Outfit, sans-serif', fontWeight: 500 }}>{formatCurrency(e.value, true, sym)}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Contribution margin gauge
-function ContribGauge({ pct, colour }: { pct: number; colour: string }) {
-  const animated = useCounter(pct, { duration: 1200, delay: 300, decimals: 1 });
-  const R = 44, C = 2 * Math.PI * R;
-  const arc = C * (1 - animated / 100);
-  return (
-    <svg width={108} height={108} viewBox="0 0 108 108">
-      <circle cx={54} cy={54} r={R} fill="none" stroke="rgba(99,179,237,0.1)" strokeWidth={9}/>
-      <motion.circle
-        cx={54} cy={54} r={R} fill="none"
-        stroke={colour} strokeWidth={9}
-        strokeLinecap="round"
-        strokeDasharray={C}
-        initial={{ strokeDashoffset: C }}
-        animate={{ strokeDashoffset: arc }}
-        transition={{ duration: 1.2, delay: 0.3 }}
-        transform="rotate(-90 54 54)"
-      />
-      <text x={54} y={50} textAnchor="middle" fill="#e2eeff" fontSize={18} fontWeight={700} fontFamily="Outfit, sans-serif">{animated.toFixed(1)}</text>
-      <text x={54} y={64} textAnchor="middle" fill={colour} fontSize={9} fontFamily="DM Mono, monospace" letterSpacing="0.05em">%</text>
-    </svg>
-  );
-}
 
 export default function BreakevenPage() {
-  const be  = useStore(s => s.breakeven);
-  const sym = useStore(s => s.currencySymbol);
-  const varRate = 1 - be.contributionMargin / 100;
-  const curve = buildBreakevenCurve(be.fixedCosts, varRate);
+  const { breakeven, monthly, currencySymbol } = useStore();
+  const sym = currencySymbol || 'K';
 
-  const gap    = useCounter(be.gap,                 { duration: 1100, delay: 0 });
-  const current = useCounter(be.currentRevenue,     { duration: 1100, delay: 80 });
-  const beRev  = useCounter(be.breakevenRevenue,    { duration: 1100, delay: 160 });
+  // ── Null-safe: compute from monthly if breakeven is null ──────────────────
+  const totalRevenue = monthly.reduce((s, m) => s + (Number(m.Revenue) || 0), 0);
+  const totalCosts   = monthly.reduce((s, m) => s + (Number(m.Costs)   || 0), 0);
+  const months       = Math.max(monthly.length, 1);
 
-  const AXIS = { tick: { fill: '#4a6285', fontSize: 11, fontFamily: 'DM Mono, monospace' }, axisLine: { stroke: 'rgba(99,179,237,0.1)' }, tickLine: false };
+  const avgMonthlyRevenue = totalRevenue / months;
+  const avgMonthlyCosts   = totalCosts   / months;
 
-  // Sensitivity: what if variable costs change?
-  const sensitivity = [-20, -10, 0, 10, 20].map(delta => {
-    const newVarRate = varRate * (1 + delta / 100);
-    const newBE = be.fixedCosts / (1 - newVarRate);
-    return { delta: `${delta >= 0 ? '+' : ''}${delta}%`, breakevenRevenue: Math.round(newBE), change: Math.round(newBE - be.breakevenRevenue) };
+  // Use breakeven data if available, otherwise derive from monthly
+  const fixedCostPct     = 0.40;
+  const fixedCosts       = breakeven?.fixedCosts       ?? (avgMonthlyCosts * fixedCostPct);
+  const variableCosts    = breakeven?.variableCosts    ?? (avgMonthlyCosts * (1 - fixedCostPct));
+  const contribMargin    = breakeven?.contributionMargin ?? (avgMonthlyRevenue > 0 ? ((avgMonthlyRevenue - variableCosts) / avgMonthlyRevenue) : 0.28);
+  const bepRevenue       = breakeven?.breakevenRevenue ?? (contribMargin > 0 ? fixedCosts / contribMargin : 0);
+  const currentRevenue   = breakeven?.currentRevenue   ?? avgMonthlyRevenue;
+  const gap              = currentRevenue - bepRevenue;
+  const status           = gap >= 0 ? (gap / bepRevenue > 0.2 ? 'safe' : 'warning') : 'critical';
+
+  const statusColor = status === 'safe' ? 'var(--good)' : status === 'warning' ? 'var(--warn)' : 'var(--crit)';
+
+  // Build waterfall-style chart from monthly
+  const chartData = monthly.map(m => {
+    const rev  = Number(m.Revenue) || 0;
+    const cost = Number(m.Costs)   || 0;
+    const fc   = cost * fixedCostPct;
+    const vc   = cost * (1 - fixedCostPct);
+    return {
+      month: String(m.Month),
+      Revenue: Math.round(rev),
+      FixedCosts: Math.round(fc),
+      VarCosts:   Math.round(vc),
+      Breakeven:  Math.round(bepRevenue),
+    };
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1400, margin: '0 auto' }}>
+    <>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
+        <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Breakeven Analysis</h1>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Fixed costs · variable costs · contribution margin · breakeven point</p>
+      </div>
 
-      {/* Status hero */}
-      <Card delay={0}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-          <div style={{ textAlign: 'center' }}>
-            <ContribGauge pct={be.contributionMargin} colour="#10b981"/>
-            <p style={{ fontSize: '0.62rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', marginTop: 4 }}>Contribution Margin</p>
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 12px rgba(16,185,129,0.6)' }}/>
-              <span style={{ fontSize: '1rem', fontWeight: 700, color: '#10b981', fontFamily: 'Outfit, sans-serif' }}>
-                {be.status === 'above' ? 'Above Breakeven' : 'Below Breakeven'}
-              </span>
-            </div>
-            <p style={{ fontSize: '0.72rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 20px', lineHeight: 1.6 }}>
-              Current revenue of {formatCurrency(be.currentRevenue, true, sym)} exceeds the breakeven point of {formatCurrency(be.breakevenRevenue, true, sym)} by {formatCurrency(be.gap, true, sym)} ({((be.gap / be.breakevenRevenue) * 100).toFixed(0)}% safety margin).
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-              {[
-                { label: 'Current Revenue', value: formatCurrency(be.currentRevenue, true, sym), colour: '#60a5fa' },
-                { label: 'Breakeven Point', value: formatCurrency(be.breakevenRevenue, true, sym), colour: '#f59e0b' },
-                { label: 'Safety Margin',   value: `+${formatCurrency(be.gap, true, sym)}`, colour: '#10b981' },
-              ].map(item => (
-                <div key={item.label} style={{ background: 'rgba(99,179,237,0.04)', borderRadius: 10, padding: '12px 14px' }}>
-                  <p style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', textTransform: 'uppercase', margin: '0 0 4px' }}>{item.label}</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'Outfit, sans-serif', color: item.colour, margin: 0 }}>{item.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* KPI cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+        <KPICard label="BREAKEVEN REVENUE" value={fmt(bepRevenue, false, sym)} sub="monthly target"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M12 3v18" stroke="var(--cyan)" strokeWidth="1.5" strokeLinecap="round" opacity=".4"/><path d="M5 19L19 5" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round"/></svg>}
+          iconBg="rgba(0,212,255,0.12)" sparkData={[bepRevenue*0.9, bepRevenue*0.95, bepRevenue, bepRevenue, bepRevenue, bepRevenue]} sparkColor="var(--cyan)" delay={0} />
+        <KPICard label="CURRENT REVENUE" value={fmt(currentRevenue, false, sym)} sub="monthly average"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+          iconBg="rgba(52,211,153,0.15)" sparkData={monthly.slice(-6).map(m => Number(m.Revenue) || 0)} sparkColor="var(--good)" delay={0.06} />
+        <KPICard label="FIXED COSTS" value={fmt(fixedCosts, false, sym)} sub={`${(fixedCostPct*100).toFixed(0)}% of total costs`}
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="var(--warn)" strokeWidth="1.5" fill="none"/><path d="M3 9h18M9 21V9" stroke="var(--warn)" strokeWidth="1.3" strokeLinecap="round"/></svg>}
+          iconBg="rgba(251,191,36,0.15)" sparkData={[fixedCosts*0.95, fixedCosts*0.98, fixedCosts, fixedCosts, fixedCosts, fixedCosts]} sparkColor="var(--warn)" delay={0.12} />
+        <KPICard label="CONTRIBUTION MARGIN" value={`${(contribMargin * 100).toFixed(1)}%`} sub="after variable costs"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+          iconBg="rgba(167,139,250,0.15)" sparkData={[25,26,27,27.5,28,contribMargin*100]} sparkColor="var(--purple)" delay={0.18} />
+      </div>
+
+      {/* Status banner */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        style={{ background: 'var(--bg-card)', border: `1px solid ${statusColor}`, borderRadius: 12, padding: '18px 22px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: 'var(--shadow-card)' }}>
+        <div>
+          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Breakeven Status</p>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 700, color: statusColor, margin: 0 }}>
+            {status === 'safe' ? `${fmt(gap, false, sym)} above breakeven` : status === 'warning' ? `Only ${fmt(gap, false, sym)} above breakeven — tight margin` : `${fmt(Math.abs(gap), false, sym)} below breakeven — revenue required`}
+          </p>
         </div>
-      </Card>
+        <span className="badge" style={{ color: statusColor, background: `color-mix(in srgb, ${statusColor} 12%, transparent)`, borderColor: `color-mix(in srgb, ${statusColor} 30%, transparent)`, fontSize: '0.7rem', padding: '4px 12px' }}>
+          {status.toUpperCase()}
+        </span>
+      </motion.div>
 
-      {/* Breakeven chart */}
-      <Card delay={0.1}>
-        <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 4px' }}>Breakeven Chart</h3>
-        <p style={{ fontSize: '0.68rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 20px' }}>Revenue vs total costs · intersection = breakeven · shaded = profit zone</p>
-        <ResponsiveContainer width="100%" height={280}>
-          <LineChart data={curve} margin={{ top: 8, right: 8, bottom: 0, left: -10 }}>
-            <defs>
-              <linearGradient id="profitZone" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.12}/>
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,179,237,0.07)" />
-            <XAxis dataKey="revenue" {...AXIS} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}K`}/>
-            <YAxis {...AXIS} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}K`}/>
-            <Tooltip content={<BETooltip sym={sym}/>}/>
-            <ReferenceLine x={be.breakevenRevenue} stroke="rgba(245,158,11,0.5)" strokeDasharray="6 3"
-              label={{ value: `BE: ${formatCurrency(be.breakevenRevenue, true, sym)}`, fill: '#f59e0b', fontSize: 10, fontFamily: 'DM Mono, monospace' }}/>
-            <ReferenceLine x={be.currentRevenue} stroke="rgba(96,165,250,0.5)" strokeDasharray="6 3"
-              label={{ value: `Now: ${formatCurrency(be.currentRevenue, true, sym)}`, fill: '#60a5fa', fontSize: 10, fontFamily: 'DM Mono, monospace' }}/>
-            <Line type="monotone" dataKey="revenue"   name="Revenue"     stroke="#60a5fa" strokeWidth={2.5} dot={false}/>
-            <Line type="monotone" dataKey="totalCost" name="Total Costs" stroke="#ef4444" strokeWidth={2.5} dot={false} strokeDasharray="8 4"/>
-            <Line type="monotone" dataKey="fixedCost" name="Fixed Costs" stroke="#f59e0b" strokeWidth={1.5} dot={false} strokeDasharray="4 4" opacity={0.6}/>
-          </LineChart>
-        </ResponsiveContainer>
-      </Card>
+      {/* Chart */}
+      {chartData.length > 0 && (
+        <SectionCard title="Revenue vs Cost Structure" subtitle="Monthly · fixed costs · variable costs · breakeven threshold" delay={0.14} style={{ marginBottom: 20 }}>
+          <ResponsiveContainer width="100%" height={260}>
+            <ComposedChart data={chartData}>
+              <CartesianGrid stroke="var(--border)" vertical={false} />
+              <XAxis dataKey="month" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}k`} />
+              <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
+              <Bar dataKey="FixedCosts"  stackId="a" fill="var(--warn)"    fillOpacity={0.6} name="Fixed Costs"    radius={[0,0,0,0]} />
+              <Bar dataKey="VarCosts"    stackId="a" fill="var(--purple)"  fillOpacity={0.6} name="Variable Costs" radius={[4,4,0,0]} />
+              <Line type="monotone" dataKey="Revenue"   stroke="var(--good)" strokeWidth={2.2} dot={{ r: 4, fill: 'var(--good)', strokeWidth: 0 }} name="Revenue" />
+              <ReferenceLine y={bepRevenue} stroke="var(--cyan)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: `BEP: ${sym}${(bepRevenue/1000).toFixed(0)}k`, fill: 'var(--cyan)', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, position: 'insideTopRight' }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </SectionCard>
+      )}
 
-      {/* Cost structure + sensitivity */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-
-        {/* Cost structure */}
-        <Card delay={0.15}>
-          <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 16px' }}>Cost Structure</h3>
+      {/* Cost breakdown */}
+      <SectionCard title="Cost Structure Breakdown" subtitle="Fixed vs variable cost analysis" delay={0.2}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {[
-            { label: 'Fixed Costs',    value: be.fixedCosts,    pct: (be.fixedCosts / (be.fixedCosts + be.variableCosts) * 100).toFixed(0),    colour: '#f59e0b' },
-            { label: 'Variable Costs', value: be.variableCosts, pct: (be.variableCosts / (be.fixedCosts + be.variableCosts) * 100).toFixed(0), colour: '#60a5fa' },
+            { label: 'Fixed Costs', value: fixedCosts,    pct: fixedCostPct * 100,           color: 'var(--warn)',   desc: 'Rent, salaries, insurance — constant regardless of sales' },
+            { label: 'Variable Costs', value: variableCosts, pct: (1 - fixedCostPct) * 100,  color: 'var(--purple)', desc: 'COGS, commissions, packaging — scale with revenue' },
           ].map(item => (
-            <div key={item.label} style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: '0.75rem', color: '#d4ddf0', fontFamily: 'Outfit, sans-serif' }}>{item.label}</span>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <span style={{ fontSize: '0.75rem', color: item.colour, fontFamily: 'Outfit, sans-serif', fontWeight: 600 }}>{formatCurrency(item.value, true, sym)}</span>
-                  <span style={{ fontSize: '0.65rem', color: '#4a6285', fontFamily: 'DM Mono, monospace' }}>{item.pct}%</span>
-                </div>
+            <div key={item.label} style={{ background: 'var(--bg-badge)', borderRadius: 10, padding: '16px 18px', border: '1px solid var(--border)' }}>
+              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>{item.label}</p>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: item.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{fmt(item.value, false, sym)}</p>
+              <div className="progress-track" style={{ marginBottom: 6 }}>
+                <motion.div className="progress-fill" style={{ background: item.color }} initial={{ width: 0 }} animate={{ width: `${item.pct}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
               </div>
-              <div style={{ height: 8, background: 'rgba(99,179,237,0.08)', borderRadius: 999, overflow: 'hidden' }}>
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${item.pct}%` }}
-                  transition={{ duration: 1, delay: 0.4 }}
-                  style={{ height: '100%', borderRadius: 999, background: item.colour }}
-                />
-              </div>
+              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', margin: 0 }}>{item.desc}</p>
             </div>
           ))}
-          <div style={{ marginTop: 20, padding: '12px 14px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 10 }}>
-            <p style={{ fontSize: '0.62rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 4px', textTransform: 'uppercase' }}>Contribution Margin</p>
-            <p style={{ fontSize: '1.3rem', fontWeight: 700, color: '#10b981', fontFamily: 'Outfit, sans-serif', margin: 0 }}>{be.contributionMargin}%</p>
-            <p style={{ fontSize: '0.62rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '4px 0 0' }}>For every {sym}1 of revenue, {sym}{(be.contributionMargin/100).toFixed(2)} covers fixed costs & profit</p>
-          </div>
-        </Card>
-
-        {/* Sensitivity table */}
-        <Card delay={0.2}>
-          <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 4px' }}>Variable Cost Sensitivity</h3>
-          <p style={{ fontSize: '0.65rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 16px' }}>How breakeven shifts if variable costs change</p>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid rgba(99,179,237,0.1)' }}>
-                {['VC Change', 'New Breakeven', 'Δ vs Base'].map(h => (
-                  <th key={h} style={{ textAlign: 'left', padding: '6px 10px', fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 400 }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sensitivity.map((row, i) => (
-                <motion.tr
-                  key={row.delta}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.25 + i * 0.06 }}
-                  style={{
-                    borderBottom: '1px solid rgba(99,179,237,0.05)',
-                    background: row.delta === '0%' ? 'rgba(99,179,237,0.06)' : 'transparent',
-                  }}
-                >
-                  <td style={{ padding: '9px 10px', fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: row.delta === '0%' ? '#60a5fa' : '#d4ddf0', fontWeight: row.delta === '0%' ? 600 : 400 }}>
-                    {row.delta === '0%' ? `${row.delta} (Base)` : row.delta}
-                  </td>
-                  <td style={{ padding: '9px 10px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff', fontWeight: 500 }}>{formatCurrency(row.breakevenRevenue, true, sym)}</td>
-                  <td style={{ padding: '9px 10px', fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: row.change <= 0 ? '#10b981' : '#ef4444', fontWeight: 500 }}>
-                    {row.change === 0 ? '—' : (row.change > 0 ? '+' : '') + formatCurrency(row.change, true, sym)}
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-      </div>
-    </div>
+        </div>
+      </SectionCard>
+    </>
   );
 }
