@@ -1,368 +1,252 @@
 'use client';
-
-export const dynamic = 'force-dynamic';
-
+import { useStore } from '@/lib/store';
+import { fmt } from '@/lib/utils';
+import KPICard from '@/components/ui/KPICard';
+import SectionCard from '@/components/ui/SectionCard';
+import ChartTooltip from '@/components/ui/ChartTooltip';
 import { motion } from 'framer-motion';
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, ReferenceLine, Cell,
+  Tooltip, ResponsiveContainer, ReferenceLine,
+  BarChart, Bar, Cell,
 } from 'recharts';
-import { useStore, severityConfig } from '@/lib/store';
-import { formatCurrency } from '@/lib/utils';
 
-// ── Shared card ────────────────────────────────────────────────────────────────
-function Card({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay }}
-      style={{
-        background:     'rgba(9,13,30,0.82)',
-        backdropFilter: 'blur(20px)',
-        border:         '1px solid rgba(99,179,237,0.1)',
-        borderRadius:   16,
-        padding:        '22px 24px',
-        boxShadow:      '0 4px 32px rgba(0,0,0,0.35)',
-        position:       'relative',
-        overflow:       'hidden',
-      }}
-    >
-      <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: 'linear-gradient(90deg,transparent,rgba(99,179,237,0.25),transparent)' }} />
-      {children}
-    </motion.div>
-  );
-}
-
-// ── Anomaly stat card — glow only, no accent border ────────────────────────────
-function AnomalyStatCard({ label, value, suffix, colour, glow, delay = 0, pulse = false }: {
-  label: string; value: number | string; suffix: string;
-  colour: string; glow: string; delay?: number; pulse?: boolean;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={pulse
-        ? { opacity: 1, y: 0 }
-        : { opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-      style={{
-        background:     'rgba(9,13,30,0.88)',
-        backdropFilter: 'blur(20px)',
-        border:         `1px solid ${colour}18`,
-        borderRadius:   14,
-        padding:        '22px 24px',
-        boxShadow:      `0 4px 32px rgba(0,0,0,0.4), 0 0 40px ${glow}`,
-        position:       'relative',
-        overflow:       'hidden',
-      }}
-    >
-      {/* Pulse ring for critical */}
-      {pulse && (
-        <motion.div
-          animate={{ opacity: [0, 0.35, 0], scale: [0.85, 1.15, 0.85] }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ position: 'absolute', inset: 0, borderRadius: 14, border: `1px solid ${colour}`, pointerEvents: 'none' }}
-        />
-      )}
-
-      {/* Ambient glow orb */}
-      <div style={{ position: 'absolute', top: -32, right: -32, width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle, ${glow}, transparent 70%)`, pointerEvents: 'none' }} />
-      {/* Floor gradient */}
-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 80% 0%, ${colour}09 0%, transparent 65%)`, pointerEvents: 'none' }} />
-
-      <p style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>{label}</p>
-
-      <motion.p
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: delay + 0.15 }}
-        style={{ fontSize: '2rem', fontWeight: 700, fontFamily: 'Outfit, sans-serif', color: colour, margin: 0, letterSpacing: '-0.03em', lineHeight: 1 }}
-      >
-        {value}<span style={{ fontSize: '1rem', fontWeight: 400, fontFamily: 'DM Mono, monospace', marginLeft: 4 }}>{suffix}</span>
-      </motion.p>
-    </motion.div>
-  );
-}
-
-// ── Z-score gauge ──────────────────────────────────────────────────────────────
-function ZScoreGauge({ score, colour }: { score: number; colour: string }) {
-  const pct = Math.min((score / 5) * 100, 100);
-  return (
-    <div style={{ width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: '0.58rem', color: '#2d4a70', fontFamily: 'DM Mono, monospace' }}>0σ</span>
-        <span style={{ fontSize: '0.58rem', color: '#f59e0b', fontFamily: 'DM Mono, monospace' }}>2σ</span>
-        <span style={{ fontSize: '0.58rem', color: '#ef4444', fontFamily: 'DM Mono, monospace' }}>3σ+</span>
-      </div>
-      <div style={{ height: 5, background: 'rgba(99,179,237,0.07)', borderRadius: 999, overflow: 'hidden', position: 'relative' }}>
-        <div style={{ position: 'absolute', left: '40%', top: 0, bottom: 0, width: 1, background: 'rgba(245,158,11,0.35)' }} />
-        <div style={{ position: 'absolute', left: '60%', top: 0, bottom: 0, width: 1, background: 'rgba(239,68,68,0.35)' }} />
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 1.1, ease: 'easeOut' }}
-          style={{ height: '100%', borderRadius: 999, background: colour, boxShadow: `0 0 8px ${colour}80` }}
-        />
-      </div>
-      <div style={{ textAlign: 'right', marginTop: 4 }}>
-        <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: colour, fontWeight: 600 }}>{score.toFixed(1)}σ</span>
-      </div>
-    </div>
-  );
-}
-
-// ── Scatter tooltip ────────────────────────────────────────────────────────────
-function AnomalyTooltip({ active, payload, sym }: any) {
-  if (!active || !payload?.length) return null;
-  const d = payload[0].payload;
-  return (
-    <div style={{
-      background:     'rgba(7,10,24,0.97)',
-      border:         `1px solid ${d.colour}30`,
-      borderRadius:   12,
-      padding:        '12px 16px',
-      boxShadow:      `0 16px 48px rgba(0,0,0,0.6), 0 0 20px ${d.colour}10`,
-      backdropFilter: 'blur(16px)',
-    }}>
-      <p style={{ fontSize: '0.78rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 6px' }}>{d.month}</p>
-      <p style={{ fontSize: '0.68rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: '0 0 4px' }}>Costs: {formatCurrency(d.y, true, sym)}</p>
-      <p style={{ fontSize: '0.68rem', color: d.colour, fontFamily: 'DM Mono, monospace', margin: 0, fontWeight: 600 }}>Z-score: {d.z.toFixed(2)}σ</p>
-    </div>
-  );
-}
-
-// ── Scatter data builder ───────────────────────────────────────────────────────
-function buildScatterData(monthly: ReturnType<typeof useStore.getState>['monthly']) {
-  if (!monthly.length) return { data: [], mean: 0, std: 0 };
-  const mean = monthly.reduce((s, m) => s + m.costs, 0) / monthly.length;
-  const std  = Math.sqrt(monthly.reduce((s, m) => s + Math.pow(m.costs - mean, 2), 0) / monthly.length) || 1;
-  return {
-    data: monthly.map((m, i) => {
-      const z = Math.abs((m.costs - mean) / std);
-      return {
-        x:      i + 1,
-        y:      m.costs,
-        z,
-        month:  m.month,
-        colour: z >= 3 ? '#EF4444' : z >= 2 ? '#F59E0B' : '#60A5FA',
-      };
-    }),
-    mean,
-    std,
-  };
-}
-
-function normalizeAnomaly(anomaly: any, index: number) {
-  const severity = anomaly.severity ?? 'info';
-  return {
-    id: anomaly.id ?? `anomaly-${index}`,
-    month: anomaly.month ?? 'N/A',
-    field: anomaly.field ?? anomaly.metric ?? 'Metric',
-    value: Number(anomaly.value ?? anomaly.change_pct ?? 0),
-    expected: Number(anomaly.expected ?? 0),
-    zScore: Number(anomaly.zScore ?? anomaly.z_score ?? 0),
-    severity,
-  };
-}
-
-// ── Page ───────────────────────────────────────────────────────────────────────
 export default function AnomalyPage() {
-  const anomalies  = useStore(s => s.anomalies);
-  const monthly    = useStore(s => s.monthly);
-  const sym        = useStore(s => s.currencySymbol);
-  const { data: scatterData, mean, std } = buildScatterData(monthly);
+  const { anomalies, monthly, alerts, currencySymbol } = useStore();
+  const sym = currencySymbol || 'K';
 
-  const normalizedAnomalies = anomalies.map(normalizeAnomaly);
-  const critCount = normalizedAnomalies.filter(a => a.severity === 'critical').length;
-  const highCount = normalizedAnomalies.filter(a => a.severity === 'high').length;
-  const avgZ      = normalizedAnomalies.length
-    ? +(normalizedAnomalies.reduce((s, a) => s + a.zScore, 0) / normalizedAnomalies.length).toFixed(1)
+  // ── Null-safe: derive anomalies from monthly if store.anomalies is empty ─
+  const derivedAnomalies = anomalies.length > 0
+    ? anomalies
+    : (() => {
+        if (monthly.length < 3) return [];
+        const revenues = monthly.map(m => Number(m.Revenue) || 0);
+        const costs    = monthly.map(m => Number(m.Costs)   || 0);
+        const mean     = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / arr.length;
+        const std      = (arr: number[]) => {
+          const m = mean(arr);
+          return Math.sqrt(arr.reduce((s, v) => s + (v - m) ** 2, 0) / arr.length);
+        };
+        const revMean  = mean(revenues), revStd = std(revenues);
+        const costMean = mean(costs),    costStd = std(costs);
+        const result: any[] = [];
+        monthly.forEach((m, i) => {
+          const rev  = revenues[i];
+          const cost = costs[i];
+          const revZ  = revStd  > 0 ? Math.abs((rev  - revMean)  / revStd)  : 0;
+          const costZ = costStd > 0 ? Math.abs((cost - costMean) / costStd) : 0;
+          if (revZ > 1.5) result.push({ id: `r-${i}`, month: String(m.Month), field: 'Revenue', value: rev,  expected: Math.round(revMean),  zScore: Math.round(revZ  * 10) / 10, severity: revZ  > 2 ? 'critical' : 'warning' });
+          if (costZ > 1.5) result.push({ id: `c-${i}`, month: String(m.Month), field: 'Costs',   value: cost, expected: Math.round(costMean), zScore: Math.round(costZ * 10) / 10, severity: costZ > 2 ? 'critical' : 'warning' });
+        });
+        return result;
+      })();
+
+  const critical = derivedAnomalies.filter((a: any) => a.severity === 'critical');
+  const warnings = derivedAnomalies.filter((a: any) => a.severity === 'warning');
+  const maxZ     = derivedAnomalies.length > 0
+    ? Math.max(...derivedAnomalies.map((a: any) => Number(a.zScore) || 0))
     : 0;
 
-  const sigma2 = mean + 2 * std;
-  const sigma3 = mean + 3 * std;
+  // Build Z-score scatter data from monthly
+  const scatterData = monthly.map((m, i) => {
+    const rev  = Number(m.Revenue) || 0;
+    const cost = Number(m.Costs)   || 0;
+    const revenues = monthly.map(x => Number(x.Revenue) || 0);
+    const costs    = monthly.map(x => Number(x.Costs)   || 0);
+    const rMean = revenues.reduce((s, v) => s + v, 0) / Math.max(revenues.length, 1);
+    const cMean = costs.reduce((s, v) => s + v, 0) / Math.max(costs.length, 1);
+    const rStd  = Math.sqrt(revenues.reduce((s, v) => s + (v - rMean) ** 2, 0) / Math.max(revenues.length, 1)) || 1;
+    const cStd  = Math.sqrt(costs.reduce((s, v) => s + (v - cMean) ** 2, 0) / Math.max(costs.length, 1)) || 1;
+    return {
+      month: String(m.Month),
+      revZ:  Math.round(Math.abs((rev  - rMean) / rStd) * 10) / 10,
+      costZ: Math.round(Math.abs((cost - cMean) / cStd) * 10) / 10,
+      revenue: rev,
+      cost,
+    };
+  });
 
-  const AXIS = {
-    tick:     { fill: '#4a6285', fontSize: 11, fontFamily: 'DM Mono, monospace' },
-    axisLine: { stroke: 'rgba(99,179,237,0.07)' },
-    tickLine: false,
-  };
+  const severityColor = (s: string) =>
+    s === 'critical' ? 'var(--crit)' : s === 'warning' ? 'var(--warn)' : 'var(--info)';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1400, margin: '0 auto' }}>
-
-      {/* ── Stat cards ─────────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
-        <AnomalyStatCard label="Total Anomalies" value={anomalies.length} suffix="detected" colour="#60A5FA" glow="rgba(96,165,250,0.10)"   delay={0}    />
-        <AnomalyStatCard label="Critical (≥3σ)"  value={critCount}       suffix="flags"    colour="#EF4444" glow="rgba(239,68,68,0.12)"    delay={0.07} pulse={critCount > 0} />
-        <AnomalyStatCard label="High (≥2σ)"      value={highCount}       suffix="flags"    colour="#F59E0B" glow="rgba(245,158,11,0.10)"   delay={0.14} />
-        <AnomalyStatCard label="Avg Z-Score"      value={avgZ}            suffix="σ"        colour="#A78BFA" glow="rgba(167,139,250,0.10)"  delay={0.21} />
+    <>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
+          Financial Intelligence
+        </p>
+        <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
+          Anomaly Intelligence
+        </h1>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
+          Statistical outlier detection · Z-score analysis · variance flags
+        </p>
       </div>
 
-      {/* ── Anomaly cards ─────────────────────────────────────────────── */}
-      <section>
-        <h2 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 16px', letterSpacing: '-0.01em' }}>Detected Anomalies</h2>
-        {normalizedAnomalies.length === 0 ? (
-          <Card>
-            <p style={{ fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', textAlign: 'center', padding: '24px 0' }}>No anomalies detected</p>
-          </Card>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
-            {normalizedAnomalies.map((anomaly, i) => {
-              const cfg = severityConfig[anomaly.severity as keyof typeof severityConfig] ?? severityConfig.info;
-              const deviation = ((anomaly.value - anomaly.expected) / (anomaly.expected || 1) * 100).toFixed(1);
-              const isOver    = anomaly.value > anomaly.expected;
+      {/* KPI cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+        <KPICard
+          label="TOTAL ANOMALIES" value={String(derivedAnomalies.length)}
+          sub="statistical outliers detected"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--warn)" strokeWidth="1.5" strokeLinejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="var(--warn)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+          iconBg="rgba(251,191,36,0.15)"
+          sparkData={[0, 1, 1, 2, 2, derivedAnomalies.length]}
+          sparkColor="var(--warn)" delay={0}
+        />
+        <KPICard
+          label="CRITICAL ANOMALIES" value={String(critical.length)}
+          sub="Z-score > 2.0"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--crit)" strokeWidth="1.5" fill="none"/><path d="M12 8v5M12 16v.5" stroke="var(--crit)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+          iconBg="rgba(239,68,68,0.15)"
+          sparkData={[0, 0, 1, 1, 1, critical.length]}
+          sparkColor="var(--crit)" delay={0.06}
+        />
+        <KPICard
+          label="MAX Z-SCORE" value={maxZ.toFixed(1)}
+          sub="highest statistical deviation"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 20l5-10 4 6 3-4 4 8" stroke="var(--purple)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
+          iconBg="rgba(167,139,250,0.15)"
+          sparkData={scatterData.map(d => Math.max(d.revZ, d.costZ))}
+          sparkColor="var(--purple)" delay={0.12}
+        />
+        <KPICard
+          label="WARNINGS" value={String(warnings.length)}
+          sub="Z-score 1.5–2.0"
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="var(--blue)" strokeWidth="1.5" fill="none"/><path d="M12 9v4M12 17h.01" stroke="var(--blue)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+          iconBg="rgba(96,165,250,0.15)"
+          sparkData={[0, 1, 1, 1, 2, warnings.length]}
+          sparkColor="var(--blue)" delay={0.18}
+        />
+      </div>
+
+      {/* Z-score chart */}
+      {scatterData.length > 0 && (
+        <SectionCard title="Z-Score Distribution" subtitle="Statistical deviation from monthly mean · threshold at 2.0" delay={0.1} style={{ marginBottom: 20 }}>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={scatterData} barCategoryGap="22%" barGap={4}>
+              <CartesianGrid stroke="var(--border)" vertical={false} />
+              <XAxis dataKey="month" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
+              <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5}
+                label={{ value: 'Critical (2.0)', fill: 'var(--crit)', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, position: 'insideTopRight' }} />
+              <ReferenceLine y={1.5} stroke="var(--warn)" strokeDasharray="4 3" strokeWidth={1}
+                label={{ value: 'Warning (1.5)', fill: 'var(--warn)', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, position: 'insideTopRight' }} />
+              <Bar dataKey="revZ" name="Revenue Z" radius={[3,3,0,0]}>
+                {scatterData.map((entry, i) => (
+                  <Cell key={i} fill={entry.revZ > 2 ? 'var(--crit)' : entry.revZ > 1.5 ? 'var(--warn)' : 'var(--cyan)'} fillOpacity={0.8} />
+                ))}
+              </Bar>
+              <Bar dataKey="costZ" name="Cost Z" radius={[3,3,0,0]}>
+                {scatterData.map((entry, i) => (
+                  <Cell key={i} fill={entry.costZ > 2 ? 'var(--crit)' : entry.costZ > 1.5 ? 'var(--warn)' : 'var(--e2)'} fillOpacity={0.7} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <div style={{ display: 'flex', gap: 16, marginTop: 10 }}>
+            {[['var(--cyan)', 'Revenue Z-score'], ['var(--e2)', 'Cost Z-score']].map(([c, l]) => (
+              <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ width: 10, height: 10, borderRadius: 3, background: c as string, opacity: 0.8 }} />
+                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)' }}>{l}</span>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      )}
+
+      {/* Anomaly detail cards */}
+      {derivedAnomalies.length > 0 ? (
+        <SectionCard title="Detected Anomalies" subtitle="Statistical outliers requiring review" delay={0.16} style={{ marginBottom: 20 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {derivedAnomalies.map((a: any, i: number) => {
+              const sc = severityColor(a.severity);
+              const diff = (a.value ?? 0) - (a.expected ?? 0);
               return (
-                <motion.div
-                  key={anomaly.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.08 }}
+                <motion.div key={a.id ?? i}
+                  initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.22 + i * 0.05 }}
                   style={{
-                    background:     'rgba(9,13,30,0.88)',
-                    backdropFilter: 'blur(20px)',
-                    border:         `1px solid ${cfg.colour}18`,
-                    borderRadius:   14,
-                    padding:        '20px',
-                    boxShadow:      `0 4px 28px rgba(0,0,0,0.35), 0 0 32px ${cfg.bg}`,
-                    position:       'relative',
-                    overflow:       'hidden',
+                    display: 'grid', gridTemplateColumns: 'auto 1fr auto',
+                    gap: 12, alignItems: 'center',
+                    padding: '13px 16px', borderRadius: 10,
+                    background: 'var(--bg-badge)', border: `1px solid color-mix(in srgb, ${sc} 20%, var(--border))`,
                   }}
                 >
-                  {/* Glow orb */}
-                  <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: `radial-gradient(circle, ${cfg.colour}20, transparent 70%)`, pointerEvents: 'none' }} />
-                  {/* Floor */}
-                  <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 80% 0%, ${cfg.colour}07 0%, transparent 60%)`, pointerEvents: 'none' }} />
-
-                  {/* Header */}
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: cfg.colour, boxShadow: `0 0 8px ${cfg.colour}90`, flexShrink: 0 }} />
-                      <div>
-                        <p style={{ fontSize: '0.84rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: 0 }}>{anomaly.field}</p>
-                        <p style={{ fontSize: '0.62rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: 0 }}>{anomaly.month} · anomaly</p>
-                      </div>
-                    </div>
-                    <span style={{ fontSize: '0.58rem', fontFamily: 'DM Mono, monospace', color: cfg.colour, background: cfg.bg, border: `1px solid ${cfg.border}`, padding: '3px 9px', borderRadius: 5, flexShrink: 0 }}>
-                      {cfg.label}
-                    </span>
+                  {/* Severity indicator */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: sc }} />
+                    <div style={{ width: 1, height: 20, background: `color-mix(in srgb, ${sc} 20%, transparent)` }} />
                   </div>
 
-                  {/* Actual vs Expected */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-                    <div style={{ background: `${cfg.colour}08`, border: `1px solid ${cfg.colour}15`, borderRadius: 8, padding: '10px 12px' }}>
-                      <p style={{ fontSize: '0.58rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', margin: '0 0 5px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Actual</p>
-                      <p style={{ fontSize: '1rem', fontWeight: 700, color: cfg.colour, fontFamily: 'Outfit, sans-serif', margin: 0 }}>
-                        {anomaly.field.includes('Margin') ? `${anomaly.value}%` : formatCurrency(anomaly.value, true, sym)}
-                      </p>
+                  {/* Content */}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-1)' }}>
+                        {String(a.month)} — {String(a.field)}
+                      </span>
+                      <span className="badge" style={{ color: sc, background: `color-mix(in srgb, ${sc} 10%, transparent)`, borderColor: `color-mix(in srgb, ${sc} 25%, transparent)` }}>
+                        Z = {Number(a.zScore ?? 0).toFixed(1)}
+                      </span>
                     </div>
-                    <div style={{ background: 'rgba(99,179,237,0.04)', border: '1px solid rgba(99,179,237,0.08)', borderRadius: 8, padding: '10px 12px' }}>
-                      <p style={{ fontSize: '0.58rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', margin: '0 0 5px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Expected</p>
-                      <p style={{ fontSize: '1rem', fontWeight: 700, color: '#4a6285', fontFamily: 'Outfit, sans-serif', margin: 0 }}>
-                        {anomaly.field.includes('Margin') ? `${anomaly.expected}%` : formatCurrency(anomaly.expected, true, sym)}
-                      </p>
-                    </div>
+                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: 0 }}>
+                      Actual: {fmt(Number(a.value) || 0, false, sym)} · Expected: {fmt(Number(a.expected) || 0, false, sym)} · Δ {diff >= 0 ? '+' : ''}{fmt(diff, false, sym)}
+                    </p>
                   </div>
 
-                  {/* Deviation */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, padding: '6px 0', borderTop: '1px solid rgba(99,179,237,0.06)' }}>
-                    <span style={{ fontSize: '0.66rem', fontFamily: 'DM Mono, monospace', color: '#4a6285' }}>Deviation</span>
-                    <span style={{ fontSize: '0.74rem', fontFamily: 'DM Mono, monospace', color: isOver ? cfg.colour : '#34D399', fontWeight: 600 }}>
-                      {isOver ? '+' : ''}{deviation}%
-                    </span>
-                  </div>
-
-                  <ZScoreGauge score={anomaly.zScore} colour={cfg.colour} />
+                  {/* Severity badge */}
+                  <span className="badge" style={{ color: sc, background: `color-mix(in srgb, ${sc} 10%, transparent)`, borderColor: `color-mix(in srgb, ${sc} 25%, transparent)`, whiteSpace: 'nowrap' }}>
+                    {String(a.severity ?? 'info').toUpperCase()}
+                  </span>
                 </motion.div>
               );
             })}
           </div>
-        )}
-      </section>
-
-      {/* ── Scatter plot ──────────────────────────────────────────────── */}
-      <Card delay={0.2}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-          <div>
-            <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 4px' }}>Cost Distribution — Anomaly Scatter</h3>
-            <p style={{ fontSize: '0.65rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', margin: 0 }}>Monthly cost values plotted · σ thresholds shown</p>
+        </SectionCard>
+      ) : (
+        <SectionCard title="Anomaly Detection" subtitle="No anomalies detected in current data" delay={0.16} style={{ marginBottom: 20 }}>
+          <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style={{ margin: '0 auto 12px', display: 'block', color: 'var(--good)' }}>
+              <path d="M5 13l4 4L19 7" stroke="var(--good)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--good)', margin: '0 0 4px' }}>All clear</p>
+            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-4)', margin: 0 }}>
+              No statistical anomalies detected in the current dataset
+            </p>
           </div>
-          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-            {[['#60A5FA','Normal'],['#F59E0B','≥2σ'],['#EF4444','≥3σ']].map(([c, l]) => (
-              <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: c as string, boxShadow: `0 0 6px ${c}80` }} />
-                <span style={{ fontSize: '0.58rem', fontFamily: 'DM Mono, monospace', color: '#4a6285' }}>{l}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <ResponsiveContainer width="100%" height={240}>
-          <ScatterChart margin={{ top: 8, right: 8, bottom: 16, left: -4 }}>
-            <CartesianGrid strokeDasharray="4 4" stroke="rgba(255,255,255,0.03)" />
-            <XAxis dataKey="x" {...AXIS} label={{ value: 'Month Index', fill: '#2d4a70', fontSize: 10, fontFamily: 'DM Mono, monospace', position: 'insideBottom', offset: -8 }} />
-            <YAxis dataKey="y" {...AXIS} tickFormatter={v => `${sym}${(v / 1000).toFixed(0)}K`} />
-            <Tooltip cursor={{ fill: 'rgba(255,255,255,0.025)', stroke: 'none' }} content={<AnomalyTooltip sym={sym} />} />
-            {sigma2 > 0 && (
-              <ReferenceLine y={sigma2} stroke="rgba(245,158,11,0.3)" strokeDasharray="6 3"
-                label={{ value: '+2σ', fill: '#f59e0b', fontSize: 9, fontFamily: 'DM Mono, monospace', position: 'insideTopRight' }} />
-            )}
-            {sigma3 > 0 && (
-              <ReferenceLine y={sigma3} stroke="rgba(239,68,68,0.3)" strokeDasharray="6 3"
-                label={{ value: '+3σ', fill: '#ef4444', fontSize: 9, fontFamily: 'DM Mono, monospace', position: 'insideTopRight' }} />
-            )}
-            <Scatter data={scatterData} line={{ stroke: 'rgba(99,179,237,0.15)', strokeWidth: 1.5 }} lineType="joint">
-              {scatterData.map((entry, i) => (
-                <Cell key={i} fill={entry.colour} fillOpacity={0.85}
-                  style={{ filter: `drop-shadow(0 0 4px ${entry.colour}70)` }} />
-              ))}
-            </Scatter>
-          </ScatterChart>
-        </ResponsiveContainer>
-      </Card>
+        </SectionCard>
+      )}
 
-      {/* ── Z-score table ─────────────────────────────────────────────── */}
-      <Card delay={0.25}>
-        <h3 style={{ fontSize: '0.88rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: '0 0 16px' }}>Full Z-Score Analysis</h3>
+      {/* Monthly data table */}
+      <SectionCard title="Monthly Data Overview" subtitle="Revenue, costs and Z-scores" delay={0.24}>
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="data-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid rgba(99,179,237,0.08)' }}>
-                {['Month','Field','Actual','Expected','Deviation','Z-Score','Severity'].map(h => (
-                  <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: '#4a6285', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 400 }}>{h}</th>
-                ))}
+              <tr>
+                <th>Month</th><th>Revenue</th><th>Rev Z</th>
+                <th>Costs</th><th>Cost Z</th><th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {normalizedAnomalies.map((a, i) => {
-                const cfg = severityConfig[a.severity as keyof typeof severityConfig] ?? severityConfig.info;
-                const dev = ((a.value - a.expected) / (a.expected || 1) * 100).toFixed(1);
+              {scatterData.map((row, i) => {
+                const maxZ    = Math.max(row.revZ, row.costZ);
+                const status  = maxZ > 2 ? 'Critical' : maxZ > 1.5 ? 'Warning' : 'Normal';
+                const statCol = maxZ > 2 ? 'var(--crit)' : maxZ > 1.5 ? 'var(--warn)' : 'var(--good)';
                 return (
-                  <motion.tr
-                    key={a.id}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 + i * 0.06 }}
-                    style={{ borderBottom: '1px solid rgba(99,179,237,0.05)', transition: 'background .15s' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(99,179,237,0.03)'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: '#d4ddf0', fontWeight: 500 }}>{a.month}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#d4ddf0' }}>{a.field}</td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#e2eeff', fontWeight: 500 }}>
-                      {a.field.includes('Margin') ? `${a.value}%` : formatCurrency(a.value, true, sym)}
+                  <motion.tr key={row.month} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + i * 0.04 }}>
+                    <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.month}</td>
+                    <td>{fmt(row.revenue, false, sym)}</td>
+                    <td style={{ color: row.revZ > 2 ? 'var(--crit)' : row.revZ > 1.5 ? 'var(--warn)' : 'var(--text-3)', fontWeight: row.revZ > 1.5 ? 700 : 400 }}>
+                      {row.revZ.toFixed(2)}
                     </td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif', color: '#4a6285' }}>
-                      {a.field.includes('Margin') ? `${a.expected}%` : formatCurrency(a.expected, true, sym)}
+                    <td>{fmt(row.cost, false, sym)}</td>
+                    <td style={{ color: row.costZ > 2 ? 'var(--crit)' : row.costZ > 1.5 ? 'var(--warn)' : 'var(--text-3)', fontWeight: row.costZ > 1.5 ? 700 : 400 }}>
+                      {row.costZ.toFixed(2)}
                     </td>
-                    <td style={{ padding: '10px 12px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: a.value > a.expected ? cfg.colour : '#34D399', fontWeight: 600 }}>
-                      {a.value > a.expected ? '+' : ''}{dev}%
-                    </td>
-                    <td style={{ padding: '10px 12px' }}>
-                      <span style={{ fontSize: '0.8rem', fontFamily: 'DM Mono, monospace', color: cfg.colour, fontWeight: 700 }}>{a.zScore.toFixed(1)}σ</span>
-                    </td>
-                    <td style={{ padding: '10px 12px' }}>
-                      <span style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: cfg.colour, background: cfg.bg, border: `1px solid ${cfg.border}`, padding: '2px 9px', borderRadius: 4 }}>{cfg.label}</span>
+                    <td>
+                      <span className="badge" style={{ color: statCol, background: `color-mix(in srgb, ${statCol} 10%, transparent)`, borderColor: `color-mix(in srgb, ${statCol} 25%, transparent)` }}>
+                        {status}
+                      </span>
                     </td>
                   </motion.tr>
                 );
@@ -370,7 +254,7 @@ export default function AnomalyPage() {
             </tbody>
           </table>
         </div>
-      </Card>
-    </div>
+      </SectionCard>
+    </>
   );
 }
