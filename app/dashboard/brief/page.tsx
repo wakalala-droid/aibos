@@ -222,7 +222,7 @@ export default function BriefPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
                 <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)' }}>{health.bestMonth}</span>
                 <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--good)' }}>
-                  {fmt(Math.max(...monthly.map(m => (Number(m.Revenue) || 0) - (Number(m.Costs) || 0))), false, sym)} profit
+                  {fmt(monthly.length > 0 ? monthly.reduce((best, m) => { const p = (Number(m.Revenue)||0)-(Number(m.Costs)||0); return p > best ? p : best; }, -Infinity) : 0, false, sym)} profit
                 </span>
               </div>
               <div className="progress-track">
@@ -237,7 +237,7 @@ export default function BriefPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
                 <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)' }}>{health.worstMonth}</span>
                 <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--warn)' }}>
-                  {fmt(Math.min(...monthly.map(m => (Number(m.Revenue) || 0) - (Number(m.Costs) || 0))), false, sym)} profit
+                  {fmt(monthly.length > 0 ? monthly.reduce((worst, m) => { const p = (Number(m.Revenue)||0)-(Number(m.Costs)||0); return p < worst ? p : worst; }, Infinity) : 0, false, sym)} profit
                 </span>
               </div>
               <div className="progress-track">

@@ -44,7 +44,7 @@ export default function AnomalyPage() {
   const critical = derivedAnomalies.filter((a: any) => a.severity === 'critical');
   const warnings = derivedAnomalies.filter((a: any) => a.severity === 'warning');
   const maxZ     = derivedAnomalies.length > 0
-    ? Math.max(...derivedAnomalies.map((a: any) => Number(a.zScore) || 0))
+    ? derivedAnomalies.reduce((mx: number, a: any) => { const z = Number(a.zScore) || 0; return z > mx ? z : mx; }, 0)
     : 0;
 
   // Build Z-score scatter data from monthly

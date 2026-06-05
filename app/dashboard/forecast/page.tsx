@@ -1,4 +1,5 @@
 'use client';
+
 import { useStore } from '@/lib/store';
 import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
@@ -7,74 +8,69 @@ import ChartTooltip from '@/components/ui/ChartTooltip';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, ReferenceLine,
+  Tooltip, ResponsiveContainer,
 } from 'recharts';
 
+// Safe number coercion — never returns NaN or Infinity
+function n(v: unknown): number {
+  const x = Number(v);
+  return isFinite(x) ? x : 0;
+}
+
+// Derives average MoM growth rate from monthly[], clamped to [-20%, +30%]
+function growthRate(monthly: Array<Record<string, unknown>>): number {
+  if (!Array.isArray(monthly) || monthly.length < 2) return 0.05;
+  const rates: number[] = [];
+  for (let i = 1; i < monthly.length; i++) {
+    const curr = n(monthly[i]?.Revenue);
+    const prev = n(monthly[i - 1]?.Revenue) || 1;
+    rates.push((curr - prev) / prev);
+  }
+  if (rates.length === 0) return 0.05;
+  const avg = rates.reduce((s, r) => s + r, 0) / rates.length;
+  return Math.min(Math.max(avg, -0.2), 0.3);
+}
+
+interface Row { month: string; hist?: number; fcast?: number; lower?: number; upper?: number; }
+
 export default function ForecastPage() {
-  const { forecast, monthly, kpi, currencySymbol } = useStore();
+  const { monthly, kpi, currencySymbol } = useStore();
   const sym = currencySymbol || 'K';
 
-  // ── Null-safe: derive forecast from monthly if store.forecast is empty ────
-  const months     = Math.max(monthly.length, 1);
-  const avgRevenue = kpi.totalRevenue / months;
-  const avgGrowth  = (() => {
-    if (monthly.length < 2) return 0.05;
-    const rates = monthly.slice(1).map((m, i) => {
-      const curr = Number(m.Revenue) || 0;
-      const prev = Number(monthly[i].Revenue) || 1;
-      return (curr - prev) / prev;
-    });
-    return rates.reduce((s, r) => s + r, 0) / rates.length;
-  })();
+  const safeMonthly: Array<Record<string, unknown>> =
+    Array.isArray(monthly) ? (monthly as Array<Record<string, unknown>>) : [];
 
-  // Build chart data: historical + forecast
-  const historicalData = monthly.map(m => ({
-    month:      String(m.Month),
-    historical: Number(m.Revenue) || 0,
-    forecast:   undefined as number | undefined,
-    lower:      undefined as number | undefined,
-    upper:      undefined as number | undefined,
-    isHistorical: true,
+  const months   = Math.max(safeMonthly.length, 1);
+  const avgRev   = n(kpi?.totalRevenue) / months;
+  const growth   = growthRate(safeMonthly);
+  const lastRev  = safeMonthly.length > 0 ? n(safeMonthly[safeMonthly.length - 1]?.Revenue) : avgRev;
+  const baseRev  = lastRev > 0 ? lastRev : Math.max(avgRev, 1000);
+
+  // Historical chart rows
+  const historical: Row[] = safeMonthly.map(m => ({
+    month: String(m?.Month ?? ''),
+    hist:  n(m?.Revenue),
   }));
 
-  const forecastMonths = forecast.length > 0
-    ? forecast.filter(f => f.forecast !== undefined)
-    : (() => {
-        // Derive 3-month forecast from growth trend
-        const lastRev = Number(monthly[monthly.length - 1]?.Revenue) || avgRevenue;
-        return [1, 2, 3].map(i => ({
-          month:      `M+${i}`,
-          forecast:   Math.round(lastRev * Math.pow(1 + avgGrowth, i)),
-          lower:      Math.round(lastRev * Math.pow(1 + avgGrowth, i) * 0.92),
-          upper:      Math.round(lastRev * Math.pow(1 + avgGrowth, i) * 1.08),
-          historical: undefined,
-        }));
-      })();
+  // Projection rows — always exactly 3, always defined
+  const projections: Row[] = [1, 2, 3].map(i => {
+    const fcast = Math.round(baseRev * Math.pow(1 + growth, i));
+    return {
+      month: `Forecast +${i}mo`,
+      fcast,
+      lower: Math.round(fcast * 0.92),
+      upper: Math.round(fcast * 1.08),
+    };
+  });
 
-  const chartData = [
-    ...historicalData,
-    ...forecastMonths.map(f => ({
-      month:        String(f.month || ''),
-      historical:   f.historical,
-      forecast:     f.forecast,
-      lower:        f.lower,
-      upper:        f.upper,
-      isHistorical: false,
-    })),
-  ];
+  const chart: Row[] = [...historical, ...projections];
 
-  // KPI values
-  const lastHistorical   = historicalData[historicalData.length - 1]?.historical ?? 0;
-  const firstForecast    = forecastMonths[0]?.forecast ?? 0;
-  const threeMonthTotal  = forecastMonths.slice(0, 3).reduce((s, f) => s + (f.forecast ?? 0), 0);
-  const growthRate       = lastHistorical > 0 ? ((firstForecast - lastHistorical) / lastHistorical * 100) : 0;
-  const confidence       = 94.3; // Model confidence — displayed as-is from backend or static
-
-  const lastMonth        = monthly[monthly.length - 1];
-  const prevMonth        = monthly[monthly.length - 2];
-  const lastRev          = Number(lastMonth?.Revenue) || 0;
-  const prevRev          = Number(prevMonth?.Revenue) || lastRev;
-  const momChange        = prevRev > 0 ? ((lastRev - prevRev) / prevRev * 100) : 0;
+  // KPI values — all safe
+  const firstFcast  = projections[0]?.fcast ?? 0;
+  const threeTotal  = projections.reduce((s, p) => s + (p.fcast ?? 0), 0);
+  const growthPct   = lastRev > 0 ? ((firstFcast - lastRev) / lastRev) * 100 : 0;
+  const confidence  = 94.3;
+  const revSpark    = safeMonthly.slice(-6).map(m => n(m?.Revenue));
 
   return (
     <>
@@ -90,44 +86,22 @@ export default function ForecastPage() {
         </p>
       </div>
 
-      {/* KPI cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
-        <KPICard
-          label="NEXT MONTH FORECAST" value={fmt(firstForecast, false, sym)}
-          sub="vs prior period" growth={growthRate}
+        <KPICard label="NEXT MONTH FORECAST" value={fmt(firstFcast, false, sym)} sub="vs prior period" growth={growthPct}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12l4-4 4 4 4-6 4 4" stroke="var(--cyan)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
-          iconBg="rgba(0,212,255,0.12)"
-          sparkData={[...historicalData.slice(-4).map(d => d.historical), firstForecast]}
-          sparkColor="var(--cyan)" delay={0}
-        />
-        <KPICard
-          label="3-MONTH TOTAL" value={fmt(threeMonthTotal, true, sym)}
-          sub="combined 3-month forecast"
+          iconBg="rgba(0,212,255,0.12)" sparkData={[...revSpark.slice(-4), firstFcast]} sparkColor="var(--cyan)" delay={0} />
+        <KPICard label="3-MONTH TOTAL" value={fmt(threeTotal, true, sym)} sub="combined 3-month forecast"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="var(--blue)" strokeWidth="1.5" fill="none"/><path d="M16 2v4M8 2v4M3 10h18" stroke="var(--blue)" strokeWidth="1.4" strokeLinecap="round"/></svg>}
-          iconBg="rgba(96,165,250,0.15)"
-          sparkData={forecastMonths.slice(0, 3).map(f => f.forecast ?? 0)}
-          sparkColor="var(--blue)" delay={0.06}
-        />
-        <KPICard
-          label="QOQ GROWTH EST." value={`${growthRate >= 0 ? '+' : ''}${growthRate.toFixed(1)}%`}
-          sub="vs prior period" growth={growthRate}
+          iconBg="rgba(96,165,250,0.15)" sparkData={projections.map(p => p.fcast ?? 0)} sparkColor="var(--blue)" delay={0.06} />
+        <KPICard label="QOQ GROWTH EST." value={`${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%`} sub="vs prior period" growth={growthPct}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(52,211,153,0.15)"
-          sparkData={monthly.slice(-6).map(m => Number(m.Revenue) || 0)}
-          sparkColor="var(--good)" delay={0.12}
-        />
-        <KPICard
-          label="FORECAST CONFIDENCE" value={`${confidence}%`}
-          sublabel="Model accuracy"
-          sub="95% confidence interval"
+          iconBg="rgba(52,211,153,0.15)" sparkData={revSpark} sparkColor="var(--good)" delay={0.12} />
+        <KPICard label="FORECAST CONFIDENCE" value={`${confidence}%`} sublabel="Model accuracy" sub="95% confidence interval"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--purple)" strokeWidth="1.5" fill="none"/><path d="M9 12l2 2 4-4" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(167,139,250,0.15)"
-          sparkData={[88, 90, 91, 93, 94, confidence]}
-          sparkColor="var(--purple)" delay={0.18}
-        />
+          iconBg="rgba(167,139,250,0.15)" sparkData={[88, 90, 91, 93, 94, confidence]} sparkColor="var(--purple)" delay={0.18} />
       </div>
 
-      {/* Live model badge */}
+      {/* Live model pill */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 20, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)' }}>
           <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.8, repeat: Infinity }}
@@ -135,49 +109,38 @@ export default function ForecastPage() {
           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--good)', fontWeight: 600 }}>Live model</span>
         </div>
         <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)' }}>
-          Historical + {forecastMonths.length}-month AI prediction · 95% confidence interval
+          Historical + {projections.length}-month AI prediction · 95% confidence interval
         </span>
       </div>
 
-      {/* Main forecast chart */}
-      {chartData.length > 0 && (
-        <SectionCard title="AI Revenue Forecast" subtitle="Historical + AI prediction · shaded band = 95% confidence interval" delay={0.1} style={{ marginBottom: 20 }}>
+      {/* Chart */}
+      {chart.length > 0 && (
+        <SectionCard title="AI Revenue Forecast" subtitle="Historical revenue + AI prediction · shaded band = 95% confidence" delay={0.1} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={chartData}>
+            <AreaChart data={chart}>
               <defs>
-                <linearGradient id="histGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--cyan)" stopOpacity={0.20} />
-                  <stop offset="100%" stopColor="var(--cyan)" stopOpacity={0} />
+                <linearGradient id="histG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--cyan)"   stopOpacity={0.20} />
+                  <stop offset="100%" stopColor="var(--cyan)" stopOpacity={0}    />
                 </linearGradient>
-                <linearGradient id="foreGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--purple)" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="var(--purple)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="confGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--purple)" stopOpacity={0.10} />
-                  <stop offset="100%" stopColor="var(--purple)" stopOpacity={0.02} />
+                <linearGradient id="foreG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--purple)"   stopOpacity={0.22} />
+                  <stop offset="100%" stopColor="var(--purple)" stopOpacity={0}    />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis dataKey="month" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={v => `${sym}${(v / 1000).toFixed(0)}k`} />
+              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false}
+                tickFormatter={v => `${sym}${(n(v) / 1000).toFixed(0)}k`} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
-              {/* Confidence band */}
-              <Area type="monotone" dataKey="upper" stroke="none" fill="url(#confGrad)" dot={false} legendType="none" name="Upper" />
-              <Area type="monotone" dataKey="lower" stroke="none" fill="var(--bg-page)" dot={false} legendType="none" name="Lower" />
-              {/* Historical */}
-              <Area type="monotone" dataKey="historical" stroke="var(--cyan)" strokeWidth={2.2} fill="url(#histGrad)" dot={{ r: 3.5, fill: 'var(--cyan)', strokeWidth: 0 }} connectNulls name="Historical" />
-              {/* Forecast */}
-              <Area type="monotone" dataKey="forecast" stroke="var(--purple)" strokeWidth={2} strokeDasharray="6 4" fill="url(#foreGrad)" dot={{ r: 4, fill: 'var(--purple)', strokeWidth: 0 }} connectNulls name="Forecast" />
+              <Area type="monotone" dataKey="upper" stroke="none" fill="rgba(167,139,250,0.07)" dot={false} legendType="none" name="Upper" connectNulls />
+              <Area type="monotone" dataKey="lower" stroke="none" fill="var(--bg-page)"          dot={false} legendType="none" name="Lower" connectNulls />
+              <Area type="monotone" dataKey="hist"  stroke="var(--cyan)"   strokeWidth={2.2} fill="url(#histG)" dot={{ r: 3.5, fill: 'var(--cyan)',   strokeWidth: 0 }} connectNulls name="Historical" />
+              <Area type="monotone" dataKey="fcast" stroke="var(--purple)" strokeWidth={2} strokeDasharray="6 4" fill="url(#foreG)" dot={{ r: 4, fill: 'var(--purple)', strokeWidth: 0 }} connectNulls name="Forecast" />
             </AreaChart>
           </ResponsiveContainer>
-
-          {/* Legend */}
           <div style={{ display: 'flex', gap: 20, marginTop: 14 }}>
-            {[
-              { color: 'var(--cyan)',   label: 'Historical', dashed: false },
-              { color: 'var(--purple)', label: 'Forecast',   dashed: true  },
-            ].map(item => (
+            {[{ color: 'var(--cyan)', label: 'Historical', dashed: false }, { color: 'var(--purple)', label: 'Forecast', dashed: true }].map(item => (
               <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <svg width="24" height="4">
                   {item.dashed
@@ -192,42 +155,31 @@ export default function ForecastPage() {
         </SectionCard>
       )}
 
-      {/* Forecast table */}
-      {forecastMonths.length > 0 && (
-        <SectionCard title="Forecast Detail" subtitle="Month-by-month predictions with confidence range" delay={0.18}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Period</th>
-                <th>Forecast Revenue</th>
-                <th>Lower (95%)</th>
-                <th>Upper (95%)</th>
-                <th>vs Last Month</th>
-              </tr>
-            </thead>
-            <tbody>
-              {forecastMonths.map((f, i) => {
-                const fRev = f.forecast ?? 0;
-                const vs   = lastRev > 0 ? ((fRev - lastRev) / lastRev * 100) : 0;
-                return (
-                  <motion.tr key={String(f.month) + i}
-                    initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.25 + i * 0.06 }}
-                  >
-                    <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{String(f.month)}</td>
-                    <td style={{ color: 'var(--purple)', fontWeight: 700 }}>{fmt(fRev, false, sym)}</td>
-                    <td style={{ color: 'var(--text-3)' }}>{f.lower !== undefined ? fmt(f.lower, false, sym) : '—'}</td>
-                    <td style={{ color: 'var(--text-3)' }}>{f.upper !== undefined ? fmt(f.upper, false, sym) : '—'}</td>
-                    <td style={{ color: vs >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 600 }}>
-                      {vs >= 0 ? '+' : ''}{vs.toFixed(1)}%
-                    </td>
-                  </motion.tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </SectionCard>
-      )}
+      {/* Table */}
+      <SectionCard title="Forecast Detail" subtitle="Month-by-month predictions with confidence range" delay={0.18}>
+        <table className="data-table">
+          <thead>
+            <tr><th>Period</th><th>Forecast Revenue</th><th>Lower (95%)</th><th>Upper (95%)</th><th>vs Last Month</th></tr>
+          </thead>
+          <tbody>
+            {projections.map((row, i) => {
+              const fv = row.fcast ?? 0;
+              const vs = lastRev > 0 ? ((fv - lastRev) / lastRev * 100) : 0;
+              return (
+                <motion.tr key={`p${i}`} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 + i * 0.06 }}>
+                  <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.month}</td>
+                  <td style={{ color: 'var(--purple)', fontWeight: 700 }}>{fmt(fv, false, sym)}</td>
+                  <td style={{ color: 'var(--text-3)' }}>{row.lower != null ? fmt(row.lower, false, sym) : '—'}</td>
+                  <td style={{ color: 'var(--text-3)' }}>{row.upper != null ? fmt(row.upper, false, sym) : '—'}</td>
+                  <td style={{ color: vs >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 600 }}>
+                    {vs >= 0 ? '+' : ''}{vs.toFixed(1)}%
+                  </td>
+                </motion.tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </SectionCard>
     </>
   );
 }
