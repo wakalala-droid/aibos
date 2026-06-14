@@ -1,79 +1,82 @@
-import { NextRequest, NextResponse } from 'next/server';
+// app/api/proxy/route.ts
+// Forwards all requests to Railway backend.
+// Handles BOTH multipart/form-data (upload) AND application/json (chat).
 
-const BACKEND =
-  process.env.BACKEND_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:8000';
+import { NextRequest, NextResponse } from "next/server";
 
-async function forward(req: NextRequest): Promise<NextResponse> {
-  const url      = new URL(req.url);
-  const stripped = url.pathname.replace(/^\/api\/proxy/, '') || '/';
-  const target   = `${BACKEND}${stripped}${url.search}`;
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://aibos-api-production.up.railway.app";
 
-  const headers = new Headers();
-  req.headers.forEach((val, key) => {
-    // Strip host — let upstream set it; strip content-length for multipart
-    if (!['host', 'content-length'].includes(key.toLowerCase())) {
-      headers.set(key, val);
-    }
-  });
+async function proxyRequest(req: NextRequest, method: string): Promise<NextResponse> {
+  // Strip the /api/proxy prefix to get the target path
+  const url = new URL(req.url);
+  const targetPath = url.pathname.replace(/^\/api\/proxy/, "") || "/";
+  const targetURL = `${API_BASE}${targetPath}${url.search}`;
 
-  let body: BodyInit | null = null;
-  const ct = req.headers.get('content-type') ?? '';
+  const ct = req.headers.get("content-type") ?? "";
 
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
-    if (ct.includes('multipart/form-data')) {
-      // For file uploads: read as FormData and re-send
-      // This strips the original boundary and lets fetch re-encode
-      try {
-        const formData = await req.formData();
-        body = formData;
-        // Remove content-type so fetch sets the correct multipart boundary
-        headers.delete('content-type');
-      } catch {
-        body = await req.blob();
-      }
-    } else {
-      body = await req.text();
-    }
+  let body: BodyInit | undefined;
+  const headers: HeadersInit = {};
+
+  // Pass through Authorization if present
+  const auth = req.headers.get("authorization");
+  if (auth) headers["authorization"] = auth;
+
+  if (method === "GET" || method === "DELETE") {
+    body = undefined;
+  } else if (ct.includes("multipart/form-data")) {
+    // UPLOAD: forward raw form data — let fetch set boundary automatically
+    // Do NOT set content-type header — fetch auto-sets it with the correct boundary
+    body = await req.blob();
+  } else if (ct.includes("application/json")) {
+    // CHAT / JSON: preserve body and content-type exactly
+    body = await req.text();
+    headers["content-type"] = "application/json";
+  } else if (ct) {
+    // Any other non-empty content-type body (e.g. text/plain)
+    body = await req.text();
+    headers["content-type"] = ct;
   }
 
   try {
-    const upstream = await fetch(target, { method: req.method, headers, body });
-
-    const respHeaders = new Headers();
-    upstream.headers.forEach((val, key) => {
-      if (key.toLowerCase() !== 'transfer-encoding') {
-        respHeaders.set(key, val);
-      }
+    const upstream = await fetch(targetURL, {
+      method,
+      headers,
+      body,
     });
 
-    // Add CORS headers
-    respHeaders.set('Access-Control-Allow-Origin', '*');
-    respHeaders.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    respHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    // Read response
+    const responseBody = await upstream.text();
 
-    const data = await upstream.arrayBuffer();
-    return new NextResponse(data, { status: upstream.status, headers: respHeaders });
+    return new NextResponse(responseBody, {
+      status: upstream.status,
+      headers: {
+        "content-type": upstream.headers.get("content-type") ?? "application/json",
+        "access-control-allow-origin": "*",
+      },
+    });
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: 'Proxy error', detail: msg }, { status: 502 });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[proxy] ${method} ${targetURL} → ${message}`);
+    return NextResponse.json(
+      { error: "Proxy error", detail: message },
+      { status: 502 }
+    );
   }
 }
 
-export const GET     = forward;
-export const POST    = forward;
-export const PUT     = forward;
-export const PATCH   = forward;
-export const DELETE  = forward;
+export async function GET(req: NextRequest) { return proxyRequest(req, "GET"); }
+export async function POST(req: NextRequest) { return proxyRequest(req, "POST"); }
+export async function PUT(req: NextRequest) { return proxyRequest(req, "PUT"); }
+export async function DELETE(req: NextRequest) { return proxyRequest(req, "DELETE"); }
+export async function PATCH(req: NextRequest) { return proxyRequest(req, "PATCH"); }
 
 export async function OPTIONS() {
   return new NextResponse(null, {
-    status: 200,
+    status: 204,
     headers: {
-      'Access-Control-Allow-Origin':  '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization",
     },
   });
 }
