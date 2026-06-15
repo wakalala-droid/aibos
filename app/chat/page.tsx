@@ -1,13 +1,12 @@
 "use client";
-
 // app/chat/page.tsx — AI CFO Chat
-// Tag: "Ask Your Business Anything"
-// Rich Groq context from uploaded data via cabinet_id
+// Headline: "Ask Your Business Anything"
+// Sends cabinet_id with every message so Groq has real business context
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFinancialStore } from "@/lib/store";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/currency";
 
 interface Message {
   id: string;
@@ -16,64 +15,86 @@ interface Message {
   ts: number;
 }
 
-const SUGGESTED = [
+const SUGGESTIONS = [
   "What's driving my highest revenue month?",
   "Where are my biggest cost risks?",
-  "How does my profit margin compare to industry benchmarks?",
-  "Give me a 3-month forecast based on my trends.",
-  "What actions should I take to improve cash flow?",
+  "Give me a 3-month forecast based on current trends.",
   "Which months showed anomalies I should investigate?",
+  "What's my breakeven revenue?",
+  "How can I improve my profit margin?",
 ];
 
-function TypingDots() {
+function Dots() {
   return (
     <div className="flex items-center gap-1 px-4 py-3">
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="w-2 h-2 rounded-full bg-[var(--cyan)]"
-          animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
-          transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
+          className="w-1.5 h-1.5 rounded-full"
+          style={{ background: "var(--cyan)" }}
+          animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
+          transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.15 }}
         />
       ))}
     </div>
   );
 }
 
-function MessageBubble({ msg }: { msg: Message }) {
+function Bubble({ msg }: { msg: Message }) {
   const isUser = msg.role === "user";
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}
+      transition={{ duration: 0.2 }}
+      className={`flex mb-4 ${isUser ? "justify-end" : "justify-start"}`}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-[var(--cyan)]/10 border border-[var(--cyan)]/30 flex items-center justify-center mr-2 mt-1 flex-shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="var(--cyan)" strokeWidth="1.5" strokeLinejoin="round"/>
-            <path d="M2 17l10 5 10-5" stroke="var(--cyan)" strokeWidth="1.5" strokeLinejoin="round"/>
-            <path d="M2 12l10 5 10-5" stroke="var(--cyan)" strokeWidth="1.5" strokeLinejoin="round"/>
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center mr-2 mt-0.5 flex-shrink-0"
+          style={{
+            background: "rgba(0,212,255,0.1)",
+            border: "1px solid rgba(0,212,255,0.25)",
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+              stroke="var(--cyan)"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
           </svg>
         </div>
       )}
       <div
-        className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+        className="max-w-[78%] px-4 py-3 rounded-2xl text-sm leading-relaxed"
+        style={
           isUser
-            ? "bg-[var(--cyan)] text-[#000] font-medium rounded-br-sm"
-            : "bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-1)] rounded-bl-sm"
-        }`}
-        style={{ fontFamily: "Inter, sans-serif" }}
+            ? {
+                background: "var(--cyan)",
+                color: "#000",
+                borderRadius: "18px 18px 4px 18px",
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 500,
+              }
+            : {
+                background: "var(--bg-card)",
+                color: "var(--text-1)",
+                border: "1px solid var(--border)",
+                borderRadius: "18px 18px 18px 4px",
+                fontFamily: "Inter, sans-serif",
+              }
+        }
       >
-        {msg.content.split("\n").map((line, i) => (
+        {msg.content.split("\n").map((line, i, arr) => (
           <span key={i}>
             {line}
-            {i < msg.content.split("\n").length - 1 && <br />}
+            {i < arr.length - 1 && <br />}
           </span>
         ))}
         <div
-          className={`text-[10px] mt-1.5 opacity-50`}
+          className="mt-1.5 text-[10px] opacity-40"
           style={{ fontFamily: "JetBrains Mono, monospace" }}
         >
           {new Date(msg.ts).toLocaleTimeString("en-ZM", {
@@ -82,61 +103,60 @@ function MessageBubble({ msg }: { msg: Message }) {
           })}
         </div>
       </div>
-      {isUser && (
-        <div className="w-8 h-8 rounded-full bg-[var(--cyan)] flex items-center justify-center ml-2 mt-1 flex-shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="8" r="4" fill="#000"/>
-            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#000" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </div>
-      )}
     </motion.div>
   );
 }
 
 export default function ChatPage() {
-  const { cabinetId, filename, monthly, activeSheet, engine } = useFinancialStore();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const store = useFinancialStore();
+  const cabinetId = store.cabinetId ?? null;
+  const filename = store.filename ?? null;
+  const monthly = store.monthly ?? [];
+  const activeSheet = store.activeSheet ?? null;
+
+  const [msgs, setMsgs] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Scroll only on new messages — not on mount
+  // Scroll only when new messages arrive — NOT on mount
   useEffect(() => {
-    if (messages.length > 0) {
+    if (msgs.length > 0) {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [msgs.length]);
 
-  // Quick financial summary for context badge
-  const totalRevenue = monthly.reduce((s, m) => s + m.revenue, 0);
-  const totalProfit = monthly.reduce((s, m) => s + m.profit, 0);
-  const avgMargin = monthly.length
-    ? monthly.reduce((s, m) => s + m.margin, 0) / monthly.length
-    : 0;
+  const totalRev = monthly.reduce((s, m) => s + (m.revenue ?? 0), 0);
+  const totalProfit = monthly.reduce((s, m) => s + (m.profit ?? 0), 0);
+  const avgMargin =
+    monthly.length > 0
+      ? monthly.reduce((s, m) => s + (m.margin ?? 0), 0) / monthly.length
+      : 0;
 
-  const sendMessage = useCallback(
+  const send = useCallback(
     async (text?: string) => {
       const content = (text ?? input).trim();
       if (!content || loading) return;
 
       const userMsg: Message = {
-        id: crypto.randomUUID(),
+        id: Math.random().toString(36).slice(2),
         role: "user",
         content,
         ts: Date.now(),
       };
-
-      setMessages((prev) => [...prev, userMsg]);
+      setMsgs((prev) => [...prev, userMsg]);
       setInput("");
       setLoading(true);
       setError(null);
 
+      // Reset textarea height
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
+
       try {
         const payload = {
-          messages: [...messages, userMsg].map((m) => ({
+          messages: [...msgs, userMsg].map((m) => ({
             role: m.role,
             content: m.content,
           })),
@@ -149,62 +169,56 @@ export default function ChatPage() {
           body: JSON.stringify(payload),
         });
 
+        const data = (await res.json()) as {
+          response?: string;
+          detail?: string;
+        };
+
         if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.detail || `Server error ${res.status}`);
+          throw new Error(data.detail ?? `Server error ${res.status}`);
         }
 
-        const data = await res.json();
-        const assistantMsg: Message = {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: data.response,
-          ts: Date.now(),
-        };
-        setMessages((prev) => [...prev, assistantMsg]);
+        setMsgs((prev) => [
+          ...prev,
+          {
+            id: Math.random().toString(36).slice(2),
+            role: "assistant",
+            content: data.response ?? "(no response)",
+            ts: Date.now(),
+          },
+        ]);
       } catch (e) {
         const errStr = (e as Error).message;
         setError(errStr);
-        // Surface error as assistant message too
-        setMessages((prev) => [
+        setMsgs((prev) => [
           ...prev,
           {
-            id: crypto.randomUUID(),
+            id: Math.random().toString(36).slice(2),
             role: "assistant",
-            content: `I encountered an error: ${errStr}\n\nPlease check the server configuration (GROQ_API_KEY on Railway).`,
+            content: `Error: ${errStr}\n\nCheck that GROQ_API_KEY is set in Railway environment variables.`,
             ts: Date.now(),
           },
         ]);
       } finally {
         setLoading(false);
-        inputRef.current?.focus();
+        textareaRef.current?.focus();
       }
     },
-    [input, messages, loading, cabinetId]
+    [input, msgs, loading, cabinetId]
   );
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  const clearChat = () => setMessages([]);
-
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: "var(--bg-page)" }}>
-      {/* ── Header ── */}
+    <div
+      className="flex flex-col h-screen overflow-hidden"
+      style={{ background: "var(--bg-page)" }}
+    >
+      {/* Header */}
       <div
         className="flex-shrink-0 px-6 py-4 border-b"
-        style={{
-          borderColor: "var(--border)",
-          background: "var(--bg-card)",
-        }}
+        style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}
       >
         <div className="flex items-center justify-between">
           <div>
-            {/* Primary tag — the headline */}
             <h1
               className="text-xl font-bold tracking-tight"
               style={{ color: "var(--text-1)", fontFamily: "Inter, sans-serif" }}
@@ -212,18 +226,20 @@ export default function ChatPage() {
               Ask Your Business Anything
             </h1>
             <p
-              className="text-xs mt-0.5"
+              className="text-[11px] mt-0.5"
               style={{
                 color: "var(--text-3)",
                 fontFamily: "JetBrains Mono, monospace",
               }}
             >
-              AI CFO • {cabinetId ? `Analysing: ${filename}` : "No data loaded — upload a file to unlock insights"}
-              {activeSheet && ` (${activeSheet})`}
+              AI CFO ·{" "}
+              {cabinetId
+                ? `${filename ?? "file"}${activeSheet ? ` (${activeSheet})` : ""} loaded`
+                : "Upload a file to unlock business-specific insights"}
             </p>
           </div>
 
-          {/* Data context badge */}
+          {/* Live data badge */}
           {cabinetId && monthly.length > 0 && (
             <div
               className="hidden md:flex items-center gap-4 px-4 py-2 rounded-xl border"
@@ -232,54 +248,52 @@ export default function ChatPage() {
                 borderColor: "var(--border)",
               }}
             >
-              <div className="text-center">
-                <div
-                  className="text-xs font-bold"
-                  style={{ color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace" }}
-                >
-                  {formatCurrency(totalRevenue)}
+              {[
+                { label: "Revenue", value: formatCurrency(totalRev), color: "var(--cyan)" },
+                {
+                  label: "Profit",
+                  value: formatCurrency(totalProfit),
+                  color: totalProfit >= 0 ? "var(--good)" : "var(--crit)",
+                },
+                {
+                  label: "Avg Margin",
+                  value: `${avgMargin.toFixed(1)}%`,
+                  color: avgMargin >= 20 ? "var(--good)" : "var(--warn)",
+                },
+              ].map((item, i) => (
+                <div key={item.label} className="flex items-center gap-4">
+                  {i > 0 && (
+                    <div
+                      className="w-px h-6"
+                      style={{ background: "var(--border)" }}
+                    />
+                  )}
+                  <div className="text-center">
+                    <div
+                      className="text-xs font-bold"
+                      style={{
+                        color: item.color,
+                        fontFamily: "JetBrains Mono, monospace",
+                      }}
+                    >
+                      {item.value}
+                    </div>
+                    <div
+                      className="text-[10px]"
+                      style={{ color: "var(--text-3)" }}
+                    >
+                      {item.label}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-[10px]" style={{ color: "var(--text-3)" }}>
-                  Revenue
-                </div>
-              </div>
-              <div className="w-px h-8" style={{ background: "var(--border)" }} />
-              <div className="text-center">
-                <div
-                  className="text-xs font-bold"
-                  style={{
-                    color: totalProfit >= 0 ? "var(--good)" : "var(--crit)",
-                    fontFamily: "JetBrains Mono, monospace",
-                  }}
-                >
-                  {formatCurrency(totalProfit)}
-                </div>
-                <div className="text-[10px]" style={{ color: "var(--text-3)" }}>
-                  Profit
-                </div>
-              </div>
-              <div className="w-px h-8" style={{ background: "var(--border)" }} />
-              <div className="text-center">
-                <div
-                  className="text-xs font-bold"
-                  style={{
-                    color: avgMargin >= 20 ? "var(--good)" : "var(--warn)",
-                    fontFamily: "JetBrains Mono, monospace",
-                  }}
-                >
-                  {avgMargin.toFixed(1)}%
-                </div>
-                <div className="text-[10px]" style={{ color: "var(--text-3)" }}>
-                  Avg Margin
-                </div>
-              </div>
+              ))}
             </div>
           )}
 
-          {messages.length > 0 && (
+          {msgs.length > 0 && (
             <button
-              onClick={clearChat}
-              className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
+              onClick={() => setMsgs([])}
+              className="text-[11px] px-3 py-1.5 rounded-lg border"
               style={{
                 borderColor: "var(--border)",
                 color: "var(--text-3)",
@@ -292,65 +306,70 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* ── Messages area ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 md:px-8">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8">
         <div className="max-w-3xl mx-auto">
-          {/* Empty state */}
-          {messages.length === 0 && (
+          {msgs.length === 0 && (
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
               className="flex flex-col items-center justify-center min-h-[50vh] text-center"
             >
-              {/* Icon */}
               <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
+                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
                 style={{
-                  background: "linear-gradient(135deg, var(--cyan)/15, var(--cyan)/5)",
-                  border: "1.5px solid var(--cyan)/30",
+                  background: "rgba(0,212,255,0.08)",
+                  border: "1px solid rgba(0,212,255,0.2)",
                 }}
               >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="var(--cyan)" strokeWidth="1.5" strokeLinejoin="round"/>
-                  <path d="M2 17l10 5 10-5" stroke="var(--cyan)" strokeWidth="1.5" strokeLinejoin="round"/>
-                  <path d="M2 12l10 5 10-5" stroke="var(--cyan)" strokeWidth="1.5" strokeLinejoin="round"/>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                    stroke="var(--cyan)"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
-
               <h2
-                className="text-2xl font-bold mb-2"
+                className="text-xl font-bold mb-2"
                 style={{ color: "var(--text-1)", fontFamily: "Inter, sans-serif" }}
               >
                 Your AI CFO is ready
               </h2>
               <p
                 className="text-sm mb-8 max-w-md leading-relaxed"
-                style={{ color: "var(--text-3)" }}
+                style={{ color: "var(--text-3)", fontFamily: "Inter, sans-serif" }}
               >
                 {cabinetId
-                  ? `I have your ${filename} data loaded. Ask me anything about your business performance, trends, risks, or opportunities.`
-                  : "Upload your financial data to unlock deep business insights. Or ask me general Zambian business questions."}
+                  ? `${filename ?? "Your file"} is loaded. Ask me anything about your business — I have your full financial data in context.`
+                  : "Upload your financial data first for business-specific insights. Or ask me general Zambian SME questions."}
               </p>
-
-              {/* Suggested questions */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
-                {SUGGESTED.map((q, i) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-xl">
+                {SUGGESTIONS.map((q, i) => (
                   <motion.button
                     key={i}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    onClick={() => sendMessage(q)}
-                    className="text-left px-4 py-3 rounded-xl border text-sm transition-all hover:border-[var(--cyan)] hover:bg-[var(--cyan)]/5"
+                    transition={{ delay: i * 0.05 }}
+                    onClick={() => send(q)}
+                    className="text-left px-4 py-3 rounded-xl border text-sm transition-all"
                     style={{
                       borderColor: "var(--border)",
                       background: "var(--bg-card)",
                       color: "var(--text-2)",
                       fontFamily: "Inter, sans-serif",
                     }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor =
+                        "var(--cyan)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor =
+                        "var(--border)";
+                    }}
                   >
-                    <span style={{ color: "var(--cyan)" }} className="mr-2">→</span>
+                    <span style={{ color: "var(--cyan)" }}>→ </span>
                     {q}
                   </motion.button>
                 ))}
@@ -358,54 +377,57 @@ export default function ChatPage() {
             </motion.div>
           )}
 
-          {/* Message list */}
           <AnimatePresence>
-            {messages.map((msg) => (
-              <MessageBubble key={msg.id} msg={msg} />
+            {msgs.map((m) => (
+              <Bubble key={m.id} msg={m} />
             ))}
           </AnimatePresence>
 
-          {/* Typing indicator */}
           {loading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex justify-start mb-4"
-            >
-              <div className="w-8 h-8 rounded-full bg-[var(--cyan)]/10 border border-[var(--cyan)]/30 flex items-center justify-center mr-2 mt-1 flex-shrink-0">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="var(--cyan)" strokeWidth="1.5" strokeLinejoin="round"/>
-                  <path d="M2 17l10 5 10-5" stroke="var(--cyan)" strokeWidth="1.5" strokeLinejoin="round"/>
-                  <path d="M2 12l10 5 10-5" stroke="var(--cyan)" strokeWidth="1.5" strokeLinejoin="round"/>
+            <div className="flex justify-start mb-4">
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center mr-2 mt-0.5 flex-shrink-0"
+                style={{
+                  background: "rgba(0,212,255,0.1)",
+                  border: "1px solid rgba(0,212,255,0.25)",
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                    stroke="var(--cyan)"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
               <div
-                className="rounded-2xl rounded-bl-sm border"
+                className="rounded-2xl border"
                 style={{
                   background: "var(--bg-card)",
                   borderColor: "var(--border)",
+                  borderRadius: "18px 18px 18px 4px",
                 }}
               >
-                <TypingDots />
+                <Dots />
               </div>
-            </motion.div>
+            </div>
           )}
-
           <div ref={bottomRef} />
         </div>
       </div>
 
-      {/* ── Error strip ── */}
+      {/* Error strip */}
       <AnimatePresence>
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-shrink-0 mx-4 mb-2 px-4 py-2 rounded-lg text-xs"
+            className="flex-shrink-0 mx-6 mb-2 px-4 py-2 rounded-lg text-xs"
             style={{
-              background: "var(--crit)/10",
-              border: "1px solid var(--crit)/30",
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.2)",
               color: "var(--crit)",
               fontFamily: "JetBrains Mono, monospace",
             }}
@@ -415,52 +437,59 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      {/* ── Input area ── */}
+      {/* Input */}
       <div
         className="flex-shrink-0 px-4 pb-4 pt-2 md:px-8 border-t"
         style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}
       >
         <div className="max-w-3xl mx-auto">
           <div
-            className="flex items-end gap-3 rounded-2xl border p-2 transition-all focus-within:border-[var(--cyan)]"
+            className="flex items-end gap-2 rounded-2xl border p-2 transition-colors"
             style={{
               borderColor: "var(--border)",
               background: "var(--bg-page)",
             }}
+            onFocus={() => {}}
           >
             <textarea
-              ref={inputRef}
+              ref={textareaRef}
               value={input}
+              rows={1}
               onChange={(e) => {
                 setInput(e.target.value);
-                // Auto-resize
                 e.target.style.height = "auto";
-                e.target.style.height = Math.min(e.target.scrollHeight, 160) + "px";
+                e.target.style.height =
+                  Math.min(e.target.scrollHeight, 140) + "px";
               }}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask your business anything… (Enter to send, Shift+Enter for new line)"
-              rows={1}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  send();
+                }
+              }}
+              placeholder="Ask your business anything… (Enter to send)"
+              disabled={loading}
               className="flex-1 bg-transparent resize-none outline-none text-sm leading-relaxed py-1 px-2"
               style={{
                 color: "var(--text-1)",
                 fontFamily: "Inter, sans-serif",
                 minHeight: "36px",
-                maxHeight: "160px",
+                maxHeight: "140px",
               }}
-              disabled={loading}
             />
             <button
-              onClick={() => sendMessage()}
+              onClick={() => send()}
               disabled={!input.trim() || loading}
               className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all"
               style={{
-                background: input.trim() && !loading ? "var(--cyan)" : "var(--bg-card)",
+                background:
+                  input.trim() && !loading ? "var(--cyan)" : "var(--bg-card)",
                 border: "1px solid var(--border)",
                 cursor: input.trim() && !loading ? "pointer" : "not-allowed",
                 opacity: input.trim() && !loading ? 1 : 0.4,
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"
                   stroke={input.trim() && !loading ? "#000" : "var(--text-3)"}
@@ -471,13 +500,15 @@ export default function ChatPage() {
               </svg>
             </button>
           </div>
-
           <p
-            className="text-center text-[10px] mt-2 opacity-40"
-            style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
+            className="text-center text-[10px] mt-1.5 opacity-40"
+            style={{
+              color: "var(--text-3)",
+              fontFamily: "JetBrains Mono, monospace",
+            }}
           >
-            AI-BOS CFO • Powered by Groq llama-3.3-70b-versatile
-            {cabinetId && " • Business data context active"}
+            AI-BOS CFO · Groq llama-3.3-70b-versatile
+            {cabinetId ? " · Business context active" : ""}
           </p>
         </div>
       </div>

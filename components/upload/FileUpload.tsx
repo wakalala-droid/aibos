@@ -1,80 +1,67 @@
 "use client";
-
-// components/FileUpload.tsx — AI-BOS Upload + Cabinet + Sheet Selector
-// Cabinet: persists uploaded files for reuse without re-upload
-// Sheet selector: switches sheets and recomputes analysis
+// components/FileUpload.tsx
+// Upload + Cabinet + Sheet Selector
+// All new store fields accessed safely with ?? fallbacks
 
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFinancialStore } from "@/lib/store";
-import { formatCurrency } from "@/lib/utils";
 
 const ACCEPTED = ".csv,.xlsx,.xlsm,.xls";
 
 export default function FileUpload() {
-  const {
-    setUploadResult,
-    setUploading,
-    setUploadError,
-    isUploading,
-    uploadError,
-    filename,
-    cabinetId,
-    sheets,
-    activeSheet,
-    isSwitchingSheet,
-    cabinet,
-    switchSheet,
-    loadFromCabinet,
-    removeFromCabinet,
-    currency,
-    setCurrency,
-  } = useFinancialStore();
+  const store = useFinancialStore();
+
+  // Safely access new fields — these exist in the new store
+  const cabinetId = store.cabinetId ?? null;
+  const sheets = store.sheets ?? [];
+  const activeSheet = store.activeSheet ?? null;
+  const isSwitchingSheet = store.isSwitchingSheet ?? false;
+  const cabinet = store.cabinet ?? [];
+  const currency = store.currency ?? "K";
 
   const [dragging, setDragging] = useState(false);
   const [showCabinet, setShowCabinet] = useState(false);
-  const [currencyInput, setCurrencyInput] = useState(currency);
+  const [localSym, setLocalSym] = useState(currency);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const doUpload = useCallback(
     async (file: File) => {
-      setUploading(true);
-      setUploadError(null);
+      store.setUploading(true);
+      store.setUploadError(null);
 
-      const formData = new FormData();
-      formData.append("file", file);
+      const form = new FormData();
+      form.append("file", file);
 
       try {
         const res = await fetch("/api/proxy/upload", {
           method: "POST",
-          body: formData,
+          body: form,
         });
-
-        const data = await res.json();
-
+        const data = (await res.json()) as Record<string, unknown>;
         if (!res.ok) {
-          throw new Error(data.detail || `Upload failed (${res.status})`);
+          throw new Error(
+            typeof data.detail === "string" ? data.detail : `Upload failed (${res.status})`
+          );
         }
-
-        // Set currency from file metadata or keep current
-        const sym = (data.currency as string) || currencyInput || "K";
-        setCurrency(sym);
-
-        setUploadResult({ ...data, filename: file.name });
+        // Apply currency from input if not returned by API
+        if (!data.currency && localSym) data.currency = localSym;
+        store.setCurrency((data.currency as string) || localSym || "K");
+        store.setUploadResult({ ...data, filename: file.name });
       } catch (e) {
-        setUploadError((e as Error).message);
+        store.setUploadError((e as Error).message);
       } finally {
-        setUploading(false);
+        store.setUploading(false);
       }
     },
-    [setUploading, setUploadError, setUploadResult, setCurrency, currencyInput]
+    [store, localSym]
   );
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setDragging(false);
-      const file = e.dataTransfer.files[0];
+      const file = e.dataTransfer.files?.[0];
       if (file) doUpload(file);
     },
     [doUpload]
@@ -88,49 +75,45 @@ export default function FileUpload() {
 
   return (
     <div className="space-y-4">
-      {/* ── Currency selector ── */}
+      {/* Currency */}
       <div className="flex items-center gap-2">
-        <label
-          className="text-xs"
+        <span
+          className="text-[11px]"
           style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
         >
           Currency symbol:
-        </label>
+        </span>
         <input
           type="text"
-          value={currencyInput}
+          value={localSym}
+          maxLength={3}
           onChange={(e) => {
-            setCurrencyInput(e.target.value);
-            if (e.target.value) setCurrency(e.target.value);
+            setLocalSym(e.target.value);
+            if (e.target.value) store.setCurrency(e.target.value);
           }}
-          className="w-16 px-2 py-1 rounded-lg border text-sm text-center"
+          className="w-12 px-2 py-1 text-sm text-center rounded-lg border outline-none"
           style={{
             background: "var(--bg-card)",
             borderColor: "var(--border)",
             color: "var(--cyan)",
             fontFamily: "JetBrains Mono, monospace",
           }}
-          maxLength={3}
-          title="Currency symbol (e.g. K, $, £)"
         />
-        <span
-          className="text-[10px]"
-          style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
-        >
-          (default: K for Kwacha)
-        </span>
       </div>
 
-      {/* ── Drop zone ── */}
+      {/* Drop zone */}
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         onClick={() => fileRef.current?.click()}
-        className="relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all"
+        className="rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all"
         style={{
           borderColor: dragging ? "var(--cyan)" : "var(--border)",
-          background: dragging ? "var(--cyan)/5" : "var(--bg-page)",
+          background: dragging ? "rgba(0,212,255,0.04)" : "var(--bg-page)",
         }}
       >
         <input
@@ -140,8 +123,7 @@ export default function FileUpload() {
           onChange={onFileChange}
           className="hidden"
         />
-
-        {isUploading ? (
+        {store.isUploading ? (
           <div className="flex flex-col items-center gap-3">
             <motion.div
               animate={{ rotate: 360 }}
@@ -149,7 +131,10 @@ export default function FileUpload() {
               className="w-10 h-10 rounded-full border-2 border-t-transparent"
               style={{ borderColor: "var(--cyan)" }}
             />
-            <p className="text-sm" style={{ color: "var(--text-2)", fontFamily: "Inter, sans-serif" }}>
+            <p
+              className="text-sm"
+              style={{ color: "var(--text-2)", fontFamily: "Inter, sans-serif" }}
+            >
               Analysing your data…
             </p>
           </div>
@@ -157,7 +142,10 @@ export default function FileUpload() {
           <div className="flex flex-col items-center gap-3">
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ background: "var(--cyan)/10", border: "1px solid var(--cyan)/30" }}
+              style={{
+                background: "rgba(0,212,255,0.08)",
+                border: "1px solid rgba(0,212,255,0.2)",
+              }}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <path
@@ -170,11 +158,17 @@ export default function FileUpload() {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium" style={{ color: "var(--text-1)", fontFamily: "Inter, sans-serif" }}>
+              <p
+                className="text-sm font-medium"
+                style={{ color: "var(--text-1)", fontFamily: "Inter, sans-serif" }}
+              >
                 Drop your financial file here
               </p>
-              <p className="text-xs mt-1" style={{ color: "var(--text-3)", fontFamily: "Inter, sans-serif" }}>
-                CSV, XLSX, XLS — Engines auto-detected
+              <p
+                className="text-xs mt-0.5"
+                style={{ color: "var(--text-3)", fontFamily: "Inter, sans-serif" }}
+              >
+                CSV · XLSX · XLS — engine auto-detected
               </p>
             </div>
             <span
@@ -191,29 +185,29 @@ export default function FileUpload() {
         )}
       </div>
 
-      {/* ── Error ── */}
+      {/* Error */}
       <AnimatePresence>
-        {uploadError && (
+        {store.uploadError && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="px-4 py-3 rounded-xl text-sm"
+            className="px-4 py-3 rounded-xl text-xs"
             style={{
-              background: "var(--crit)/10",
-              border: "1px solid var(--crit)/30",
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.25)",
               color: "var(--crit)",
               fontFamily: "JetBrains Mono, monospace",
             }}
           >
-            {uploadError}
+            {store.uploadError}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Sheet selector ── */}
+      {/* Sheet selector — only shows for multi-sheet files */}
       <AnimatePresence>
-        {filename && sheets.length > 1 && (
+        {store.filename && sheets.length > 1 && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -222,12 +216,15 @@ export default function FileUpload() {
             style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
           >
             <div className="flex items-center justify-between mb-3">
-              <h3
-                className="text-xs font-medium"
-                style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
+              <span
+                className="text-[11px] font-medium"
+                style={{
+                  color: "var(--text-3)",
+                  fontFamily: "JetBrains Mono, monospace",
+                }}
               >
-                SHEETS IN {filename}
-              </h3>
+                SHEETS — {store.filename}
+              </span>
               {isSwitchingSheet && (
                 <span
                   className="text-[10px]"
@@ -241,14 +238,16 @@ export default function FileUpload() {
               {sheets.map((sheet) => (
                 <button
                   key={sheet}
-                  onClick={() => switchSheet(sheet)}
+                  onClick={() => store.switchSheet(sheet)}
                   disabled={isSwitchingSheet}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                   style={{
-                    background: activeSheet === sheet ? "var(--cyan)" : "var(--bg-page)",
+                    background:
+                      activeSheet === sheet ? "var(--cyan)" : "var(--bg-page)",
                     color: activeSheet === sheet ? "#000" : "var(--text-2)",
                     border: "1px solid",
-                    borderColor: activeSheet === sheet ? "var(--cyan)" : "var(--border)",
+                    borderColor:
+                      activeSheet === sheet ? "var(--cyan)" : "var(--border)",
                     fontFamily: "JetBrains Mono, monospace",
                     opacity: isSwitchingSheet ? 0.5 : 1,
                     cursor: isSwitchingSheet ? "wait" : "pointer",
@@ -261,19 +260,22 @@ export default function FileUpload() {
             {activeSheet && (
               <p
                 className="text-[10px] mt-2"
-                style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
+                style={{
+                  color: "var(--text-3)",
+                  fontFamily: "JetBrains Mono, monospace",
+                }}
               >
-                Active: {activeSheet} — analysis recomputed per sheet selection
+                Active: {activeSheet} · each sheet re-computes independently
               </p>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Cabinet ── */}
+      {/* Cabinet */}
       {cabinet.length > 0 && (
         <div
-          className="rounded-2xl border"
+          className="rounded-2xl border overflow-hidden"
           style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
         >
           <button
@@ -281,35 +283,54 @@ export default function FileUpload() {
             className="w-full flex items-center justify-between px-4 py-3"
           >
             <div className="flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <rect x="2" y="3" width="20" height="18" rx="2" stroke="var(--cyan)" strokeWidth="1.5"/>
-                <path d="M8 3v18M2 9h20M2 15h6" stroke="var(--cyan)" strokeWidth="1.5"/>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <rect
+                  x="2"
+                  y="3"
+                  width="20"
+                  height="18"
+                  rx="2"
+                  stroke="var(--cyan)"
+                  strokeWidth="1.5"
+                />
+                <path d="M8 3v18M2 9h20M2 15h6" stroke="var(--cyan)" strokeWidth="1.5" />
               </svg>
               <span
                 className="text-xs font-medium"
-                style={{ color: "var(--text-2)", fontFamily: "JetBrains Mono, monospace" }}
+                style={{
+                  color: "var(--text-2)",
+                  fontFamily: "JetBrains Mono, monospace",
+                }}
               >
                 FILE CABINET
               </span>
               <span
                 className="text-[10px] px-1.5 py-0.5 rounded-full"
-                style={{ background: "var(--cyan)/15", color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace" }}
+                style={{
+                  background: "rgba(0,212,255,0.12)",
+                  color: "var(--cyan)",
+                  fontFamily: "JetBrains Mono, monospace",
+                }}
               >
                 {cabinet.length}
               </span>
             </div>
             <svg
-              width="14"
-              height="14"
+              width="12"
+              height="12"
               viewBox="0 0 24 24"
               fill="none"
               style={{
                 transform: showCabinet ? "rotate(180deg)" : "none",
                 transition: "transform 0.2s",
-                color: "var(--text-3)",
               }}
             >
-              <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <path
+                d="M6 9l6 6 6-6"
+                stroke="var(--text-3)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
             </svg>
           </button>
 
@@ -322,74 +343,79 @@ export default function FileUpload() {
                 style={{ overflow: "hidden" }}
               >
                 <div
-                  className="border-t"
+                  className="border-t divide-y"
                   style={{ borderColor: "var(--border)" }}
                 >
                   {cabinet.map((entry) => (
                     <div
                       key={entry.id}
-                      className="flex items-center justify-between px-4 py-2.5 hover:bg-[var(--bg-page)] transition-colors"
+                      className="flex items-center justify-between px-4 py-2.5"
+                      style={{ borderColor: "var(--border)" }}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <div
-                          className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+                        <span
+                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-sm flex-shrink-0"
                           style={{
                             background:
                               entry.engine === "engine3"
-                                ? "var(--e3, #10b981)/15"
+                                ? "rgba(16,185,129,0.12)"
                                 : entry.engine === "engine2"
-                                ? "var(--e2, #f97316)/15"
-                                : "var(--cyan)/15",
+                                ? "rgba(249,115,22,0.12)"
+                                : "rgba(0,212,255,0.12)",
+                            color:
+                              entry.engine === "engine3"
+                                ? "var(--e3, #10b981)"
+                                : entry.engine === "engine2"
+                                ? "var(--e2, #f97316)"
+                                : "var(--cyan)",
+                            fontFamily: "JetBrains Mono, monospace",
                           }}
                         >
-                          <span
-                            className="text-[8px] font-bold"
-                            style={{
-                              color:
-                                entry.engine === "engine3"
-                                  ? "var(--e3, #10b981)"
-                                  : entry.engine === "engine2"
-                                  ? "var(--e2, #f97316)"
-                                  : "var(--cyan)",
-                              fontFamily: "JetBrains Mono, monospace",
-                            }}
-                          >
-                            {entry.fileType.toUpperCase()}
-                          </span>
-                        </div>
+                          {entry.fileType.toUpperCase()}
+                        </span>
                         <div className="min-w-0">
                           <p
                             className="text-xs truncate font-medium"
-                            style={{ color: "var(--text-1)", fontFamily: "Inter, sans-serif" }}
+                            style={{
+                              color: "var(--text-1)",
+                              fontFamily: "Inter, sans-serif",
+                            }}
                           >
                             {entry.name}
                           </p>
                           {entry.sheets.length > 1 && (
                             <p
                               className="text-[10px]"
-                              style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
+                              style={{
+                                color: "var(--text-3)",
+                                fontFamily: "JetBrains Mono, monospace",
+                              }}
                             >
                               {entry.sheets.length} sheets
                             </p>
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                      <div className="flex items-center gap-1.5 ml-2 flex-shrink-0">
                         <button
-                          onClick={() => loadFromCabinet(entry.id)}
-                          className="text-[10px] px-2.5 py-1 rounded-md"
+                          onClick={() => store.loadFromCabinet(entry.id)}
+                          className="text-[10px] px-2 py-1 rounded-md"
                           style={{
-                            background: cabinetId === entry.id ? "var(--cyan)" : "var(--bg-page)",
-                            color: cabinetId === entry.id ? "#000" : "var(--cyan)",
-                            border: "1px solid var(--cyan)/30",
+                            background:
+                              cabinetId === entry.id
+                                ? "var(--cyan)"
+                                : "var(--bg-page)",
+                            color:
+                              cabinetId === entry.id ? "#000" : "var(--cyan)",
+                            border: "1px solid rgba(0,212,255,0.3)",
                             fontFamily: "JetBrains Mono, monospace",
                           }}
                         >
                           {cabinetId === entry.id ? "Active" : "Load"}
                         </button>
                         <button
-                          onClick={() => removeFromCabinet(entry.id)}
-                          className="text-[10px] w-6 h-6 flex items-center justify-center rounded-md"
+                          onClick={() => store.removeFromCabinet(entry.id)}
+                          className="w-6 h-6 flex items-center justify-center rounded-md text-xs"
                           style={{
                             color: "var(--text-3)",
                             border: "1px solid var(--border)",
@@ -407,9 +433,12 @@ export default function FileUpload() {
                 >
                   <p
                     className="text-[10px]"
-                    style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
+                    style={{
+                      color: "var(--text-3)",
+                      fontFamily: "JetBrains Mono, monospace",
+                    }}
                   >
-                    Cabinet stores up to 20 files. Persists across sessions.
+                    Cabinet persists across sessions · max 20 files
                   </p>
                 </div>
               </motion.div>

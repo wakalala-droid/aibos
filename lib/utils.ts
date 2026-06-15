@@ -1,23 +1,54 @@
-export const SYM = 'K';
+// lib/utils.ts — AI-BOS shared utilities
+// formatCurrency and setCurrencyGlobal imported from currency.ts
 
-export function fmt(value: number, compact = false, sym = SYM): string {
-  if (!isFinite(value)) return `${sym}0`;
-  if (compact) {
-    if (Math.abs(value) >= 1_000_000) return `${sym}${(value / 1_000_000).toFixed(1)}M`;
-    if (Math.abs(value) >= 1_000)     return `${sym}${(value / 1_000).toFixed(1)}k`;
-  }
-  return `${sym}${value.toLocaleString('en-ZM', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+export { setCurrencyGlobal, getCurrencySymbol, formatCurrency } from "./currency";
+
+/**
+ * Safe number coercion — returns 0 for null / undefined / NaN.
+ * Use this in page components instead of Number(v) to avoid NaN crashes.
+ */
+export function n(v: unknown): number {
+  const num = Number(v);
+  return Number.isFinite(num) ? num : 0;
 }
 
-export function pct(v: number, d = 1) { return `${v.toFixed(d)}%`; }
-
-export function scoreColor(s: number) {
-  if (s >= 80) return 'var(--good)';
-  if (s >= 60) return 'var(--blue)';
-  if (s >= 40) return 'var(--warn)';
-  return 'var(--crit)';
+/**
+ * Safe array max — uses reduce, never spread (avoids stack overflow).
+ */
+export function safeMax(arr: number[]): number {
+  if (!arr.length) return 0;
+  return arr.reduce((a, b) => (b > a ? b : a), arr[0]);
 }
 
-// Kept for back-compat
-export function formatCurrency(v: number, compact = false, sym = SYM) { return fmt(v, compact, sym); }
-export function setCurrencyGlobal(_s: string) {}
+/**
+ * Safe array min.
+ */
+export function safeMin(arr: number[]): number {
+  if (!arr.length) return 0;
+  return arr.reduce((a, b) => (b < a ? b : a), arr[0]);
+}
+
+/**
+ * Format a percentage with optional sign prefix.
+ */
+export function formatPct(value: number | null | undefined, decimals = 1): string {
+  const num = value ?? 0;
+  const sign = num > 0 ? "+" : "";
+  return `${sign}${num.toFixed(decimals)}%`;
+}
+
+/**
+ * Clamp a number.
+ */
+export function clamp(num: number, min: number, max: number): number {
+  return Math.min(Math.max(num, min), max);
+}
+
+/**
+ * Lightweight class-name joiner (avoids clsx dependency).
+ */
+export function cx(
+  ...classes: (string | false | null | undefined | 0)[]
+): string {
+  return classes.filter(Boolean).join(" ");
+}

@@ -1,25 +1,25 @@
 "use client";
-
 // app/data-studio/page.tsx — AI-BOS Data Studio
-// Spreadsheet-like grid with Excel formulas, AI formulas, and real data
+// Excel-like formula engine + AI formula mode + data grid
+// All store access is null-safe
 
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFinancialStore } from "@/lib/store";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/currency";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────────
 
-interface FormulaResult {
+interface ComputeResult {
   success: boolean;
   mode: "formula" | "ai";
-  formula: string;
+  formula?: string;
   formula_used?: string;
   result: unknown;
   insight?: string;
 }
 
-interface FormulaHistoryEntry {
+interface HistoryEntry {
   id: string;
   formula: string;
   result: unknown;
@@ -28,39 +28,41 @@ interface FormulaHistoryEntry {
   ts: number;
 }
 
-// ─── Formula palette ──────────────────────────────────────────────────────────
+// ── Formula palette ────────────────────────────────────────────────────────────
 
-const FORMULA_PALETTE = [
-  { label: "SUM", desc: "Sum a column", example: "SUM(revenue)", color: "var(--cyan)" },
-  { label: "AVG", desc: "Average a column", example: "AVG(profit)", color: "var(--cyan)" },
-  { label: "MAX", desc: "Highest value", example: "MAX(revenue)", color: "var(--cyan)" },
-  { label: "MIN", desc: "Lowest value", example: "MIN(costs)", color: "var(--cyan)" },
-  { label: "GROWTH", desc: "% growth first → last", example: "GROWTH(revenue)", color: "var(--e2, #f97316)" },
-  { label: "MARGIN", desc: "Profit margin %", example: "MARGIN(revenue, profit)", color: "var(--e2, #f97316)" },
-  { label: "FORECAST", desc: "Next period forecast", example: "FORECAST(revenue)", color: "var(--good)" },
-  { label: "BREAKEVEN", desc: "Breakeven revenue", example: "BREAKEVEN(fixed_costs, 0.6)", color: "var(--good)" },
-  { label: "YOY", desc: "Year-on-year growth", example: "YOY(revenue)", color: "var(--warn)" },
-  { label: "COUNT", desc: "Count non-zero values", example: "COUNT(profit)", color: "var(--text-3)" },
-  { label: "AI:", desc: "Ask AI to compute anything", example: "AI: What is our busiest quarter?", color: "var(--cyan)" },
+const PALETTE = [
+  { fn: "SUM",       desc: "Total of a column",         example: "SUM(revenue)",           color: "var(--cyan)" },
+  { fn: "AVG",       desc: "Average of a column",        example: "AVG(profit)",            color: "var(--cyan)" },
+  { fn: "MAX",       desc: "Highest value",              example: "MAX(revenue)",            color: "var(--cyan)" },
+  { fn: "MIN",       desc: "Lowest value",               example: "MIN(costs)",              color: "var(--cyan)" },
+  { fn: "COUNT",     desc: "Count non-zero rows",        example: "COUNT(profit)",           color: "var(--text-3)" },
+  { fn: "GROWTH",    desc: "% growth first → last",      example: "GROWTH(revenue)",        color: "var(--e2, #f97316)" },
+  { fn: "MARGIN",    desc: "Profit margin %",            example: "MARGIN(revenue, profit)", color: "var(--e2, #f97316)" },
+  { fn: "FORECAST",  desc: "Next-period prediction",     example: "FORECAST(revenue)",      color: "var(--good)" },
+  { fn: "BREAKEVEN", desc: "Breakeven revenue",          example: "BREAKEVEN(costs, 0.6)",  color: "var(--good)" },
+  { fn: "YOY",       desc: "Year-on-year growth %",      example: "YOY(revenue)",           color: "var(--warn)" },
+  { fn: "AI:",       desc: "Natural language formula",   example: "AI: Which month had the worst margin?", color: "var(--cyan)" },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
 function formatResult(val: unknown): string {
   if (val === null || val === undefined) return "—";
   if (Array.isArray(val)) {
-    if (val.length <= 6) return val.map((v) => (typeof v === "number" ? v.toFixed(2) : String(v))).join(", ");
-    return `[${val.length} values] avg: ${(val.reduce((s: number, v) => s + Number(v), 0) / val.length).toFixed(2)}`;
+    const nums = val.map(Number).filter(isFinite);
+    if (!nums.length) return "[]";
+    if (nums.length <= 6) return nums.map((v) => v.toFixed(2)).join(", ");
+    const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+    return `[${nums.length} values] avg ${avg.toFixed(2)}`;
   }
   if (typeof val === "number") {
-    if (val > 10000) return formatCurrency(val);
-    if (val > 100) return val.toFixed(2);
-    return `${val.toFixed(2)}%`;
+    if (Math.abs(val) >= 1000) return formatCurrency(val);
+    return `${val.toFixed(2)}`;
   }
   return String(val);
 }
 
-function getResultColor(val: unknown): string {
+function resultColor(val: unknown): string {
   if (typeof val === "number") {
     if (val > 0) return "var(--good)";
     if (val < 0) return "var(--crit)";
@@ -68,34 +70,39 @@ function getResultColor(val: unknown): string {
   return "var(--cyan)";
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ── Component ──────────────────────────────────────────────────────────────────
 
 export default function DataStudio() {
-  const { cabinetId, filename, monthly, activeSheet } = useFinancialStore();
+  const store        = useFinancialStore();
+  const cabinetId    = store.cabinetId ?? null;
+  const filename     = store.filename ?? null;
+  const monthly      = store.monthly ?? [];
+  const activeSheet  = store.activeSheet ?? null;
 
-  const [formula, setFormula] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [history, setHistory] = useState<FormulaHistoryEntry[]>([]);
-  const [activeTab, setActiveTab] = useState<"formula" | "grid">("formula");
+  const [formula,  setFormula]  = useState("");
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState<string | null>(null);
+  const [history,  setHistory]  = useState<HistoryEntry[]>([]);
+  const [tab,      setTab]      = useState<"formula" | "grid">("formula");
 
-  // Build column context from store monthly data
-  const columnContext = useMemo(() => {
-    if (!monthly.length) return {};
+  // Build column context from live store data
+  const colContext = useMemo(() => {
+    if (!monthly.length) return {} as Record<string, number[]>;
     return {
-      revenue: monthly.map((m) => m.revenue),
-      costs: monthly.map((m) => m.costs),
-      profit: monthly.map((m) => m.profit),
-      margin: monthly.map((m) => m.margin),
+      revenue: monthly.map((m) => m.revenue ?? 0),
+      costs:   monthly.map((m) => m.costs   ?? 0),
+      profit:  monthly.map((m) => m.profit  ?? 0),
+      margin:  monthly.map((m) => m.margin  ?? 0),
     };
   }, [monthly]);
 
-  const availableColumns = Object.keys(columnContext);
+  const availCols = Object.keys(colContext);
+
+  // ── Run formula ──────────────────────────────────────────────────────────────
 
   const runFormula = useCallback(async () => {
     const f = formula.trim();
     if (!f) return;
-
     setLoading(true);
     setError(null);
 
@@ -103,116 +110,124 @@ export default function DataStudio() {
       const isAI = f.toUpperCase().startsWith("AI:");
       const payload = {
         formula: f,
-        cabinet_id: cabinetId || undefined,
-        column_context: columnContext,
-        ai_mode: isAI,
+        cabinet_id:     cabinetId ?? undefined,
+        column_context: colContext,
+        ai_mode:        isAI,
       };
 
       const res = await fetch("/api/proxy/data-studio/compute", {
-        method: "POST",
+        method:  "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
+        body:    JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `Error ${res.status}`);
-      }
+      const data = (await res.json()) as ComputeResult & { detail?: string };
+      if (!res.ok) throw new Error(data.detail ?? `Error ${res.status}`);
 
-      const data: FormulaResult = await res.json();
-
-      const entry: FormulaHistoryEntry = {
-        id: crypto.randomUUID(),
-        formula: f,
-        result: data.result,
-        insight: data.insight,
-        mode: data.mode,
-        ts: Date.now(),
-      };
-      setHistory((prev) => [entry, ...prev].slice(0, 50));
+      setHistory((prev) =>
+        [
+          {
+            id:      Math.random().toString(36).slice(2),
+            formula: f,
+            result:  data.result,
+            insight: data.insight,
+            mode:    data.mode ?? (isAI ? "ai" : "formula"),
+            ts:      Date.now(),
+          },
+          ...prev,
+        ].slice(0, 50)
+      );
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [formula, cabinetId, columnContext]);
+  }, [formula, cabinetId, colContext]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") runFormula();
-  };
+  // ── Totals for quick-stats ────────────────────────────────────────────────
 
-  const insertFormula = (example: string) => {
-    setFormula(example);
-  };
+  const totRev    = monthly.reduce((s, m) => s + (m.revenue ?? 0), 0);
+  const totCost   = monthly.reduce((s, m) => s + (m.costs   ?? 0), 0);
+  const totProfit = monthly.reduce((s, m) => s + (m.profit  ?? 0), 0);
+  const bestRev   = monthly.length
+    ? monthly.reduce((a, b) => ((b.revenue ?? 0) > (a.revenue ?? 0) ? b : a), monthly[0])
+    : null;
+
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
     <div
       className="min-h-screen"
-      style={{ background: "var(--bg-page)", padding: "24px" }}
+      style={{ background: "var(--bg-page)", padding: "24px 24px 48px" }}
     >
       <div className="max-w-6xl mx-auto">
-        {/* ── Header ── */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: "var(--cyan)/10", border: "1px solid var(--cyan)/30" }}
+
+        {/* Header */}
+        <div className="mb-6 flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{
+              background:  "rgba(0,212,255,0.08)",
+              border:      "1px solid rgba(0,212,255,0.2)",
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="2" stroke="var(--cyan)" strokeWidth="1.5"/>
+              <path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="var(--cyan)" strokeWidth="1.5"/>
+            </svg>
+          </div>
+          <div>
+            <h1
+              className="text-xl font-bold"
+              style={{ color: "var(--text-1)", fontFamily: "Inter, sans-serif" }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="3" width="18" height="18" rx="2" stroke="var(--cyan)" strokeWidth="1.5"/>
-                <path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="var(--cyan)" strokeWidth="1.5"/>
-              </svg>
-            </div>
-            <div>
-              <h1
-                className="text-xl font-bold"
-                style={{ color: "var(--text-1)", fontFamily: "Inter, sans-serif" }}
-              >
-                Data Studio
-              </h1>
-              <p
-                className="text-xs"
-                style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
-              >
-                {cabinetId
-                  ? `${filename}${activeSheet ? ` · ${activeSheet}` : ""} · ${monthly.length} periods loaded`
-                  : "No data loaded — upload a file first"}
-              </p>
-            </div>
+              Data Studio
+            </h1>
+            <p
+              className="text-[11px]"
+              style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
+            >
+              {cabinetId
+                ? `${filename ?? "file"}${activeSheet ? ` · ${activeSheet}` : ""} · ${monthly.length} periods`
+                : "No data loaded — upload a file to use formulas on real data"}
+            </p>
           </div>
         </div>
 
-        {/* ── Tab switcher ── */}
+        {/* Tabs */}
         <div className="flex gap-2 mb-6">
-          {(["formula", "grid"] as const).map((tab) => (
+          {(["formula", "grid"] as const).map((t) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+              key={t}
+              onClick={() => setTab(t)}
               className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
               style={{
-                background: activeTab === tab ? "var(--cyan)" : "var(--bg-card)",
-                color: activeTab === tab ? "#000" : "var(--text-2)",
-                border: "1px solid",
-                borderColor: activeTab === tab ? "var(--cyan)" : "var(--border)",
-                fontFamily: "Inter, sans-serif",
+                background:   tab === t ? "var(--cyan)"     : "var(--bg-card)",
+                color:        tab === t ? "#000"             : "var(--text-2)",
+                border:       "1px solid",
+                borderColor:  tab === t ? "var(--cyan)"     : "var(--border)",
+                fontFamily:   "Inter, sans-serif",
               }}
             >
-              {tab === "formula" ? "Formula Engine" : "Data Grid"}
+              {t === "formula" ? "Formula Engine" : "Data Grid"}
             </button>
           ))}
         </div>
 
-        {activeTab === "formula" && (
+        {/* ── FORMULA TAB ─────────────────────────────────────────────────── */}
+        {tab === "formula" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* ── Left: Formula input + palette ── */}
+
+            {/* Left: formula bar + palette + history */}
             <div className="lg:col-span-2 space-y-4">
+
               {/* Formula bar */}
               <div
                 className="rounded-2xl border p-4"
                 style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
               >
                 <label
-                  className="block text-xs mb-2 font-medium"
+                  className="block text-[11px] mb-2 font-medium"
                   style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
                 >
                   fx  FORMULA BAR
@@ -222,28 +237,28 @@ export default function DataStudio() {
                     type="text"
                     value={formula}
                     onChange={(e) => setFormula(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder='Try: SUM(revenue) or AI: What drove my best month?'
-                    className="flex-1 bg-transparent outline-none text-sm px-3 py-2.5 rounded-xl border transition-all"
-                    style={{
-                      color: "var(--text-1)",
-                      borderColor: "var(--border)",
-                      background: "var(--bg-page)",
-                      fontFamily: "JetBrains Mono, monospace",
-                    }}
+                    onKeyDown={(e) => { if (e.key === "Enter") runFormula(); }}
+                    placeholder='SUM(revenue)  ·  GROWTH(profit)  ·  AI: What drove my best month?'
                     disabled={loading}
                     autoFocus
+                    className="flex-1 bg-transparent outline-none text-sm px-3 py-2.5 rounded-xl border"
+                    style={{
+                      color:        "var(--text-1)",
+                      borderColor:  "var(--border)",
+                      background:   "var(--bg-page)",
+                      fontFamily:   "JetBrains Mono, monospace",
+                    }}
                   />
                   <button
                     onClick={runFormula}
                     disabled={!formula.trim() || loading}
                     className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
                     style={{
-                      background: formula.trim() && !loading ? "var(--cyan)" : "var(--bg-page)",
-                      color: formula.trim() && !loading ? "#000" : "var(--text-3)",
-                      border: "1px solid var(--border)",
-                      fontFamily: "Inter, sans-serif",
-                      cursor: formula.trim() && !loading ? "pointer" : "not-allowed",
+                      background:  formula.trim() && !loading ? "var(--cyan)" : "var(--bg-page)",
+                      color:       formula.trim() && !loading ? "#000"        : "var(--text-3)",
+                      border:      "1px solid var(--border)",
+                      fontFamily:  "Inter, sans-serif",
+                      cursor:      formula.trim() && !loading ? "pointer"     : "not-allowed",
                     }}
                   >
                     {loading ? "Running…" : "Run ↵"}
@@ -257,10 +272,10 @@ export default function DataStudio() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="mt-2 text-xs px-3 py-2 rounded-lg"
+                      className="mt-2 text-xs px-3 py-2 rounded-lg overflow-hidden"
                       style={{
-                        background: "var(--crit)/10",
-                        color: "var(--crit)",
+                        background: "rgba(239,68,68,0.08)",
+                        color:      "var(--crit)",
                         fontFamily: "JetBrains Mono, monospace",
                       }}
                     >
@@ -269,25 +284,32 @@ export default function DataStudio() {
                   )}
                 </AnimatePresence>
 
-                {/* Available columns */}
-                {availableColumns.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
+                {/* Column chips */}
+                {availCols.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5 items-center">
                     <span
                       className="text-[10px]"
                       style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
                     >
                       Columns:
                     </span>
-                    {availableColumns.map((col) => (
+                    {availCols.map((col) => (
                       <button
                         key={col}
-                        onClick={() => setFormula((prev) => { const s = prev.endsWith("(") ? prev + col : prev + `(${col})`; return s.replace("((", "("); })}
-                        className="text-[10px] px-2 py-0.5 rounded-md"
+                        onClick={() => {
+                          setFormula((prev) => {
+                            const trimmed = prev.trimEnd();
+                            if (trimmed.endsWith("(")) return trimmed + col;
+                            if (!trimmed) return col;
+                            return trimmed + `(${col})`;
+                          });
+                        }}
+                        className="text-[10px] px-2 py-0.5 rounded-md transition-colors"
                         style={{
-                          background: "var(--cyan)/10",
-                          color: "var(--cyan)",
+                          background: "rgba(0,212,255,0.08)",
+                          color:      "var(--cyan)",
+                          border:     "1px solid rgba(0,212,255,0.18)",
                           fontFamily: "JetBrains Mono, monospace",
-                          border: "1px solid var(--cyan)/20",
                         }}
                       >
                         {col}
@@ -303,31 +325,37 @@ export default function DataStudio() {
                 style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
               >
                 <h3
-                  className="text-xs font-medium mb-3"
+                  className="text-[11px] font-medium mb-3"
                   style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
                 >
                   FORMULA PALETTE
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {FORMULA_PALETTE.map((item) => (
+                  {PALETTE.map((item) => (
                     <button
-                      key={item.label}
-                      onClick={() => insertFormula(item.example)}
-                      className="text-left p-3 rounded-xl border transition-all hover:border-[var(--cyan)] group"
+                      key={item.fn}
+                      onClick={() => setFormula(item.example)}
+                      className="text-left p-3 rounded-xl border transition-all"
                       style={{
-                        background: "var(--bg-page)",
-                        borderColor: "var(--border)",
+                        background:   "var(--bg-page)",
+                        borderColor:  "var(--border)",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.borderColor = item.color;
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
                       }}
                     >
                       <div
                         className="text-xs font-bold mb-0.5"
                         style={{ color: item.color, fontFamily: "JetBrains Mono, monospace" }}
                       >
-                        {item.label}
+                        {item.fn}
                       </div>
                       <div
-                        className="text-[10px] leading-relaxed"
-                        style={{ color: "var(--text-3)" }}
+                        className="text-[10px] leading-snug"
+                        style={{ color: "var(--text-3)", fontFamily: "Inter, sans-serif" }}
                       >
                         {item.desc}
                       </div>
@@ -339,16 +367,16 @@ export default function DataStudio() {
               {/* Result history */}
               {history.length > 0 && (
                 <div
-                  className="rounded-2xl border"
+                  className="rounded-2xl border overflow-hidden"
                   style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
                 >
-                  <div className="flex items-center justify-between px-4 pt-4 pb-2">
-                    <h3
-                      className="text-xs font-medium"
+                  <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "var(--border)" }}>
+                    <span
+                      className="text-[11px] font-medium"
                       style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
                     >
-                      RESULT HISTORY
-                    </h3>
+                      HISTORY
+                    </span>
                     <button
                       onClick={() => setHistory([])}
                       className="text-[10px]"
@@ -359,59 +387,57 @@ export default function DataStudio() {
                   </div>
                   <div className="divide-y" style={{ borderColor: "var(--border)" }}>
                     <AnimatePresence>
-                      {history.map((entry) => (
+                      {history.map((h) => (
                         <motion.div
-                          key={entry.id}
-                          initial={{ opacity: 0, y: -8 }}
+                          key={h.id}
+                          initial={{ opacity: 0, y: -6 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="px-4 py-3"
                         >
-                          <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
+                              <div className="flex items-center gap-1.5 mb-1">
                                 <span
-                                  className="text-[10px] px-1.5 py-0.5 rounded-sm"
+                                  className="text-[9px] px-1.5 py-0.5 rounded"
                                   style={{
-                                    background: entry.mode === "ai" ? "var(--cyan)/15" : "var(--bg-page)",
-                                    color: entry.mode === "ai" ? "var(--cyan)" : "var(--text-3)",
+                                    background: h.mode === "ai" ? "rgba(0,212,255,0.12)" : "var(--bg-page)",
+                                    color:      h.mode === "ai" ? "var(--cyan)"          : "var(--text-3)",
                                     fontFamily: "JetBrains Mono, monospace",
+                                    border:     "1px solid var(--border)",
                                   }}
                                 >
-                                  {entry.mode.toUpperCase()}
+                                  {h.mode.toUpperCase()}
                                 </span>
                                 <code
                                   className="text-xs truncate"
                                   style={{ color: "var(--text-2)", fontFamily: "JetBrains Mono, monospace" }}
                                 >
-                                  {entry.formula}
+                                  {h.formula}
                                 </code>
                               </div>
-                              {entry.insight && (
+                              {h.insight && (
                                 <p
-                                  className="text-xs mt-1"
+                                  className="text-xs leading-snug"
                                   style={{ color: "var(--text-2)", fontFamily: "Inter, sans-serif" }}
                                 >
-                                  {entry.insight}
+                                  {h.insight}
                                 </p>
                               )}
+                              <button
+                                onClick={() => setFormula(h.formula)}
+                                className="text-[10px] mt-1"
+                                style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
+                              >
+                                ↺ reuse
+                              </button>
                             </div>
                             <div
                               className="text-sm font-bold flex-shrink-0"
-                              style={{
-                                color: getResultColor(entry.result),
-                                fontFamily: "JetBrains Mono, monospace",
-                              }}
+                              style={{ color: resultColor(h.result), fontFamily: "JetBrains Mono, monospace" }}
                             >
-                              {formatResult(entry.result)}
+                              {formatResult(h.result)}
                             </div>
                           </div>
-                          <button
-                            onClick={() => insertFormula(entry.formula)}
-                            className="text-[10px] mt-1"
-                            style={{ color: "var(--text-3)" }}
-                          >
-                            ↺ reuse
-                          </button>
                         </motion.div>
                       ))}
                     </AnimatePresence>
@@ -420,41 +446,25 @@ export default function DataStudio() {
               )}
             </div>
 
-            {/* ── Right: Quick stats / AI tip panel ── */}
+            {/* Right: quick stats + AI tip */}
             <div className="space-y-4">
-              {/* Quick stats */}
               {monthly.length > 0 && (
                 <div
                   className="rounded-2xl border p-4 space-y-3"
                   style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
                 >
                   <h3
-                    className="text-xs font-medium"
+                    className="text-[11px] font-medium"
                     style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
                   >
                     QUICK STATS
                   </h3>
                   {[
-                    {
-                      label: "Total Revenue",
-                      value: monthly.reduce((s, m) => s + m.revenue, 0),
-                      color: "var(--cyan)",
-                    },
-                    {
-                      label: "Total Costs",
-                      value: monthly.reduce((s, m) => s + m.costs, 0),
-                      color: "var(--warn)",
-                    },
-                    {
-                      label: "Total Profit",
-                      value: monthly.reduce((s, m) => s + m.profit, 0),
-                      color: "var(--good)",
-                    },
-                    {
-                      label: "Best Month",
-                      value: Math.max(...monthly.map((m) => m.revenue)),
-                      color: "var(--cyan)",
-                    },
+                    { label: "Total Revenue",  value: formatCurrency(totRev),    color: "var(--cyan)" },
+                    { label: "Total Costs",    value: formatCurrency(totCost),   color: "var(--warn)" },
+                    { label: "Total Profit",   value: formatCurrency(totProfit), color: totProfit >= 0 ? "var(--good)" : "var(--crit)" },
+                    { label: "Best Month",     value: bestRev ? bestRev.month : "—", color: "var(--text-2)" },
+                    { label: "Best Revenue",   value: bestRev ? formatCurrency(bestRev.revenue) : "—", color: "var(--cyan)" },
                   ].map((stat) => (
                     <div key={stat.label} className="flex justify-between items-center">
                       <span
@@ -467,23 +477,23 @@ export default function DataStudio() {
                         className="text-sm font-bold"
                         style={{ color: stat.color, fontFamily: "JetBrains Mono, monospace" }}
                       >
-                        {formatCurrency(stat.value)}
+                        {stat.value}
                       </span>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* AI tip */}
+              {/* AI formula tip */}
               <div
                 className="rounded-2xl border p-4"
                 style={{
-                  background: "linear-gradient(135deg, var(--cyan)/5, transparent)",
-                  borderColor: "var(--cyan)/20",
+                  background:  "rgba(0,212,255,0.03)",
+                  borderColor: "rgba(0,212,255,0.15)",
                 }}
               >
                 <h3
-                  className="text-xs font-medium mb-2"
+                  className="text-[11px] font-medium mb-2"
                   style={{ color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace" }}
                 >
                   AI FORMULA TIP
@@ -492,45 +502,46 @@ export default function DataStudio() {
                   className="text-xs leading-relaxed mb-3"
                   style={{ color: "var(--text-2)", fontFamily: "Inter, sans-serif" }}
                 >
-                  Prefix any question with <code style={{ color: "var(--cyan)" }}>AI:</code> to use natural language instead of formula syntax.
+                  Prefix any question with{" "}
+                  <code style={{ color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace" }}>
+                    AI:
+                  </code>{" "}
+                  to ask in plain English instead of formula syntax.
                 </p>
-                <div className="space-y-1.5">
-                  {[
-                    "AI: Which month had the worst margin?",
-                    "AI: Calculate 3-month moving average of revenue",
-                    "AI: What is my cost as % of revenue?",
-                  ].map((ex) => (
-                    <button
-                      key={ex}
-                      onClick={() => setFormula(ex)}
-                      className="w-full text-left text-[10px] px-2 py-1.5 rounded-lg transition-colors"
-                      style={{
-                        background: "var(--bg-card)",
-                        color: "var(--text-3)",
-                        fontFamily: "JetBrains Mono, monospace",
-                        border: "1px solid var(--border)",
-                      }}
-                    >
-                      {ex}
-                    </button>
-                  ))}
-                </div>
+                {[
+                  "AI: Which month had the worst margin?",
+                  "AI: Calculate moving average of revenue",
+                  "AI: What is cost as % of revenue?",
+                ].map((ex) => (
+                  <button
+                    key={ex}
+                    onClick={() => setFormula(ex)}
+                    className="w-full text-left text-[10px] px-2 py-1.5 rounded-lg mb-1.5 transition-colors"
+                    style={{
+                      background: "var(--bg-card)",
+                      color:      "var(--text-3)",
+                      border:     "1px solid var(--border)",
+                      fontFamily: "JetBrains Mono, monospace",
+                    }}
+                  >
+                    {ex}
+                  </button>
+                ))}
               </div>
 
-              {/* No data warning */}
               {!cabinetId && (
                 <div
                   className="rounded-2xl border p-4 text-center"
                   style={{
-                    background: "var(--warn)/5",
-                    borderColor: "var(--warn)/20",
+                    background:  "rgba(245,158,11,0.05)",
+                    borderColor: "rgba(245,158,11,0.2)",
                   }}
                 >
                   <p
                     className="text-xs"
                     style={{ color: "var(--warn)", fontFamily: "Inter, sans-serif" }}
                   >
-                    Upload a file on the main page to use formulas on your business data.
+                    Upload a financial file to run formulas on real business data.
                   </p>
                 </div>
               )}
@@ -538,49 +549,57 @@ export default function DataStudio() {
           </div>
         )}
 
-        {/* ── Data Grid tab ── */}
-        {activeTab === "grid" && (
+        {/* ── DATA GRID TAB ──────────────────────────────────────────────── */}
+        {tab === "grid" && (
           <div
             className="rounded-2xl border overflow-hidden"
             style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
           >
             {monthly.length === 0 ? (
               <div className="flex items-center justify-center h-64">
-                <p style={{ color: "var(--text-3)", fontFamily: "Inter, sans-serif" }}>
-                  No data loaded. Upload a financial file to view the grid.
+                <p
+                  style={{ color: "var(--text-3)", fontFamily: "Inter, sans-serif" }}
+                >
+                  No data — upload a financial file to populate the grid.
                 </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm" style={{ borderCollapse: "collapse" }}>
+                <table
+                  className="w-full text-sm"
+                  style={{ borderCollapse: "collapse" }}
+                >
                   <thead>
-                    <tr style={{ background: "var(--bg-page)", borderBottom: "1px solid var(--border)" }}>
-                      <th
-                        className="px-4 py-3 text-left text-xs font-medium"
-                        style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
-                      >
-                        #
-                      </th>
-                      {["Month / Period", "Revenue", "Costs", "Profit", "Margin %"].map((h) => (
-                        <th
-                          key={h}
-                          className="px-4 py-3 text-right text-xs font-medium"
-                          style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
-                        >
-                          {h}
-                        </th>
-                      ))}
+                    <tr
+                      style={{
+                        background:   "var(--bg-page)",
+                        borderBottom: "1px solid var(--border)",
+                      }}
+                    >
+                      {["#", "Period", "Revenue", "Costs", "Profit", "Margin"].map(
+                        (h) => (
+                          <th
+                            key={h}
+                            className={`px-4 py-3 text-xs font-medium ${h === "#" || h === "Period" ? "text-left" : "text-right"}`}
+                            style={{
+                              color:      "var(--text-3)",
+                              fontFamily: "JetBrains Mono, monospace",
+                            }}
+                          >
+                            {h}
+                          </th>
+                        )
+                      )}
                     </tr>
                   </thead>
                   <tbody>
                     {monthly.map((row, i) => (
                       <motion.tr
-                        key={row.month + i}
+                        key={`${row.month}-${i}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: i * 0.02 }}
+                        transition={{ delay: i * 0.015 }}
                         style={{ borderBottom: "1px solid var(--border)" }}
-                        className="hover:bg-[var(--bg-page)] transition-colors"
                       >
                         <td
                           className="px-4 py-2.5 text-xs"
@@ -589,27 +608,27 @@ export default function DataStudio() {
                           {i + 1}
                         </td>
                         <td
-                          className="px-4 py-2.5 font-medium"
+                          className="px-4 py-2.5 text-sm font-medium"
                           style={{ color: "var(--text-1)", fontFamily: "Inter, sans-serif" }}
                         >
                           {row.month}
                         </td>
                         <td
-                          className="px-4 py-2.5 text-right"
+                          className="px-4 py-2.5 text-right text-sm"
                           style={{ color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace" }}
                         >
                           {formatCurrency(row.revenue)}
                         </td>
                         <td
-                          className="px-4 py-2.5 text-right"
+                          className="px-4 py-2.5 text-right text-sm"
                           style={{ color: "var(--warn)", fontFamily: "JetBrains Mono, monospace" }}
                         >
                           {formatCurrency(row.costs)}
                         </td>
                         <td
-                          className="px-4 py-2.5 text-right"
+                          className="px-4 py-2.5 text-right text-sm font-medium"
                           style={{
-                            color: row.profit >= 0 ? "var(--good)" : "var(--crit)",
+                            color:      (row.profit ?? 0) >= 0 ? "var(--good)" : "var(--crit)",
                             fontFamily: "JetBrains Mono, monospace",
                           }}
                         >
@@ -617,69 +636,85 @@ export default function DataStudio() {
                         </td>
                         <td className="px-4 py-2.5">
                           <div className="flex items-center justify-end gap-2">
+                            {/* Mini margin bar */}
                             <div
-                              className="h-1.5 rounded-full"
                               style={{
-                                width: `${Math.min(row.margin, 50) * 2}px`,
+                                width:      `${Math.min(Math.abs(row.margin ?? 0), 60) * 1.2}px`,
+                                height:     "4px",
+                                borderRadius: "2px",
                                 background:
-                                  row.margin >= 25
+                                  (row.margin ?? 0) >= 25
                                     ? "var(--good)"
-                                    : row.margin >= 15
+                                    : (row.margin ?? 0) >= 12
                                     ? "var(--warn)"
                                     : "var(--crit)",
-                                maxWidth: "80px",
+                                maxWidth: "72px",
                               }}
                             />
                             <span
                               className="text-xs"
                               style={{
                                 color:
-                                  row.margin >= 25
+                                  (row.margin ?? 0) >= 25
                                     ? "var(--good)"
-                                    : row.margin >= 15
+                                    : (row.margin ?? 0) >= 12
                                     ? "var(--warn)"
                                     : "var(--crit)",
                                 fontFamily: "JetBrains Mono, monospace",
+                                minWidth:   "44px",
+                                textAlign:  "right",
                               }}
                             >
-                              {row.margin.toFixed(1)}%
+                              {(row.margin ?? 0).toFixed(1)}%
                             </span>
                           </div>
                         </td>
                       </motion.tr>
                     ))}
                   </tbody>
+                  {/* Totals footer */}
                   <tfoot>
-                    <tr style={{ background: "var(--bg-page)", borderTop: "2px solid var(--border)" }}>
-                      <td colSpan={2} className="px-4 py-3">
-                        <span
-                          className="text-xs font-bold"
-                          style={{ color: "var(--text-2)", fontFamily: "JetBrains Mono, monospace" }}
-                        >
-                          TOTALS
-                        </span>
+                    <tr
+                      style={{
+                        background:  "var(--bg-page)",
+                        borderTop:   "2px solid var(--border)",
+                      }}
+                    >
+                      <td
+                        colSpan={2}
+                        className="px-4 py-3 text-xs font-bold"
+                        style={{ color: "var(--text-2)", fontFamily: "JetBrains Mono, monospace" }}
+                      >
+                        TOTALS / AVG
                       </td>
-                      {[
-                        { val: monthly.reduce((s, m) => s + m.revenue, 0), color: "var(--cyan)" },
-                        { val: monthly.reduce((s, m) => s + m.costs, 0), color: "var(--warn)" },
-                        { val: monthly.reduce((s, m) => s + m.profit, 0), color: "var(--good)" },
-                      ].map(({ val, color }, i) => (
-                        <td
-                          key={i}
-                          className="px-4 py-3 text-right text-sm font-bold"
-                          style={{ color, fontFamily: "JetBrains Mono, monospace" }}
-                        >
-                          {formatCurrency(val)}
-                        </td>
-                      ))}
+                      <td
+                        className="px-4 py-3 text-right text-sm font-bold"
+                        style={{ color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace" }}
+                      >
+                        {formatCurrency(totRev)}
+                      </td>
+                      <td
+                        className="px-4 py-3 text-right text-sm font-bold"
+                        style={{ color: "var(--warn)", fontFamily: "JetBrains Mono, monospace" }}
+                      >
+                        {formatCurrency(totCost)}
+                      </td>
+                      <td
+                        className="px-4 py-3 text-right text-sm font-bold"
+                        style={{
+                          color:      totProfit >= 0 ? "var(--good)" : "var(--crit)",
+                          fontFamily: "JetBrains Mono, monospace",
+                        }}
+                      >
+                        {formatCurrency(totProfit)}
+                      </td>
                       <td
                         className="px-4 py-3 text-right text-sm font-bold"
                         style={{ color: "var(--good)", fontFamily: "JetBrains Mono, monospace" }}
                       >
-                        {(
-                          monthly.reduce((s, m) => s + m.margin, 0) / (monthly.length || 1)
-                        ).toFixed(1)}
-                        %
+                        {monthly.length > 0
+                          ? `${(monthly.reduce((s, m) => s + (m.margin ?? 0), 0) / monthly.length).toFixed(1)}%`
+                          : "—"}
                       </td>
                     </tr>
                   </tfoot>
