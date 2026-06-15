@@ -1,9 +1,8 @@
-// lib/currency.ts — canonical currency symbol store
-// Imported by both store.ts and utils.ts to avoid circular deps
+// lib/currency.ts — canonical currency module (no external deps)
 
 let _sym = "K";
 
-export function setCurrencyGlobal(sym: string) {
+export function setCurrencyGlobal(sym: string): void {
   if (sym) _sym = sym;
 }
 
@@ -22,3 +21,6 @@ export function formatCurrency(value: number | null | undefined): string {
   }
   return `${sym}${num.toFixed(2)}`;
 }
+
+// Alias used by some existing pages
+export const fmt = formatCurrency;

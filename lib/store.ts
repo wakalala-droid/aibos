@@ -1,11 +1,13 @@
 "use client";
 // lib/store.ts — AI-BOS Zustand store v3
-// Imports currency from lib/currency.ts (no circular deps)
-// Backward-compatible: all fields existing pages use are preserved with same names
+// Exports BOTH the new name (useFinancialStore) AND the old name (useStore)
+// so every existing page continues to work without modification.
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { setCurrencyGlobal } from "./currency";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface MonthlyRow {
   month: string;
@@ -26,14 +28,14 @@ export interface CabinetEntry {
 }
 
 export interface FinancialState {
-  // Core upload meta — existed in all prior versions
+  // Core — existed in all prior versions
   filename: string | null;
   engine: string | null;
   currency: string;
   isUploading: boolean;
   uploadError: string | null;
 
-  // NEW upload meta — optional so old pages don't need them
+  // New cabinet / sheet fields
   cabinetId: string | null;
   sheets: string[];
   activeSheet: string | null;
@@ -49,13 +51,13 @@ export interface FinancialState {
   cashflow: Record<string, unknown>;
   brief: Record<string, unknown>;
 
-  // Engine 2 / 3 data
+  // Engine 2 / 3
   customers: unknown[];
   rfm: unknown[];
   posCategories: unknown[];
   posItems: unknown[];
 
-  // Cabinet
+  // Cabinet list (persisted across sessions)
   cabinet: CabinetEntry[];
 }
 
@@ -69,6 +71,8 @@ interface FinancialActions {
   removeFromCabinet: (id: string) => void;
   reset: () => void;
 }
+
+// ── Initial state ──────────────────────────────────────────────────────────────
 
 const INITIAL: FinancialState = {
   filename: null,
@@ -99,7 +103,9 @@ const INITIAL: FinancialState = {
   cabinet: [],
 };
 
-export const useFinancialStore = create<FinancialState & FinancialActions>()(
+// ── Store factory ──────────────────────────────────────────────────────────────
+
+const _store = create<FinancialState & FinancialActions>()(
   persist(
     (set, get) => ({
       ...INITIAL,
@@ -109,16 +115,21 @@ export const useFinancialStore = create<FinancialState & FinancialActions>()(
           ? (result.monthly as MonthlyRow[])
           : [];
 
-        const sym = typeof result.currency === "string" ? result.currency : "K";
+        const sym =
+          typeof result.currency === "string" && result.currency
+            ? result.currency
+            : "K";
         setCurrencyGlobal(sym);
 
-        const cabId = typeof result.cabinet_id === "string" ? result.cabinet_id : null;
-        const fname = typeof result.filename === "string" ? result.filename : null;
+        const cabId =
+          typeof result.cabinet_id === "string" ? result.cabinet_id : null;
+        const fname =
+          typeof result.filename === "string" ? result.filename : null;
         const sheetsArr: string[] = Array.isArray(result.sheets)
           ? (result.sheets as string[])
           : [];
 
-        // Upsert cabinet list
+        // Upsert cabinet entry
         if (cabId && fname) {
           const cab = get().cabinet;
           if (!cab.some((e) => e.id === cabId)) {
@@ -126,7 +137,9 @@ export const useFinancialStore = create<FinancialState & FinancialActions>()(
               id: cabId,
               name: fname,
               fileType:
-                typeof result.file_type === "string" ? result.file_type : "unknown",
+                typeof result.file_type === "string"
+                  ? result.file_type
+                  : "unknown",
               engine:
                 typeof result.engine === "string" ? result.engine : "engine1",
               sheets: sheetsArr,
@@ -143,10 +156,13 @@ export const useFinancialStore = create<FinancialState & FinancialActions>()(
         set({
           filename: fname,
           cabinetId: cabId,
-          engine: typeof result.engine === "string" ? result.engine : null,
+          engine:
+            typeof result.engine === "string" ? result.engine : null,
           sheets: sheetsArr,
           activeSheet:
-            typeof result.active_sheet === "string" ? result.active_sheet : null,
+            typeof result.active_sheet === "string"
+              ? result.active_sheet
+              : null,
           columnsDetected:
             result.columns_detected != null
               ? (result.columns_detected as FinancialState["columnsDetected"])
@@ -171,10 +187,14 @@ export const useFinancialStore = create<FinancialState & FinancialActions>()(
               ? (result.cashflow as Record<string, unknown>)
               : {},
           brief:
-            result.brief != null ? (result.brief as Record<string, unknown>) : {},
+            result.brief != null
+              ? (result.brief as Record<string, unknown>)
+              : {},
           customers: Array.isArray(result.customers) ? result.customers : [],
           rfm: Array.isArray(result.rfm) ? result.rfm : [],
-          posCategories: Array.isArray(result.categories) ? result.categories : [],
+          posCategories: Array.isArray(result.categories)
+            ? result.categories
+            : [],
           posItems: Array.isArray(result.items) ? result.items : [],
           uploadError: null,
         });
@@ -206,7 +226,10 @@ export const useFinancialStore = create<FinancialState & FinancialActions>()(
             throw new Error(err.detail ?? "Sheet switch failed");
           }
           const data = (await res.json()) as Record<string, unknown>;
-          get().setUploadResult({ ...data, filename: get().filename ?? undefined });
+          get().setUploadResult({
+            ...data,
+            filename: get().filename ?? undefined,
+          });
         } catch (e) {
           set({ uploadError: (e as Error).message });
         } finally {
@@ -242,3 +265,12 @@ export const useFinancialStore = create<FinancialState & FinancialActions>()(
     }
   )
 );
+
+// ── Exports ────────────────────────────────────────────────────────────────────
+
+// New name (used by files I wrote)
+export const useFinancialStore = _store;
+
+// Old name — ALL existing dashboard pages import { useStore } from '@/lib/store'
+// This alias makes them work without touching any page file.
+export const useStore = _store;
