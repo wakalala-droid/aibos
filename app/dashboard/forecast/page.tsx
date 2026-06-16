@@ -31,6 +31,33 @@ function growthRate(monthly: Array<Record<string, unknown>>): number {
   return Math.min(Math.max(avg, -0.2), 0.3);
 }
 
+// Real forecast confidence = R-squared of a linear fit on historical revenue,
+// expressed as a 0-100 percentage. Falls back to 0 when there isn't enough data.
+function forecastConfidence(monthly: Array<Record<string, unknown>>): number {
+  const ys = (Array.isArray(monthly) ? monthly : []).map(m => n(m?.Revenue));
+  const len = ys.length;
+  if (len < 3) return 0;
+
+  const xs = ys.map((_, i) => i);
+  const meanX = xs.reduce((s, v) => s + v, 0) / len;
+  const meanY = ys.reduce((s, v) => s + v, 0) / len;
+
+  let sxx = 0, sxy = 0, syy = 0;
+  for (let i = 0; i < len; i++) {
+    const dx = xs[i] - meanX;
+    const dy = ys[i] - meanY;
+    sxx += dx * dx;
+    sxy += dx * dy;
+    syy += dy * dy;
+  }
+
+  if (sxx === 0 || syy === 0) return 0;
+
+  const r2 = (sxy * sxy) / (sxx * syy);
+  const pct = Math.round(r2 * 1000) / 10;
+  return Math.min(Math.max(pct, 0), 99.9);
+}
+
 interface Row { month: string; hist?: number; fcast?: number; lower?: number; upper?: number; }
 
 export default function ForecastPage() {
@@ -69,7 +96,7 @@ export default function ForecastPage() {
   const firstFcast  = projections[0]?.fcast ?? 0;
   const threeTotal  = projections.reduce((s, p) => s + (p.fcast ?? 0), 0);
   const growthPct   = lastRev > 0 ? ((firstFcast - lastRev) / lastRev) * 100 : 0;
-  const confidence  = 94.3;
+  const confidence  = forecastConfidence(safeMonthly);
   const revSpark    = safeMonthly.slice(-6).map(m => n(m?.Revenue));
 
   return (

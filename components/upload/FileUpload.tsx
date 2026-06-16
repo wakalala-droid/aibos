@@ -18,7 +18,7 @@ export default function FileUpload() {
   const activeSheet = store.activeSheet ?? null;
   const isSwitchingSheet = store.isSwitchingSheet ?? false;
   const cabinet = store.cabinet ?? [];
-  const currency = store.currency ?? "K";
+  const currency = (store as { currencySymbol?: string }).currencySymbol ?? "K";
 
   const [dragging, setDragging] = useState(false);
   const [showCabinet, setShowCabinet] = useState(false);
@@ -38,15 +38,39 @@ export default function FileUpload() {
           method: "POST",
           body: form,
         });
-        const data = (await res.json()) as Record<string, unknown>;
-        if (!res.ok) {
+
+        // Read the raw body FIRST so a non-JSON (HTML error page) response
+        // produces a clear message instead of "Unexpected token '<'".
+        const raw = await res.text();
+
+        let data: Record<string, unknown> = {};
+        try {
+          data = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+        } catch {
+          // Backend returned HTML (404 / 500 / gateway error), not JSON.
+          const snippet = raw.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 140);
           throw new Error(
-            typeof data.detail === "string" ? data.detail : `Upload failed (${res.status})`
+            res.ok
+              ? `Server returned a non-JSON response. ${snippet || ""}`.trim()
+              : `Server error ${res.status}. ${snippet || "The analysis service may be offline."}`.trim()
           );
         }
+
+        if (!res.ok) {
+          throw new Error(
+            typeof data.detail === "string"
+              ? data.detail
+              : `Upload failed (HTTP ${res.status})`
+          );
+        }
+
         // Apply currency from input if not returned by API
-        if (!data.currency && localSym) data.currency = localSym;
-        store.setCurrency((data.currency as string) || localSym || "K");
+        if (!data.currency && !data.currencySymbol && localSym) {
+          data.currency = localSym;
+        }
+        store.setCurrency(
+          (data.currencySymbol as string) || (data.currency as string) || localSym || "K"
+        );
         store.setUploadResult({ ...data, filename: file.name });
       } catch (e) {
         store.setUploadError((e as Error).message);
@@ -78,7 +102,7 @@ export default function FileUpload() {
       {/* Currency */}
       <div className="flex items-center gap-2">
         <span
-          className="text-[11px]"
+          className="text-[12px]"
           style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
         >
           Currency symbol:
@@ -217,7 +241,7 @@ export default function FileUpload() {
           >
             <div className="flex items-center justify-between mb-3">
               <span
-                className="text-[11px] font-medium"
+                className="text-[12px] font-medium"
                 style={{
                   color: "var(--text-3)",
                   fontFamily: "JetBrains Mono, monospace",
@@ -227,7 +251,7 @@ export default function FileUpload() {
               </span>
               {isSwitchingSheet && (
                 <span
-                  className="text-[10px]"
+                  className="text-[12px]"
                   style={{ color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace" }}
                 >
                   Switching…
@@ -259,7 +283,7 @@ export default function FileUpload() {
             </div>
             {activeSheet && (
               <p
-                className="text-[10px] mt-2"
+                className="text-[12px] mt-2"
                 style={{
                   color: "var(--text-3)",
                   fontFamily: "JetBrains Mono, monospace",
@@ -305,7 +329,7 @@ export default function FileUpload() {
                 FILE CABINET
               </span>
               <span
-                className="text-[10px] px-1.5 py-0.5 rounded-full"
+                className="text-[12px] px-1.5 py-0.5 rounded-full"
                 style={{
                   background: "rgba(0,212,255,0.12)",
                   color: "var(--cyan)",
@@ -354,7 +378,7 @@ export default function FileUpload() {
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <span
-                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-sm flex-shrink-0"
+                          className="text-[12px] font-bold px-1.5 py-0.5 rounded-sm flex-shrink-0"
                           style={{
                             background:
                               entry.engine === "engine3"
@@ -385,7 +409,7 @@ export default function FileUpload() {
                           </p>
                           {entry.sheets.length > 1 && (
                             <p
-                              className="text-[10px]"
+                              className="text-[12px]"
                               style={{
                                 color: "var(--text-3)",
                                 fontFamily: "JetBrains Mono, monospace",
@@ -399,7 +423,7 @@ export default function FileUpload() {
                       <div className="flex items-center gap-1.5 ml-2 flex-shrink-0">
                         <button
                           onClick={() => store.loadFromCabinet(entry.id)}
-                          className="text-[10px] px-2 py-1 rounded-md"
+                          className="text-[12px] px-2 py-1 rounded-md"
                           style={{
                             background:
                               cabinetId === entry.id
@@ -432,7 +456,7 @@ export default function FileUpload() {
                   style={{ borderColor: "var(--border)" }}
                 >
                   <p
-                    className="text-[10px]"
+                    className="text-[12px]"
                     style={{
                       color: "var(--text-3)",
                       fontFamily: "JetBrains Mono, monospace",

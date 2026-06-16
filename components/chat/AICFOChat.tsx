@@ -29,14 +29,16 @@ const QUICK_PROMPTS = [
 ];
 
 // ---------------------------------------------------------------------------
-// API base
+// API base — ALWAYS go through the Next.js proxy in production.
+// Calling the Railway backend directly from the browser causes CORS failures
+// and returns HTML error pages (the "Unexpected token '<'" symptom).
+// localhost dev still hits the local backend directly.
 // ---------------------------------------------------------------------------
 
 const API =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-    ? '/api/proxy'
-    : 'http://localhost:8000');
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:8000'
+    : '/api/proxy';
 
 // ---------------------------------------------------------------------------
 // Timestamp helper
@@ -142,21 +144,43 @@ export default function AICFOChat() {
         }),
       });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      // Read raw body first so an HTML error page doesn't throw a cryptic
+      // JSON parse error — surface the real status instead.
+      const raw = await res.text();
+      let data: Record<string, unknown> = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        const snippet = raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+        throw new Error(
+          res.ok
+            ? `Non-JSON response from server. ${snippet}`.trim()
+            : `Server error ${res.status}. ${snippet || 'The AI service may be offline.'}`.trim()
+        );
+      }
+
+      if (!res.ok) {
+        throw new Error(
+          typeof data.detail === 'string' ? data.detail : `HTTP ${res.status}`
+        );
+      }
+
+      const replyText =
+        (data.reply as string) ?? (data.response as string) ?? 'No response received.';
 
       const aiMsg: Message = {
         id:        `a-${Date.now()}`,
         role:      'assistant',
-        content:   data.reply ?? 'No response received.',
+        content:   replyText,
         timestamp: nowTime(),
       };
       setMessages(prev => [...prev, aiMsg]);
     } catch (err) {
+      const detail = (err as Error).message || 'Unknown error';
       const errMsg: Message = {
         id:        `e-${Date.now()}`,
         role:      'assistant',
-        content:   'Sorry, I encountered an error. Please check your connection and try again.',
+        content:   `Sorry, I hit an error: ${detail}`,
         timestamp: nowTime(),
       };
       setMessages(prev => [...prev, errMsg]);
@@ -340,7 +364,7 @@ export default function AICFOChat() {
                 </p>
                 <p style={{
                   fontFamily: 'JetBrains Mono, monospace',
-                  fontSize:   '0.55rem',
+                  fontSize:   '0.6rem',
                   color:      msg.role === 'user'
                     ? 'rgba(255,255,255,0.55)'
                     : 'var(--text-4)',
@@ -464,7 +488,7 @@ export default function AICFOChat() {
         </div>
         <p style={{
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize:   '0.55rem',
+          fontSize:   '0.6rem',
           color:      'var(--text-4)',
           textAlign:  'center',
           margin:     '8px 0 0',
