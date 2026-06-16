@@ -1,8 +1,9 @@
 "use client";
-// lib/store.ts — AI-BOS Zustand store v3
-// KEY RULE: every INITIAL sub-object has the full nested shape so pages can
-// destructure deeply at SSG time without hitting undefined.property crashes.
-// Exports BOTH useStore (old) and useFinancialStore (new).
+// lib/store.ts — AI-BOS Zustand store
+// Field names verified against actual page source at commit c72bfd2.
+// monthly[] uses PascalCase keys (Month, Revenue, Costs) — every page reads m.Revenue, m.Costs, m.Month.
+// kpi and health are DIRECTLY destructured and accessed (kpi.avgMargin, health.score) with
+// no optional chaining in several pages — they must always be real objects, never undefined.
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -11,11 +12,160 @@ import { setCurrencyGlobal } from "./currency";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface MonthlyRow {
-  month: string;
+  Month: string;
+  Revenue: number;
+  Costs: number;
+  [key: string]: unknown;
+}
+
+export interface AlertRow {
+  id?: string;
+  severity: string;
+  title: string;
+  description: string;
+}
+
+export interface RfmRow {
+  customer_id: string;
+  segment: string;
+  recency_days: number;
+  frequency: number;
+  monetary: number;
+  rfm_score: number;
+  clv: number;
+  churn_risk: number;
+}
+
+export interface SegmentRow {
+  segment: string;
+  count: number;
+  avg_spend: number;
+  total_revenue: number;
+}
+
+export interface ClvTierRow {
+  tier: string;
+  count: number;
+  total_clv: number;
+}
+
+export interface ProductRow {
+  product: string;
+  total_revenue: number;
+  bcg_class: string;
+  [key: string]: unknown;
+}
+
+export interface BasketPairRow {
+  product_a: string;
+  product_b: string;
+  times_together: number;
+}
+
+export interface CategoryRow {
+  category: string;
   revenue: number;
-  costs: number;
-  profit: number;
-  margin: number;
+  units: number;
+  pct_of_total: number;
+}
+
+export interface TopItemRow {
+  sku: string;
+  name: string;
+  category: string;
+  units_sold: number;
+  revenue: number;
+  velocity_rank: string;
+}
+
+export interface BenchmarkRow {
+  metric: string;
+  label: string;
+  actual: number;
+  benchmark: number;
+  unit: string;
+  status: string;
+  gap: number;
+}
+
+export interface MenuGapRow {
+  name: string;
+  category: string;
+  issue: string;
+  opportunity: string;
+  sku: string;
+}
+
+export interface CrossInsightRow {
+  insight: string;
+  action: string;
+  priority: string;
+  source_engines?: string[];
+}
+
+export interface KpiShape {
+  totalRevenue: number;
+  totalCosts: number;
+  totalProfit: number;
+  avgMargin: number;
+}
+
+export interface HealthShape {
+  score: number;
+  label: string;
+  bestMonth: string;
+  worstMonth: string;
+}
+
+export interface CashflowShape {
+  currentCash?: number;
+  runway?: number;
+  projections?: Array<{
+    month_ahead?: number;
+    projected_cash?: number;
+    inflow?: number;
+    outflow?: number;
+  }>;
+}
+
+export interface BreakevenShape {
+  fixedCosts?: number;
+  variableCosts?: number;
+  contributionMargin?: number;
+  breakevenRevenue?: number;
+  currentRevenue?: number;
+}
+
+export interface RetentionShape {
+  total_customers?: number;
+  retention_rate?: number;
+  returning_customers?: number;
+}
+
+export interface AttachRatesShape {
+  drink_attach_pct?: number;
+  side_attach_pct?: number;
+}
+
+export interface PosGrandTotalsShape {
+  gross_revenue?: number;
+  net_revenue?: number;
+  units_sold?: number;
+  discount_value?: number;
+}
+
+export interface IntelligenceScoresShape {
+  overall_score: number;
+  overall_label: string;
+  e1_score: number;
+  e2_score: number;
+  e3_score: number;
+}
+
+export interface EngineFlagsShape {
+  e1?: boolean;
+  e2?: boolean;
+  e3?: boolean;
 }
 
 export interface CabinetEntry {
@@ -28,118 +178,52 @@ export interface CabinetEntry {
   uploadedAt: number;
 }
 
-// ── Safe default shapes ───────────────────────────────────────────────────────
-// These match the field names existing pages destructure.
-// Provide BOTH camelCase and snake_case so any page convention works.
-
-const SAFE_BRIEF = {
-  // camelCase (what pages destructure)
-  totalRevenue: 0,
-  totalCosts: 0,
-  totalProfit: 0,
-  avgMargin: 0,
-  healthScore: 0,
-  periods: 0,
-  bestMonth: "—",
-  worstMonth: "—",
-  // snake_case (what engine returns)
-  total_revenue: 0,
-  total_costs: 0,
-  total_profit: 0,
-  avg_margin: 0,
-  health_score: 0,
-  best_month: "—",
-  worst_month: "—",
-  forecast: {
-    next_revenue: 0,
-    next_costs: 0,
-    next_profit: 0,
-    nextRevenue: 0,
-    nextCosts: 0,
-    nextProfit: 0,
-  },
-};
-
-const SAFE_FORECAST = {
-  next_revenue: 0,
-  next_costs: 0,
-  next_profit: 0,
-  nextRevenue: 0,
-  nextCosts: 0,
-  nextProfit: 0,
-};
-
-const SAFE_VARIANCE = {
-  // The variance page crashes on: variance.monthly_changes.length
-  monthly_changes: [] as unknown[],
-  monthlyChanges: [] as unknown[],
-  avg_mom_growth: 0,
-  avgMomGrowth: 0,
-};
-
-const SAFE_CASHFLOW = {
-  // cash/page crashes on: cashflow.totalCosts
-  totalCosts: 0,
-  totalRevenue: 0,
-  totalProfit: 0,
-  endingCash: 0,
-  netOperating: 0,
-  cashTrend: "positive",
-  // snake_case
-  total_costs: 0,
-  total_revenue: 0,
-  total_profit: 0,
-  ending_cash: 0,
-  net_operating: 0,
-  cash_trend: "positive",
-  monthly: [] as unknown[],
-};
-
-const SAFE_BREAKEVEN = {
-  breakevenRevenue: 0,
-  fixedCostsEstimate: 0,
-  variableCostRatio: 0,
-  contributionMarginPct: 0,
-  breakeven_revenue: 0,
-  fixed_costs_estimate: 0,
-  variable_cost_ratio: 0,
-  contribution_margin_pct: 0,
-};
-
-const SAFE_ANOMALIES: unknown[] = [];
-
-// ── Full state shape ──────────────────────────────────────────────────────────
+// ── Full state shape — matches real page destructuring exactly ────────────────
 
 export interface FinancialState {
   filename: string | null;
-  engine: string | null;
-  currency: string;
-  isUploading: boolean;
-  uploadError: string | null;
-
   cabinetId: string | null;
   sheets: string[];
   activeSheet: string | null;
-  columnsDetected: { revenue?: string; cost?: string; month?: string } | null;
+  isUploading: boolean;
+  uploadError: string | null;
   isSwitchingSheet: boolean;
-
-  // Engine 1
-  monthly: MonthlyRow[];
-  forecast: Record<string, unknown>;
-  anomalies: unknown[];
-  variance: Record<string, unknown>;
-  breakeven: Record<string, unknown>;
-  cashflow: Record<string, unknown>;
-  brief: Record<string, unknown>;
-
-  // Engine 2
-  customers: unknown[];
-  rfm: unknown[];
-  posCategories: unknown[];
-  posItems: unknown[];
-
-  // Cabinet
   cabinet: CabinetEntry[];
+
+  currencySymbol: string;
+  hasEngine2Data: boolean;
+  hasEngine3Data: boolean;
+  posBusinessName: string;
+  posPeriod: string;
+
+  monthly: MonthlyRow[];
+  alerts: AlertRow[];
+  anomalies: unknown[];
+  rfm: RfmRow[];
+  segments: SegmentRow[];
+  clvTiers: ClvTierRow[];
+  productsE2: ProductRow[];
+  basketPairs: BasketPairRow[];
+  categories: CategoryRow[];
+  topItems: TopItemRow[];
+  benchmarks: BenchmarkRow[];
+  menuGaps: MenuGapRow[];
+  crossInsights: CrossInsightRow[];
+
+  kpi: KpiShape;
+  health: HealthShape;
+
+  cashflow: CashflowShape | null;
+  breakeven: BreakevenShape | null;
+  retention: RetentionShape | null;
+  attachRates: AttachRatesShape | null;
+  posGrandTotals: PosGrandTotalsShape | null;
+  intelligenceScores: IntelligenceScoresShape | null;
+  engineFlags: EngineFlagsShape | null;
+
+  unifiedBrief: string;
+  opsIntelBrief: string;
+  customerIntelBrief: string;
 }
 
 interface FinancialActions {
@@ -153,130 +237,143 @@ interface FinancialActions {
   reset: () => void;
 }
 
-// ── INITIAL state — every nested object has its full safe shape ───────────────
+// ── INITIAL state ───────────────────────────────────────────────────────────
+
+const INITIAL_KPI: KpiShape = {
+  totalRevenue: 0,
+  totalCosts: 0,
+  totalProfit: 0,
+  avgMargin: 0,
+};
+
+const INITIAL_HEALTH: HealthShape = {
+  score: 0,
+  label: "No Data",
+  bestMonth: "—",
+  worstMonth: "—",
+};
 
 const INITIAL: FinancialState = {
   filename: null,
-  engine: null,
-  currency: "K",
-  isUploading: false,
-  uploadError: null,
-
   cabinetId: null,
   sheets: [],
   activeSheet: null,
-  columnsDetected: null,
+  isUploading: false,
+  uploadError: null,
   isSwitchingSheet: false,
+  cabinet: [],
+
+  currencySymbol: "K",
+  hasEngine2Data: false,
+  hasEngine3Data: false,
+  posBusinessName: "",
+  posPeriod: "",
 
   monthly: [],
-  forecast: { ...SAFE_FORECAST },
-  anomalies: [...SAFE_ANOMALIES],
-  variance: { ...SAFE_VARIANCE },
-  breakeven: { ...SAFE_BREAKEVEN },
-  cashflow: { ...SAFE_CASHFLOW },
-  brief: { ...SAFE_BRIEF },
-
-  // These MUST be arrays (never undefined) — pages call .map/.filter/.slice on them
-  customers: [],
+  alerts: [],
+  anomalies: [],
   rfm: [],
-  posCategories: [],
-  posItems: [],
+  segments: [],
+  clvTiers: [],
+  productsE2: [],
+  basketPairs: [],
+  categories: [],
+  topItems: [],
+  benchmarks: [],
+  menuGaps: [],
+  crossInsights: [],
 
-  cabinet: [],
+  kpi: { ...INITIAL_KPI },
+  health: { ...INITIAL_HEALTH },
+
+  cashflow: null,
+  breakeven: null,
+  retention: null,
+  attachRates: null,
+  posGrandTotals: null,
+  intelligenceScores: null,
+  engineFlags: null,
+
+  unifiedBrief: "",
+  opsIntelBrief: "",
+  customerIntelBrief: "",
 };
 
-// ── Helper: merge engine result into a safe shape ────────────────────────────
-// Ensures that even if the engine omits a field, the safe default fills it.
+// ── Helpers: derive kpi/health from monthly[] when backend doesn't supply them ─
 
-function mergeBrief(raw: Record<string, unknown>): Record<string, unknown> {
-  const r = raw ?? {};
+function deriveKpi(monthly: MonthlyRow[], rawKpi?: Record<string, unknown>): KpiShape {
+  if (rawKpi && typeof rawKpi.totalRevenue === "number") {
+    return {
+      totalRevenue: Number(rawKpi.totalRevenue) || 0,
+      totalCosts: Number(rawKpi.totalCosts) || 0,
+      totalProfit: Number(rawKpi.totalProfit) || 0,
+      avgMargin: Number(rawKpi.avgMargin) || 0,
+    };
+  }
+  if (!monthly.length) return { ...INITIAL_KPI };
+
+  const totalRevenue = monthly.reduce((s, m) => s + (Number(m.Revenue) || 0), 0);
+  const totalCosts = monthly.reduce((s, m) => s + (Number(m.Costs) || 0), 0);
+  const totalProfit = totalRevenue - totalCosts;
+  const avgMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+
+  return { totalRevenue, totalCosts, totalProfit, avgMargin };
+}
+
+function deriveHealth(monthly: MonthlyRow[], rawHealth?: Record<string, unknown>): HealthShape {
+  if (rawHealth && typeof rawHealth.score === "number") {
+    return {
+      score: Number(rawHealth.score) || 0,
+      label: String(rawHealth.label ?? "—"),
+      bestMonth: String(rawHealth.bestMonth ?? "—"),
+      worstMonth: String(rawHealth.worstMonth ?? "—"),
+    };
+  }
+  if (!monthly.length) return { ...INITIAL_HEALTH };
+
+  const withProfit = monthly.map((m) => ({
+    month: String(m.Month),
+    profit: (Number(m.Revenue) || 0) - (Number(m.Costs) || 0),
+  }));
+
+  const best = withProfit.reduce((a, b) => (b.profit > a.profit ? b : a), withProfit[0]);
+  const worst = withProfit.reduce((a, b) => (b.profit < a.profit ? b : a), withProfit[0]);
+
+  const totalRevenue = monthly.reduce((s, m) => s + (Number(m.Revenue) || 0), 0);
+  const totalCosts = monthly.reduce((s, m) => s + (Number(m.Costs) || 0), 0);
+  const avgMargin = totalRevenue > 0 ? ((totalRevenue - totalCosts) / totalRevenue) * 100 : 0;
+
+  const score = Math.max(0, Math.min(100, Math.round(avgMargin * 2.5)));
+  const label =
+    score >= 75 ? "Excellent" : score >= 50 ? "Healthy" : score >= 25 ? "At Risk" : "Critical";
+
   return {
-    ...SAFE_BRIEF,
-    ...r,
-    // Normalise camelCase from snake_case
-    totalRevenue:  r.totalRevenue  ?? r.total_revenue  ?? 0,
-    totalCosts:    r.totalCosts    ?? r.total_costs     ?? 0,
-    totalProfit:   r.totalProfit   ?? r.total_profit    ?? 0,
-    avgMargin:     r.avgMargin     ?? r.avg_margin      ?? 0,
-    healthScore:   r.healthScore   ?? r.health_score    ?? 0,
-    periods:       r.periods       ?? 0,
-    bestMonth:     r.bestMonth     ?? r.best_month      ?? "—",
-    worstMonth:    r.worstMonth    ?? r.worst_month     ?? "—",
-    // Keep snake_case too
-    total_revenue: r.total_revenue ?? r.totalRevenue    ?? 0,
-    total_costs:   r.total_costs   ?? r.totalCosts      ?? 0,
-    total_profit:  r.total_profit  ?? r.totalProfit     ?? 0,
-    avg_margin:    r.avg_margin    ?? r.avgMargin        ?? 0,
-    health_score:  r.health_score  ?? r.healthScore      ?? 0,
-    best_month:    r.best_month    ?? r.bestMonth        ?? "—",
-    worst_month:   r.worst_month   ?? r.worstMonth       ?? "—",
-    forecast: mergeForecast((r.forecast as Record<string, unknown>) ?? {}),
+    score,
+    label,
+    bestMonth: best.month,
+    worstMonth: worst.month,
   };
 }
 
-function mergeForecast(raw: Record<string, unknown>): Record<string, unknown> {
-  const r = raw ?? {};
-  const nr = Number(r.next_revenue ?? r.nextRevenue ?? 0);
-  const nc = Number(r.next_costs   ?? r.nextCosts   ?? 0);
-  const np = Number(r.next_profit  ?? r.nextProfit  ?? nr - nc);
-  return {
-    ...SAFE_FORECAST,
-    next_revenue: nr, next_costs: nc, next_profit: np,
-    nextRevenue:  nr, nextCosts:  nc, nextProfit:  np,
-  };
+function toMonthlyRows(raw: unknown): MonthlyRow[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((m) => {
+    const row = (m ?? {}) as Record<string, unknown>;
+    return {
+      Month: String(row.Month ?? row.month ?? "—"),
+      Revenue: Number(row.Revenue ?? row.revenue ?? 0) || 0,
+      Costs: Number(row.Costs ?? row.costs ?? 0) || 0,
+      ...row,
+    } as MonthlyRow;
+  });
 }
 
-function mergeVariance(raw: Record<string, unknown>): Record<string, unknown> {
-  const r = raw ?? {};
-  const changes = Array.isArray(r.monthly_changes)
-    ? r.monthly_changes
-    : Array.isArray(r.monthlyChanges)
-    ? r.monthlyChanges
-    : [];
-  const avg = Number(r.avg_mom_growth ?? r.avgMomGrowth ?? 0);
-  return {
-    ...SAFE_VARIANCE,
-    monthly_changes: changes,
-    monthlyChanges:  changes,
-    avg_mom_growth:  avg,
-    avgMomGrowth:    avg,
-  };
+function asArray<T>(v: unknown): T[] {
+  return Array.isArray(v) ? (v as T[]) : [];
 }
 
-function mergeCashflow(raw: Record<string, unknown>): Record<string, unknown> {
-  const r = raw ?? {};
-  const monthly = Array.isArray(r.monthly) ? r.monthly : [];
-  const totalRev  = Number(r.total_revenue ?? r.totalRevenue ?? 0);
-  const totalCost = Number(r.total_costs   ?? r.totalCosts   ?? 0);
-  const totalProf = Number(r.total_profit  ?? r.totalProfit  ?? 0);
-  const ending    = Number(r.ending_cash   ?? r.endingCash   ?? 0);
-  const netOp     = Number(r.net_operating ?? r.netOperating ?? totalProf);
-  const trend     = String(r.cash_trend    ?? r.cashTrend    ?? "positive");
-  return {
-    ...SAFE_CASHFLOW,
-    monthly,
-    totalRevenue: totalRev,  total_revenue: totalRev,
-    totalCosts:   totalCost, total_costs:   totalCost,
-    totalProfit:  totalProf, total_profit:  totalProf,
-    endingCash:   ending,    ending_cash:   ending,
-    netOperating: netOp,     net_operating: netOp,
-    cashTrend:    trend,     cash_trend:    trend,
-  };
-}
-
-function mergeBreakeven(raw: Record<string, unknown>): Record<string, unknown> {
-  const r = raw ?? {};
-  const bev = Number(r.breakeven_revenue     ?? r.breakevenRevenue     ?? 0);
-  const fce = Number(r.fixed_costs_estimate  ?? r.fixedCostsEstimate   ?? 0);
-  const vcr = Number(r.variable_cost_ratio   ?? r.variableCostRatio    ?? 0);
-  const cmp = Number(r.contribution_margin_pct ?? r.contributionMarginPct ?? 0);
-  return {
-    ...SAFE_BREAKEVEN,
-    breakevenRevenue:     bev, breakeven_revenue:      bev,
-    fixedCostsEstimate:   fce, fixed_costs_estimate:   fce,
-    variableCostRatio:    vcr, variable_cost_ratio:    vcr,
-    contributionMarginPct:cmp, contribution_margin_pct:cmp,
-  };
+function asObjOrNull<T>(v: unknown): T | null {
+  return v && typeof v === "object" ? (v as T) : null;
 }
 
 // ── Store ─────────────────────────────────────────────────────────────────────
@@ -287,83 +384,79 @@ const _store = create<FinancialState & FinancialActions>()(
       ...INITIAL,
 
       setUploadResult: (result) => {
-        const monthly: MonthlyRow[] = Array.isArray(result.monthly)
-          ? (result.monthly as MonthlyRow[])
-          : [];
+        const monthly = toMonthlyRows(result.monthly);
 
         const sym =
-          typeof result.currency === "string" && result.currency
+          typeof result.currencySymbol === "string" && result.currencySymbol
+            ? result.currencySymbol
+            : typeof result.currency === "string" && result.currency
             ? result.currency
             : "K";
         setCurrencyGlobal(sym);
 
-        const cabId =
-          typeof result.cabinet_id === "string" ? result.cabinet_id : null;
-        const fname =
-          typeof result.filename === "string" ? result.filename : null;
-        const sheetsArr: string[] = Array.isArray(result.sheets)
-          ? (result.sheets as string[])
-          : [];
+        const cabId = typeof result.cabinet_id === "string" ? result.cabinet_id : null;
+        const fname = typeof result.filename === "string" ? result.filename : null;
+        const sheetsArr = asArray<string>(result.sheets);
 
-        // Upsert cabinet entry
         if (cabId && fname) {
           const cab = get().cabinet;
           if (!cab.some((e) => e.id === cabId)) {
             const entry: CabinetEntry = {
               id: cabId,
               name: fname,
-              fileType:
-                typeof result.file_type === "string"
-                  ? result.file_type
-                  : "unknown",
-              engine:
-                typeof result.engine === "string" ? result.engine : "engine1",
+              fileType: typeof result.file_type === "string" ? result.file_type : "unknown",
+              engine: typeof result.engine === "string" ? result.engine : "engine1",
               sheets: sheetsArr,
               activeSheet:
-                typeof result.active_sheet === "string"
-                  ? result.active_sheet
-                  : null,
+                typeof result.active_sheet === "string" ? result.active_sheet : null,
               uploadedAt: Date.now(),
             };
             set((s) => ({ cabinet: [entry, ...s.cabinet].slice(0, 20) }));
           }
         }
 
-        const rawBrief    = (result.brief      ?? {}) as Record<string, unknown>;
-        const rawForecast = (result.forecast   ?? {}) as Record<string, unknown>;
-        const rawVariance = (result.variance   ?? {}) as Record<string, unknown>;
-        const rawCashflow = (result.cashflow   ?? {}) as Record<string, unknown>;
-        const rawBreakeven= (result.breakeven  ?? {}) as Record<string, unknown>;
-
         set({
           filename: fname,
           cabinetId: cabId,
-          engine: typeof result.engine === "string" ? result.engine : null,
           sheets: sheetsArr,
-          activeSheet:
-            typeof result.active_sheet === "string" ? result.active_sheet : null,
-          columnsDetected:
-            result.columns_detected != null
-              ? (result.columns_detected as FinancialState["columnsDetected"])
-              : null,
-          currency: sym,
+          activeSheet: typeof result.active_sheet === "string" ? result.active_sheet : null,
+          currencySymbol: sym,
+
+          hasEngine2Data: Boolean(result.hasEngine2Data),
+          hasEngine3Data: Boolean(result.hasEngine3Data),
+          posBusinessName:
+            typeof result.posBusinessName === "string" ? result.posBusinessName : "",
+          posPeriod: typeof result.posPeriod === "string" ? result.posPeriod : "",
+
           monthly,
+          alerts: asArray<AlertRow>(result.alerts),
+          anomalies: asArray<unknown>(result.anomalies),
+          rfm: asArray<RfmRow>(result.rfm),
+          segments: asArray<SegmentRow>(result.segments),
+          clvTiers: asArray<ClvTierRow>(result.clvTiers),
+          productsE2: asArray<ProductRow>(result.productsE2),
+          basketPairs: asArray<BasketPairRow>(result.basketPairs),
+          categories: asArray<CategoryRow>(result.categories),
+          topItems: asArray<TopItemRow>(result.topItems),
+          benchmarks: asArray<BenchmarkRow>(result.benchmarks),
+          menuGaps: asArray<MenuGapRow>(result.menuGaps),
+          crossInsights: asArray<CrossInsightRow>(result.crossInsights),
 
-          // Each sub-object merged through its safe-shape normaliser
-          brief:     mergeBrief({ ...rawBrief, ...rawForecast }),
-          forecast:  mergeForecast(rawForecast),
-          variance:  mergeVariance(rawVariance),
-          cashflow:  mergeCashflow(rawCashflow),
-          breakeven: mergeBreakeven(rawBreakeven),
-          anomalies: Array.isArray(result.anomalies) ? result.anomalies : [],
+          kpi: deriveKpi(monthly, result.kpi as Record<string, unknown>),
+          health: deriveHealth(monthly, result.health as Record<string, unknown>),
 
-          // E2 / E3 arrays — always arrays, never undefined
-          customers:     Array.isArray(result.customers)     ? result.customers     : [],
-          rfm:           Array.isArray(result.rfm)           ? result.rfm           : [],
-          posCategories: Array.isArray(result.categories)    ? result.categories    :
-                         Array.isArray(result.posCategories) ? result.posCategories : [],
-          posItems:      Array.isArray(result.items)         ? result.items         :
-                         Array.isArray(result.posItems)      ? result.posItems      : [],
+          cashflow: asObjOrNull<CashflowShape>(result.cashflow),
+          breakeven: asObjOrNull<BreakevenShape>(result.breakeven),
+          retention: asObjOrNull<RetentionShape>(result.retention),
+          attachRates: asObjOrNull<AttachRatesShape>(result.attachRates),
+          posGrandTotals: asObjOrNull<PosGrandTotalsShape>(result.posGrandTotals),
+          intelligenceScores: asObjOrNull<IntelligenceScoresShape>(result.intelligenceScores),
+          engineFlags: asObjOrNull<EngineFlagsShape>(result.engineFlags),
+
+          unifiedBrief: typeof result.unifiedBrief === "string" ? result.unifiedBrief : "",
+          opsIntelBrief: typeof result.opsIntelBrief === "string" ? result.opsIntelBrief : "",
+          customerIntelBrief:
+            typeof result.customerIntelBrief === "string" ? result.customerIntelBrief : "",
 
           uploadError: null,
         });
@@ -374,7 +467,7 @@ const _store = create<FinancialState & FinancialActions>()(
 
       setCurrency: (sym) => {
         setCurrencyGlobal(sym);
-        set({ currency: sym });
+        set({ currencySymbol: sym });
       },
 
       switchSheet: async (sheetName) => {
@@ -389,16 +482,11 @@ const _store = create<FinancialState & FinancialActions>()(
             { method: "POST" }
           );
           if (!res.ok) {
-            const err = (await res.json().catch(() => ({}))) as {
-              detail?: string;
-            };
+            const err = (await res.json().catch(() => ({}))) as { detail?: string };
             throw new Error(err.detail ?? "Sheet switch failed");
           }
           const data = (await res.json()) as Record<string, unknown>;
-          get().setUploadResult({
-            ...data,
-            filename: get().filename ?? undefined,
-          });
+          get().setUploadResult({ ...data, filename: get().filename ?? undefined });
         } catch (e) {
           set({ uploadError: (e as Error).message });
         } finally {
@@ -426,19 +514,16 @@ const _store = create<FinancialState & FinancialActions>()(
       reset: () => set({ ...INITIAL, cabinet: get().cabinet }),
     }),
     {
-      name: "aibos-store-v3",
+      name: "aibos-store-v4",
       partialize: (s) => ({
         cabinet: s.cabinet,
-        currency: s.currency,
+        currencySymbol: s.currencySymbol,
       }),
     }
   )
 );
 
-// ── Named exports — both old and new hook names ────────────────────────────────
+// ── Exports ────────────────────────────────────────────────────────────────────
 
-/** New name — used by files introduced in this session */
 export const useFinancialStore = _store;
-
-/** Old name — ALL existing dashboard pages import { useStore } from '@/lib/store' */
 export const useStore = _store;

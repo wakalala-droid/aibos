@@ -1,4 +1,7 @@
-// lib/currency.ts — canonical currency module (no external deps)
+// lib/currency.ts — canonical currency module
+// fmt(value, compact, symbolOverride) — matches every page call site exactly:
+//   fmt(kpi.totalRevenue, true, sym)
+//   fmt(row.revenue, false, sym)
 
 let _sym = "K";
 
@@ -10,17 +13,30 @@ export function getCurrencySymbol(): string {
   return _sym;
 }
 
-export function formatCurrency(value: number | null | undefined): string {
-  const sym = _sym || "K";
+/**
+ * formatCurrency(value, compact?, symbolOverride?)
+ * - compact=true  → abbreviate large numbers (1.2M, 450K)
+ * - compact=false/omitted → full formatted number
+ * - symbolOverride → use this symbol instead of the global one (pages pass `sym` explicitly)
+ */
+export function formatCurrency(
+  value: number | null | undefined,
+  compact = false,
+  symbolOverride?: string
+): string {
+  const sym = symbolOverride || _sym || "K";
   const num = value ?? 0;
-  if (Math.abs(num) >= 1_000_000) {
-    return `${sym}${(num / 1_000_000).toFixed(2)}M`;
+  const sign = num < 0 ? "-" : "";
+  const abs = Math.abs(num);
+
+  if (compact) {
+    if (abs >= 1_000_000) return `${sign}${sym}${(abs / 1_000_000).toFixed(2)}M`;
+    if (abs >= 1_000) return `${sign}${sym}${(abs / 1_000).toFixed(1)}K`;
+    return `${sign}${sym}${abs.toFixed(0)}`;
   }
-  if (Math.abs(num) >= 1_000) {
-    return `${sym}${num.toLocaleString("en-ZM", { maximumFractionDigits: 0 })}`;
-  }
-  return `${sym}${num.toFixed(2)}`;
+
+  return `${sign}${sym}${abs.toLocaleString("en-ZM", { maximumFractionDigits: 0 })}`;
 }
 
-// Alias used by some existing pages
+/** Alias used by every page: import { fmt } from '@/lib/utils' */
 export const fmt = formatCurrency;
