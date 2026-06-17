@@ -4,6 +4,7 @@ import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
+import FeatureGate from '@/components/ui/FeatureGate';
 import { motion } from 'framer-motion';
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
@@ -70,6 +71,15 @@ export default function AnomalyPage() {
     s === 'critical' ? 'var(--crit)' : s === 'warning' ? 'var(--warn)' : 'var(--info)';
 
   return (
+    <FeatureGate
+      feature="anomaly"
+      title="Anomaly Detection"
+      colour="var(--cyan)"
+      headline={derivedAnomalies.length > 0
+        ? `We flagged ${derivedAnomalies.length} anomal${derivedAnomalies.length === 1 ? 'y' : 'ies'} in your numbers — ${critical.length} critical.`
+        : 'No anomalies yet — keep uploading and we’ll catch the outliers.'}
+      detail="See exactly which months broke trend, the z-score for each spike, and the likely root cause behind every flag — across revenue and costs."
+    >
     <>
       <div style={{ marginBottom: 24 }}>
         <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
@@ -84,7 +94,7 @@ export default function AnomalyPage() {
       </div>
 
       {/* KPI cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
           label="TOTAL ANOMALIES" value={String(derivedAnomalies.length)}
           sub="statistical outliers detected"
@@ -256,5 +266,6 @@ export default function AnomalyPage() {
         </div>
       </SectionCard>
     </>
+    </FeatureGate>
   );
 }

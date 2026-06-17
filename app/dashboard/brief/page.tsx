@@ -153,7 +153,7 @@ export default function BriefPage() {
       </div>
 
       {/* KPI summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
           label="HEALTH SCORE" value={String(health.score)}
           sub={health.label}
@@ -289,7 +289,7 @@ export default function BriefPage() {
 
       {/* Key metrics summary */}
       <SectionCard title="Period Summary" subtitle={`${months}-month rolling · ${sym} ZMW`} delay={0.28}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+        <div className="grid-3">
           {[
             { label: 'Total Revenue',  value: fmt(kpi.totalRevenue, true, sym), colour: 'var(--cyan)'  },
             { label: 'Total Costs',    value: fmt(kpi.totalCosts,   true, sym), colour: 'var(--e2)'    },

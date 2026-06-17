@@ -80,7 +80,7 @@ export default function BenchmarksPage() {
       </div>
 
       {/* KPI summary strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-3" style={{ marginBottom: 24 }}>
         <KPICard label="ON TARGET" value={String(goodCount)} sub="metrics within benchmark"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="var(--good)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkData={[0,1,1,2,2,goodCount]} sparkColor="var(--good)" delay={0} />

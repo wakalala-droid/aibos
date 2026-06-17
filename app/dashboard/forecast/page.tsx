@@ -5,6 +5,7 @@ import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
+import FeatureGate from '@/components/ui/FeatureGate';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -110,6 +111,15 @@ export default function ForecastPage() {
   const revSpark    = safeMonthly.slice(-6).map(m => n(m?.Revenue));
 
   return (
+    <FeatureGate
+      feature="forecast"
+      title="12-month Forecast"
+      colour="var(--cyan)"
+      headline={hasData
+        ? `Your revenue trend points to ${fmt(firstFcast, true, sym)} next month (${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%).`
+        : 'Upload data to project your next quarter.'}
+      detail="See the full 3-month projection with confidence bands, trend strength, and the monthly drivers — plus exportable forecast tables."
+    >
     <>
       <div style={{ marginBottom: 24 }}>
         <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
@@ -123,7 +133,7 @@ export default function ForecastPage() {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="NEXT MONTH FORECAST" value={fmt(firstFcast, false, sym)} sub="vs prior period" growth={growthPct}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12l4-4 4 4 4-6 4 4" stroke="var(--cyan)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
           iconBg="rgba(0,212,255,0.12)" sparkData={[...revSpark.slice(-4), firstFcast]} sparkColor="var(--cyan)" delay={0} />
@@ -238,5 +248,6 @@ export default function ForecastPage() {
       </SectionCard>
       )}
     </>
+    </FeatureGate>
   );
 }

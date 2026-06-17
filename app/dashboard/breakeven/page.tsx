@@ -4,6 +4,7 @@ import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
+import FeatureGate from '@/components/ui/FeatureGate';
 import { motion } from 'framer-motion';
 import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid,
@@ -50,6 +51,15 @@ export default function BreakevenPage() {
   });
 
   return (
+    <FeatureGate
+      feature="breakeven"
+      title="Breakeven Analysis"
+      colour="var(--cyan)"
+      headline={currentRevenue > 0
+        ? `You're ${fmt(Math.abs(gap), true, sym)} ${gap >= 0 ? 'above' : 'below'} a breakeven of ${fmt(bepRevenue, true, sym)}/month.`
+        : 'Upload revenue and cost data to find your breakeven point.'}
+      detail="See your fixed vs variable cost split, contribution margin, margin of safety, and the exact revenue you need each month to break even."
+    >
     <>
       <div style={{ marginBottom: 24 }}>
         <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
@@ -58,7 +68,7 @@ export default function BreakevenPage() {
       </div>
 
       {/* KPI cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="BREAKEVEN REVENUE" value={fmt(bepRevenue, false, sym)} sub="monthly target"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M12 3v18" stroke="var(--cyan)" strokeWidth="1.5" strokeLinecap="round" opacity=".4"/><path d="M5 19L19 5" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round"/></svg>}
           iconBg="rgba(0,212,255,0.12)" sparkData={[bepRevenue*0.9, bepRevenue*0.95, bepRevenue, bepRevenue, bepRevenue, bepRevenue]} sparkColor="var(--cyan)" delay={0} />
@@ -124,5 +134,6 @@ export default function BreakevenPage() {
         </div>
       </SectionCard>
     </>
+    </FeatureGate>
   );
 }

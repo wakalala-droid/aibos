@@ -67,7 +67,7 @@ export default function CashPage() {
       </div>
 
       {/* KPI cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
           label="CASH POSITION" value={fmt(currentCash, false, sym)} sub="current balance"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="var(--cyan)" strokeWidth="1.5" fill="none"/><path d="M2 10h20" stroke="var(--cyan)" strokeWidth="1.3" strokeLinecap="round"/><circle cx="8" cy="15" r="1.5" fill="var(--cyan)"/></svg>}

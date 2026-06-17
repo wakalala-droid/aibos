@@ -41,7 +41,7 @@ export default function ChurnPage() {
       </div>
 
       {/* KPI cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="HIGH CHURN RISK" value={String(high.length)} sub="immediate action required"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--crit)" strokeWidth="1.5" strokeLinejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="var(--crit)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(239,68,68,0.15)" sparkData={[0,1,1,1,1,high.length]} sparkColor="var(--crit)" delay={0} />

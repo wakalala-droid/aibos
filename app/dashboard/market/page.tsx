@@ -38,7 +38,7 @@ export default function MarketPage() {
       </div>
 
       {/* KPI cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="MARKET REVENUE" value={fmt(totalRevenue, true, sym)} sub="across all segments"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--e2)" strokeWidth="1.5" fill="none"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20" stroke="var(--e2)" strokeWidth="1.2" fill="none"/></svg>}
           iconBg="rgba(249,115,22,0.15)" sparkData={[5000,6000,7000,7500,8000,totalRevenue]} sparkColor="var(--e2)" delay={0} />

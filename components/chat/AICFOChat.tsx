@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 
@@ -78,7 +78,7 @@ export default function AICFOChat() {
   const sym     = currencySymbol || 'K';
   const userId  = 'default-user';
 
-  const safeRfm = Array.isArray(rfm) ? rfm : [];
+  const safeRfm = useMemo(() => (Array.isArray(rfm) ? rfm : []), [rfm]);
   const hasFinancial = Array.isArray(monthly) && monthly.length > 0;
   const hasCustomer  = hasEngine2Data || safeRfm.length > 0;
   const hasOps       = hasEngine3Data || !!posGrandTotals;
@@ -89,6 +89,10 @@ export default function AICFOChat() {
   const [initialized, setInit]      = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLTextAreaElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // Track whether the user is already pinned to the bottom; we only auto-scroll
+  // when they are (motion_governance.md: never yank a user who scrolled up).
+  const atBottomRef = useRef(true);
 
   // Build greeting once on mount
   useEffect(() => {
@@ -121,12 +125,20 @@ export default function AICFOChat() {
     setMessages([greeting]);
   }, [initialized, hasFinancial, hasCustomer, hasOps, kpi, monthly, safeRfm, posGrandTotals, sym]);
 
-  // Auto-scroll to bottom — but NOT on mount (per design rules)
+  // Auto-scroll to bottom — but NOT on mount, and only if the user is already
+  // at the bottom (no forced scroll when they've scrolled up to read history).
   useEffect(() => {
-    if (messages.length > 1) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 1 && atBottomRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }, [messages]);
+
+  // Keep atBottomRef current as the user scrolls the transcript.
+  const onBodyScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    atBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  }, []);
 
   // Build context for backend — include EVERY engine that currently has data
   // so the AI CFO reasons across Financial + Customer + Operations, not just E1.
@@ -219,6 +231,8 @@ export default function AICFOChat() {
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
+    // The user just sent — follow the conversation to the bottom.
+    atBottomRef.current = true;
 
     try {
       const res = await fetch(`${API}/chat`, {
@@ -273,6 +287,9 @@ export default function AICFOChat() {
       setMessages(prev => [...prev, errMsg]);
     } finally {
       setLoading(false);
+      // Keep focus in the composer after sending (accessibility_system.md
+      // KEYBOARD RULE) — including after a quick-prompt button click.
+      inputRef.current?.focus();
     }
   }, [loading, buildContext]);
 
@@ -284,15 +301,18 @@ export default function AICFOChat() {
   };
 
   return (
-    <div style={{
-      display:        'flex',
-      flexDirection:  'column',
-      height:         '100%',
-      background:     'var(--bg-card)',
-      borderRadius:   12,
-      overflow:       'hidden',
-      border:         '1px solid var(--border)',
-    }}>
+    <section
+      aria-label="AI CFO assistant"
+      style={{
+        display:        'flex',
+        flexDirection:  'column',
+        height:         '100%',
+        background:     'var(--bg-card)',
+        borderRadius:   12,
+        overflow:       'hidden',
+        border:         '1px solid var(--border)',
+      }}
+    >
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div style={{
@@ -321,14 +341,22 @@ export default function AICFOChat() {
       </div>
 
       {/* ── Chat body ───────────────────────────────────────────────────── */}
-      <div style={{
-        flex:       1,
-        overflowY:  'auto',
-        padding:    '20px 20px 12px',
-        display:    'flex',
-        flexDirection: 'column',
-        gap:        4,
-      }}>
+      <div
+        ref={scrollRef}
+        onScroll={onBodyScroll}
+        role="log"
+        aria-live="polite"
+        aria-atomic="false"
+        aria-label="Conversation with AI CFO"
+        style={{
+          flex:       1,
+          overflowY:  'auto',
+          padding:    '20px 20px 12px',
+          display:    'flex',
+          flexDirection: 'column',
+          gap:        4,
+        }}
+      >
 
         {/* AI CFO identity card */}
         <div style={{
@@ -379,6 +407,7 @@ export default function AICFOChat() {
               {QUICK_PROMPTS.map(prompt => (
                 <button
                   key={prompt}
+                  type="button"
                   onClick={() => sendMessage(prompt)}
                   disabled={loading}
                   style={{
@@ -523,12 +552,15 @@ export default function AICFOChat() {
         }}
           onFocus={() => {}}
         >
+          <label htmlFor="cfo-chat-input" className="sr-only">Message to AI CFO</label>
           <textarea
+            id="cfo-chat-input"
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKey}
             placeholder="Ask your AI CFO anything..."
+            aria-label="Message to AI CFO"
             rows={1}
             disabled={loading}
             style={{
@@ -551,8 +583,10 @@ export default function AICFOChat() {
             }}
           />
           <button
+            type="button"
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || loading}
+            aria-label="Send message"
             style={{
               width:          34,
               height:         34,
@@ -583,6 +617,6 @@ export default function AICFOChat() {
           Press Enter to send · Shift+Enter for new line
         </p>
       </div>
-    </div>
+    </section>
   );
 }

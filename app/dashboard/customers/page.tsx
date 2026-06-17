@@ -51,7 +51,7 @@ export default function CustomersPage() {
       </div>
 
       {/* KPI cards - E1 style */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="TOTAL CUSTOMERS" value={String(total)} sub="active customers"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" stroke="var(--e2)" strokeWidth="1.5" fill="none"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="var(--e2)" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>}
           iconBg="rgba(249,115,22,0.15)" sparkData={[3,4,3,5,4,total]} sparkColor="var(--e2)" delay={0} />

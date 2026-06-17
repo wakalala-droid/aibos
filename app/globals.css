@@ -507,6 +507,32 @@ body {
   border-bottom: none;
 }
 
+/* ── SKELETON SHIMMER ───────────────────────────────────────── */
+/* Single shimmer sweep, 1.4s loop (motion_governance.md). Reduced-motion
+   media query below freezes it to a static muted block. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-badge);
+  border-radius: 8px;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--text-4) 18%, transparent),
+    transparent
+  );
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
 /* ── PROGRESS BAR ───────────────────────────────────────────── */
 .progress-track {
   height: 4px;
@@ -531,6 +557,203 @@ body {
 /* Exempt animations */
 svg *, .progress-fill, [class*="motion"] {
   transition: none;
+}
+
+/* ============================================================
+   ACCESSIBILITY — focus visibility (WCAG 2.1 AA · 3:1 min)
+   Per accessibility_system.md FOCUS RULE: every interactive
+   element has a visible focus state; outline:none is never used
+   without an equal-or-greater replacement.
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+/* Don't show focus ring on mouse click, only keyboard (browser default
+   behaviour of :focus-visible) — but guarantee a ring if a component
+   removed its own outline. */
+.kpi-card:focus-visible,
+.section-card:focus-visible,
+.nav-item:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Visually-hidden helper for screen-reader-only labels and skip links. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip-link {
+  position: absolute;
+  left: 8px; top: -48px;
+  z-index: 200;
+  background: var(--bg-card);
+  border: 1px solid var(--border-md);
+  color: var(--text-1);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 8px;
+}
+
+/* Minimum touch target — 44x44 per accessibility_system.md TOUCH TARGET RULE.
+   Applied to icon-only controls that would otherwise be smaller below desktop. */
+@media (max-width: 1023px) {
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE GRID HELPERS — mobile-first, used by Overview and
+   other multi-column pages so layouts adapt instead of being
+   redesigned (responsive_design_system.md GRID RULE).
+   ============================================================ */
+.grid-kpi {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.grid-engines {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.grid-main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+/* Tablet — 640px+ */
+@media (min-width: 640px) {
+  .grid-kpi    { grid-template-columns: repeat(2, 1fr); }
+  .grid-engines{ grid-template-columns: repeat(2, 1fr); }
+  .grid-2      { grid-template-columns: repeat(2, 1fr); }
+  .grid-3      { grid-template-columns: repeat(2, 1fr); }
+}
+/* Desktop — 1024px+ */
+@media (min-width: 1024px) {
+  .grid-kpi    { grid-template-columns: repeat(4, 1fr); }
+  .grid-engines{ grid-template-columns: auto repeat(3, 1fr); }
+  .grid-main   { grid-template-columns: 1fr 340px; }
+  .grid-3      { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ============================================================
+   RESPONSIVE SHELL — mobile is the primary platform
+   (Design_constitution.md Principle 8 · responsive_design_system.md).
+   Below lg the fixed sidebar becomes an off-canvas drawer; the main
+   content goes full width; a top bar with a hamburger appears.
+   ============================================================ */
+
+/* Mobile top bar — hidden on desktop, shown below lg. */
+.mobile-topbar {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  /* Sidebar becomes an off-canvas drawer at full 240px width. */
+  .sidebar-nav,
+  .sidebar-nav.collapsed {
+    width: var(--sidebar-width);
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: none;
+  }
+  .sidebar-nav.mobile-open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Content is full width; the drawer overlays it, never pushes it. */
+  .main-content,
+  .main-content.sidebar-collapsed {
+    margin-left: 0;
+  }
+
+  /* Top bar with hamburger + wordmark + theme toggle. */
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 56px;
+    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Backdrop behind the open drawer. */
+  .nav-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: rgba(0,0,0,0.5);
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Tighter page padding on small screens. */
+  .page-container {
+    padding: 20px 16px;
+  }
+}
+
+/* Prevent page-level horizontal scroll at every breakpoint
+   (responsive_design_system.md OVERFLOW RULE). */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   REDUCED MOTION — every animation has an instant/opacity-only
+   fallback (motion_governance.md · accessibility_system.md).
+   Framer Motion is handled globally via <MotionConfig reducedMotion="user">.
+   This covers all CSS-driven animation and transitions.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .mesh-bg { animation: none !important; }
 }
 
 /* ============================================================

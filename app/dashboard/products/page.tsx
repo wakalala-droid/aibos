@@ -36,7 +36,7 @@ export default function ProductsPage() {
       </div>
 
       {/* KPI cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="TOTAL PRODUCTS" value={String(productsE2.length)} sub="tracked in system"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke="var(--e2)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(249,115,22,0.15)" sparkData={[2,3,3,4,4,productsE2.length]} sparkColor="var(--e2)" delay={0} />
@@ -52,7 +52,7 @@ export default function ProductsPage() {
       </div>
 
       {/* BCG Quadrant tiles */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 20 }}>
+      <div className="grid-kpi" style={{ marginBottom: 20 }}>
         {Object.entries(BCG).map(([classLabel, cfg]) => {
           const items = productsE2.filter(p => p.bcg_class === classLabel);
           return (

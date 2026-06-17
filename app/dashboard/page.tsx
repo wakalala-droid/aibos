@@ -1,12 +1,15 @@
 'use client';
 import { useStore } from '@/lib/store';
-import { fmt, scoreColor, formatAxis } from '@/lib/utils';
+import { fmt, scoreColor, formatAxis, n } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import InsightCard from '@/components/ui/InsightCard';
 import FileUpload from '@/components/upload/FileUpload';
 import AICFOChat from '@/components/chat/AICFOChat';
 import ChartTooltip from '@/components/ui/ChartTooltip';
+import FeatureGate from '@/components/ui/FeatureGate';
+import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
+import BriefSubscribe from '@/components/ui/BriefSubscribe';
 import { useTheme } from '@/lib/theme';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -75,6 +78,26 @@ function EngineScoreCard({
   );
 }
 
+function ComingSoon({ colour, text }: { colour: string; text: string }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 0 2px' }}>
+      <span style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
+        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.55rem', fontWeight: 700,
+        textTransform: 'uppercase', letterSpacing: '0.08em', color: colour,
+        background: `color-mix(in srgb, ${colour} 12%, transparent)`,
+        border: `1px solid color-mix(in srgb, ${colour} 30%, transparent)`,
+        padding: '3px 8px', borderRadius: 6,
+      }}>
+        Coming soon
+      </span>
+      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, margin: 0 }}>
+        {text}
+      </p>
+    </div>
+  );
+}
+
 export default function OverviewPage() {
   const {
     kpi, health, monthly, alerts,
@@ -106,6 +129,27 @@ export default function OverviewPage() {
     return Math.round(((r - c) / r) * 100);
   });
   const costSpark = safeMonthly.slice(-6).map(m => Number(m?.Costs) || 0);
+
+  // Real month-over-month growth (no hardcoded numbers — trust is design).
+  // Returns undefined when there's no prior month, so KPICard hides the badge
+  // rather than showing a fabricated trend.
+  const lastM = safeMonthly[safeMonthly.length - 1];
+  const prevM = safeMonthly[safeMonthly.length - 2];
+  const pctGrowth = (cur: number, prev: number | undefined) =>
+    prevM && prev !== undefined && prev !== 0 ? ((cur - prev) / Math.abs(prev)) * 100 : undefined;
+
+  const lastRev = n(lastM?.Revenue), prevRev = n(prevM?.Revenue);
+  const lastCost = n(lastM?.Costs), prevCost = n(prevM?.Costs);
+  const lastProfit = lastRev - lastCost, prevProfit = prevRev - prevCost;
+  const lastMargin = lastRev ? (lastProfit / lastRev) * 100 : 0;
+  const prevMargin = prevRev ? (prevProfit / prevRev) * 100 : 0;
+
+  const revGrowth    = pctGrowth(lastRev, prevM ? prevRev : undefined);
+  const costGrowth   = pctGrowth(lastCost, prevM ? prevCost : undefined);
+  const profitGrowth = pctGrowth(lastProfit, prevM ? prevProfit : undefined);
+  // Margin moves in percentage points, not %.
+  const marginGrowth = prevM ? lastMargin - prevMargin : undefined;
+  const growthSub = prevM ? 'vs last month' : 'first month';
 
   // Customer + Operations quick stats
   const safeRfm     = Array.isArray(rfm) ? rfm : [];
@@ -150,21 +194,26 @@ export default function OverviewPage() {
           </p>
         </div>
         <button
+          type="button"
           onClick={toggle}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           style={{
             width: 36, height: 36, borderRadius: 8,
             border: '1px solid var(--border-md)',
             background: 'var(--bg-card)', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--text-3)',
+            color: 'var(--text-3)', flexShrink: 0,
           }}
         >
           {isDark ? <SunIcon /> : <MoonIcon />}
         </button>
       </div>
 
+      {/* ── Contextual upgrade trigger (only at moments of demonstrated value) ── */}
+      <UpgradeTrigger />
+
       {/* ── Engine score strip ──────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
+      <div className="grid-engines" style={{ marginBottom: 24 }}>
         {/* Overall hero */}
         <div className="kpi-card" style={{
           minWidth: 130, display: 'flex', flexDirection: 'column',
@@ -200,35 +249,35 @@ export default function OverviewPage() {
       </div>
 
       {/* ── KPI cards ───────────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
           label="TOTAL REVENUE" value={fmt(kpi?.totalRevenue ?? 0, true, sym)}
-          growth={8.4} sparkData={revSpark} sparkColor="var(--spark-revenue)"
+          growth={revGrowth} sub={growthSub} sparkData={revSpark} sparkColor="var(--spark-revenue)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--blue)" strokeWidth="1.8" fill="none"/><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H9m0 0h4.5a1.5 1.5 0 010 3H9" stroke="var(--blue)" strokeWidth="1.4" strokeLinecap="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)" delay={0}
         />
         <KPICard
           label="TOTAL COSTS" value={fmt(kpi?.totalCosts ?? 0, true, sym)}
-          growth={5.2} sparkData={costSpark} sparkColor="var(--spark-cost)"
+          growth={costGrowth} sub={growthSub} sparkData={costSpark} sparkColor="var(--spark-cost)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 8h20v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8z" stroke="var(--orange)" strokeWidth="1.6" fill="none"/><path d="M2 8l2-4h16l2 4" stroke="var(--orange)" strokeWidth="1.5" strokeLinejoin="round"/></svg>}
           iconBg="rgba(249,115,22,0.15)" delay={0.06}
         />
         <KPICard
           label="NET PROFIT" value={fmt(kpi?.totalProfit ?? 0, true, sym)}
-          growth={12.1} sparkData={profSpark} sparkColor="var(--spark-profit)"
+          growth={profitGrowth} sub={growthSub} sparkData={profSpark} sparkColor="var(--spark-profit)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" delay={0.12}
         />
         <KPICard
           label="AVG NET MARGIN" value={`${(kpi?.avgMargin ?? 0).toFixed(1)}%`}
-          growth={1.2} sparkData={marginSpark} sparkColor="var(--spark-margin)"
+          growth={marginGrowth} sub={growthSub} sparkData={marginSpark} sparkColor="var(--spark-margin)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--purple)" strokeWidth="1.6" fill="none"/><path d="M12 8v4l3 3" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(167,139,250,0.15)" delay={0.18}
         />
       </div>
 
       {/* ── Main two-column layout ───────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20, marginBottom: 24 }}>
+      <div className="grid-main" style={{ marginBottom: 24 }}>
 
         {/* LEFT */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -277,33 +326,44 @@ export default function OverviewPage() {
             </SectionCard>
           )}
 
-          {/* E2 + E3 quick stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          {/* E2 + E3 quick stats — render real numbers when the engine has data,
+              otherwise a clearly-labeled "coming soon" state (never zero-filled
+              cards that look broken). */}
+          <div className="grid-2">
             <SectionCard delay={0.15}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', fontWeight: 600, color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                   Customer Intelligence
                 </p>
-                <Link href="/dashboard/customers" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', textDecoration: 'none' }}>
-                  View →
-                </Link>
+                {hasEngine2Data && (
+                  <Link href="/dashboard/customers" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', textDecoration: 'none' }}>
+                    View →
+                  </Link>
+                )}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-                {[
-                  { l: 'Champions', v: String(champions),       c: 'var(--good)' },
-                  { l: 'High Churn', v: String(highChurn),      c: 'var(--crit)' },
-                  { l: 'Retention', v: `${retRate.toFixed(0)}%`, c: 'var(--e2)'  },
-                ].map(item => (
-                  <div key={item.l}>
-                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                      {item.l}
-                    </p>
-                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>
-                      {item.v}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {hasEngine2Data ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                  {[
+                    { l: 'Champions', v: String(champions),       c: 'var(--good)' },
+                    { l: 'High Churn', v: String(highChurn),      c: 'var(--crit)' },
+                    { l: 'Retention', v: `${retRate.toFixed(0)}%`, c: 'var(--e2)'  },
+                  ].map(item => (
+                    <div key={item.l}>
+                      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        {item.l}
+                      </p>
+                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>
+                        {item.v}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <ComingSoon
+                  colour="var(--e2)"
+                  text="Upload customer or sales data to unlock RFM segments, CLV tiers and churn risk."
+                />
+              )}
             </SectionCard>
 
             <SectionCard delay={0.18}>
@@ -311,26 +371,35 @@ export default function OverviewPage() {
                 <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', fontWeight: 600, color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                   Operations
                 </p>
-                <Link href="/dashboard/pos" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', textDecoration: 'none' }}>
-                  View →
-                </Link>
+                {hasEngine3Data && (
+                  <Link href="/dashboard/pos" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', textDecoration: 'none' }}>
+                    View →
+                  </Link>
+                )}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-                {[
-                  { l: 'Net Revenue',   v: fmt(gt?.net_revenue ?? 0, true, sym),  c: 'var(--e3)'   },
-                  { l: 'Drink Attach',  v: `${drinkAttach.toFixed(0)}%`,           c: drinkAttach >= 80 ? 'var(--good)' : 'var(--warn)' },
-                  { l: 'Benchmarks',    v: `${warnB} warn`,                        c: warnB > 0 ? 'var(--warn)' : 'var(--good)' },
-                ].map(item => (
-                  <div key={item.l}>
-                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                      {item.l}
-                    </p>
-                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
-                      {item.v}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {hasEngine3Data ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                  {[
+                    { l: 'Net Revenue',   v: fmt(gt?.net_revenue ?? 0, true, sym),  c: 'var(--e3)'   },
+                    { l: 'Drink Attach',  v: `${drinkAttach.toFixed(0)}%`,           c: drinkAttach >= 80 ? 'var(--good)' : 'var(--warn)' },
+                    { l: 'Benchmarks',    v: `${warnB} warn`,                        c: warnB > 0 ? 'var(--warn)' : 'var(--good)' },
+                  ].map(item => (
+                    <div key={item.l}>
+                      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        {item.l}
+                      </p>
+                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
+                        {item.v}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <ComingSoon
+                  colour="var(--e3)"
+                  text="Upload a POS export to unlock category mix, item velocity and QSR benchmarks."
+                />
+              )}
             </SectionCard>
           </div>
 
@@ -455,26 +524,36 @@ export default function OverviewPage() {
               </Link>
             ))}
           </SectionCard>
+
+          {/* AI brief delivery — gated to paid tiers (the retention engine). */}
+          <FeatureGate
+            feature="scheduled_brief"
+            title="AI Brief"
+            colour="var(--cyan)"
+            headline="Get the one number that matters — daily or weekly."
+            detail="A scheduled brief lands in your inbox leading with what changed: “Your cash runway dropped to 12 days.” Every line links straight back into the product."
+          >
+            <BriefSubscribe />
+          </FeatureGate>
         </div>
       </div>
 
       {/* ── AI CFO Chat ─────────────────────────────────────────────────── */}
-      {/* Full-width section below the main grid, matching image 2 layout  */}
+      {/* Full-width section below the main grid. Gated to paid tiers — free sees
+          a locked preview teasing the capability. The chat component renders its
+          own labelled <section> + heading, so no duplicate heading here. */}
       <div style={{ marginBottom: 8 }}>
-        <div style={{ marginBottom: 16 }}>
-          <h2 style={{
-            fontFamily: 'Inter, sans-serif', fontSize: '1.1rem', fontWeight: 700,
-            color: 'var(--text-1)', margin: '0 0 4px', letterSpacing: '-0.02em',
-          }}>
-            AI CFO Assistant
-          </h2>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-3)', margin: 0 }}>
-            Ask anything about your financial data
-          </p>
-        </div>
-        <div style={{ height: 600 }}>
-          <AICFOChat />
-        </div>
+        <FeatureGate
+          feature="ai_chat"
+          title="AI CFO Chat"
+          colour="var(--cyan)"
+          headline="Ask your numbers anything — in plain language."
+          detail="“What drove last month's cost spike?” “What's our cash runway?” The AI CFO reasons across your Financial, Customer and Operations data and answers instantly."
+        >
+          <div style={{ height: 600 }}>
+            <AICFOChat />
+          </div>
+        </FeatureGate>
       </div>
     </>
   );

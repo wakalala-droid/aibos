@@ -8,6 +8,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { setCurrencyGlobal } from "./currency";
+import type { Tier } from "./tiers";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -198,6 +199,11 @@ export interface FinancialState {
   cabinet: CabinetEntry[];
 
   sidebarCollapsed: boolean;
+  mobileNavOpen: boolean;
+
+  // Billing / subscription
+  tier: Tier;
+  locations: string[];
 
   currencySymbol: string;
   hasEngine2Data: boolean;
@@ -241,6 +247,10 @@ interface FinancialActions {
   setUploadError: (err: string | null) => void;
   setCurrency: (sym: string) => void;
   toggleSidebar: () => void;
+  setMobileNav: (v: boolean) => void;
+  toggleMobileNav: () => void;
+  setTier: (t: Tier) => void;
+  addLocation: (name: string) => void;
   switchSheet: (sheetName: string) => Promise<void>;
   loadFromCabinet: (id: string) => Promise<void>;
   removeFromCabinet: (id: string) => void;
@@ -275,6 +285,10 @@ const INITIAL: FinancialState = {
   cabinet: [],
 
   sidebarCollapsed: false,
+  mobileNavOpen: false,
+
+  tier: "free",
+  locations: [],
 
   currencySymbol: "K",
   hasEngine2Data: false,
@@ -568,6 +582,13 @@ const _store = create<FinancialState & FinancialActions>()(
 
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
 
+      setMobileNav: (v) => set({ mobileNavOpen: v }),
+      toggleMobileNav: () => set((s) => ({ mobileNavOpen: !s.mobileNavOpen })),
+
+      setTier: (t) => set({ tier: t }),
+      addLocation: (name) =>
+        set((s) => (s.locations.includes(name) ? {} : { locations: [...s.locations, name] })),
+
       setCurrency: (sym) => {
         setCurrencyGlobal(sym);
         set({ currencySymbol: sym });
@@ -622,6 +643,8 @@ const _store = create<FinancialState & FinancialActions>()(
         cabinet: s.cabinet,
         currencySymbol: s.currencySymbol,
         sidebarCollapsed: s.sidebarCollapsed,
+        tier: s.tier,
+        locations: s.locations,
       }),
     }
   )

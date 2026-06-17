@@ -98,7 +98,7 @@ export default function DataStudio() {
   const store        = useFinancialStore();
   const cabinetId    = store.cabinetId ?? null;
   const filename     = store.filename ?? null;
-  const monthly      = store.monthly ?? [];
+  const monthly      = useMemo(() => store.monthly ?? [], [store.monthly]);
   const activeSheet  = store.activeSheet ?? null;
 
   const [formula,  setFormula]  = useState("");

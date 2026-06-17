@@ -4,6 +4,7 @@ import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
+import FeatureGate from '@/components/ui/FeatureGate';
 import { motion } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -64,6 +65,15 @@ export default function VariancePage() {
   }));
 
   return (
+    <FeatureGate
+      feature="variance"
+      title="Variance Analysis"
+      colour="var(--cyan)"
+      headline={variances.length > 1
+        ? `Your biggest swing was ${maxSpike.month}, with costs moving ${maxSpike.costChange >= 0 ? '+' : ''}${maxSpike.costChange}% month-over-month.`
+        : 'Upload at least two months to see month-over-month variance.'}
+      detail="See month-by-month revenue and cost variance, the months that broke pattern, and which line items drove every swing."
+    >
     <>
       <div style={{ marginBottom: 24 }}>
         <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
@@ -78,7 +88,7 @@ export default function VariancePage() {
       </div>
 
       {/* KPI cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
           label="AVG REVENUE CHANGE" value={`${avgRevChange >= 0 ? '+' : ''}${avgRevChange.toFixed(1)}%`}
           sub="month-over-month avg"
@@ -228,5 +238,6 @@ export default function VariancePage() {
         </SectionCard>
       )}
     </>
+    </FeatureGate>
   );
 }

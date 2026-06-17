@@ -101,16 +101,19 @@ export default function FileUpload() {
     <div className="space-y-4">
       {/* Currency */}
       <div className="flex items-center gap-2">
-        <span
+        <label
+          htmlFor="currency-symbol"
           className="text-[12px]"
           style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
         >
           Currency symbol:
-        </span>
+        </label>
         <input
+          id="currency-symbol"
           type="text"
           value={localSym}
           maxLength={3}
+          aria-label="Currency symbol"
           onChange={(e) => {
             setLocalSym(e.target.value);
             if (e.target.value) store.setCurrency(e.target.value);
@@ -125,15 +128,28 @@ export default function FileUpload() {
         />
       </div>
 
-      {/* Drop zone */}
+      {/* Drop zone — a real button so it is keyboard-operable: Enter/Space opens
+          the file picker (accessibility_system.md KEYBOARD RULE · UPLOAD RULE).
+          Drag-and-drop stays as a desktop enhancement on top of tap-to-browse. */}
       <div
+        role="button"
+        tabIndex={store.isUploading ? -1 : 0}
+        aria-label="Upload a financial, customer, or POS file. CSV, XLSX, or XLS."
+        aria-busy={store.isUploading}
+        aria-disabled={store.isUploading}
         onDragOver={(e) => {
           e.preventDefault();
           setDragging(true);
         }}
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
-        onClick={() => fileRef.current?.click()}
+        onClick={() => { if (!store.isUploading) fileRef.current?.click(); }}
+        onKeyDown={(e) => {
+          if ((e.key === "Enter" || e.key === " ") && !store.isUploading) {
+            e.preventDefault();
+            fileRef.current?.click();
+          }
+        }}
         className="rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all"
         style={{
           borderColor: dragging ? "var(--cyan)" : "var(--border)",
@@ -148,6 +164,7 @@ export default function FileUpload() {
           className="hidden"
           style={{ display: "none" }}
           tabIndex={-1}
+          aria-hidden="true"
         />
         {store.isUploading ? (
           <div className="flex flex-col items-center gap-3">
@@ -215,6 +232,8 @@ export default function FileUpload() {
       <AnimatePresence>
         {store.uploadError && (
           <motion.div
+            role="alert"
+            aria-live="assertive"
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
@@ -305,7 +324,10 @@ export default function FileUpload() {
           style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
         >
           <button
+            type="button"
             onClick={() => setShowCabinet((v) => !v)}
+            aria-expanded={showCabinet}
+            aria-label={`File cabinet, ${cabinet.length} files`}
             className="w-full flex items-center justify-between px-4 py-3"
           >
             <div className="flex items-center gap-2">
@@ -424,7 +446,9 @@ export default function FileUpload() {
                       </div>
                       <div className="flex items-center gap-1.5 ml-2 flex-shrink-0">
                         <button
+                          type="button"
                           onClick={() => store.loadFromCabinet(entry.id)}
+                          aria-label={cabinetId === entry.id ? `${entry.name} is active` : `Load ${entry.name}`}
                           className="text-[12px] px-2 py-1 rounded-md"
                           style={{
                             background:
@@ -440,14 +464,16 @@ export default function FileUpload() {
                           {cabinetId === entry.id ? "Active" : "Load"}
                         </button>
                         <button
+                          type="button"
                           onClick={() => store.removeFromCabinet(entry.id)}
+                          aria-label={`Remove ${entry.name} from cabinet`}
                           className="w-6 h-6 flex items-center justify-center rounded-md text-xs"
                           style={{
                             color: "var(--text-3)",
                             border: "1px solid var(--border)",
                           }}
                         >
-                          ×
+                          <span aria-hidden="true">×</span>
                         </button>
                       </div>
                     </div>

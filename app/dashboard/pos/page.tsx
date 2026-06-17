@@ -30,7 +30,7 @@ export default function POSPage() {
       </div>
 
       {/* KPI cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="GROSS REVENUE" value={fmt(gt?.gross_revenue ?? 0, false, sym)} sub="total sales incl. discount"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="var(--e3)" strokeWidth="1.5" fill="none"/><path d="M2 9h20" stroke="var(--e3)" strokeWidth="1.3" strokeLinecap="round"/></svg>}
           iconBg="rgba(16,185,129,0.15)" sparkData={[180000,190000,200000,210000,213000,gt?.gross_revenue ?? 0]} sparkColor="var(--e3)" delay={0} />

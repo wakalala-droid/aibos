@@ -1,9 +1,11 @@
 'use client';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme';
+import { TIERS } from '@/lib/tiers';
 
 // ── SVG icon primitives (matching E1 sidebar icon style) ──────────────────
 const IC: Record<string, JSX.Element> = {
@@ -25,6 +27,7 @@ const IC: Record<string, JSX.Element> = {
   benchmarks: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 20h18M6 20V14M10 20V8M14 20V11M18 20V5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>,
   opsbrief:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h4M9 3h10a2 2 0 012 2v14a2 2 0 01-2 2H9M9 3v18" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/><path d="M13 8h4M13 12h4M13 16h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   lock:       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>,
+  pricing:    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg>,
   sun:        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.6"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   moon:       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>,
 };
@@ -42,6 +45,7 @@ const NAV: NavEntry[] = [
   { href: '/dashboard/breakeven',  label: 'Breakeven',        icon: IC.breakeven  },
   { href: '/dashboard/brief',      label: 'Strategic Brief',  icon: IC.brief      },
   { href: '/data-studio',          label: 'Data Studio',      icon: IC.studio     },
+  { href: '/pricing',              label: 'Plans & Pricing',  icon: IC.pricing    },
 
   { type: 'section', label: 'Customer Intelligence', colour: 'var(--e2)', engine: 'ci' },
   { href: '/dashboard/customers',  label: 'Customer Intel',   icon: IC.customers,   engine: 'ci' },
@@ -57,7 +61,10 @@ const NAV: NavEntry[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { sidebarCollapsed, toggleSidebar, hasEngine2Data, hasEngine3Data, uploadedFile } = useStore();
+  const {
+    sidebarCollapsed, toggleSidebar, hasEngine2Data, hasEngine3Data, uploadedFile,
+    mobileNavOpen, setMobileNav, tier,
+  } = useStore();
   const { toggle, isDark } = useTheme();
   const col = sidebarCollapsed;
 
@@ -67,15 +74,30 @@ export default function Sidebar() {
   const getAccent = (eng?: 'ci' | 'ops') =>
     eng === 'ci' ? 'var(--e2)' : eng === 'ops' ? 'var(--e3)' : 'var(--e1)';
 
+  // Escape closes the mobile drawer (accessibility_system.md KEYBOARD RULE).
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMobileNav(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [mobileNavOpen, setMobileNav]);
+
   return (
-    <aside className={`sidebar-nav${col ? ' collapsed' : ''}`}>
-      {/* Logo */}
-      <div
+    <aside
+      id="primary-navigation"
+      aria-label="Primary navigation"
+      className={`sidebar-nav${col ? ' collapsed' : ''}${mobileNavOpen ? ' mobile-open' : ''}`}
+    >
+      {/* Logo — doubles as the desktop collapse toggle. */}
+      <button
+        type="button"
         onClick={toggleSidebar}
+        aria-label={col ? 'Expand sidebar' : 'Collapse sidebar'}
         style={{
-          height: 56, display: 'flex', alignItems: 'center', gap: 10,
+          height: 56, width: '100%', display: 'flex', alignItems: 'center', gap: 10,
           padding: col ? '0 15px' : '0 16px 0 18px',
           borderBottom: '1px solid var(--border)', cursor: 'pointer', flexShrink: 0,
+          background: 'transparent', border: 'none', borderRadius: 0, textAlign: 'left',
         }}
       >
         <div style={{
@@ -96,10 +118,10 @@ export default function Sidebar() {
             </motion.span>
           )}
         </AnimatePresence>
-      </div>
+      </button>
 
       {/* Nav */}
-      <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '8px 0' }}>
+      <nav aria-label="Dashboard sections" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '8px 0' }}>
         {NAV.map((entry, i) => {
           if ('type' in entry) {
             return (
@@ -126,7 +148,13 @@ export default function Sidebar() {
             <div key={item.href} title={locked ? 'Upload data to unlock' : undefined}>
               <Link
                 href={locked ? '#' : item.href}
-                onClick={e => { if (locked) e.preventDefault(); }}
+                aria-current={active ? 'page' : undefined}
+                aria-disabled={locked || undefined}
+                aria-label={locked ? `${item.label} — locked, upload data to unlock` : undefined}
+                onClick={e => {
+                  if (locked) { e.preventDefault(); return; }
+                  setMobileNav(false);
+                }}
                 style={{ textDecoration: 'none', display: 'block' }}
               >
                 <div
@@ -165,6 +193,34 @@ export default function Sidebar() {
         })}
       </nav>
 
+      {/* Plan chip — current tier + upgrade CTA (expanded rail only) */}
+      {!col && (
+        <Link
+          href="/pricing"
+          onClick={() => setMobileNav(false)}
+          aria-label={tier === 'growth' ? 'Growth plan — view plans' : `${TIERS[tier].name} plan — upgrade`}
+          style={{
+            margin: '4px 12px 8px', padding: '10px 12px', borderRadius: 10,
+            border: '1px solid var(--border)', background: 'var(--bg-badge)',
+            textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          }}
+        >
+          <span style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Current plan
+            </span>
+            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-1)' }}>
+              {TIERS[tier].name}
+            </span>
+          </span>
+          {tier !== 'growth' && (
+            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.68rem', fontWeight: 700, color: '#fff', background: 'var(--cyan)', padding: '5px 10px', borderRadius: 8, whiteSpace: 'nowrap' }}>
+              Upgrade
+            </span>
+          )}
+        </Link>
+      )}
+
       {/* Footer */}
       <div style={{
         padding: col ? '10px 14px' : '10px 16px 12px',
@@ -172,7 +228,9 @@ export default function Sidebar() {
         display: 'flex', alignItems: 'center', gap: 10,
       }}>
         <button
+          type="button"
           onClick={toggle}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           style={{
             width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border-md)',

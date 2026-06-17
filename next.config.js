@@ -1,12 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Temporary unblock for Vercel deploy while dashboard typing is reconciled.
+  // Release gate: the build must fail on real type/lint errors. The earlier
+  // "temporary unblock" is removed now that dashboard typing is reconciled
+  // (tsc --noEmit is clean). Do not re-disable these without fixing the cause.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
 
   // App Router is enabled by default in Next.js 14
