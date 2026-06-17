@@ -146,6 +146,8 @@ export default function FileUpload() {
           accept={ACCEPTED}
           onChange={onFileChange}
           className="hidden"
+          style={{ display: "none" }}
+          tabIndex={-1}
         />
         {store.isUploading ? (
           <div className="flex flex-col items-center gap-3">

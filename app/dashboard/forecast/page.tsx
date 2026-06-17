@@ -91,6 +91,7 @@ export default function ForecastPage() {
   });
 
   const chart: Row[] = [...historical, ...projections];
+  const hasData = safeMonthly.length > 0;
 
   // KPI values — all safe
   const firstFcast  = projections[0]?.fcast ?? 0;
@@ -141,7 +142,25 @@ export default function ForecastPage() {
       </div>
 
       {/* Chart */}
-      {chart.length > 0 && (
+      {!hasData ? (
+        <SectionCard title="AI Revenue Forecast" subtitle="Historical revenue + AI prediction · shaded band = 95% confidence" delay={0.1} style={{ marginBottom: 20 }}>
+          <div style={{
+            height: 260, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center',
+          }}>
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+              <path d="M3 17l5-5 4 4 8-9" stroke="var(--text-4)" strokeWidth="1.6"
+                strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 4" fill="none" />
+            </svg>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-2)', margin: 0 }}>
+              No historical data yet
+            </p>
+            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', margin: 0 }}>
+              Upload a financial file on the dashboard to generate a forecast.
+            </p>
+          </div>
+        </SectionCard>
+      ) : (
         <SectionCard title="AI Revenue Forecast" subtitle="Historical revenue + AI prediction · shaded band = 95% confidence" delay={0.1} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={chart}>
@@ -183,6 +202,7 @@ export default function ForecastPage() {
       )}
 
       {/* Table */}
+      {hasData && (
       <SectionCard title="Forecast Detail" subtitle="Month-by-month predictions with confidence range" delay={0.18}>
         <table className="data-table">
           <thead>
@@ -207,6 +227,7 @@ export default function ForecastPage() {
           </tbody>
         </table>
       </SectionCard>
+      )}
     </>
   );
 }

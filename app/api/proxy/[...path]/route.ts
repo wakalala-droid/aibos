@@ -35,24 +35,28 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
   const auth = req.headers.get("authorization");
   if (auth) headers["authorization"] = auth;
 
-  let body: BodyInit | undefined;
+  // Stream the request body straight through instead of buffering it.
+  // Buffering multipart uploads via req.blob()/req.formData() is what throws
+  // Next.js's "There was an error parsing the body". Forwarding req.body as a
+  // ReadableStream sidesteps the parse step entirely (and avoids loading whole
+  // files into memory). When the body is a stream, fetch requires duplex:"half".
+  const hasBody = method !== "GET" && method !== "DELETE" && req.body != null;
 
-  if (method !== "GET" && method !== "DELETE") {
-    if (ct.includes("multipart/form-data")) {
-      // Upload — pass raw bytes; do NOT set content-type so fetch re-adds the boundary.
-      body = await req.blob();
-    } else if (ct.includes("application/json")) {
-      // Chat / data-studio — preserve Content-Type + body exactly.
-      body = await req.text();
-      headers["content-type"] = "application/json";
-    } else if (ct) {
-      body = await req.text();
-      headers["content-type"] = ct;
-    }
+  if (hasBody && ct) {
+    // Preserve the original Content-Type. For multipart this is essential — it
+    // carries the `boundary=...` that matches the raw bytes we forward verbatim.
+    headers["content-type"] = ct;
   }
 
+  // `duplex` is valid at runtime but missing from the TS RequestInit type.
+  const init = {
+    method,
+    headers,
+    ...(hasBody ? { body: req.body, duplex: "half" } : {}),
+  } as RequestInit & { duplex?: "half" };
+
   try {
-    const res = await fetch(upstream, { method, headers, body });
+    const res = await fetch(upstream, init);
     const text = await res.text();
     return new NextResponse(text, {
       status: res.status,
