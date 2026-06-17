@@ -14,6 +14,7 @@ const IC: Record<string, JSX.Element> = {
   anomaly:    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   breakeven:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M12 3v18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".4"/><path d="M5 19L19 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.4" fill="none"/></svg>,
   brief:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round"/><path d="M8 9h8M8 13h5M8 17h6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  studio:     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M3 9h18" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M8 13l2 2 2-2M14 15h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   // Customer Intelligence icons
   customers:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.5" fill="none"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/><path d="M19 8v6M22 11h-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
   churn:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 11-6.219-8.56" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/><path d="M21 3v5h-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
@@ -40,6 +41,7 @@ const NAV: NavEntry[] = [
   { href: '/dashboard/anomaly',    label: 'Anomaly Intel',    icon: IC.anomaly    },
   { href: '/dashboard/breakeven',  label: 'Breakeven',        icon: IC.breakeven  },
   { href: '/dashboard/brief',      label: 'Strategic Brief',  icon: IC.brief      },
+  { href: '/data-studio',          label: 'Data Studio',      icon: IC.studio     },
 
   { type: 'section', label: 'Customer Intelligence', colour: 'var(--e2)', engine: 'ci' },
   { href: '/dashboard/customers',  label: 'Customer Intel',   icon: IC.customers,   engine: 'ci' },
