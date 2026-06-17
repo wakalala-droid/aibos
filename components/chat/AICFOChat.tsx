@@ -66,9 +66,22 @@ function SendIcon({ size = 16 }: { size?: number }) {
 // ---------------------------------------------------------------------------
 
 export default function AICFOChat() {
-  const { kpi, health, alerts, monthly, currencySymbol } = useStore();
+  const {
+    kpi, health, alerts, monthly, currencySymbol,
+    rfm, segments, clvTiers, retention,
+    posGrandTotals, categories, topItems, benchmarks, attachRates,
+    posBusinessName, posPeriod,
+    hasEngine2Data, hasEngine3Data,
+    intelligenceScores, crossInsights, unifiedBrief,
+    cabinetId,
+  } = useStore();
   const sym     = currencySymbol || 'K';
   const userId  = 'default-user';
+
+  const safeRfm = Array.isArray(rfm) ? rfm : [];
+  const hasFinancial = Array.isArray(monthly) && monthly.length > 0;
+  const hasCustomer  = hasEngine2Data || safeRfm.length > 0;
+  const hasOps       = hasEngine3Data || !!posGrandTotals;
 
   const [messages,   setMessages]   = useState<Message[]>([]);
   const [input,      setInput]      = useState('');
@@ -82,20 +95,31 @@ export default function AICFOChat() {
     if (initialized) return;
     setInit(true);
 
-    const avgMargin  = kpi?.avgMargin ?? 0;
-    const alertCount = Array.isArray(alerts) ? alerts.filter((a: any) => a.severity === 'critical' || a.severity === 'warning').length : 0;
+    const loaded: string[] = [];
+    if (hasFinancial) {
+      const avgMargin = kpi?.avgMargin ?? 0;
+      loaded.push(`${monthly.length}-month financials (${avgMargin.toFixed(1)}% avg margin)`);
+    }
+    if (hasCustomer) loaded.push(`customer intelligence (${safeRfm.length} customers)`);
+    if (hasOps) {
+      const net = posGrandTotals?.net_revenue ?? posGrandTotals?.gross_revenue ?? 0;
+      loaded.push(`operations data${net ? ` (${sym}${Math.round(net).toLocaleString()} sales)` : ''}`);
+    }
+
+    const content = loaded.length
+      ? `Hello! I'm your AI CFO. I can see your ${loaded.join(', ')}. ` +
+        `Ask me anything across Financial, Customer, and Operations intelligence.`
+      : `Hello! I'm your AI CFO. Upload a financial, customer, or POS file and ` +
+        `I'll analyse it for you. You can also ask general Zambian business questions.`;
 
     const greeting: Message = {
       id:        'init',
       role:      'assistant',
-      content:   `Hello! I'm your AI CFO. I've analysed your 12-month financial data. ` +
-                 `Revenue is up with a ${avgMargin.toFixed(1)}% average margin. ` +
-                 `I've flagged ${alertCount} high-priority alert${alertCount !== 1 ? 's' : ''}. ` +
-                 `What would you like to explore?`,
+      content,
       timestamp: nowTime(),
     };
     setMessages([greeting]);
-  }, [initialized, kpi, alerts]);
+  }, [initialized, hasFinancial, hasCustomer, hasOps, kpi, monthly, safeRfm, posGrandTotals, sym]);
 
   // Auto-scroll to bottom — but NOT on mount (per design rules)
   useEffect(() => {
@@ -104,19 +128,82 @@ export default function AICFOChat() {
     }
   }, [messages]);
 
-  // Build context for backend
-  const buildContext = useCallback(() => ({
-    pnl: {
-      total_revenue: kpi?.totalRevenue ?? 0,
-      total_costs:   kpi?.totalCosts   ?? 0,
-      total_profit:  kpi?.totalProfit  ?? 0,
-      avg_margin:    kpi?.avgMargin    ?? 0,
-    },
-    health_score:    health?.score    ?? 0,
-    health_label:    health?.label    ?? '',
-    alerts:          Array.isArray(alerts) ? alerts : [],
-    currency_symbol: sym,
-  }), [kpi, health, alerts, sym]);
+  // Build context for backend — include EVERY engine that currently has data
+  // so the AI CFO reasons across Financial + Customer + Operations, not just E1.
+  const buildContext = useCallback(() => {
+    const ctx: Record<string, unknown> = {
+      currency_symbol: sym,
+      cabinet_id:      cabinetId ?? undefined,
+    };
+
+    // ── Engine 1 · Financial ────────────────────────────────────────────────
+    if (hasFinancial) {
+      ctx.pnl = {
+        total_revenue: kpi?.totalRevenue ?? 0,
+        total_costs:   kpi?.totalCosts   ?? 0,
+        total_profit:  kpi?.totalProfit  ?? 0,
+        avg_margin:    kpi?.avgMargin    ?? 0,
+      };
+      ctx.health_score = health?.score ?? 0;
+      ctx.health_label = health?.label ?? '';
+      ctx.monthly = (Array.isArray(monthly) ? monthly : []).slice(0, 24);
+    }
+    if (Array.isArray(alerts) && alerts.length) ctx.alerts = alerts;
+
+    // ── Engine 2 · Customer Intelligence ────────────────────────────────────
+    if (hasCustomer) {
+      const champions = safeRfm.filter(r => r.segment === 'Champion').length;
+      const highChurn = safeRfm.filter(r => (r.churn_risk ?? 0) >= 70).length;
+      ctx.customer = {
+        total_customers: retention?.total_customers ?? safeRfm.length,
+        champions,
+        high_churn:      highChurn,
+        retention_rate:  retention?.retention_rate ?? 0,
+        segments:        Array.isArray(segments) ? segments : [],
+        clv_tiers:       Array.isArray(clvTiers) ? clvTiers : [],
+        top_customers:   [...safeRfm]
+          .sort((a, b) => (b.clv ?? 0) - (a.clv ?? 0))
+          .slice(0, 5)
+          .map(r => ({
+            id: r.customer_id, clv: r.clv, segment: r.segment, churn_risk: r.churn_risk,
+          })),
+      };
+    }
+
+    // ── Engine 3 · Operations / POS ─────────────────────────────────────────
+    if (hasOps) {
+      ctx.operations = {
+        business_name: posBusinessName || undefined,
+        period:        posPeriod || undefined,
+        grand_totals:  posGrandTotals ?? undefined,
+        categories:    (Array.isArray(categories) ? categories : []).slice(0, 12),
+        top_items:     (Array.isArray(topItems) ? topItems : []).slice(0, 10).map(t => ({
+          name: t.name, category: t.category, units_sold: t.units_sold, revenue: t.revenue,
+        })),
+        benchmarks:    Array.isArray(benchmarks) ? benchmarks : [],
+        attach_rates:  attachRates ?? undefined,
+      };
+    }
+
+    // ── Cross-engine intelligence ───────────────────────────────────────────
+    const safeInsights = Array.isArray(crossInsights) ? crossInsights : [];
+    if (intelligenceScores || safeInsights.length || unifiedBrief) {
+      ctx.intelligence = {
+        scores:         intelligenceScores ?? undefined,
+        cross_insights: safeInsights.slice(0, 5).map(i => ({
+          insight: i.insight, action: i.action, priority: i.priority,
+        })),
+        unified_brief:  unifiedBrief || undefined,
+      };
+    }
+
+    return ctx;
+  }, [
+    sym, cabinetId, hasFinancial, hasCustomer, hasOps, kpi, health, monthly, alerts,
+    safeRfm, segments, clvTiers, retention, posGrandTotals, categories, topItems,
+    benchmarks, attachRates, posBusinessName, posPeriod, intelligenceScores,
+    crossInsights, unifiedBrief,
+  ]);
 
   const sendMessage = useCallback(async (text: string) => {
     const trimmed = text.trim();
