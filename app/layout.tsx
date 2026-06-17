@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { ThemeProvider, FOUC_SCRIPT } from '@/lib/theme';
-import Sidebar from '@/components/layout/Sidebar';
+import AppShell from '@/components/layout/AppShell';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -20,23 +20,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </ThemeProvider>
       </body>
     </html>
-  );
-}
-
-function AppShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="app-shell">
-      <Sidebar />
-      <MainArea>{children}</MainArea>
-    </div>
-  );
-}
-
-function MainArea({ children }: { children: React.ReactNode }) {
-  // We render this as a client wrapper in the dashboard layout
-  return (
-    <div id="main-content" className="main-content">
-      {children}
-    </div>
   );
 }
