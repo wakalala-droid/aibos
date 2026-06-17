@@ -1,6 +1,7 @@
 'use client';
+import { useId } from 'react';
 import { motion } from 'framer-motion';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
 interface KPICardProps {
   label: string;
@@ -21,6 +22,9 @@ export default function KPICard({
   sparkData, sparkColor = '#60a5fa', delay = 0,
 }: KPICardProps) {
   const spark = sparkData?.map((v, i) => ({ v, i }));
+  const hasGrowth = growth !== undefined;
+  // Unique gradient id per card instance so multiple sparklines don't collide.
+  const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
 
   return (
     <motion.div
@@ -65,16 +69,25 @@ export default function KPICard({
         {spark && spark.length > 1 && (
           <div style={{ width: 90, height: 40, marginBottom: -4 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={spark}>
-                <Line
+              <AreaChart data={spark} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={sparkColor} stopOpacity={0.28} />
+                    <stop offset="100%" stopColor={sparkColor} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area
                   type="monotone"
                   dataKey="v"
                   stroke={sparkColor}
                   strokeWidth={1.8}
+                  // Shaded region below the line — only on cards with a growth badge.
+                  fill={hasGrowth ? `url(#${gradId})` : 'none'}
+                  fillOpacity={1}
                   dot={false}
                   isAnimationActive={false}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         )}
