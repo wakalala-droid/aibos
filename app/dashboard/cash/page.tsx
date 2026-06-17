@@ -1,6 +1,6 @@
 'use client';
 import { useStore } from '@/lib/store';
-import { fmt } from '@/lib/utils';
+import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
@@ -14,12 +14,21 @@ export default function CashPage() {
   const { cashflow, monthly, kpi, currencySymbol } = useStore();
   const sym = currencySymbol || 'K';
 
-  // ── Null-safe: derive values from monthly if cashflow is null ────────────
+  // ── Null-safe: derive values from real data ──────────────────────────────
   const months      = Math.max(monthly.length, 1);
   const monthlyBurn = kpi.totalCosts / months;
-  const currentCash = cashflow?.currentCash ?? 50000;
+  // Cash position = cumulative operating cash (sum of monthly profit). Engine 1
+  // returns this as cashflow.ending_cash; fall back to total profit. No hardcode.
+  const currentCash =
+    cashflow?.currentCash ??
+    cashflow?.ending_cash ??
+    (typeof kpi.totalProfit === 'number' ? kpi.totalProfit : 0);
   const runway      = cashflow?.runway      ?? (monthlyBurn > 0 ? Math.round(currentCash / monthlyBurn) : 0);
   const projections = cashflow?.projections ?? [];
+  // Real cumulative-cash trajectory for the sparkline, when available.
+  const cashSpark = (cashflow?.monthly ?? [])
+    .map((m) => Number(m?.cumulative_cash) || 0)
+    .filter((v) => v !== 0);
 
   // Build projection chart from monthly or stored projections
   const chartData = projections.length > 0
@@ -63,7 +72,7 @@ export default function CashPage() {
           label="CASH POSITION" value={fmt(currentCash, false, sym)} sub="current balance"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="var(--cyan)" strokeWidth="1.5" fill="none"/><path d="M2 10h20" stroke="var(--cyan)" strokeWidth="1.3" strokeLinecap="round"/><circle cx="8" cy="15" r="1.5" fill="var(--cyan)"/></svg>}
           iconBg="rgba(0,212,255,0.12)"
-          sparkData={monthly.slice(-6).map((_, i) => currentCash * (1 + i * 0.05))}
+          sparkData={cashSpark.length > 1 ? cashSpark.slice(-6) : monthly.slice(-6).map((_, i) => currentCash * (1 + i * 0.05))}
           sparkColor="var(--cyan)" delay={0}
         />
         <KPICard
@@ -134,7 +143,7 @@ export default function CashPage() {
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis dataKey="label" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}k`} />
+              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
               <Area type="monotone" dataKey="cash" stroke="var(--cyan)" strokeWidth={2} fill="url(#cashGrad)" dot={false} name="Cash Position" />
               <ReferenceLine y={0} stroke="var(--crit)" strokeDasharray="4 4" strokeWidth={1} />

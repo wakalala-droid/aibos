@@ -127,6 +127,11 @@ export interface CashflowShape {
     inflow?: number;
     outflow?: number;
   }>;
+  // Engine 1 actually returns these (cumulative operating cash):
+  ending_cash?: number;
+  net_operating?: number;
+  cash_trend?: string;
+  monthly?: Array<{ month?: string; net_cash?: number; cumulative_cash?: number }>;
 }
 
 export interface BreakevenShape {

@@ -1,6 +1,6 @@
 'use client';
 import { useStore } from '@/lib/store';
-import { fmt } from '@/lib/utils';
+import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import LockOverlay from '@/components/ui/LockOverlay';
@@ -83,7 +83,7 @@ export default function ProductsPage() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={barData} barCategoryGap="28%">
               <XAxis dataKey="name" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}k`} />
+              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="total_revenue" radius={[5, 5, 0, 0]}>
                 {barData.map((entry, i) => (

@@ -1,6 +1,6 @@
 'use client';
 import { useStore } from '@/lib/store';
-import { fmt } from '@/lib/utils';
+import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
@@ -94,7 +94,7 @@ export default function BreakevenPage() {
             <ComposedChart data={chartData}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis dataKey="month" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={v => `${sym}${(v/1000).toFixed(0)}k`} />
+              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="FixedCosts"  stackId="a" fill="var(--warn)"    fillOpacity={0.6} name="Fixed Costs"    radius={[0,0,0,0]} />
               <Bar dataKey="VarCosts"    stackId="a" fill="var(--purple)"  fillOpacity={0.6} name="Variable Costs" radius={[4,4,0,0]} />

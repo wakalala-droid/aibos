@@ -1,6 +1,6 @@
 'use client';
 import { useStore } from '@/lib/store';
-import { fmt, scoreColor } from '@/lib/utils';
+import { fmt, scoreColor, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import InsightCard from '@/components/ui/InsightCard';
@@ -255,7 +255,7 @@ export default function OverviewPage() {
                   <YAxis
                     tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-3)' }}
                     axisLine={false} tickLine={false}
-                    tickFormatter={v => `${sym}${(Number(v)/1000).toFixed(0)}k`}/>
+                    tickFormatter={(v) => formatAxis(Number(v))}/>
                   <Tooltip content={<ChartTooltip sym={sym}/>}
                     cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }}/>
                   <Area type="monotone" dataKey="Revenue"

@@ -40,3 +40,23 @@ export function formatCurrency(
 
 /** Alias used by every page: import { fmt } from '@/lib/utils' */
 export const fmt = formatCurrency;
+
+/**
+ * formatAxis(value) — compact tick label for chart axes.
+ * No currency symbol (the axis already lives in a currency context and the
+ * tooltip shows the full amount). Thousands → "80k", "450k"; millions → "1.2M".
+ */
+export function formatAxis(value: number | null | undefined): string {
+  const num = Number(value) || 0;
+  const sign = num < 0 ? "-" : "";
+  const abs = Math.abs(num);
+
+  if (abs >= 1_000_000) {
+    const m = abs / 1_000_000;
+    return `${sign}${(m < 10 ? m.toFixed(1) : m.toFixed(0)).replace(/\.0$/, "")}M`;
+  }
+  if (abs >= 1_000) {
+    return `${sign}${Math.round(abs / 1_000)}k`;
+  }
+  return `${sign}${Math.round(abs)}`;
+}

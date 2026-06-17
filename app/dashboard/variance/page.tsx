@@ -1,6 +1,6 @@
 'use client';
 import { useStore } from '@/lib/store';
-import { fmt } from '@/lib/utils';
+import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
@@ -133,7 +133,7 @@ export default function VariancePage() {
             <BarChart data={chartData} barCategoryGap="22%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis dataKey="month" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={v => `${sym}${(v / 1000).toFixed(0)}k`} />
+              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="Revenue" fill="var(--cyan)"  fillOpacity={0.75} radius={[4,4,0,0]} name="Revenue" />
               <Bar dataKey="Costs"   fill="var(--e2)"    fillOpacity={0.75} radius={[4,4,0,0]} name="Costs"   />

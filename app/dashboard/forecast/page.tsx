@@ -1,7 +1,7 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { fmt } from '@/lib/utils';
+import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
@@ -15,20 +15,6 @@ import {
 function n(v: unknown): number {
   const x = Number(v);
   return isFinite(x) ? x : 0;
-}
-
-// Derives average MoM growth rate from monthly[], clamped to [-20%, +30%]
-function growthRate(monthly: Array<Record<string, unknown>>): number {
-  if (!Array.isArray(monthly) || monthly.length < 2) return 0.05;
-  const rates: number[] = [];
-  for (let i = 1; i < monthly.length; i++) {
-    const curr = n(monthly[i]?.Revenue);
-    const prev = n(monthly[i - 1]?.Revenue) || 1;
-    rates.push((curr - prev) / prev);
-  }
-  if (rates.length === 0) return 0.05;
-  const avg = rates.reduce((s, r) => s + r, 0) / rates.length;
-  return Math.min(Math.max(avg, -0.2), 0.3);
 }
 
 // Real forecast confidence = R-squared of a linear fit on historical revenue,
@@ -58,6 +44,24 @@ function forecastConfidence(monthly: Array<Record<string, unknown>>): number {
   return Math.min(Math.max(pct, 0), 99.9);
 }
 
+// Least-squares linear fit over the revenue series → {slope, intercept}.
+// Used to project the trend forward instead of compounding a single (noisy)
+// last month, so the forecast reflects the whole historical dataset.
+function linearFit(ys: number[]): { slope: number; intercept: number } {
+  const len = ys.length;
+  if (len < 2) return { slope: 0, intercept: ys[0] ?? 0 };
+  const meanX = (len - 1) / 2;
+  const meanY = ys.reduce((s, v) => s + v, 0) / len;
+  let sxx = 0, sxy = 0;
+  for (let i = 0; i < len; i++) {
+    const dx = i - meanX;
+    sxx += dx * dx;
+    sxy += dx * (ys[i] - meanY);
+  }
+  const slope = sxx ? sxy / sxx : 0;
+  return { slope, intercept: meanY - slope * meanX };
+}
+
 interface Row { month: string; hist?: number; fcast?: number; lower?: number; upper?: number; }
 
 export default function ForecastPage() {
@@ -69,9 +73,10 @@ export default function ForecastPage() {
 
   const months   = Math.max(safeMonthly.length, 1);
   const avgRev   = n(kpi?.totalRevenue) / months;
-  const growth   = growthRate(safeMonthly);
   const lastRev  = safeMonthly.length > 0 ? n(safeMonthly[safeMonthly.length - 1]?.Revenue) : avgRev;
-  const baseRev  = lastRev > 0 ? lastRev : Math.max(avgRev, 1000);
+
+  // Historical revenue series (real data, in order)
+  const revSeries = safeMonthly.map(m => n(m?.Revenue));
 
   // Historical chart rows
   const historical: Row[] = safeMonthly.map(m => ({
@@ -79,9 +84,13 @@ export default function ForecastPage() {
     hist:  n(m?.Revenue),
   }));
 
-  // Projection rows — always exactly 3, always defined
+  // Projection rows — anchor at the most recent actual and extend by the
+  // least-squares trend slope (Holt-style). Uses the whole series for the slope
+  // while staying tied to reality, instead of compounding one noisy month.
+  const { slope } = linearFit(revSeries);
+  const anchor = lastRev > 0 ? lastRev : Math.max(avgRev, 0);
   const projections: Row[] = [1, 2, 3].map(i => {
-    const fcast = Math.round(baseRev * Math.pow(1 + growth, i));
+    const fcast = Math.max(0, Math.round(anchor + slope * i));
     return {
       month: `Forecast +${i}mo`,
       fcast,
@@ -177,7 +186,7 @@ export default function ForecastPage() {
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis dataKey="month" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false}
-                tickFormatter={v => `${sym}${(n(v) / 1000).toFixed(0)}k`} />
+                tickFormatter={(v) => formatAxis(n(v))} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
               <Area type="monotone" dataKey="upper" stroke="none" fill="rgba(167,139,250,0.07)" dot={false} legendType="none" name="Upper" connectNulls />
               <Area type="monotone" dataKey="lower" stroke="none" fill="var(--bg-page)"          dot={false} legendType="none" name="Lower" connectNulls />

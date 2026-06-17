@@ -4,6 +4,7 @@ export {
   setCurrencyGlobal,
   getCurrencySymbol,
   formatCurrency,
+  formatAxis,
   fmt,
 } from "./currency";
 
