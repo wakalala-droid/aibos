@@ -68,7 +68,7 @@ export default function OpsBriefPage() {
       )}
 
       {/* Operations AI Brief */}
-      <SectionCard title="AI Operations Brief" subtitle="Engine 3 · POS analysis · llama-3.3-70b" delay={0.1} style={{ marginBottom: 20 }}>
+      <SectionCard title="AI Operations Brief" subtitle="Engine 3 · POS analysis · AI-generated" delay={0.1} style={{ marginBottom: 20 }}>
         {opsBriefLines.length > 0
           ? opsBriefLines.map((l, i) => <BriefPoint key={i} text={l} index={i} />)
           : <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Upload POS data to generate operations intelligence</p>

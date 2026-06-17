@@ -510,7 +510,7 @@ export default function ChatPage() {
               fontFamily: "JetBrains Mono, monospace",
             }}
           >
-            AI-BOS CFO · Groq llama-3.3-70b-versatile
+            AI-BOS CFO
             {cabinetId ? " · Business context active" : ""}
           </p>
         </div>
