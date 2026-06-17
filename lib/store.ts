@@ -363,6 +363,54 @@ function deriveHealth(monthly: MonthlyRow[], rawHealth?: Record<string, unknown>
   };
 }
 
+const _clamp = (n: number, lo: number, hi: number) => Math.min(Math.max(n, lo), hi);
+
+// Heuristic per-engine + overall health scores, derived from whatever engines
+// are currently loaded. Lets the Overview hero reflect a true multi-engine
+// state instead of staying blank when E2/E3 data is merged in.
+function deriveIntelligence(s: FinancialState): IntelligenceScoresShape | null {
+  const present: number[] = [];
+  let e1 = 0, e2 = 0, e3 = 0;
+
+  const hasE1 = s.monthly.length > 0;
+  const hasE2 = s.hasEngine2Data || s.rfm.length > 0;
+  const hasE3 = s.hasEngine3Data || !!s.posGrandTotals;
+
+  if (hasE1) {
+    e1 = _clamp(Math.round((s.kpi?.avgMargin ?? 0) * 2.5), 0, 100);
+    present.push(e1);
+  }
+  if (hasE2) {
+    const ret = s.retention?.retention_rate ?? 0;
+    const champions = s.rfm.filter((r) => r.segment === "Champion").length;
+    const champPct = s.rfm.length ? (champions / s.rfm.length) * 100 : 0;
+    e2 = _clamp(Math.round((ret + champPct) / 2), 0, 100);
+    present.push(e2);
+  }
+  if (hasE3) {
+    const bench = Array.isArray(s.benchmarks) ? s.benchmarks : [];
+    const good = bench.filter((b) => b.status === "good").length;
+    const benchScore = bench.length ? (good / bench.length) * 100 : 0;
+    const drink = Math.min(s.attachRates?.drink_attach_pct ?? 0, 100);
+    e3 = bench.length
+      ? _clamp(Math.round((benchScore + drink) / 2), 0, 100)
+      : _clamp(Math.round(drink), 0, 100);
+    present.push(e3);
+  }
+
+  if (!present.length) return null;
+  const overall = Math.round(present.reduce((a, b) => a + b, 0) / present.length);
+  const label =
+    overall >= 75 ? "Excellent" : overall >= 50 ? "Healthy" : overall >= 25 ? "At Risk" : "Critical";
+  return {
+    overall_score: overall,
+    overall_label: label,
+    e1_score: e1,
+    e2_score: e2,
+    e3_score: e3,
+  };
+}
+
 function toMonthlyRows(raw: unknown): MonthlyRow[] {
   if (!Array.isArray(raw)) return [];
   return raw.map((m) => {
@@ -392,83 +440,122 @@ const _store = create<FinancialState & FinancialActions>()(
       ...INITIAL,
 
       setUploadResult: (result) => {
-        const monthly = toMonthlyRows(result.monthly);
+        const prev = get();
 
         const sym =
           typeof result.currencySymbol === "string" && result.currencySymbol
             ? result.currencySymbol
             : typeof result.currency === "string" && result.currency
             ? result.currency
-            : "K";
+            : prev.currencySymbol || "K";
         setCurrencyGlobal(sym);
 
         const cabId = typeof result.cabinet_id === "string" ? result.cabinet_id : null;
         const fname = typeof result.filename === "string" ? result.filename : null;
         const sheetsArr = asArray<string>(result.sheets);
+        const engine = typeof result.engine === "string" ? result.engine : "";
 
-        if (cabId && fname) {
-          const cab = get().cabinet;
-          if (!cab.some((e) => e.id === cabId)) {
-            const entry: CabinetEntry = {
-              id: cabId,
-              name: fname,
-              fileType: typeof result.file_type === "string" ? result.file_type : "unknown",
-              engine: typeof result.engine === "string" ? result.engine : "engine1",
-              sheets: sheetsArr,
-              activeSheet:
-                typeof result.active_sheet === "string" ? result.active_sheet : null,
-              uploadedAt: Date.now(),
-            };
-            set((s) => ({ cabinet: [entry, ...s.cabinet].slice(0, 20) }));
-          }
+        // Add to cabinet (unchanged behaviour)
+        if (cabId && fname && !prev.cabinet.some((e) => e.id === cabId)) {
+          const entry: CabinetEntry = {
+            id: cabId,
+            name: fname,
+            fileType: typeof result.file_type === "string" ? result.file_type : "unknown",
+            engine: engine || "engine1",
+            sheets: sheetsArr,
+            activeSheet:
+              typeof result.active_sheet === "string" ? result.active_sheet : null,
+            uploadedAt: Date.now(),
+          };
+          set((s) => ({ cabinet: [entry, ...s.cabinet].slice(0, 20) }));
         }
 
-        set({
+        // ── Which engine(s) does THIS upload carry? ──────────────────────────
+        // Detect by the declared engine and by the data slices present, so each
+        // upload updates only its own engine — other engines already in the
+        // store are preserved (set() shallow-merges), giving true multi-engine
+        // sessions instead of each file wiping the others.
+        const hasMonthly = Array.isArray(result.monthly) && (result.monthly as unknown[]).length > 0;
+        const hasRfm = Array.isArray(result.rfm) && (result.rfm as unknown[]).length > 0;
+        const hasPos = !!result.posGrandTotals || !!(result as { grand_totals?: unknown }).grand_totals;
+        const isE1 = engine === "engine1" || hasMonthly;
+        const isE2 = engine === "engine2" || hasRfm || Boolean(result.hasEngine2Data);
+        const isE3 = engine === "engine3" || hasPos || Boolean(result.hasEngine3Data);
+
+        const patch: Partial<FinancialState> = {
           filename: fname,
           uploadedFile: fname,
           cabinetId: cabId,
           sheets: sheetsArr,
           activeSheet: typeof result.active_sheet === "string" ? result.active_sheet : null,
           currencySymbol: sym,
-
-          hasEngine2Data: Boolean(result.hasEngine2Data),
-          hasEngine3Data: Boolean(result.hasEngine3Data),
-          posBusinessName:
-            typeof result.posBusinessName === "string" ? result.posBusinessName : "",
-          posPeriod: typeof result.posPeriod === "string" ? result.posPeriod : "",
-
-          monthly,
-          alerts: asArray<AlertRow>(result.alerts),
-          anomalies: asArray<unknown>(result.anomalies),
-          rfm: asArray<RfmRow>(result.rfm),
-          segments: asArray<SegmentRow>(result.segments),
-          clvTiers: asArray<ClvTierRow>(result.clvTiers),
-          productsE2: asArray<ProductRow>(result.productsE2),
-          basketPairs: asArray<BasketPairRow>(result.basketPairs),
-          categories: asArray<CategoryRow>(result.categories),
-          topItems: asArray<TopItemRow>(result.topItems),
-          benchmarks: asArray<BenchmarkRow>(result.benchmarks),
-          menuGaps: asArray<MenuGapRow>(result.menuGaps),
-          crossInsights: asArray<CrossInsightRow>(result.crossInsights),
-
-          kpi: deriveKpi(monthly, result.kpi as Record<string, unknown>),
-          health: deriveHealth(monthly, result.health as Record<string, unknown>),
-
-          cashflow: asObjOrNull<CashflowShape>(result.cashflow),
-          breakeven: asObjOrNull<BreakevenShape>(result.breakeven),
-          retention: asObjOrNull<RetentionShape>(result.retention),
-          attachRates: asObjOrNull<AttachRatesShape>(result.attachRates),
-          posGrandTotals: asObjOrNull<PosGrandTotalsShape>(result.posGrandTotals),
-          intelligenceScores: asObjOrNull<IntelligenceScoresShape>(result.intelligenceScores),
-          engineFlags: asObjOrNull<EngineFlagsShape>(result.engineFlags),
-
-          unifiedBrief: typeof result.unifiedBrief === "string" ? result.unifiedBrief : "",
-          opsIntelBrief: typeof result.opsIntelBrief === "string" ? result.opsIntelBrief : "",
-          customerIntelBrief:
-            typeof result.customerIntelBrief === "string" ? result.customerIntelBrief : "",
-
           uploadError: null,
-        });
+        };
+
+        // ── Engine 1 · Financial ─────────────────────────────────────────────
+        if (isE1) {
+          const monthly = toMonthlyRows(result.monthly);
+          patch.monthly = monthly;
+          patch.kpi = deriveKpi(monthly, result.kpi as Record<string, unknown>);
+          patch.health = deriveHealth(monthly, result.health as Record<string, unknown>);
+          patch.alerts = asArray<AlertRow>(result.alerts);
+          patch.anomalies = asArray<unknown>(result.anomalies);
+          patch.cashflow = asObjOrNull<CashflowShape>(result.cashflow);
+          patch.breakeven = asObjOrNull<BreakevenShape>(result.breakeven);
+        }
+
+        // ── Engine 2 · Customer Intelligence ─────────────────────────────────
+        if (isE2) {
+          patch.rfm = asArray<RfmRow>(result.rfm);
+          patch.segments = asArray<SegmentRow>(result.segments);
+          patch.clvTiers = asArray<ClvTierRow>(result.clvTiers);
+          patch.productsE2 = asArray<ProductRow>(result.productsE2);
+          patch.basketPairs = asArray<BasketPairRow>(result.basketPairs);
+          patch.retention = asObjOrNull<RetentionShape>(result.retention);
+          patch.customerIntelBrief =
+            typeof result.customerIntelBrief === "string"
+              ? result.customerIntelBrief
+              : prev.customerIntelBrief;
+        }
+
+        // ── Engine 3 · Operations / POS ──────────────────────────────────────
+        if (isE3) {
+          patch.posGrandTotals = asObjOrNull<PosGrandTotalsShape>(result.posGrandTotals);
+          patch.categories = asArray<CategoryRow>(result.categories);
+          patch.topItems = asArray<TopItemRow>(result.topItems);
+          patch.benchmarks = asArray<BenchmarkRow>(result.benchmarks);
+          patch.menuGaps = asArray<MenuGapRow>(result.menuGaps);
+          patch.attachRates = asObjOrNull<AttachRatesShape>(result.attachRates);
+          patch.posBusinessName =
+            typeof result.posBusinessName === "string" ? result.posBusinessName : "";
+          patch.posPeriod = typeof result.posPeriod === "string" ? result.posPeriod : "";
+          patch.opsIntelBrief =
+            typeof result.opsIntelBrief === "string" ? result.opsIntelBrief : prev.opsIntelBrief;
+        }
+
+        // ── Accumulate engine flags across uploads ───────────────────────────
+        const pf = prev.engineFlags ?? {};
+        const flags: EngineFlagsShape = {
+          e1: Boolean(pf.e1) || isE1,
+          e2: Boolean(pf.e2) || isE2,
+          e3: Boolean(pf.e3) || isE3,
+        };
+        patch.engineFlags = flags;
+        patch.hasEngine2Data = flags.e2;
+        patch.hasEngine3Data = flags.e3;
+
+        // Cross-engine: keep backend-provided values when present, else preserve.
+        if (Array.isArray(result.crossInsights)) {
+          patch.crossInsights = asArray<CrossInsightRow>(result.crossInsights);
+        }
+        if (typeof result.unifiedBrief === "string" && result.unifiedBrief) {
+          patch.unifiedBrief = result.unifiedBrief;
+        }
+
+        // Recompute health scores over the MERGED multi-engine state.
+        patch.intelligenceScores = deriveIntelligence({ ...prev, ...patch } as FinancialState);
+
+        set(patch);
       },
 
       setUploading: (v) => set({ isUploading: v }),
