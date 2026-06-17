@@ -3,7 +3,7 @@
    Dark (default, matches E1 dashboard exactly) + Light Premium
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800;900&family=DM+Mono:wght@300;400;500&display=swap');
 
 /* ── DARK MODE (default — matches E1 exactly) ───────────────── */
 :root,
@@ -522,4 +522,59 @@ body {
 /* Exempt animations */
 svg *, .progress-fill, [class*="motion"] {
   transition: none;
+}
+
+/* ============================================================
+   LOGIN PAGE — background, particles & animation primitives
+   (referenced by app/login/page.tsx)
+   ============================================================ */
+
+/* Animated multi-radial mesh backdrop */
+.mesh-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(at 18% 22%, rgba(96,165,250,0.18) 0px, transparent 45%),
+    radial-gradient(at 82% 28%, rgba(6,182,212,0.16) 0px, transparent 45%),
+    radial-gradient(at 50% 82%, rgba(167,139,250,0.13) 0px, transparent 50%),
+    #03060d;
+  background-size: 180% 180%;
+  animation: meshShift 22s ease-in-out infinite;
+}
+
+@keyframes meshShift {
+  0%, 100% { background-position: 0% 0%,   100% 0%,   50% 100%; }
+  50%      { background-position: 100% 100%, 0% 100%, 50% 0%;   }
+}
+
+/* Floating particles rising up the viewport */
+@keyframes particleFloat {
+  0%   { transform: translateY(0);      opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(-100vh); opacity: 0; }
+}
+
+/* Animated gradient text (title) */
+@keyframes gradtxt {
+  0%, 100% { background-position: 0% 50%;   }
+  50%      { background-position: 100% 50%; }
+}
+
+/* Button spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error shake on the login card */
+.shake {
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shake {
+  10%, 90%       { transform: translateX(-1px); }
+  20%, 80%       { transform: translateX(2px);  }
+  30%, 50%, 70%  { transform: translateX(-4px); }
+  40%, 60%       { transform: translateX(4px);  }
 }

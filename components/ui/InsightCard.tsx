@@ -5,7 +5,7 @@ interface InsightCardProps {
   insight: string;
   action: string;
   priority: 'high' | 'medium' | 'low';
-  sourceEngines: string[];
+  sourceEngines?: string[];
   index?: number;
 }
 
@@ -19,7 +19,7 @@ const ENGINE_COLORS: Record<string, string> = {
   E1: 'var(--e1)', E2: 'var(--e2)', E3: 'var(--e3)',
 };
 
-export default function InsightCard({ insight, action, priority, sourceEngines, index = 0 }: InsightCardProps) {
+export default function InsightCard({ insight, action, priority, sourceEngines = [], index = 0 }: InsightCardProps) {
   const cfg = PRIORITY_MAP[priority] ?? PRIORITY_MAP.low;
 
   return (

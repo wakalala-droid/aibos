@@ -15,7 +15,7 @@ export default function POSPage() {
   const { posBusinessName, posPeriod, posGrandTotals, categories, topItems, hasEngine3Data, currencySymbol } = useStore();
   const sym = currencySymbol || 'K';
   const gt = posGrandTotals;
-  const discRate = gt ? gt.discount_value / Math.max(gt.gross_revenue, 1) * 100 : 0;
+  const discRate = gt ? (gt.discount_value ?? 0) / Math.max(gt.gross_revenue ?? 0, 1) * 100 : 0;
   const pieData = categories.slice(0, 6).map((c, i) => ({ name: c.category, value: Math.round(c.revenue), colour: CAT_COLORS[i % CAT_COLORS.length] }));
   const barData = categories.slice(0, 7).map(c => ({ name: c.category.slice(0, 9), units: c.units }));
 

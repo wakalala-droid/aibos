@@ -66,7 +66,7 @@ function SendIcon({ size = 16 }: { size?: number }) {
 // ---------------------------------------------------------------------------
 
 export default function AICFOChat() {
-  const { kpi, health, alerts, monthly, currencySymbol, pnl: storePnl } = useStore();
+  const { kpi, health, alerts, monthly, currencySymbol } = useStore();
   const sym     = currencySymbol || 'K';
   const userId  = 'default-user';
 

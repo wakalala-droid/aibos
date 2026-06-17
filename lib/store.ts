@@ -34,6 +34,7 @@ export interface RfmRow {
   rfm_score: number;
   clv: number;
   churn_risk: number;
+  intervention?: string;
 }
 
 export interface SegmentRow {
@@ -182,6 +183,7 @@ export interface CabinetEntry {
 
 export interface FinancialState {
   filename: string | null;
+  uploadedFile: string | null;
   cabinetId: string | null;
   sheets: string[];
   activeSheet: string | null;
@@ -189,6 +191,8 @@ export interface FinancialState {
   uploadError: string | null;
   isSwitchingSheet: boolean;
   cabinet: CabinetEntry[];
+
+  sidebarCollapsed: boolean;
 
   currencySymbol: string;
   hasEngine2Data: boolean;
@@ -231,6 +235,7 @@ interface FinancialActions {
   setUploading: (v: boolean) => void;
   setUploadError: (err: string | null) => void;
   setCurrency: (sym: string) => void;
+  toggleSidebar: () => void;
   switchSheet: (sheetName: string) => Promise<void>;
   loadFromCabinet: (id: string) => Promise<void>;
   removeFromCabinet: (id: string) => void;
@@ -255,6 +260,7 @@ const INITIAL_HEALTH: HealthShape = {
 
 const INITIAL: FinancialState = {
   filename: null,
+  uploadedFile: null,
   cabinetId: null,
   sheets: [],
   activeSheet: null,
@@ -262,6 +268,8 @@ const INITIAL: FinancialState = {
   uploadError: null,
   isSwitchingSheet: false,
   cabinet: [],
+
+  sidebarCollapsed: false,
 
   currencySymbol: "K",
   hasEngine2Data: false,
@@ -417,6 +425,7 @@ const _store = create<FinancialState & FinancialActions>()(
 
         set({
           filename: fname,
+          uploadedFile: fname,
           cabinetId: cabId,
           sheets: sheetsArr,
           activeSheet: typeof result.active_sheet === "string" ? result.active_sheet : null,
@@ -464,6 +473,8 @@ const _store = create<FinancialState & FinancialActions>()(
 
       setUploading: (v) => set({ isUploading: v }),
       setUploadError: (err) => set({ uploadError: err }),
+
+      toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
 
       setCurrency: (sym) => {
         setCurrencyGlobal(sym);
@@ -518,6 +529,7 @@ const _store = create<FinancialState & FinancialActions>()(
       partialize: (s) => ({
         cabinet: s.cabinet,
         currencySymbol: s.currencySymbol,
+        sidebarCollapsed: s.sidebarCollapsed,
       }),
     }
   )

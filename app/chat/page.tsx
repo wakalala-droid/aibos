@@ -128,11 +128,14 @@ export default function ChatPage() {
     }
   }, [msgs.length]);
 
-  const totalRev = monthly.reduce((s, m) => s + (m.revenue ?? 0), 0);
-  const totalProfit = monthly.reduce((s, m) => s + (m.profit ?? 0), 0);
+  const totalRev = monthly.reduce((s, m) => s + Number(m.Revenue ?? m.revenue ?? 0), 0);
+  const totalProfit = monthly.reduce(
+    (s, m) => s + Number(m.profit ?? (Number(m.Revenue ?? m.revenue ?? 0) - Number(m.Costs ?? m.costs ?? 0))),
+    0
+  );
   const avgMargin =
     monthly.length > 0
-      ? monthly.reduce((s, m) => s + (m.margin ?? 0), 0) / monthly.length
+      ? monthly.reduce((s, m) => s + Number(m.margin ?? 0), 0) / monthly.length
       : 0;
 
   const send = useCallback(
