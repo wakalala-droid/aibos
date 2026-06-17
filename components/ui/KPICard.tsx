@@ -22,7 +22,6 @@ export default function KPICard({
   sparkData, sparkColor = '#60a5fa', delay = 0,
 }: KPICardProps) {
   const spark = sparkData?.map((v, i) => ({ v, i }));
-  const hasGrowth = growth !== undefined;
   // Unique gradient id per card instance so multiple sparklines don't collide.
   const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
 
@@ -81,8 +80,8 @@ export default function KPICard({
                   dataKey="v"
                   stroke={sparkColor}
                   strokeWidth={1.8}
-                  // Shaded region below the line — only on cards with a growth badge.
-                  fill={hasGrowth ? `url(#${gradId})` : 'none'}
+                  // Shaded region below the line on every KPI sparkline.
+                  fill={`url(#${gradId})`}
                   fillOpacity={1}
                   dot={false}
                   isAnimationActive={false}
