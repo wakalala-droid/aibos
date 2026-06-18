@@ -237,7 +237,7 @@ export default function OverviewPage() {
         />
         <KPICard
           label="TOTAL COSTS" value={fmt(kpi?.totalCosts ?? 0, true, sym)}
-          growth={costGrowth} sub={growthSub} sparkData={costSpark} sparkColor="var(--spark-cost)"
+          growth={costGrowth} goodWhenUp={false} sub={growthSub} sparkData={costSpark} sparkColor="var(--spark-cost)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 8h20v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8z" stroke="var(--orange)" strokeWidth="1.6" fill="none"/><path d="M2 8l2-4h16l2 4" stroke="var(--orange)" strokeWidth="1.5" strokeLinejoin="round"/></svg>}
           iconBg="rgba(249,115,22,0.15)" delay={0.06}
         />

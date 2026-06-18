@@ -100,7 +100,6 @@ export default function AnomalyPage() {
           sub="statistical outliers detected"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--warn)" strokeWidth="1.5" strokeLinejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="var(--warn)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(251,191,36,0.15)"
-          sparkData={[0, 1, 1, 2, 2, derivedAnomalies.length]}
           sparkColor="var(--warn)" delay={0}
         />
         <KPICard
@@ -108,7 +107,6 @@ export default function AnomalyPage() {
           sub="Z-score > 2.0"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--crit)" strokeWidth="1.5" fill="none"/><path d="M12 8v5M12 16v.5" stroke="var(--crit)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(239,68,68,0.15)"
-          sparkData={[0, 0, 1, 1, 1, critical.length]}
           sparkColor="var(--crit)" delay={0.06}
         />
         <KPICard
@@ -124,7 +122,6 @@ export default function AnomalyPage() {
           sub="Z-score 1.5–2.0"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="var(--blue)" strokeWidth="1.5" fill="none"/><path d="M12 9v4M12 17h.01" stroke="var(--blue)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)"
-          sparkData={[0, 1, 1, 1, 2, warnings.length]}
           sparkColor="var(--blue)" delay={0.18}
         />
       </div>

@@ -159,7 +159,6 @@ export default function BriefPage() {
           sub={health.label}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke={healthColour} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg={`color-mix(in srgb, ${healthColour} 15%, transparent)`}
-          sparkData={[50, 55, 60, 65, 68, health.score]}
           sparkColor={healthColour} delay={0}
         />
         <KPICard
@@ -185,7 +184,6 @@ export default function BriefPage() {
           sub="strategic action items"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="var(--purple)" strokeWidth="1.5" fill="none" strokeLinejoin="round"/><path d="M8 9h8M8 13h5M8 17h6" stroke="var(--purple)" strokeWidth="1.3" strokeLinecap="round"/></svg>}
           iconBg="rgba(167,139,250,0.15)"
-          sparkData={[1,2,2,3,3,recs.length]}
           sparkColor="var(--purple)" delay={0.18}
         />
       </div>

@@ -72,7 +72,7 @@ export default function CashPage() {
           label="CASH POSITION" value={fmt(currentCash, false, sym)} sub="current balance"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="var(--cyan)" strokeWidth="1.5" fill="none"/><path d="M2 10h20" stroke="var(--cyan)" strokeWidth="1.3" strokeLinecap="round"/><circle cx="8" cy="15" r="1.5" fill="var(--cyan)"/></svg>}
           iconBg="rgba(0,212,255,0.12)"
-          sparkData={cashSpark.length > 1 ? cashSpark.slice(-6) : monthly.slice(-6).map((_, i) => currentCash * (1 + i * 0.05))}
+          sparkData={cashSpark.length > 1 ? cashSpark.slice(-6) : undefined}
           sparkColor="var(--cyan)" delay={0}
         />
         <KPICard
@@ -86,7 +86,6 @@ export default function CashPage() {
           label="CASH RUNWAY" value={`${runway}mo`} sub={`vs ${runwayTarget}mo target`}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6l6 6-6 6" stroke={runwayColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg={`color-mix(in srgb, ${runwayColor} 15%, transparent)`}
-          sparkData={[runway*0.7, runway*0.8, runway*0.9, runway*0.95, runway, runway]}
           sparkColor={runwayColor} delay={0.12}
         />
         <KPICard

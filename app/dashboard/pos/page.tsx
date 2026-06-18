@@ -33,16 +33,16 @@ export default function POSPage() {
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="GROSS REVENUE" value={fmt(gt?.gross_revenue ?? 0, false, sym)} sub="total sales incl. discount"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="var(--e3)" strokeWidth="1.5" fill="none"/><path d="M2 9h20" stroke="var(--e3)" strokeWidth="1.3" strokeLinecap="round"/></svg>}
-          iconBg="rgba(16,185,129,0.15)" sparkData={[180000,190000,200000,210000,213000,gt?.gross_revenue ?? 0]} sparkColor="var(--e3)" delay={0} />
+          iconBg="rgba(16,185,129,0.15)" sparkColor="var(--e3)" delay={0} />
         <KPICard label="NET REVENUE" value={fmt(gt?.net_revenue ?? 0, false, sym)} sub="after discounts"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(52,211,153,0.15)" sparkData={[178000,189000,199000,209000,212000,gt?.net_revenue ?? 0]} sparkColor="var(--good)" delay={0.06} />
+          iconBg="rgba(52,211,153,0.15)" sparkColor="var(--good)" delay={0.06} />
         <KPICard label="TOTAL UNITS SOLD" value={(gt?.units_sold ?? 0).toLocaleString()} sub="across all categories"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke="var(--blue)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(96,165,250,0.15)" sparkData={[6000,6500,7000,7200,7500,gt?.units_sold ?? 0]} sparkColor="var(--blue)" delay={0.12} />
+          iconBg="rgba(96,165,250,0.15)" sparkColor="var(--blue)" delay={0.12} />
         <KPICard label="DISCOUNT VALUE" value={fmt(gt?.discount_value ?? 0, false, sym)} sub={`${discRate.toFixed(2)}% of gross revenue`}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 14.5L14.5 9M9 9h.01M14.5 14.5h.01" stroke="var(--warn)" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="10" stroke="var(--warn)" strokeWidth="1.4" fill="none"/></svg>}
-          iconBg="rgba(251,191,36,0.15)" sparkData={[300,350,400,450,500,gt?.discount_value ?? 0]} sparkColor="var(--warn)" delay={0.18} />
+          iconBg="rgba(251,191,36,0.15)" sparkColor="var(--warn)" delay={0.18} />
       </div>
 
       {/* Charts */}

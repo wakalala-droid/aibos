@@ -112,7 +112,6 @@ export default function VariancePage() {
           sub="variance & anomaly flags"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--warn)" strokeWidth="1.5" strokeLinejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="var(--warn)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(251,191,36,0.15)"
-          sparkData={[0,1,2,3,4,criticalAlerts.length]}
           sparkColor="var(--warn)" delay={0.12}
         />
         <KPICard

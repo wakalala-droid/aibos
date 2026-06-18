@@ -54,17 +54,17 @@ export default function CustomersPage() {
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="TOTAL CUSTOMERS" value={String(total)} sub="active customers"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" stroke="var(--e2)" strokeWidth="1.5" fill="none"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="var(--e2)" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>}
-          iconBg="rgba(249,115,22,0.15)" sparkData={[3,4,3,5,4,total]} sparkColor="var(--e2)" delay={0} />
+          iconBg="rgba(249,115,22,0.15)" sparkColor="var(--e2)" delay={0} />
         <KPICard label="AVG CUSTOMER CLV" value={fmt(avgCLV, false, sym)} sub="lifetime value"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(52,211,153,0.15)" sparkData={[40000,55000,62000,68000,80000,avgCLV]} sparkColor="var(--good)" delay={0.06} />
+          iconBg="rgba(52,211,153,0.15)" sparkColor="var(--good)" delay={0.06} />
         <KPICard label="RETENTION RATE" value={`${retRate.toFixed(1)}%`} sub="returning customers"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 11-6.219-8.56" stroke="var(--blue)" strokeWidth="1.5" fill="none" strokeLinecap="round"/><path d="M21 3v5h-5" stroke="var(--blue)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(96,165,250,0.15)" sparkData={[55,60,58,65,67,retRate]} sparkColor="var(--blue)" delay={0.12} />
+          iconBg="rgba(96,165,250,0.15)" sparkColor="var(--blue)" delay={0.12} />
         <KPICard label="HIGH CHURN RISK" value={String(highChurn)} sub="immediate action required"
           growth={highChurn > 0 ? undefined : undefined}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--crit)" strokeWidth="1.5" strokeLinejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="var(--crit)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
-          iconBg="rgba(239,68,68,0.15)" sparkData={[0,1,0,1,1,highChurn]} sparkColor="var(--crit)" delay={0.18} />
+          iconBg="rgba(239,68,68,0.15)" sparkColor="var(--crit)" delay={0.18} />
       </div>
 
       {/* Charts row */}

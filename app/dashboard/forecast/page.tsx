@@ -136,7 +136,7 @@ export default function ForecastPage() {
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="NEXT MONTH FORECAST" value={fmt(firstFcast, false, sym)} sub="vs prior period" growth={growthPct}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12l4-4 4 4 4-6 4 4" stroke="var(--cyan)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
-          iconBg="rgba(0,212,255,0.12)" sparkData={[...revSpark.slice(-4), firstFcast]} sparkColor="var(--cyan)" delay={0} />
+          iconBg="rgba(0,212,255,0.12)" sparkColor="var(--cyan)" delay={0} />
         <KPICard label="3-MONTH TOTAL" value={fmt(threeTotal, true, sym)} sub="combined 3-month forecast"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="var(--blue)" strokeWidth="1.5" fill="none"/><path d="M16 2v4M8 2v4M3 10h18" stroke="var(--blue)" strokeWidth="1.4" strokeLinecap="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)" sparkData={projections.map(p => p.fcast ?? 0)} sparkColor="var(--blue)" delay={0.06} />
@@ -145,7 +145,7 @@ export default function ForecastPage() {
           iconBg="rgba(52,211,153,0.15)" sparkData={revSpark} sparkColor="var(--good)" delay={0.12} />
         <KPICard label="FORECAST CONFIDENCE" value={`${confidence}%`} sublabel="Model accuracy" sub="95% confidence interval"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--purple)" strokeWidth="1.5" fill="none"/><path d="M9 12l2 2 4-4" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(167,139,250,0.15)" sparkData={[88, 90, 91, 93, 94, confidence]} sparkColor="var(--purple)" delay={0.18} />
+          iconBg="rgba(167,139,250,0.15)" sparkColor="var(--purple)" delay={0.18} />
       </div>
 
       {/* Live model pill */}

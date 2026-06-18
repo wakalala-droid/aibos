@@ -51,16 +51,18 @@
     inset 0 0 60px 6px var(--sg-color-20);
 }
 
+/* rest (~60% of cycle ≈ 10s) → glow becomes comet at top-right → full trip →
+   reabsorbs back into the corner glow. */
 @keyframes sg-comet {
-  0%, 55% { opacity: 0; --comet-angle: 45deg; }
-  62%     { opacity: 1; --comet-angle: 45deg; }
-  92%     { opacity: 1; --comet-angle: 405deg; }
+  0%, 60% { opacity: 0; --comet-angle: 45deg; }
+  66%     { opacity: 1; --comet-angle: 45deg; }
+  96%     { opacity: 1; --comet-angle: 405deg; }
   100%    { opacity: 0; --comet-angle: 405deg; }
 }
 @keyframes sg-bloom {
-  0%, 55% { opacity: 1; }
-  62%     { opacity: 0; }
-  92%     { opacity: 0; }
+  0%, 60% { opacity: 1; }
+  66%     { opacity: 0; }
+  96%     { opacity: 0; }
   100%    { opacity: 1; }
 }
 

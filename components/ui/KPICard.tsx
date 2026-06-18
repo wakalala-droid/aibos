@@ -18,6 +18,8 @@ interface KPICardProps {
   delay?: number;
   /** 0–100 health score; < 60 turns the inner glow into a comet. */
   score?: number;
+  /** Whether rising is good (revenue) or bad (costs). Controls badge colour. */
+  goodWhenUp?: boolean;
 }
 
 // Cursor edge-glow tuning shared by every KPI card (hsl "h s l" per React Bits).
@@ -27,10 +29,12 @@ const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
 export default function KPICard({
   label, sublabel, value, sub = 'vs prior period',
   growth, icon, iconBg = 'rgba(96,165,250,0.15)',
-  sparkData, sparkColor = '#60a5fa', delay = 0, score,
+  sparkData, sparkColor = '#60a5fa', delay = 0, score, goodWhenUp = true,
 }: KPICardProps) {
   const spark = sparkData?.map((v, i) => ({ v, i }));
   const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
+  // Badge colour reflects good/bad, not just direction: rising costs are red.
+  const badgeGood = growth !== undefined && (goodWhenUp ? growth >= 0 : growth <= 0);
 
   return (
     <motion.div
@@ -69,7 +73,7 @@ export default function KPICard({
             </div>
           </div>
           {growth !== undefined && (
-            <span className={`kpi-badge ${growth >= 0 ? 'up' : 'down'}`}>
+            <span className={`kpi-badge ${badgeGood ? 'up' : 'down'}`}>
               {growth >= 0 ? '▲' : '▼'} {Math.abs(growth).toFixed(1)}%
             </span>
           )}
@@ -98,6 +102,10 @@ export default function KPICard({
                     strokeWidth={1.8}
                     fill={`url(#${gradId})`}
                     fillOpacity={1}
+                    // Fill from the line down to the series minimum so the
+                    // gradient never renders above the line (negative values
+                    // otherwise baseline at 0 and fill upward).
+                    baseValue="dataMin"
                     dot={false}
                     isAnimationActive={false}
                   />

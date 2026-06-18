@@ -10,14 +10,17 @@ import './ScoreComet.css';
 
 type Band = 'warning' | 'high' | 'critical';
 
+// dur is the full cycle; ~60% of it is the idle rest (≈10s) and the rest is the
+// trip. Lower scores orbit faster + brighter + longer tail + rest less.
 const BANDS: Record<Band, { tail: number; dur: number; intensity: number; color: string }> = {
-  warning:  { tail: 18, dur: 18, intensity: 1.0, color: 'var(--warn)' },
-  high:     { tail: 28, dur: 14, intensity: 1.2, color: 'var(--crit)' },
-  critical: { tail: 40, dur: 11, intensity: 1.5, color: 'var(--crit)' },
+  warning:  { tail: 20, dur: 16, intensity: 1.2, color: 'var(--warn)' },
+  high:     { tail: 30, dur: 13, intensity: 1.5, color: 'var(--crit)' },
+  critical: { tail: 42, dur: 10, intensity: 1.8, color: 'var(--crit)' },
 };
 
+// "60 and below" activates the comet (inclusive of 60).
 function bandFor(score: number | undefined): Band | null {
-  if (typeof score !== 'number' || score >= 60) return null;
+  if (typeof score !== 'number' || score > 60) return null;
   if (score >= 45) return 'warning';
   if (score >= 25) return 'high';
   return 'critical';

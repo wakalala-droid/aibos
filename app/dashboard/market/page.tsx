@@ -41,16 +41,16 @@ export default function MarketPage() {
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="MARKET REVENUE" value={fmt(totalRevenue, true, sym)} sub="across all segments"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--e2)" strokeWidth="1.5" fill="none"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20" stroke="var(--e2)" strokeWidth="1.2" fill="none"/></svg>}
-          iconBg="rgba(249,115,22,0.15)" sparkData={[5000,6000,7000,7500,8000,totalRevenue]} sparkColor="var(--e2)" delay={0} />
+          iconBg="rgba(249,115,22,0.15)" sparkColor="var(--e2)" delay={0} />
         <KPICard label="TOTAL CUSTOMERS" value={String(totalCustomers)} sub="tracked customers"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" stroke="var(--blue)" strokeWidth="1.5" fill="none"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="var(--blue)" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>}
-          iconBg="rgba(96,165,250,0.15)" sparkData={[1,2,2,3,3,totalCustomers]} sparkColor="var(--blue)" delay={0.06} />
+          iconBg="rgba(96,165,250,0.15)" sparkColor="var(--blue)" delay={0.06} />
         <KPICard label="TOTAL CLV POOL" value={fmt(totalCLV, true, sym)} sub="combined lifetime value"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(52,211,153,0.15)" sparkData={[100000,150000,180000,190000,195000,totalCLV]} sparkColor="var(--good)" delay={0.12} />
+          iconBg="rgba(52,211,153,0.15)" sparkColor="var(--good)" delay={0.12} />
         <KPICard label="PRODUCT COUNT" value={String(productsE2.length)} sub="distinct products"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="var(--purple)" strokeWidth="1.5" fill="none"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="var(--purple)" strokeWidth="1.5" fill="none"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="var(--purple)" strokeWidth="1.5" fill="none"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="var(--purple)" strokeWidth="1.5" fill="none"/></svg>}
-          iconBg="rgba(167,139,250,0.15)" sparkData={[2,3,3,4,4,productsE2.length]} sparkColor="var(--purple)" delay={0.18} />
+          iconBg="rgba(167,139,250,0.15)" sparkColor="var(--purple)" delay={0.18} />
       </div>
 
       {/* Charts row */}

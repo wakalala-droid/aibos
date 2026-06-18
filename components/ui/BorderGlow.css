@@ -12,16 +12,10 @@
   isolation: isolate;
   transform: translate3d(0, 0, 0.01px);
   display: grid;
-  border: 1px solid rgb(255 255 255 / 15%);
-  background: var(--card-bg, #120F17);
+  border: 1px solid var(--border-md);
+  background: var(--card-bg, var(--bg-card));
   overflow: visible;
-  box-shadow:
-    rgba(0, 0, 0, 0.1) 0px 1px 2px,
-    rgba(0, 0, 0, 0.1) 0px 2px 4px,
-    rgba(0, 0, 0, 0.1) 0px 4px 8px,
-    rgba(0, 0, 0, 0.1) 0px 8px 16px,
-    rgba(0, 0, 0, 0.1) 0px 16px 32px,
-    rgba(0, 0, 0, 0.1) 0px 32px 64px;
+  box-shadow: var(--shadow-card);
 }
 
 .border-glow-card::before,
@@ -139,3 +133,9 @@
   overflow: auto;
   z-index: 1;
 }
+
+/* The React Bits glow uses additive blends (plus-lighter / soft-light) made for
+   dark UIs — on a light theme they wash out to nothing, so the cursor glow looks
+   broken. Render it with a normal blend there so it stays visible. */
+[data-theme="light"] .border-glow-card > .edge-light { mix-blend-mode: normal; }
+[data-theme="light"] .border-glow-card::after { mix-blend-mode: normal; }

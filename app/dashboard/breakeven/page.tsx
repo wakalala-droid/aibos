@@ -71,16 +71,16 @@ export default function BreakevenPage() {
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="BREAKEVEN REVENUE" value={fmt(bepRevenue, false, sym)} sub="monthly target"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M12 3v18" stroke="var(--cyan)" strokeWidth="1.5" strokeLinecap="round" opacity=".4"/><path d="M5 19L19 5" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round"/></svg>}
-          iconBg="rgba(0,212,255,0.12)" sparkData={[bepRevenue*0.9, bepRevenue*0.95, bepRevenue, bepRevenue, bepRevenue, bepRevenue]} sparkColor="var(--cyan)" delay={0} />
+          iconBg="rgba(0,212,255,0.12)" sparkColor="var(--cyan)" delay={0} />
         <KPICard label="CURRENT REVENUE" value={fmt(currentRevenue, false, sym)} sub="monthly average"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkData={monthly.slice(-6).map(m => Number(m.Revenue) || 0)} sparkColor="var(--good)" delay={0.06} />
         <KPICard label="FIXED COSTS" value={fmt(fixedCosts, false, sym)} sub={`${(fixedCostPct*100).toFixed(0)}% of total costs`}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="var(--warn)" strokeWidth="1.5" fill="none"/><path d="M3 9h18M9 21V9" stroke="var(--warn)" strokeWidth="1.3" strokeLinecap="round"/></svg>}
-          iconBg="rgba(251,191,36,0.15)" sparkData={[fixedCosts*0.95, fixedCosts*0.98, fixedCosts, fixedCosts, fixedCosts, fixedCosts]} sparkColor="var(--warn)" delay={0.12} />
+          iconBg="rgba(251,191,36,0.15)" sparkColor="var(--warn)" delay={0.12} />
         <KPICard label="CONTRIBUTION MARGIN" value={`${(contribMargin * 100).toFixed(1)}%`} sub="after variable costs"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
-          iconBg="rgba(167,139,250,0.15)" sparkData={[25,26,27,27.5,28,contribMargin*100]} sparkColor="var(--purple)" delay={0.18} />
+          iconBg="rgba(167,139,250,0.15)" sparkColor="var(--purple)" delay={0.18} />
       </div>
 
       {/* Status banner */}
