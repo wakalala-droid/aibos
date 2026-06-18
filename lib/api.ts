@@ -194,6 +194,49 @@ export async function pingAPI(): Promise<boolean> {
   }
 }
 
+// ─── Payments — Mobile Money (MTN MoMo + Airtel Money) ─────────────────────────
+
+export type PaymentNetwork = 'mtn' | 'airtel';
+export type PaymentStatus = 'pending' | 'successful' | 'failed';
+
+export interface InitiatePaymentPayload {
+  network: PaymentNetwork;
+  plan: 'pro' | 'growth';
+  billing: 'monthly' | 'annual';
+  payer_phone: string;
+  user_id?: string;
+  currency?: string;
+}
+
+export interface InitiatePaymentResult {
+  reference: string;
+  status: PaymentStatus;
+  amount: number;
+  network: PaymentNetwork;
+  plan: string;
+}
+
+/** Kick off a mobile-money collection. Returns a reference to poll. */
+export async function initiatePayment(payload: InitiatePaymentPayload): Promise<InitiatePaymentResult> {
+  const res = await fetch(`${PROXY}/payments/initiate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ currency: 'ZMW', ...payload }),
+  });
+  const raw = await res.text();
+  let data: Record<string, unknown> = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch { throw new Error('Unexpected response from the payment service.'); }
+  if (!res.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `Payment could not start (${res.status}).`);
+  return data as unknown as InitiatePaymentResult;
+}
+
+/** Poll a collection's status until it resolves. */
+export async function checkPaymentStatus(reference: string): Promise<{ reference: string; status: PaymentStatus; plan: string; billing: string }> {
+  const res = await fetch(`${PROXY}/payments/status/${encodeURIComponent(reference)}`);
+  const data = (await res.json().catch(() => ({ status: 'pending' }))) as { reference?: string; status?: PaymentStatus; plan?: string; billing?: string };
+  return { reference, status: (data.status ?? 'pending'), plan: data.plan ?? '', billing: data.billing ?? 'monthly' };
+}
+
 // ─── Subscribe ────────────────────────────────────────────────────────────────
 
 export async function subscribeEmail(payload: { user_id: string; email: string; frequency?: string }): Promise<{ ok: boolean }> {

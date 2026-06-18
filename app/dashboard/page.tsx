@@ -10,33 +10,12 @@ import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
 import BriefSubscribe from '@/components/ui/BriefSubscribe';
-import { useTheme } from '@/lib/theme';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from 'recharts';
-
-function SunIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.6"/>
-      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
-        stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-    </svg>
-  );
-}
-
-function MoonIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
-        stroke="currentColor" strokeWidth="1.6" fill="none"
-        strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  );
-}
 
 function EngineScoreCard({
   label, sub, score, colour, href, locked,
@@ -106,7 +85,6 @@ export default function OverviewPage() {
     currencySymbol, rfm, retention,
     posGrandTotals, attachRates, benchmarks,
   } = useStore();
-  const { toggle, isDark } = useTheme();
   const sym    = currencySymbol || 'K';
   const scores = intelligenceScores;
 
@@ -178,35 +156,19 @@ export default function OverviewPage() {
   return (
     <>
       {/* ── Page header ─────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-        <div>
-          <h1 style={{
-            fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800,
-            color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em',
-          }}>
-            Business Intelligence Overview
-          </h1>
-          <p style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem',
-            color: 'var(--text-3)', margin: '4px 0 0',
-          }}>
-            Financial · Customer · Operations — unified Kwacha intelligence
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-          style={{
-            width: 36, height: 36, borderRadius: 8,
-            border: '1px solid var(--border-md)',
-            background: 'var(--bg-card)', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--text-3)', flexShrink: 0,
-          }}
-        >
-          {isDark ? <SunIcon /> : <MoonIcon />}
-        </button>
+      <div style={{ marginBottom: 28, paddingRight: 160 }}>
+        <h1 style={{
+          fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800,
+          color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em',
+        }}>
+          Overview
+        </h1>
+        <p style={{
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem',
+          color: 'var(--text-3)', margin: '4px 0 0',
+        }}>
+          Financial · Customer · Operations — unified Kwacha intelligence
+        </p>
       </div>
 
       {/* ── Contextual upgrade trigger (only at moments of demonstrated value) ── */}

@@ -90,25 +90,29 @@
 
   /* Lock overlay */
   --overlay-bg:     rgba(10,14,26,0.85);
+
+  /* Premium card corner bloom */
+  --card-glow:      rgba(96,165,250,0.05);
 }
 
 /* ── LIGHT PREMIUM MODE ─────────────────────────────────────── */
 [data-theme="light"] {
-  --bg-page:        #f1f5f9;
+  /* Warm, premium off-white — never pure clinical white (visual_language_system.md). */
+  --bg-page:        #f4f3ef;
   --bg-card:        #ffffff;
-  --bg-card-hover:  #f8fafc;
+  --bg-card-hover:  #fbfaf7;
   --bg-sidebar:     #ffffff;
-  --bg-input:       #f8fafc;
-  --bg-badge:       #f1f5f9;
+  --bg-input:       #f7f6f2;
+  --bg-badge:       #f1efe9;
 
-  --border:         rgba(15,23,42,0.07);
-  --border-md:      rgba(15,23,42,0.12);
-  --border-strong:  rgba(15,23,42,0.20);
+  --border:         rgba(28,25,23,0.08);
+  --border-md:      rgba(28,25,23,0.13);
+  --border-strong:  rgba(28,25,23,0.22);
 
-  --text-1:         #0f172a;
-  --text-2:         #1e293b;
-  --text-3:         #64748b;
-  --text-4:         #94a3b8;
+  --text-1:         #1c1917;
+  --text-2:         #292524;
+  --text-3:         #6b6864;
+  --text-4:         #9c9892;
 
   --cyan:           #0284c7;
   --cyan-dim:       rgba(2,132,199,0.08);
@@ -137,8 +141,8 @@
   --spark-profit:   #059669;
   --spark-margin:   #7c3aed;
 
-  --shadow-card:    0 1px 3px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.04);
-  --shadow-lg:      0 4px 24px rgba(15,23,42,0.12);
+  --shadow-card:    0 1px 2px rgba(28,25,23,0.05), 0 4px 12px rgba(28,25,23,0.04);
+  --shadow-lg:      0 12px 32px rgba(28,25,23,0.10);
 
   --tooltip-bg:     #ffffff;
   --tooltip-border: rgba(15,23,42,0.10);
@@ -150,7 +154,9 @@
   --upload-border:  rgba(15,23,42,0.12);
   --upload-bg:      rgba(15,23,42,0.02);
 
-  --overlay-bg:     rgba(241,245,249,0.88);
+  --overlay-bg:     rgba(244,243,239,0.90);
+
+  --card-glow:      rgba(2,132,199,0.04);
 }
 
 /* ── RESET ──────────────────────────────────────────────────── */
@@ -217,23 +223,88 @@ body {
   padding: 28px 32px;
   max-width: 1400px;
   margin: 0 auto;
+  position: relative; /* anchor for the dashboard header trio */
+}
+
+/* ── DASHBOARD HEADER (search · notifications · profile) ──────── */
+.dash-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.dash-iconbtn:hover { background: var(--bg-card-hover); color: var(--text-1); border-color: var(--border-strong); }
+.dash-profile:hover { border-color: var(--border-strong); background: var(--bg-card-hover); }
+.dash-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  background: var(--bg-card);
+  border: 1px solid var(--border-md);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.dash-row:hover { background: var(--table-row-hover); }
+
+@media (min-width: 1024px) {
+  /* Float the trio into the top-right corner, on the page-title row. */
+  .dash-header {
+    position: absolute;
+    top: 26px;
+    right: 32px;
+    margin-bottom: 0;
+    z-index: 30;
+  }
+}
+@media (max-width: 1023px) {
+  /* On mobile the profile chip shows just the avatar to save space. */
+  .dash-profile-name { display: none; }
+  .dash-profile { padding: 5px !important; }
 }
 
 /* ── KPI CARD — exactly matching E1 ────────────────────────── */
 .kpi-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 20px 20px 16px;
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-card);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* Premium corner bloom — a soft light catch in the top-right (matches the
+   promoted design). Clipped by overflow:hidden so it reads as ambient depth.
+   Scoped to KPI cards, which already clip; section cards hold charts whose
+   tooltips must not be clipped. */
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  top: -45%;
+  right: -15%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--card-glow), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.kpi-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .kpi-card:hover {
   background: var(--bg-card-hover);
   border-color: var(--border-md);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
 }
 
 .kpi-card .kpi-label {
@@ -305,10 +376,13 @@ body {
 .section-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 24px;
   box-shadow: var(--shadow-card);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.section-card:hover {
+  border-color: var(--border-md);
 }
 
 .section-title {

@@ -1,6 +1,7 @@
 'use client';
 import { useStore } from '@/lib/store';
 import { useEffect } from 'react';
+import DashboardHeader from '@/components/layout/DashboardHeader';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const collapsed = useStore(s => s.sidebarCollapsed);
@@ -17,6 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="page-container">
+      <DashboardHeader />
       {children}
     </div>
   );

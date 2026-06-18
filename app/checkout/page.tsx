@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { TIERS, usdApprox, type Tier } from '@/lib/tiers';
+import { initiatePayment, checkPaymentStatus } from '@/lib/api';
 
 // Merchant mobile-money accounts payments are sent to.
 const MERCHANT = {
@@ -26,7 +27,61 @@ function CheckoutInner() {
 
   const [network, setNetwork] = useState<Network>('mtn');
   const [phone, setPhone] = useState('');
-  const [status, setStatus] = useState<'idle' | 'pending' | 'done'>('idle');
+  const [status, setStatus] = useState<'idle' | 'pending' | 'done' | 'failed'>('idle');
+  const [reference, setReference] = useState('');
+  const [error, setError] = useState('');
+  const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Poll the collection status until it resolves (or times out ~60s).
+  useEffect(() => {
+    if (status !== 'pending' || !reference) return;
+    let active = true;
+    let tries = 0;
+    const tick = async () => {
+      if (!active) return;
+      tries += 1;
+      try {
+        const r = await checkPaymentStatus(reference);
+        if (!active) return;
+        if (r.status === 'successful') {
+          if (isTier(planParam) && planParam !== 'free') setTier(planParam);
+          setStatus('done');
+          return;
+        }
+        if (r.status === 'failed') {
+          setStatus('failed');
+          setError('The payment was declined or cancelled. No money was taken — you can try again.');
+          return;
+        }
+      } catch { /* keep polling */ }
+      if (tries >= 24) {
+        setStatus('failed');
+        setError('We haven’t confirmed your payment yet. If you approved it, give it a moment and try again, or contact support.');
+        return;
+      }
+      pollRef.current = setTimeout(tick, 2500);
+    };
+    pollRef.current = setTimeout(tick, 2500);
+    return () => { active = false; if (pollRef.current) clearTimeout(pollRef.current); };
+  }, [status, reference, planParam, setTier]);
+
+  const startPayment = async () => {
+    setError('');
+    setStatus('pending');
+    try {
+      const r = await initiatePayment({
+        network,
+        plan: planParam as 'pro' | 'growth',
+        billing,
+        payer_phone: phone,
+      });
+      setReference(r.reference);
+      // The polling effect takes over from here.
+    } catch (e) {
+      setStatus('failed');
+      setError((e as Error).message || 'Could not start the payment. Please try again.');
+    }
+  };
 
   if (!isTier(planParam) || planParam === 'free') {
     // Free needs no payment — apply immediately if requested.
@@ -141,22 +196,19 @@ function CheckoutInner() {
 
         {/* Payment instructions for the chosen network */}
         <div style={{ marginTop: 16, padding: '14px 16px', borderRadius: 10, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', color: 'var(--text-2)', margin: '0 0 8px', lineHeight: 1.5 }}>
-            Dial <strong>{m.ussd}</strong> on your {m.label} line and send{' '}
-            <strong>K{amount.toLocaleString()}</strong> to:
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', color: 'var(--text-2)', margin: 0, lineHeight: 1.5 }}>
+            Enter your {m.label} number below and tap <strong>Pay</strong>. You’ll get a prompt
+            on your phone to approve <strong>K{amount.toLocaleString()}</strong>.
           </p>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.05rem', fontWeight: 600, color: 'var(--cyan)', margin: 0, letterSpacing: '0.04em' }}>
-            {m.number}
-          </p>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', margin: '6px 0 0' }}>
-            AI-BOS · {m.label}
+          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', margin: '8px 0 0' }}>
+            Prefer manual? Dial {m.ussd} and send to {m.number} (AI-BOS · {m.label}).
           </p>
         </div>
 
-        {/* Payer's own number — for reconciliation */}
+        {/* Payer's own number — the line that receives the approval prompt */}
         <div style={{ marginTop: 14 }}>
           <label htmlFor="payer-phone" style={{ display: 'block', fontFamily: 'Inter, sans-serif', fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 }}>
-            The number you paid from <span style={{ color: 'var(--text-4)', fontWeight: 400 }}>(required)</span>
+            Your {m.label} number <span style={{ color: 'var(--text-4)', fontWeight: 400 }}>(required)</span>
           </label>
           <input
             id="payer-phone"
@@ -175,16 +227,25 @@ function CheckoutInner() {
         </div>
       </fieldset>
 
+      {status === 'pending' && (
+        <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 10, marginBottom: 12, background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)' }}>
+          <span aria-hidden="true" style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--cyan)', borderTopColor: 'transparent', display: 'inline-block', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', color: 'var(--text-2)', margin: 0, lineHeight: 1.45 }}>
+            Check your phone — approve the {m.label} prompt to confirm K{amount.toLocaleString()}.
+          </p>
+        </div>
+      )}
+
+      {status === 'failed' && error && (
+        <p role="alert" style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.76rem', color: 'var(--crit)', margin: '0 0 12px', lineHeight: 1.5 }}>
+          {error}
+        </p>
+      )}
+
       <button
         type="button"
         disabled={phone.trim().length < 9 || status === 'pending'}
-        onClick={() => {
-          setStatus('pending');
-          // Payment-gateway integration is scaffolded: in production this hands
-          // off to the MTN / Airtel collections API and confirms via callback.
-          // Here we simulate the confirmation and apply the tier.
-          setTimeout(() => { setTier(planParam); setStatus('done'); }, 1200);
-        }}
+        onClick={startPayment}
         style={{
           ...btnPrimary,
           width: '100%',
@@ -192,7 +253,11 @@ function CheckoutInner() {
           cursor: phone.trim().length < 9 || status === 'pending' ? 'not-allowed' : 'pointer',
         }}
       >
-        {status === 'pending' ? 'Confirming payment…' : `I’ve paid K${amount.toLocaleString()} — activate ${meta.name}`}
+        {status === 'pending'
+          ? 'Waiting for confirmation…'
+          : status === 'failed'
+          ? 'Try again'
+          : `Pay K${amount.toLocaleString()} with ${m.label}`}
       </button>
 
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.7rem', color: 'var(--text-4)', textAlign: 'center', margin: '14px 0 0', lineHeight: 1.5 }}>
