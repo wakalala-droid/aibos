@@ -10,6 +10,7 @@ import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
 import BriefSubscribe from '@/components/ui/BriefSubscribe';
+import DataManifestCard from '@/components/ui/DataManifestCard';
 import BorderGlow from '@/components/ui/BorderGlow';
 import { cometProps } from '@/lib/cometStyle';
 import Link from 'next/link';
@@ -97,6 +98,7 @@ export default function OverviewPage() {
     engineFlags, hasEngine2Data, hasEngine3Data,
     currencySymbol, rfm, retention,
     posGrandTotals, attachRates, benchmarks,
+    dataShape,
   } = useStore();
   const sym    = currencySymbol || 'K';
   const scores = intelligenceScores;
@@ -324,8 +326,12 @@ export default function OverviewPage() {
         {/* LEFT */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-          {/* Revenue chart */}
-          {chartData.length > 0 && (
+          {/* How AI-BOS read your file (self-hides when there's no manifest) */}
+          <DataManifestCard />
+
+          {/* Revenue chart — hidden for cross-sectional files, where a time line
+              over non-time rows would be misleading (SAFEGUARD: no fabrication). */}
+          {chartData.length > 0 && dataShape !== 'cross_sectional' && (
             <SectionCard title="Revenue Intelligence" subtitle={`Monthly revenue & profit · ${sym} ZMW`} delay={0.1}>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={chartData}>

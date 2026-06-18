@@ -175,6 +175,30 @@ export interface EngineFlagsShape {
   e3?: boolean;
 }
 
+// Read-fidelity manifest (SAFEGUARD.md Layer 1) — how AI-BOS read the file.
+export interface ManifestColumn {
+  name: string;
+  role: string;
+  confidence: number;
+  reason: string;
+  sample: string;
+}
+export interface DataManifest {
+  data_shape: string;            // 'time_series' | 'cross_sectional'
+  columns: ManifestColumn[];
+  flags: string[];
+  unknown_columns: string[];
+  grouping_column: string | null;
+}
+export interface ItemBreakdownRow {
+  item: string;
+  revenue: number;
+  costs: number;
+  profit: number;
+  margin: number;
+  rows: number;
+}
+
 export interface CabinetEntry {
   id: string;
   name: string;
@@ -238,6 +262,10 @@ export interface FinancialState {
   posGrandTotals: PosGrandTotalsShape | null;
   intelligenceScores: IntelligenceScoresShape | null;
   engineFlags: EngineFlagsShape | null;
+
+  manifest: DataManifest | null;
+  breakdown: ItemBreakdownRow[];
+  dataShape: string | null;
 
   unifiedBrief: string;
   opsIntelBrief: string;
@@ -324,6 +352,10 @@ const INITIAL: FinancialState = {
   posGrandTotals: null,
   intelligenceScores: null,
   engineFlags: null,
+
+  manifest: null,
+  breakdown: [],
+  dataShape: null,
 
   unifiedBrief: "",
   opsIntelBrief: "",
@@ -579,6 +611,17 @@ const _store = create<FinancialState & FinancialActions>()(
         patch.engineFlags = flags;
         patch.hasEngine2Data = flags.e2;
         patch.hasEngine3Data = flags.e3;
+
+        // Read-fidelity manifest + per-item breakdown (SAFEGUARD.md Layer 1).
+        if (result.manifest && typeof result.manifest === "object") {
+          patch.manifest = result.manifest as DataManifest;
+        }
+        if (Array.isArray(result.breakdown)) {
+          patch.breakdown = asArray<ItemBreakdownRow>(result.breakdown);
+        }
+        if (typeof result.dataShape === "string") {
+          patch.dataShape = result.dataShape;
+        }
 
         // Cross-engine: keep backend-provided values when present, else preserve.
         if (Array.isArray(result.crossInsights)) {
