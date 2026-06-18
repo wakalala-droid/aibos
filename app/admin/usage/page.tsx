@@ -38,6 +38,7 @@ export default function AdminUsagePage() {
     <nav aria-label="Admin sections" style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
       <Link href="/admin" style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Accounts</Link>
       <Link href="/admin/usage" aria-current="page" style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Usage</Link>
+      <Link href="/admin/proposals" style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Proposals</Link>
     </nav>
   );
 
