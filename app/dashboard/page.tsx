@@ -10,6 +10,11 @@ import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
 import BriefSubscribe from '@/components/ui/BriefSubscribe';
+import BorderGlow, { type GlowStatus } from '@/components/ui/BorderGlow';
+
+// Low scores are poor performance → red/amber attention glow.
+const scoreStatus = (score: number): GlowStatus =>
+  score < 50 ? 'critical' : score < 75 ? 'warning' : 'good';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -29,8 +34,9 @@ function EngineScoreCard({
       onClick={e => { if (locked) e.preventDefault(); }}
       style={{ textDecoration: 'none' }}
     >
+      <BorderGlow status={locked ? 'neutral' : scoreStatus(score)} borderRadius={14} style={{ height: '100%' }}>
       <div
-        className="kpi-card"
+        className="kpi-card glow-inner"
         style={{
           opacity: locked ? 0.5 : 1,
           cursor: locked ? 'default' : 'pointer',
@@ -57,6 +63,7 @@ function EngineScoreCard({
           )}
         </div>
       </div>
+      </BorderGlow>
     </Link>
   );
 }
@@ -181,7 +188,8 @@ export default function OverviewPage() {
       {/* ── Engine score strip ──────────────────────────────────────────── */}
       <div className="grid-engines" style={{ marginBottom: 24 }}>
         {/* Overall hero */}
-        <div className="kpi-card" style={{
+        <BorderGlow status={scores ? scoreStatus(scores.overall_score) : 'neutral'} borderRadius={14} style={{ height: '100%' }}>
+        <div className="kpi-card glow-inner" style={{
           minWidth: 130, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: '24px 28px',
           ['--card-glow' as string]: 'color-mix(in srgb, var(--cyan) 22%, transparent)',
@@ -203,6 +211,7 @@ export default function OverviewPage() {
             HEALTH SCORE
           </p>
         </div>
+        </BorderGlow>
 
         <EngineScoreCard label="ENGINE 1 · FINANCIAL"   sub="Cash · Forecast · P&L"
           score={scores?.e1_score ?? 0} colour="var(--e1)"
@@ -225,7 +234,7 @@ export default function OverviewPage() {
         />
         <KPICard
           label="TOTAL COSTS" value={fmt(kpi?.totalCosts ?? 0, true, sym)}
-          growth={costGrowth} sub={growthSub} sparkData={costSpark} sparkColor="var(--spark-cost)"
+          growth={costGrowth} goodWhenUp={false} sub={growthSub} sparkData={costSpark} sparkColor="var(--spark-cost)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 8h20v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8z" stroke="var(--orange)" strokeWidth="1.6" fill="none"/><path d="M2 8l2-4h16l2 4" stroke="var(--orange)" strokeWidth="1.5" strokeLinejoin="round"/></svg>}
           iconBg="rgba(249,115,22,0.15)" delay={0.06}
         />
@@ -442,9 +451,12 @@ export default function OverviewPage() {
             </div>
           </SectionCard>
 
-          {/* Active alerts */}
+          {/* Active alerts — the panel glows to its highest severity. */}
           {safeAlerts.length > 0 && (
-            <SectionCard title="Active Alerts" subtitle="Variance & anomaly flags" delay={0.14}>
+            <SectionCard
+              title="Active Alerts" subtitle="Variance & anomaly flags" delay={0.14}
+              status={safeAlerts.some((a: any) => a.severity === 'critical') ? 'critical' : 'warning'}
+            >
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {safeAlerts.slice(0, 4).map((a: any, i: number) => (
                   <div key={i} style={{

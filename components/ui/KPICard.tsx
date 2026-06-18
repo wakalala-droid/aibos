@@ -2,6 +2,7 @@
 import { useId } from 'react';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import BorderGlow, { type GlowStatus } from './BorderGlow';
 
 interface KPICardProps {
   label: string;
@@ -14,26 +15,47 @@ interface KPICardProps {
   sparkData?: number[];
   sparkColor?: string;
   delay?: number;
+  /** Explicit severity for the attention glow. Overrides growth-derived status. */
+  status?: GlowStatus;
+  /** Whether rising growth is good (revenue) or bad (costs). Default true. */
+  goodWhenUp?: boolean;
+}
+
+// Derive an attention severity from a card's growth when not set explicitly.
+// Only clearly poor movement raises an alert — mild dips stay neutral so the
+// page isn't a sea of pulsing rings (visual noise is failure).
+function deriveStatus(growth: number | undefined, goodWhenUp: boolean): GlowStatus {
+  if (growth === undefined) return 'neutral';
+  const eff = goodWhenUp ? growth : -growth;
+  if (eff <= -25) return 'critical';
+  if (eff <= -10) return 'warning';
+  return 'neutral';
 }
 
 export default function KPICard({
   label, sublabel, value, sub = 'vs prior period',
   growth, icon, iconBg = 'rgba(96,165,250,0.15)',
   sparkData, sparkColor = '#60a5fa', delay = 0,
+  status, goodWhenUp = true,
 }: KPICardProps) {
   const spark = sparkData?.map((v, i) => ({ v, i }));
   // Unique gradient id per card instance so multiple sparklines don't collide.
   const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
+  const resolvedStatus: GlowStatus = status ?? deriveStatus(growth, goodWhenUp);
 
   return (
     <motion.div
-      className="kpi-card"
-      // Tint the card's corner bloom with this card's own accent colour so each
-      // KPI tile glows in its sparkline colour (matches the promoted design).
-      style={{ ['--card-glow' as string]: `color-mix(in srgb, ${sparkColor} 20%, transparent)` } as React.CSSProperties}
+      style={{ height: '100%' }}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
+    >
+    <BorderGlow status={resolvedStatus} borderRadius={14} style={{ height: '100%' }}>
+    <div
+      className="kpi-card glow-inner"
+      // Tint the card's corner bloom with this card's own accent colour so each
+      // KPI tile glows in its sparkline colour (matches the promoted design).
+      style={{ ['--card-glow' as string]: `color-mix(in srgb, ${sparkColor} 20%, transparent)` } as React.CSSProperties}
     >
       {/* Top row: icon + label + growth badge */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -94,6 +116,8 @@ export default function KPICard({
           </div>
         )}
       </div>
+    </div>
+    </BorderGlow>
     </motion.div>
   );
 }
