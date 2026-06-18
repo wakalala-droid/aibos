@@ -42,10 +42,9 @@ export default function KPICard({
   // Unique gradient id per card instance so multiple sparklines don't collide.
   const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
   const resolvedStatus: GlowStatus = status ?? deriveStatus(growth, goodWhenUp);
-  // The rest-state corner bloom matches the comet: accent normally, amber/red
-  // when the metric is underperforming, so it reacts before the orbit even runs.
-  const sevColor = resolvedStatus === 'critical' ? 'var(--crit)' : resolvedStatus === 'warning' ? 'var(--warn)' : null;
-  const bloom = sevColor ? `color-mix(in srgb, ${sevColor} 24%, transparent)` : `color-mix(in srgb, ${sparkColor} 20%, transparent)`;
+  // Idle bloom stays the card's own accent so the card looks identical at rest.
+  // Severity is communicated by the comet (its colour/speed), not a static tint.
+  const bloom = `color-mix(in srgb, ${sparkColor} 20%, transparent)`;
 
   return (
     <motion.div

@@ -1,10 +1,10 @@
-/* BorderGlow — AI-BOS adaptation (rest → orbit → rest model).
-   Every card rests with its corner bloom at the top-right. Every ~10s the glow
-   smoothly emerges into a single comet, orbits the whole border, and settles
-   back into the top-right bloom — easy on the eye, draws attention. Severity
-   tints the comet amber/red. Light: the heavy mesh layers from the original are
-   dropped, so this is far cheaper to paint (keeps scrolling smooth).
-   prefers-reduced-motion: no travel; severity holds a static ring. */
+/* BorderGlow — AI-BOS comet (built on the React Bits edge-light technique).
+   Idle: the card is visually identical (only its existing top-right ambient
+   bloom shows — no border, no outline). Periodically the glow comes alive:
+   it intensifies at the top-right, becomes a small comet with a trailing tail,
+   traces the perimeter once (only the touched segment is lit), returns home and
+   collapses back to the ambient glow, then idles ~10s. Severity scales it.
+   NO permanent glowing border, NO full-card outline. */
 
 @property --cursor-angle {
   syntax: '<angle>';
@@ -13,30 +13,29 @@
 }
 
 .border-glow-card {
-  --cursor-angle: 45deg;
-  --glow-padding: 40px;
-  --orbit-duration: 13s;
+  --cursor-angle: 45deg;       /* top-right corner */
+  --glow-padding: 32px;
+  --orbit-duration: 18s;
+  --comet-tail: 12deg;
 
   position: relative;
   border-radius: var(--border-radius, 14px);
-  border: 1px solid var(--border-md);
+  border: 1px solid var(--border-md);     /* normal card border — never tinted */
   background: var(--card-bg, var(--bg-card));
   box-shadow: var(--shadow-card);
   isolation: isolate;
   display: grid;
-  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.2s ease;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
-/* Native hover glow — soft accent halo + lift, for every card. */
+/* Premium hover — a quiet lift only. No glowing border. */
 .border-glow-card:hover {
   transform: translateY(-2px);
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-lg), 0 0 24px -2px var(--glow-color-30);
+  box-shadow: var(--shadow-lg);
 }
 
-/* The edge arc. A narrow conic-masked slice of the glow ring, anchored at
-   --cursor-angle. Idle on healthy cards (hidden); it only animates for
-   poor-performance cards (.alert) — see below. */
+/* The comet: a soft bloom ring (box-shadow) revealed only as a short arc by a
+   conic mask anchored at --cursor-angle, with a fading tail behind the head. */
 .border-glow-card > .edge-light {
   position: absolute;
   inset: calc(var(--glow-padding) * -1);
@@ -45,10 +44,19 @@
   z-index: 1;
   opacity: 0;
   mix-blend-mode: plus-lighter;
-  mask-image: conic-gradient(
-    from var(--cursor-angle) at center,
-    black 2%, transparent 9%, transparent 91%, black 98%
+  -webkit-mask-image: conic-gradient(
+    from var(--cursor-angle),
+    #000 0deg, transparent 6deg,
+    transparent calc(360deg - var(--comet-tail)),
+    #000 360deg
   );
+  mask-image: conic-gradient(
+    from var(--cursor-angle),
+    #000 0deg, transparent 6deg,
+    transparent calc(360deg - var(--comet-tail)),
+    #000 360deg
+  );
+  animation: bg-comet var(--orbit-duration) linear infinite;
 }
 
 .border-glow-card > .edge-light::before {
@@ -58,22 +66,19 @@
   border-radius: inherit;
   box-shadow:
     inset 0 0 0 1px var(--glow-color),
-    inset 0 0 2px 0 var(--glow-color-60),
-    inset 0 0 6px 0 var(--glow-color-40),
-    inset 0 0 14px 0 var(--glow-color-30),
-    inset 0 0 26px 2px var(--glow-color-20),
-    0 0 2px 0 var(--glow-color-60),
-    0 0 6px 0 var(--glow-color-40),
-    0 0 16px 0 var(--glow-color-30),
-    0 0 30px 2px var(--glow-color-20);
+    inset 0 0 4px 0 var(--glow-color-50),
+    inset 0 0 10px 0 var(--glow-color-30),
+    0 0 4px 0 var(--glow-color-50),
+    0 0 12px 0 var(--glow-color-30),
+    0 0 22px 2px var(--glow-color-20);
 }
 
-@keyframes bg-orbit {
-  0%   { --cursor-angle: 45deg;  opacity: 0; }
-  72%  { --cursor-angle: 45deg;  opacity: 0; }
-  77%  { --cursor-angle: 80deg;  opacity: 1; }
-  95%  { --cursor-angle: 380deg; opacity: 1; }
-  100% { --cursor-angle: 405deg; opacity: 0; }
+/* Cycle: idle (~10s, hidden) → expand at top-right → orbit → collapse home. */
+@keyframes bg-comet {
+  0%, 55% { opacity: 0; --cursor-angle: 45deg; }
+  62%     { opacity: 1; --cursor-angle: 45deg; }
+  92%     { opacity: 1; --cursor-angle: 405deg; }
+  100%    { opacity: 0; --cursor-angle: 405deg; }
 }
 
 .border-glow-inner {
@@ -85,19 +90,8 @@
   height: 100%;
 }
 
-/* Poor performance only: the edge arc sweeps the border, rests ~10s, repeats —
-   in the severity colour. Healthy cards never run this; they just rest + hover. */
-.border-glow-card.alert > .edge-light {
-  animation: bg-orbit var(--orbit-duration) linear infinite;
-}
-.border-glow-card.alert {
-  border-color: color-mix(in srgb, var(--glow-edge, var(--crit)) 45%, var(--border-md));
-}
-
+/* Reduced motion: no travel. Card keeps its static ambient bloom; severity is
+   still conveyed by the bloom colour (set on the inner card). */
 @media (prefers-reduced-motion: reduce) {
   .border-glow-card > .edge-light { animation: none; opacity: 0; }
-  .border-glow-card.alert > .edge-light {
-    opacity: 0.85;
-    mask-image: none;
-  }
 }
