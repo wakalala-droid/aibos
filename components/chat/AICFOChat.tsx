@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
+import { logUsage } from '@/lib/usage';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -231,6 +232,7 @@ export default function AICFOChat() {
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
+    logUsage('chat'); // fire-and-forget usage tracking
     // The user just sent — follow the conversation to the bottom.
     atBottomRef.current = true;
 

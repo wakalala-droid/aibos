@@ -6,6 +6,7 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFinancialStore } from "@/lib/store";
+import { logUsage, type UsageEngine } from "@/lib/usage";
 
 const ACCEPTED = ".csv,.xlsx,.xlsm,.xls";
 
@@ -72,6 +73,13 @@ export default function FileUpload() {
           (data.currencySymbol as string) || (data.currency as string) || localSym || "K"
         );
         store.setUploadResult({ ...data, filename: file.name });
+        const engine = typeof data.engine === "string" ? data.engine : undefined;
+        logUsage("upload", {
+          engine: ["engine1", "engine2", "engine3"].includes(engine ?? "")
+            ? (engine as UsageEngine)
+            : undefined,
+          meta: { filename: file.name },
+        });
       } catch (e) {
         store.setUploadError((e as Error).message);
       } finally {

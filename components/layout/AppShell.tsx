@@ -5,6 +5,7 @@ import { MotionConfig } from 'framer-motion';
 import Sidebar from './Sidebar';
 import { useStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme';
+import { ProfileProvider } from '@/lib/profile';
 
 // Routes that render full-screen WITHOUT the app chrome (sidebar + padded
 // main area). The login/auth screens are standalone and must not show the
@@ -49,10 +50,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isBare) {
     // Still honour reduced-motion preference on standalone screens.
-    return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
+    return (
+      <ProfileProvider>
+        <MotionConfig reducedMotion="user">{children}</MotionConfig>
+      </ProfileProvider>
+    );
   }
 
   return (
+    <ProfileProvider>
     <MotionConfig reducedMotion="user">
       <a href="#main" className="skip-link">Skip to main content</a>
 
@@ -116,5 +122,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     </MotionConfig>
+    </ProfileProvider>
   );
 }

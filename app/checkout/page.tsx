@@ -1,11 +1,12 @@
 'use client';
 
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { TIERS, usdApprox, type Tier } from '@/lib/tiers';
 import { initiatePayment, checkPaymentStatus } from '@/lib/api';
+import { createClient } from '@/lib/supabase';
 
 // Merchant mobile-money accounts payments are sent to.
 const MERCHANT = {
@@ -24,6 +25,29 @@ function CheckoutInner() {
   const planParam = params.get('plan');
   const billing = params.get('billing') === 'annual' ? 'annual' : 'monthly';
   const setTier = useStore((s) => s.setTier);
+
+  // Tier is server-authoritative: cache it locally AND persist to the user's
+  // Supabase row so the unlock survives reloads and follows them across devices.
+  const persistTier = useCallback(
+    async (t: Tier, source: 'payment' | 'self') => {
+      setTier(t);
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from('profiles')
+            .update({ tier: t, tier_source: source, tier_granted_at: new Date().toISOString() })
+            .eq('id', user.id);
+        }
+      } catch {
+        /* non-fatal — the local cache is already set */
+      }
+    },
+    [setTier]
+  );
 
   const [network, setNetwork] = useState<Network>('mtn');
   const [phone, setPhone] = useState('');
@@ -44,7 +68,7 @@ function CheckoutInner() {
         const r = await checkPaymentStatus(reference);
         if (!active) return;
         if (r.status === 'successful') {
-          if (isTier(planParam) && planParam !== 'free') setTier(planParam);
+          if (isTier(planParam) && planParam !== 'free') void persistTier(planParam, 'payment');
           setStatus('done');
           return;
         }
@@ -63,7 +87,7 @@ function CheckoutInner() {
     };
     pollRef.current = setTimeout(tick, 2500);
     return () => { active = false; if (pollRef.current) clearTimeout(pollRef.current); };
-  }, [status, reference, planParam, setTier]);
+  }, [status, reference, planParam, persistTier]);
 
   const startPayment = async () => {
     setError('');
@@ -96,7 +120,7 @@ function CheckoutInner() {
             : 'Head back to pricing to pick Pro or Growth.'}
         </p>
         {planParam === 'free' && (
-          <button type="button" onClick={() => setTier('free')} style={btnPrimary}>Confirm Free plan</button>
+          <button type="button" onClick={() => void persistTier('free', 'self')} style={btnPrimary}>Confirm Free plan</button>
         )}
         <div style={{ marginTop: 16 }}>
           <Link href="/pricing" style={linkMuted}>← Back to pricing</Link>

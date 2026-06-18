@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/lib/profile';
 import { TIERS } from '@/lib/tiers';
 
 // Searchable destinations (kept in sync with the sidebar nav).
@@ -79,6 +80,7 @@ export default function DashboardHeader() {
   const router = useRouter();
   const { alerts, posBusinessName, tier } = useStore();
   const { user, logout } = useAuth();
+  const { profile, isAdmin } = useProfile();
 
   const safeAlerts = Array.isArray(alerts) ? alerts : [];
   const unread = safeAlerts.length;
@@ -89,12 +91,15 @@ export default function DashboardHeader() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Identity
+  // Identity — sourced from the business profile first, then POS name, then the
+  // auth metadata, then the email prefix.
   const meta = (user?.user_metadata ?? {}) as Record<string, unknown>;
   const fullName = (typeof meta.full_name === 'string' && meta.full_name) || (typeof meta.name === 'string' && meta.name) || '';
   const email = user?.email ?? '';
-  const businessName = posBusinessName || fullName || (email ? email.split('@')[0] : 'Your business');
-  const avatarUrl = (typeof meta.avatar_url === 'string' && meta.avatar_url) || (typeof meta.picture === 'string' && meta.picture) || '';
+  const businessName =
+    profile?.business_name || posBusinessName || fullName || (email ? email.split('@')[0] : 'Your business');
+  const metaAvatar = (typeof meta.avatar_url === 'string' && meta.avatar_url) || (typeof meta.picture === 'string' && meta.picture) || '';
+  const avatarUrl = profile?.logo_url || metaAvatar;
   const initials = (businessName || 'AB').trim().slice(0, 2).toUpperCase();
 
   // Close on outside click + Escape.
@@ -274,9 +279,14 @@ export default function DashboardHeader() {
               <Link href="/pricing" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', textDecoration: 'none' }}>
                 {tier === 'growth' ? 'Manage plan' : 'Upgrade plan'}
               </Link>
-              <Link href="/data-studio" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', textDecoration: 'none' }}>
+              <Link href="/dashboard/profile" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', textDecoration: 'none' }}>
                 Your business data
               </Link>
+              {isAdmin && (
+                <Link href="/admin" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', textDecoration: 'none' }}>
+                  Admin panel
+                </Link>
+              )}
               <button type="button" role="menuitem" onClick={() => { setOpen(null); logout(); }} className="dash-row" style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--crit)' }}>
                 Sign out
               </button>

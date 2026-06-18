@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { isAdminEmail } from '@/lib/admin';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -70,12 +71,20 @@ export async function GET(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
-      // Upsert profile — safe to call even if profile already exists
+      const fullName = (user.user_metadata?.full_name as string | undefined) ?? null;
+      // Provision the profile row on first login. ignoreDuplicates means existing
+      // rows (with a real business_name / tier / role) are never overwritten;
+      // new rows get the server-authoritative defaults, including an admin role
+      // for allowlisted emails so the first admin works before any seed runs.
       await supabase.from('profiles').upsert({
         id:                user.id,
         email:             user.email!,
-        full_name:         user.user_metadata?.full_name ?? null,
-        avatar_url:        user.user_metadata?.avatar_url ?? null,
+        full_name:         fullName,
+        avatar_url:        (user.user_metadata?.avatar_url as string | undefined) ?? null,
+        business_name:     fullName,
+        role:              isAdminEmail(user.email) ? 'admin' : 'member',
+        tier:              'free',
+        tier_source:       'self',
         subscription_tier: 'free',
       }, { onConflict: 'id', ignoreDuplicates: true });
     }

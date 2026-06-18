@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme';
+import { useProfile } from '@/lib/profile';
 import { TIERS } from '@/lib/tiers';
 
 // ── SVG icon primitives (matching E1 sidebar icon style) ──────────────────
@@ -27,6 +28,7 @@ const IC: Record<string, JSX.Element> = {
   benchmarks: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 20h18M6 20V14M10 20V8M14 20V11M18 20V5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>,
   opsbrief:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h4M9 3h10a2 2 0 012 2v14a2 2 0 01-2 2H9M9 3v18" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/><path d="M13 8h4M13 12h4M13 16h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   lock:       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>,
+  admin:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   pricing:    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg>,
   sun:        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.6"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   moon:       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>,
@@ -66,6 +68,7 @@ export default function Sidebar() {
     mobileNavOpen, setMobileNav, tier,
   } = useStore();
   const { toggle, isDark } = useTheme();
+  const { isAdmin } = useProfile();
   const col = sidebarCollapsed;
 
   const isLocked = (eng?: 'ci' | 'ops') =>
@@ -191,6 +194,55 @@ export default function Sidebar() {
             </div>
           );
         })}
+
+        {/* Admin — only rendered for admins (cosmetic; server gate is the real one) */}
+        {isAdmin && (
+          <>
+            <AnimatePresence>
+              {!col && (
+                <motion.div
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="nav-section" style={{ color: 'var(--e1)', marginTop: 8 }}
+                >
+                  Admin
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <Link
+              href="/admin"
+              aria-current={pathname.startsWith('/admin') ? 'page' : undefined}
+              onClick={() => setMobileNav(false)}
+              style={{ textDecoration: 'none', display: 'block' }}
+            >
+              <div
+                className={`nav-item${pathname.startsWith('/admin') ? ' active' : ''}`}
+                style={{
+                  color: pathname.startsWith('/admin') ? 'var(--e1)' : undefined,
+                  ...(pathname.startsWith('/admin') ? { background: 'color-mix(in srgb, var(--e1) 10%, transparent)' } : {}),
+                }}
+              >
+                {pathname.startsWith('/admin') && (
+                  <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 2, borderRadius: 2, background: 'var(--e1)' }} />
+                )}
+                <span style={{ color: pathname.startsWith('/admin') ? 'var(--e1)' : 'var(--text-3)', flexShrink: 0, display: 'flex' }}>
+                  {IC.admin}
+                </span>
+                <AnimatePresence>
+                  {!col && (
+                    <motion.span
+                      initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.15 }}
+                      className="nav-label"
+                      style={{ color: pathname.startsWith('/admin') ? 'var(--e1)' : 'var(--text-2)', flex: 1 }}
+                    >
+                      Admin
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
+            </Link>
+          </>
+        )}
       </nav>
 
       {/* Plan chip — current tier + upgrade CTA (expanded rail only) */}
