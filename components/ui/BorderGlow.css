@@ -6,6 +6,14 @@
    - prefers-reduced-motion: the pulse + mount sweep fall back to a static glow
      so the information (this card needs attention) is never lost. */
 
+/* Register --cursor-angle as a real <angle> so it can be animated by keyframes
+   (needed for the severity orbit). Falls back gracefully where unsupported. */
+@property --cursor-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 45deg;
+}
+
 .border-glow-card {
   --edge-proximity: 0;
   --cursor-angle: 45deg;
@@ -145,24 +153,36 @@
 }
 
 /* ── SEVERITY · attention state ─────────────────────────────────────────────
-   warning/critical cards reveal a persistent full ring (not a cursor cone) and
-   gently pulse, so attention is pulled to the underperforming card or chart. */
+   warning/critical cards show a single bright glow arc that ORBITS the border:
+   it starts at the top-right (where the rest-state bloom sits), travels all the
+   way around the card and back, then loops — easy on the eye but attention-
+   grabbing. The mesh border/fill are suppressed so only the comet reads. */
 .border-glow-card.alert {
+  --edge-proximity: 100;
   border-color: color-mix(in srgb, var(--glow-edge, var(--crit)) 55%, var(--border-md));
 }
+.border-glow-card.alert::before,
+.border-glow-card.alert::after {
+  opacity: 0;
+}
 .border-glow-card.alert > .edge-light {
-  opacity: 0.85;
-  mask-image: none;
-  animation: bg-alert-pulse 1.9s ease-in-out infinite;
+  opacity: 1;
+  animation: bg-orbit 3.2s linear infinite;
 }
 
-@keyframes bg-alert-pulse {
-  0%, 100% { opacity: 0.5; }
-  50%      { opacity: 1; }
+/* Start at the top-right corner (~45deg) and sweep a full turn back to it. */
+@keyframes bg-orbit {
+  from { --cursor-angle: 45deg; }
+  to   { --cursor-angle: 405deg; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .border-glow-card.alert > .edge-light { animation: none; opacity: 0.9; }
+  /* No travelling motion — hold a steady full ring so the signal remains. */
+  .border-glow-card.alert > .edge-light {
+    animation: none;
+    opacity: 0.9;
+    mask-image: none;
+  }
   .border-glow-card.sweep-active::before,
   .border-glow-card.sweep-active::after,
   .border-glow-card.sweep-active > .edge-light { transition: none; }
