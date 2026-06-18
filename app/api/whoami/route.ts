@@ -14,13 +14,21 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  // Config presence (booleans only — never the secret) so prod env can be
+  // verified without a session.
+  const env = {
+    serviceRoleConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    adminEmailsConfigured: Boolean(process.env.ADMIN_EMAILS),
+    supabaseUrlConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
+  };
+
   const supabase = await createServerComponentClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ authenticated: false, isAdmin: false });
+    return NextResponse.json({ authenticated: false, isAdmin: false, env });
   }
 
   const viaAllowlist = isAdminEmail(user.email);
@@ -38,5 +46,6 @@ export async function GET() {
     profileRole: profile?.role ?? null,
     isAdmin: viaAllowlist || viaRole,
     adminVia: viaAllowlist ? 'email-allowlist' : viaRole ? 'profile-role' : 'none',
+    env,
   });
 }
