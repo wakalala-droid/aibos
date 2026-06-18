@@ -166,6 +166,70 @@ export default function OverviewPage() {
     .filter(l => /^\d+\./.test(l.trim()))
     .slice(0, 5);
 
+  // ── Unified Engine Intelligence ───────────────────────────────────────────
+  // Always synthesise from whatever engines have data — even a single one — so
+  // this panel is never an empty/locked dead-zone. Real cross-engine insights
+  // (2+ engines) take precedence; otherwise we derive signals from the engine(s)
+  // that are loaded.
+  const hasEngine1 = !!engineFlags?.e1 || safeMonthly.length > 0;
+  type Signal = { insight: string; action: string; priority: 'high' | 'medium' | 'low'; source_engines: string[] };
+  const synthSignals: Signal[] = [];
+
+  if (hasEngine1) {
+    const m = kpi?.avgMargin ?? 0;
+    synthSignals.push({
+      insight: `Average net margin is ${m.toFixed(1)}% across ${safeMonthly.length} month${safeMonthly.length === 1 ? '' : 's'}.`,
+      action: m < 10 ? 'Margins are thin — review pricing and your largest cost lines.'
+            : m < 20 ? 'Workable, but improvable — target your top variable costs.'
+            : 'Strong margins — protect them as you scale.',
+      priority: m < 10 ? 'high' : m < 20 ? 'medium' : 'low',
+      source_engines: ['E1'],
+    });
+    if (revGrowth !== undefined) {
+      const up = revGrowth >= 0;
+      synthSignals.push({
+        insight: `Revenue ${up ? 'rose' : 'fell'} ${Math.abs(revGrowth).toFixed(1)}% versus last month.`,
+        action: up ? 'Reinvest the momentum into your best-performing lines.' : 'Investigate the drop before it compounds.',
+        priority: !up && Math.abs(revGrowth) > 10 ? 'high' : !up ? 'medium' : 'low',
+        source_engines: ['E1'],
+      });
+    }
+    if (marginGrowth !== undefined && Math.abs(marginGrowth) >= 0.5) {
+      const up = marginGrowth >= 0;
+      synthSignals.push({
+        insight: `Net margin ${up ? 'expanded' : 'compressed'} ${Math.abs(marginGrowth).toFixed(1)} pts month-over-month.`,
+        action: up ? 'Lock in whatever drove the gain.' : 'Costs are outpacing revenue — act on the largest line.',
+        priority: !up && Math.abs(marginGrowth) > 3 ? 'high' : !up ? 'medium' : 'low',
+        source_engines: ['E1'],
+      });
+    }
+  }
+  if (hasEngine2Data) {
+    synthSignals.push({
+      insight: `${champions} champion customer${champions === 1 ? '' : 's'} · ${highChurn} at high churn risk.`,
+      action: highChurn > 0 ? 'Prioritise retention outreach to the high-risk segment.' : 'Grow your champions with a loyalty offer.',
+      priority: highChurn > champions ? 'high' : 'medium',
+      source_engines: ['E2'],
+    });
+  }
+  if (hasEngine3Data) {
+    synthSignals.push({
+      insight: `Drink attach at ${drinkAttach.toFixed(0)}%${warnB > 0 ? ` · ${warnB} benchmark${warnB === 1 ? '' : 's'} below target` : ''}.`,
+      action: drinkAttach < 80 ? 'Push combo prompts at the point of sale to lift attach.' : 'Attach is strong — replicate it across locations.',
+      priority: warnB > 0 || drinkAttach < 70 ? 'high' : 'low',
+      source_engines: ['E3'],
+    });
+  }
+
+  const unifiedInsights = (orderedInsights.length > 0 ? orderedInsights : synthSignals).slice(0, 6);
+  const activeEngineCount = [hasEngine1, hasEngine2Data, hasEngine3Data].filter(Boolean).length;
+  const engineStrip = [
+    { label: 'Overall',    score: scores?.overall_score, colour: 'var(--cyan)', active: !!scores },
+    { label: 'Financial',  score: scores?.e1_score,      colour: 'var(--e1)',   active: hasEngine1 },
+    { label: 'Customer',   score: scores?.e2_score,      colour: 'var(--e2)',   active: hasEngine2Data },
+    { label: 'Operations', score: scores?.e3_score,      colour: 'var(--e3)',   active: hasEngine3Data },
+  ];
+
   return (
     <>
       {/* ── Page header ─────────────────────────────────────────────────── */}
@@ -381,20 +445,41 @@ export default function OverviewPage() {
             </SectionCard>
           </div>
 
-          {/* Cross-engine insights */}
-          {orderedInsights.length > 0 && (
-            <SectionCard
-              title="Cross-Engine Intelligence"
-              subtitle="Compound insights from Financial · Customer · Operations data"
-              delay={0.22}
-              action={
+          {/* Unified Engine Intelligence — always synthesises from whatever
+              engines have data (even one), so this space is never empty. */}
+          <SectionCard
+            title="Unified Engine Intelligence"
+            subtitle="Synthesised across Financial · Customer · Operations"
+            delay={0.22}
+            action={
+              orderedInsights.length > 0 ? (
                 <Link href="/dashboard/ops-brief" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', textDecoration: 'none' }}>
                   View all →
                 </Link>
-              }
-            >
+              ) : undefined
+            }
+          >
+            {/* Per-engine score synthesis — inactive engines dim, never vanish. */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+              {engineStrip.map(s => (
+                <div key={s.label} style={{
+                  flex: '1 1 0', minWidth: 92, padding: '10px 12px', borderRadius: 10,
+                  border: '1px solid var(--border)', opacity: s.active ? 1 : 0.4,
+                }}>
+                  <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.55rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {s.label}
+                  </p>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: s.active ? s.colour : 'var(--text-4)', margin: 0, letterSpacing: '-0.03em' }}>
+                    {s.active && s.score !== undefined ? s.score : '—'}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Synthesised signals (cross-engine when available, else single-engine). */}
+            {unifiedInsights.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {orderedInsights.map((ins, i) => (
+                {unifiedInsights.map((ins, i) => (
                   <InsightCard
                     key={i} index={i}
                     insight={ins.insight}
@@ -404,8 +489,19 @@ export default function OverviewPage() {
                   />
                 ))}
               </div>
-            </SectionCard>
-          )}
+            ) : (
+              <ComingSoon colour="var(--cyan)" text="Upload financial, customer or POS data to generate unified intelligence." />
+            )}
+
+            {/* Encourage more engines — informational, never a blocking lock. */}
+            {activeEngineCount < 3 && unifiedInsights.length > 0 && (
+              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', margin: '14px 0 0', lineHeight: 1.5 }}>
+                {activeEngineCount === 1
+                  ? 'Add customer or POS data to unlock full cross-engine synthesis.'
+                  : 'Add the remaining engine to unlock full cross-engine synthesis.'}
+              </p>
+            )}
+          </SectionCard>
 
           {/* Executive brief preview */}
           {briefLines.length > 0 && (
