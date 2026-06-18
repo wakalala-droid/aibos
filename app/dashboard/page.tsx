@@ -34,7 +34,7 @@ function EngineScoreCard({
       onClick={e => { if (locked) e.preventDefault(); }}
       style={{ textDecoration: 'none' }}
     >
-      <BorderGlow status={locked ? 'neutral' : scoreStatus(score)} borderRadius={14} style={{ height: '100%' }}>
+      <BorderGlow status={locked ? 'neutral' : scoreStatus(score)} glowColor={colour} borderRadius={14} style={{ height: '100%' }}>
       <div
         className="kpi-card glow-inner"
         style={{
@@ -167,7 +167,7 @@ export default function OverviewPage() {
   return (
     <>
       {/* ── Page header ─────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 28, paddingRight: 160 }}>
+      <div style={{ marginBottom: 28 }}>
         <h1 style={{
           fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800,
           color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em',
@@ -188,7 +188,7 @@ export default function OverviewPage() {
       {/* ── Engine score strip ──────────────────────────────────────────── */}
       <div className="grid-engines" style={{ marginBottom: 24 }}>
         {/* Overall hero */}
-        <BorderGlow status={scores ? scoreStatus(scores.overall_score) : 'neutral'} borderRadius={14} style={{ height: '100%' }}>
+        <BorderGlow status={scores ? scoreStatus(scores.overall_score) : 'neutral'} glowColor="var(--cyan)" borderRadius={14} style={{ height: '100%' }}>
         <div className="kpi-card glow-inner" style={{
           minWidth: 130, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: '24px 28px',

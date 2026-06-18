@@ -10,6 +10,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import BorderGlow from './BorderGlow';
 
 export type PreviewState = 'success' | 'loading' | 'error' | 'empty' | 'disabled';
 
@@ -48,13 +49,15 @@ function CardFrame({
 }: { children: React.ReactNode; colour: string; delay?: number }) {
   return (
     <motion.div
-      className="section-card"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, delay, ease: 'easeOut' }}
-      style={{ position: 'relative', overflow: 'hidden', borderColor: `color-mix(in srgb, ${colour} 22%, var(--border))` }}
     >
-      {children}
+      <BorderGlow status="neutral" glowColor={colour} borderRadius={14}>
+        <div className="section-card glow-inner" style={{ position: 'relative', overflow: 'hidden' }}>
+          {children}
+        </div>
+      </BorderGlow>
     </motion.div>
   );
 }

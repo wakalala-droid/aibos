@@ -1,13 +1,11 @@
-/* BorderGlow — adapted from React Bits for AI-BOS.
-   Changes from the original:
-   - Theme-aware base (uses AI-BOS tokens, not hardcoded dark values)
-   - Severity-reactive: .alert (warning/critical) reveals a persistent, pulsing
-     red/amber ring to pull attention to poor-performing cards & chart bounds
-   - prefers-reduced-motion: the pulse + mount sweep fall back to a static glow
-     so the information (this card needs attention) is never lost. */
+/* BorderGlow — AI-BOS adaptation (rest → orbit → rest model).
+   Every card rests with its corner bloom at the top-right. Every ~10s the glow
+   smoothly emerges into a single comet, orbits the whole border, and settles
+   back into the top-right bloom — easy on the eye, draws attention. Severity
+   tints the comet amber/red. Light: the heavy mesh layers from the original are
+   dropped, so this is far cheaper to paint (keeps scrolling smooth).
+   prefers-reduced-motion: no travel; severity holds a static ring. */
 
-/* Register --cursor-angle as a real <angle> so it can be animated by keyframes
-   (needed for the severity orbit). Falls back gracefully where unsupported. */
 @property --cursor-angle {
   syntax: '<angle>';
   inherits: false;
@@ -15,111 +13,43 @@
 }
 
 .border-glow-card {
-  --edge-proximity: 0;
   --cursor-angle: 45deg;
-  --edge-sensitivity: 30;
-  --color-sensitivity: calc(var(--edge-sensitivity) + 20);
-  --border-radius: 14px;
   --glow-padding: 40px;
-  --cone-spread: 25;
+  --orbit-duration: 13s;
 
   position: relative;
-  border-radius: var(--border-radius);
-  isolation: isolate;
-  transform: translate3d(0, 0, 0.01px);
-  display: grid;
+  border-radius: var(--border-radius, 14px);
   border: 1px solid var(--border-md);
   background: var(--card-bg, var(--bg-card));
-  overflow: visible;
   box-shadow: var(--shadow-card);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  isolation: isolate;
+  display: grid;
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.2s ease;
 }
 
-.border-glow-card::before,
-.border-glow-card::after,
+/* Native hover glow — soft accent halo + lift, for every card. */
+.border-glow-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-lg), 0 0 24px -2px var(--glow-color-30);
+}
+
+/* The orbiting comet. A narrow conic-masked arc of the glow ring, anchored at
+   --cursor-angle. The keyframes hold it hidden during the rest, then fade it in
+   at the top-right, sweep a full turn, and fade it back out at the top-right. */
 .border-glow-card > .edge-light {
-  content: "";
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  transition: opacity 0.25s ease-out;
-  z-index: -1;
-}
-
-.border-glow-card:not(:hover):not(.sweep-active):not(.alert)::before,
-.border-glow-card:not(:hover):not(.sweep-active):not(.alert)::after,
-.border-glow-card:not(:hover):not(.sweep-active):not(.alert) > .edge-light {
-  opacity: 0;
-  transition: opacity 0.75s ease-in-out;
-}
-
-/* colored mesh-gradient border */
-.border-glow-card::before {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(var(--card-bg, var(--bg-card)) 0 100%) padding-box,
-    linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
-    var(--gradient-one) border-box,
-    var(--gradient-two) border-box,
-    var(--gradient-three) border-box,
-    var(--gradient-four) border-box,
-    var(--gradient-five) border-box,
-    var(--gradient-six) border-box,
-    var(--gradient-seven) border-box,
-    var(--gradient-base) border-box;
-
-  opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
-
-  mask-image:
-    conic-gradient(
-      from var(--cursor-angle) at center,
-      black calc(var(--cone-spread) * 1%),
-      transparent calc((var(--cone-spread) + 15) * 1%),
-      transparent calc((100 - var(--cone-spread) - 15) * 1%),
-      black calc((100 - var(--cone-spread)) * 1%)
-    );
-}
-
-/* colored mesh-gradient background fill near edges */
-.border-glow-card::after {
-  border: 1px solid transparent;
-  background:
-    var(--gradient-one) padding-box,
-    var(--gradient-two) padding-box,
-    var(--gradient-three) padding-box,
-    var(--gradient-four) padding-box,
-    var(--gradient-five) padding-box,
-    var(--gradient-six) padding-box,
-    var(--gradient-seven) padding-box,
-    var(--gradient-base) padding-box;
-
-  mask-image:
-    linear-gradient(to bottom, black, black),
-    radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
-    radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
-    radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
-    radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
-    radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
-    conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
-
-  mask-composite: subtract, add, add, add, add, add;
-  opacity: calc(var(--fill-opacity, 0.5) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
-  mix-blend-mode: soft-light;
-}
-
-/* outer glow layer */
-.border-glow-card > .edge-light {
   inset: calc(var(--glow-padding) * -1);
+  border-radius: inherit;
   pointer-events: none;
   z-index: 1;
-
-  mask-image:
-    conic-gradient(
-      from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%
-    );
-
-  opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+  opacity: 0;
   mix-blend-mode: plus-lighter;
+  mask-image: conic-gradient(
+    from var(--cursor-angle) at center,
+    black 2%, transparent 9%, transparent 91%, black 98%
+  );
+  animation: bg-orbit var(--orbit-duration) linear infinite;
 }
 
 .border-glow-card > .edge-light::before {
@@ -128,19 +58,23 @@
   inset: var(--glow-padding);
   border-radius: inherit;
   box-shadow:
-    inset 0 0 0 1px var(--glow-color, hsl(190deg 95% 55% / 100%)),
-    inset 0 0 1px 0 var(--glow-color-60),
-    inset 0 0 3px 0 var(--glow-color-50),
+    inset 0 0 0 1px var(--glow-color),
+    inset 0 0 2px 0 var(--glow-color-60),
     inset 0 0 6px 0 var(--glow-color-40),
-    inset 0 0 15px 0 var(--glow-color-30),
-    inset 0 0 25px 2px var(--glow-color-20),
-    inset 0 0 50px 2px var(--glow-color-10),
-    0 0 1px 0 var(--glow-color-60),
-    0 0 3px 0 var(--glow-color-50),
+    inset 0 0 14px 0 var(--glow-color-30),
+    inset 0 0 26px 2px var(--glow-color-20),
+    0 0 2px 0 var(--glow-color-60),
     0 0 6px 0 var(--glow-color-40),
-    0 0 15px 0 var(--glow-color-30),
-    0 0 25px 2px var(--glow-color-20),
-    0 0 50px 2px var(--glow-color-10);
+    0 0 16px 0 var(--glow-color-30),
+    0 0 30px 2px var(--glow-color-20);
+}
+
+@keyframes bg-orbit {
+  0%   { --cursor-angle: 45deg;  opacity: 0; }
+  72%  { --cursor-angle: 45deg;  opacity: 0; }
+  77%  { --cursor-angle: 80deg;  opacity: 1; }
+  95%  { --cursor-angle: 380deg; opacity: 1; }
+  100% { --cursor-angle: 405deg; opacity: 0; }
 }
 
 .border-glow-inner {
@@ -152,38 +86,16 @@
   height: 100%;
 }
 
-/* ── SEVERITY · attention state ─────────────────────────────────────────────
-   warning/critical cards show a single bright glow arc that ORBITS the border:
-   it starts at the top-right (where the rest-state bloom sits), travels all the
-   way around the card and back, then loops — easy on the eye but attention-
-   grabbing. The mesh border/fill are suppressed so only the comet reads. */
+/* Severity tints the comet (colour is set on --glow-color* by the component).
+   A faint always-on border tint reinforces it at rest. */
 .border-glow-card.alert {
-  --edge-proximity: 100;
-  border-color: color-mix(in srgb, var(--glow-edge, var(--crit)) 55%, var(--border-md));
-}
-.border-glow-card.alert::before,
-.border-glow-card.alert::after {
-  opacity: 0;
-}
-.border-glow-card.alert > .edge-light {
-  opacity: 1;
-  animation: bg-orbit 3.2s linear infinite;
-}
-
-/* Start at the top-right corner (~45deg) and sweep a full turn back to it. */
-@keyframes bg-orbit {
-  from { --cursor-angle: 45deg; }
-  to   { --cursor-angle: 405deg; }
+  border-color: color-mix(in srgb, var(--glow-edge, var(--crit)) 45%, var(--border-md));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* No travelling motion — hold a steady full ring so the signal remains. */
+  .border-glow-card > .edge-light { animation: none; opacity: 0; }
   .border-glow-card.alert > .edge-light {
-    animation: none;
-    opacity: 0.9;
+    opacity: 0.85;
     mask-image: none;
   }
-  .border-glow-card.sweep-active::before,
-  .border-glow-card.sweep-active::after,
-  .border-glow-card.sweep-active > .edge-light { transition: none; }
 }

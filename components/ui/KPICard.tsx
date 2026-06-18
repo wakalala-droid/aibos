@@ -42,6 +42,10 @@ export default function KPICard({
   // Unique gradient id per card instance so multiple sparklines don't collide.
   const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
   const resolvedStatus: GlowStatus = status ?? deriveStatus(growth, goodWhenUp);
+  // The rest-state corner bloom matches the comet: accent normally, amber/red
+  // when the metric is underperforming, so it reacts before the orbit even runs.
+  const sevColor = resolvedStatus === 'critical' ? 'var(--crit)' : resolvedStatus === 'warning' ? 'var(--warn)' : null;
+  const bloom = sevColor ? `color-mix(in srgb, ${sevColor} 24%, transparent)` : `color-mix(in srgb, ${sparkColor} 20%, transparent)`;
 
   return (
     <motion.div
@@ -50,12 +54,10 @@ export default function KPICard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
     >
-    <BorderGlow status={resolvedStatus} borderRadius={14} style={{ height: '100%' }}>
+    <BorderGlow status={resolvedStatus} glowColor={sparkColor} borderRadius={14} style={{ height: '100%' }}>
     <div
       className="kpi-card glow-inner"
-      // Tint the card's corner bloom with this card's own accent colour so each
-      // KPI tile glows in its sparkline colour (matches the promoted design).
-      style={{ ['--card-glow' as string]: `color-mix(in srgb, ${sparkColor} 20%, transparent)` } as React.CSSProperties}
+      style={{ ['--card-glow' as string]: bloom } as React.CSSProperties}
     >
       {/* Top row: icon + label + growth badge */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>

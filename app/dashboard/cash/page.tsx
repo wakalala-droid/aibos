@@ -4,6 +4,7 @@ import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
+import BorderGlow from '@/components/ui/BorderGlow';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -99,8 +100,9 @@ export default function CashPage() {
       </div>
 
       {/* Runway status bar */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-        style={{ background: 'var(--bg-card)', border: `1px solid var(--border)`, borderRadius: 12, padding: '20px 24px', marginBottom: 20, boxShadow: 'var(--shadow-card)' }}>
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ marginBottom: 20 }}>
+      <BorderGlow status={runway < runwayTarget / 2 ? 'critical' : runway < runwayTarget ? 'warning' : 'good'} glowColor={runwayColor} borderRadius={12}>
+      <div style={{ background: 'transparent', borderRadius: 12, padding: '20px 24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <div>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
@@ -128,6 +130,8 @@ export default function CashPage() {
             </span>
           ))}
         </div>
+      </div>
+      </BorderGlow>
       </motion.div>
 
       {/* Projected cash chart */}

@@ -255,16 +255,6 @@ body {
 }
 .dash-row:hover { background: var(--table-row-hover); }
 
-@media (min-width: 1024px) {
-  /* Float the trio into the top-right corner, on the page-title row. */
-  .dash-header {
-    position: absolute;
-    top: 26px;
-    right: 32px;
-    margin-bottom: 0;
-    z-index: 30;
-  }
-}
 @media (max-width: 1023px) {
   /* On mobile the profile chip shows just the avatar to save space. */
   .dash-profile-name { display: none; }
@@ -380,7 +370,8 @@ body {
    and edge glow — strip the inner card's own border/shadow to avoid doubling,
    while keeping its background bloom for rest-state depth. */
 .kpi-card.glow-inner,
-.section-card.glow-inner {
+.section-card.glow-inner,
+.insight-card.glow-inner {
   border: none;
   box-shadow: none;
   width: 100%;
@@ -810,10 +801,12 @@ select:focus-visible,
 }
 
 /* Prevent page-level horizontal scroll at every breakpoint
-   (responsive_design_system.md OVERFLOW RULE). */
+   (responsive_design_system.md OVERFLOW RULE). Use `clip`, not `hidden`:
+   `hidden` turns html/body into a scroll container which breaks momentum/
+   smooth scrolling; `clip` prevents horizontal overflow without that side effect. */
 html, body {
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* ============================================================
