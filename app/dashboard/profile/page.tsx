@@ -119,9 +119,17 @@ export default function BusinessProfilePage() {
 
   async function persist(patch: Record<string, string | null>) {
     if (!user) return;
-    const supabase = createClient();
-    const { error } = await supabase.from('profiles').update(patch).eq('id', user.id);
-    if (error) throw new Error(error.message);
+    // Save via the server route — RLS blocks the browser's direct self-update on
+    // `profiles`, so writes must go through /api/profile (service role).
+    const res = await fetch('/api/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(body.error || 'Could not save. Please try again.');
+    }
     await refresh();
   }
 

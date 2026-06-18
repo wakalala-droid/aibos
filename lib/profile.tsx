@@ -24,7 +24,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { createClient } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useStore } from '@/lib/store';
 import { logUsage } from '@/lib/usage';
@@ -79,43 +78,42 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const setTier = useStore((s) => s.setTier);
 
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const loggedLoginFor = useRef<string | null>(null);
 
   const load = useCallback(async () => {
     if (!user) {
       setProfile(null);
+      setIsAdmin(false);
       setLoading(false);
       return;
     }
 
-    const supabase = createClient();
-
-    // 1. Provision (no-op if the row already exists; never overwrites real data).
+    // Resolve the row server-side: RLS on the existing `profiles` table blocks
+    // the browser's self-select (role comes back null), so reading directly here
+    // would never see role/tier. `/api/profile` provisions + reads with the
+    // service role and returns the authoritative `isAdmin` verdict.
     try {
-      await supabase
-        .from('profiles')
-        .upsert({ id: user.id, email: user.email }, { onConflict: 'id', ignoreDuplicates: true });
+      const res = await fetch('/api/profile', { cache: 'no-store' });
+      if (res.ok) {
+        const { profile: p, isAdmin: admin } = (await res.json()) as {
+          profile: Profile | null;
+          isAdmin: boolean;
+        };
+        if (p) {
+          setProfile(p);
+          // Cache tier into the store so the existing gate reflects reality.
+          setTier(normaliseTier(p.tier));
+        }
+        setIsAdmin(Boolean(admin));
+      }
     } catch {
-      /* non-fatal — the callback also provisions */
-    }
-
-    // 2. Fetch the authoritative row.
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (data) {
-      const p = data as unknown as Profile;
-      setProfile(p);
-      // 3. Cache tier into the store so the existing gate reflects reality.
-      setTier(normaliseTier(p.tier));
+      /* non-fatal — keep defaults so the dashboard still renders */
     }
     setLoading(false);
 
-    // 4. One login event per signed-in session.
+    // One login event per signed-in session.
     if (loggedLoginFor.current !== user.id) {
       loggedLoginFor.current = user.id;
       logUsage('login');
@@ -131,7 +129,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const value: ProfileContextValue = {
     profile,
     role,
-    isAdmin: role === 'admin',
+    isAdmin,
     loading,
     refresh: load,
   };
