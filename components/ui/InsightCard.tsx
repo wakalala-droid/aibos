@@ -1,6 +1,5 @@
 'use client';
 import { motion } from 'framer-motion';
-import BorderGlow, { type GlowStatus } from './BorderGlow';
 
 interface InsightCardProps {
   insight: string;
@@ -16,8 +15,6 @@ const PRIORITY_MAP = {
   low:    { color: 'var(--info)',  label: 'LOW',     dot: '#60a5fa' },
 };
 
-const PRIORITY_GLOW: Record<string, GlowStatus> = { high: 'critical', medium: 'warning', low: 'neutral' };
-
 const ENGINE_COLORS: Record<string, string> = {
   E1: 'var(--e1)', E2: 'var(--e2)', E3: 'var(--e3)',
 };
@@ -27,12 +24,11 @@ export default function InsightCard({ insight, action, priority, sourceEngines =
 
   return (
     <motion.div
+      className="insight-card"
       initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.35, delay: index * 0.07 }}
     >
-    <BorderGlow status={PRIORITY_GLOW[priority] ?? 'neutral'} glowColor={cfg.color} borderRadius={10}>
-    <div className="insight-card glow-inner">
       {/* Left: severity indicator */}
       <div className="insight-severity">
         <div className="severity-dot" style={{ background: cfg.dot }} />
@@ -63,8 +59,6 @@ export default function InsightCard({ insight, action, priority, sourceEngines =
           </span>
         ))}
       </div>
-    </div>
-    </BorderGlow>
     </motion.div>
   );
 }

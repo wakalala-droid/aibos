@@ -5,7 +5,6 @@ import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
-import BorderGlow from '@/components/ui/BorderGlow';
 import { motion } from 'framer-motion';
 import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid,
@@ -85,9 +84,8 @@ export default function BreakevenPage() {
       </div>
 
       {/* Status banner */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ marginBottom: 20 }}>
-      <BorderGlow status={status === 'safe' ? 'good' : status} glowColor={statusColor} borderRadius={12}>
-      <div style={{ background: 'transparent', borderRadius: 12, padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        style={{ background: 'var(--bg-card)', border: `1px solid ${statusColor}`, borderRadius: 12, padding: '18px 22px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: 'var(--shadow-card)' }}>
         <div>
           <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Breakeven Status</p>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 700, color: statusColor, margin: 0 }}>
@@ -97,8 +95,6 @@ export default function BreakevenPage() {
         <span className="badge" style={{ color: statusColor, background: `color-mix(in srgb, ${statusColor} 12%, transparent)`, borderColor: `color-mix(in srgb, ${statusColor} 30%, transparent)`, fontSize: '0.7rem', padding: '4px 12px' }}>
           {status.toUpperCase()}
         </span>
-      </div>
-      </BorderGlow>
       </motion.div>
 
       {/* Chart */}

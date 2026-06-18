@@ -3,10 +3,7 @@ import { useStore } from '@/lib/store';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import LockOverlay from '@/components/ui/LockOverlay';
-import BorderGlow, { type GlowStatus } from '@/components/ui/BorderGlow';
 import { motion } from 'framer-motion';
-
-const STATUS_GLOW: Record<string, GlowStatus> = { good: 'good', warn: 'warning', alert: 'critical' };
 
 const STATUS = {
   good:  { color: 'var(--good)', label: 'On Target',    bg: 'rgba(52,211,153,0.10)',  border: 'rgba(52,211,153,0.25)' },
@@ -18,9 +15,8 @@ function BenchmarkCard({ b, delay }: { b: any; delay: number }) {
   const cfg = STATUS[b.status as keyof typeof STATUS] ?? STATUS.good;
   const pct = Math.min(Math.abs(b.actual / Math.max(b.benchmark, 1)) * 100, 110);
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }} style={{ height: '100%' }}>
-    <BorderGlow status={STATUS_GLOW[b.status] ?? 'good'} borderRadius={12} style={{ height: '100%' }}>
-    <div style={{ background: 'transparent', borderRadius: 12, padding: '20px', position: 'relative', overflow: 'hidden', height: '100%' }}>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}
+      style={{ background: 'var(--bg-card)', border: `1px solid ${cfg.border}`, borderRadius: 12, padding: '20px', boxShadow: 'var(--shadow-card)', position: 'relative', overflow: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
         <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0, maxWidth: 130 }}>{b.label}</p>
         <span className="badge" style={{ color: cfg.color, background: cfg.bg, borderColor: cfg.border }}>{cfg.label}</span>
@@ -39,8 +35,6 @@ function BenchmarkCard({ b, delay }: { b: any; delay: number }) {
           {b.gap > 0 ? '+' : ''}{b.gap.toFixed(1)}{b.unit !== 'K' ? b.unit : ''}
         </span>
       </div>
-    </div>
-    </BorderGlow>
     </motion.div>
   );
 }

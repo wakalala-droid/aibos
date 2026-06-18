@@ -11,12 +11,17 @@ import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
 import BriefSubscribe from '@/components/ui/BriefSubscribe';
 import BorderGlow from '@/components/ui/BorderGlow';
+import ScoreComet from '@/components/ui/ScoreComet';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from 'recharts';
+
+// Cursor edge-glow tuning for KPI/score cards (hsl "h s l", React Bits).
+const CURSOR_GLOW = '190 95 62';
+const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
 
 function EngineScoreCard({
   label, sub, score, colour, href, locked,
@@ -30,14 +35,15 @@ function EngineScoreCard({
       onClick={e => { if (locked) e.preventDefault(); }}
       style={{ textDecoration: 'none' }}
     >
-      <BorderGlow severityScore={locked ? undefined : score} glowColor={colour} borderRadius={14} style={{ height: '100%' }}>
+      <BorderGlow glowColor={CURSOR_GLOW} backgroundColor="var(--bg-card)" borderRadius={14} glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH} style={{ height: '100%' }}>
+      <ScoreComet color={colour} score={locked ? undefined : score} />
       <div
         className="kpi-card glow-inner"
         style={{
+          position: 'relative', zIndex: 1,
           opacity: locked ? 0.5 : 1,
           cursor: locked ? 'default' : 'pointer',
-          ['--card-glow' as string]: locked ? 'transparent' : `color-mix(in srgb, ${colour} 22%, transparent)`,
-        } as React.CSSProperties}
+        }}
       >
         <p className="kpi-label" style={{ color: colour }}>{label}</p>
         <p style={{
@@ -184,12 +190,13 @@ export default function OverviewPage() {
       {/* ── Engine score strip ──────────────────────────────────────────── */}
       <div className="grid-engines" style={{ marginBottom: 24 }}>
         {/* Overall hero */}
-        <BorderGlow severityScore={scores ? scores.overall_score : undefined} glowColor="var(--cyan)" borderRadius={14} style={{ height: '100%' }}>
+        <BorderGlow glowColor={CURSOR_GLOW} backgroundColor="var(--bg-card)" borderRadius={14} glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH} style={{ height: '100%' }}>
+        <ScoreComet color="var(--cyan)" score={scores ? scores.overall_score : undefined} />
         <div className="kpi-card glow-inner" style={{
+          position: 'relative', zIndex: 1,
           minWidth: 130, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: '24px 28px',
-          ['--card-glow' as string]: 'color-mix(in srgb, var(--cyan) 22%, transparent)',
-        } as React.CSSProperties}>
+        }}>
           <p style={{
             fontFamily: 'Inter, sans-serif', fontSize: '3.2rem', fontWeight: 900,
             color: scores ? scoreColor(scores.overall_score) : 'var(--text-4)',
@@ -230,7 +237,7 @@ export default function OverviewPage() {
         />
         <KPICard
           label="TOTAL COSTS" value={fmt(kpi?.totalCosts ?? 0, true, sym)}
-          growth={costGrowth} goodWhenUp={false} sub={growthSub} sparkData={costSpark} sparkColor="var(--spark-cost)"
+          growth={costGrowth} sub={growthSub} sparkData={costSpark} sparkColor="var(--spark-cost)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 8h20v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8z" stroke="var(--orange)" strokeWidth="1.6" fill="none"/><path d="M2 8l2-4h16l2 4" stroke="var(--orange)" strokeWidth="1.5" strokeLinejoin="round"/></svg>}
           iconBg="rgba(249,115,22,0.15)" delay={0.06}
         />
@@ -447,12 +454,9 @@ export default function OverviewPage() {
             </div>
           </SectionCard>
 
-          {/* Active alerts — the panel glows to its highest severity. */}
+          {/* Active alerts */}
           {safeAlerts.length > 0 && (
-            <SectionCard
-              title="Active Alerts" subtitle="Variance & anomaly flags" delay={0.14}
-              status={safeAlerts.some((a: any) => a.severity === 'critical') ? 'critical' : 'warning'}
-            >
+            <SectionCard title="Active Alerts" subtitle="Variance & anomaly flags" delay={0.14}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {safeAlerts.slice(0, 4).map((a: any, i: number) => (
                   <div key={i} style={{
