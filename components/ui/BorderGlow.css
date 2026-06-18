@@ -34,9 +34,9 @@
   box-shadow: var(--shadow-lg), 0 0 24px -2px var(--glow-color-30);
 }
 
-/* The orbiting comet. A narrow conic-masked arc of the glow ring, anchored at
-   --cursor-angle. The keyframes hold it hidden during the rest, then fade it in
-   at the top-right, sweep a full turn, and fade it back out at the top-right. */
+/* The edge arc. A narrow conic-masked slice of the glow ring, anchored at
+   --cursor-angle. Idle on healthy cards (hidden); it only animates for
+   poor-performance cards (.alert) — see below. */
 .border-glow-card > .edge-light {
   position: absolute;
   inset: calc(var(--glow-padding) * -1);
@@ -49,7 +49,6 @@
     from var(--cursor-angle) at center,
     black 2%, transparent 9%, transparent 91%, black 98%
   );
-  animation: bg-orbit var(--orbit-duration) linear infinite;
 }
 
 .border-glow-card > .edge-light::before {
@@ -86,8 +85,11 @@
   height: 100%;
 }
 
-/* Severity tints the comet (colour is set on --glow-color* by the component).
-   A faint always-on border tint reinforces it at rest. */
+/* Poor performance only: the edge arc sweeps the border, rests ~10s, repeats —
+   in the severity colour. Healthy cards never run this; they just rest + hover. */
+.border-glow-card.alert > .edge-light {
+  animation: bg-orbit var(--orbit-duration) linear infinite;
+}
 .border-glow-card.alert {
   border-color: color-mix(in srgb, var(--glow-edge, var(--crit)) 45%, var(--border-md));
 }
