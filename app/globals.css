@@ -91,8 +91,11 @@
   /* Lock overlay */
   --overlay-bg:     rgba(10,14,26,0.85);
 
-  /* Premium card corner bloom */
-  --card-glow:      rgba(96,165,250,0.05);
+  /* Premium card depth — accent bloom (top-right), top sheen, top edge.
+     --card-glow is overridden per-card by KPICard to match its accent. */
+  --card-glow:      rgba(96,165,250,0.16);
+  --card-sheen:     rgba(255,255,255,0.035);
+  --card-top:       rgba(255,255,255,0.06);
 }
 
 /* ── LIGHT PREMIUM MODE ─────────────────────────────────────── */
@@ -156,7 +159,9 @@
 
   --overlay-bg:     rgba(244,243,239,0.90);
 
-  --card-glow:      rgba(2,132,199,0.04);
+  --card-glow:      rgba(2,132,199,0.08);
+  --card-sheen:     rgba(255,255,255,0.5);
+  --card-top:       rgba(255,255,255,0.8);
 }
 
 /* ── RESET ──────────────────────────────────────────────────── */
@@ -267,44 +272,28 @@ body {
 }
 
 /* ── KPI CARD — exactly matching E1 ────────────────────────── */
+/* Premium KPI card — accent bloom in the top-right corner, a soft top sheen,
+   and a 1px top highlight edge for depth (matches the promoted design). The
+   accent colour comes from --card-glow, which KPICard sets per card so each
+   tile glows in its own colour. */
 .kpi-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background:
+    radial-gradient(115% 75% at 100% 0%, var(--card-glow), transparent 60%),
+    linear-gradient(180deg, var(--card-sheen), transparent 38%),
+    var(--bg-card);
+  border: 1px solid var(--border-md);
   border-radius: 14px;
-  padding: 20px 20px 16px;
+  padding: 20px;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-card);
-  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-/* Premium corner bloom — a soft light catch in the top-right (matches the
-   promoted design). Clipped by overflow:hidden so it reads as ambient depth.
-   Scoped to KPI cards, which already clip; section cards hold charts whose
-   tooltips must not be clipped. */
-.kpi-card::after {
-  content: '';
-  position: absolute;
-  top: -45%;
-  right: -15%;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--card-glow), transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.kpi-card > * {
-  position: relative;
-  z-index: 1;
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--card-top);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .kpi-card:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--border-md);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 var(--card-top);
+  transform: translateY(-2px);
 }
 
 .kpi-card .kpi-label {
@@ -374,15 +363,17 @@ body {
 
 /* ── SECTION CARD ───────────────────────────────────────────── */
 .section-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, var(--card-sheen), transparent 30%),
+    var(--bg-card);
+  border: 1px solid var(--border-md);
   border-radius: 14px;
   padding: 24px;
-  box-shadow: var(--shadow-card);
-  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--card-top);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .section-card:hover {
-  border-color: var(--border-md);
+  border-color: var(--border-strong);
 }
 
 .section-title {

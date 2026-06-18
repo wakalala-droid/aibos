@@ -28,6 +28,9 @@ export default function KPICard({
   return (
     <motion.div
       className="kpi-card"
+      // Tint the card's corner bloom with this card's own accent colour so each
+      // KPI tile glows in its sparkline colour (matches the promoted design).
+      style={{ ['--card-glow' as string]: `color-mix(in srgb, ${sparkColor} 20%, transparent)` } as React.CSSProperties}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}

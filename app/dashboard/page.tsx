@@ -31,7 +31,11 @@ function EngineScoreCard({
     >
       <div
         className="kpi-card"
-        style={{ opacity: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer' }}
+        style={{
+          opacity: locked ? 0.5 : 1,
+          cursor: locked ? 'default' : 'pointer',
+          ['--card-glow' as string]: locked ? 'transparent' : `color-mix(in srgb, ${colour} 22%, transparent)`,
+        } as React.CSSProperties}
       >
         <p className="kpi-label" style={{ color: colour }}>{label}</p>
         <p style={{
@@ -180,7 +184,8 @@ export default function OverviewPage() {
         <div className="kpi-card" style={{
           minWidth: 130, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: '24px 28px',
-        }}>
+          ['--card-glow' as string]: 'color-mix(in srgb, var(--cyan) 22%, transparent)',
+        } as React.CSSProperties}>
           <p style={{
             fontFamily: 'Inter, sans-serif', fontSize: '3.2rem', fontWeight: 900,
             color: scores ? scoreColor(scores.overall_score) : 'var(--text-4)',
