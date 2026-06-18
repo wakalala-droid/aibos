@@ -8,8 +8,8 @@
 -- callback) and safe to re-run.
 --
 -- After running:
---   • Storage → create a PUBLIC bucket named `logos` (for profile logos).
 --   • Confirm `vwanheda@gmail.com` shows role='admin' in `profiles`.
+--   • The public `logos` bucket + its policies are created by section 9 below.
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- ── 1. profiles ─────────────────────────────────────────────────────────────
@@ -209,6 +209,26 @@ left join (
 -- yet, the OAuth callback seeds role='admin' for allowlisted emails on next
 -- login — see app/auth/callback/route.ts.)
 update public.profiles set role = 'admin' where email = 'vwanheda@gmail.com';
+
+-- ── 9. Profile-logo storage bucket ──────────────────────────────────────────
+-- Public bucket so getPublicUrl() renders the logo without auth. Writes are
+-- still gated by the two policies below: an authenticated user may only create
+-- or replace files inside their own `<user-id>/...` folder. No SELECT/DELETE
+-- policy is needed — public buckets serve reads, and the app never deletes.
+insert into storage.buckets (id, name, public)
+values ('logos', 'logos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "logos upload own folder" on storage.objects;
+create policy "logos upload own folder"
+  on storage.objects for insert to authenticated
+  with check (bucket_id = 'logos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "logos update own folder" on storage.objects;
+create policy "logos update own folder"
+  on storage.objects for update to authenticated
+  using      (bucket_id = 'logos' and (storage.foldername(name))[1] = auth.uid()::text)
+  with check (bucket_id = 'logos' and (storage.foldername(name))[1] = auth.uid()::text);
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- End migration 0001
