@@ -10,11 +10,7 @@ import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
 import BriefSubscribe from '@/components/ui/BriefSubscribe';
-import BorderGlow, { type GlowStatus } from '@/components/ui/BorderGlow';
-
-// Low scores are poor performance → red/amber attention glow.
-const scoreStatus = (score: number): GlowStatus =>
-  score < 50 ? 'critical' : score < 75 ? 'warning' : 'good';
+import BorderGlow from '@/components/ui/BorderGlow';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -34,7 +30,7 @@ function EngineScoreCard({
       onClick={e => { if (locked) e.preventDefault(); }}
       style={{ textDecoration: 'none' }}
     >
-      <BorderGlow status={locked ? 'neutral' : scoreStatus(score)} glowColor={colour} borderRadius={14} style={{ height: '100%' }}>
+      <BorderGlow severityScore={locked ? undefined : score} glowColor={colour} borderRadius={14} style={{ height: '100%' }}>
       <div
         className="kpi-card glow-inner"
         style={{
@@ -188,7 +184,7 @@ export default function OverviewPage() {
       {/* ── Engine score strip ──────────────────────────────────────────── */}
       <div className="grid-engines" style={{ marginBottom: 24 }}>
         {/* Overall hero */}
-        <BorderGlow status={scores ? scoreStatus(scores.overall_score) : 'neutral'} glowColor="var(--cyan)" borderRadius={14} style={{ height: '100%' }}>
+        <BorderGlow severityScore={scores ? scores.overall_score : undefined} glowColor="var(--cyan)" borderRadius={14} style={{ height: '100%' }}>
         <div className="kpi-card glow-inner" style={{
           minWidth: 130, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: '24px 28px',
