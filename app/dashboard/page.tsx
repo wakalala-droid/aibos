@@ -11,7 +11,7 @@ import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
 import BriefSubscribe from '@/components/ui/BriefSubscribe';
 import BorderGlow from '@/components/ui/BorderGlow';
-import ScoreComet from '@/components/ui/ScoreComet';
+import { cometProps } from '@/lib/cometStyle';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -29,6 +29,7 @@ function EngineScoreCard({
   label: string; sub: string; score: number; colour: string; href: string; locked?: boolean;
 }) {
   const col = scoreColor(score);
+  const comet = cometProps(locked ? undefined : score, colour);
   return (
     <Link
       href={locked ? '#' : href}
@@ -36,11 +37,10 @@ function EngineScoreCard({
       style={{ textDecoration: 'none' }}
     >
       <BorderGlow glowColor={CURSOR_GLOW} backgroundColor="var(--bg-card)" borderRadius={14} glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH} style={{ height: '100%' }}>
-      <ScoreComet color={colour} score={locked ? undefined : score} />
       <div
-        className="kpi-card glow-inner"
+        className={`kpi-card glow-inner ${comet.className}`}
         style={{
-          position: 'relative', zIndex: 1,
+          ...comet.style,
           opacity: locked ? 0.5 : 1,
           cursor: locked ? 'default' : 'pointer',
         }}
@@ -191,9 +191,8 @@ export default function OverviewPage() {
       <div className="grid-engines" style={{ marginBottom: 24 }}>
         {/* Overall hero */}
         <BorderGlow glowColor={CURSOR_GLOW} backgroundColor="var(--bg-card)" borderRadius={14} glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH} style={{ height: '100%' }}>
-        <ScoreComet color="var(--cyan)" score={scores ? scores.overall_score : undefined} />
-        <div className="kpi-card glow-inner" style={{
-          position: 'relative', zIndex: 1,
+        <div className={`kpi-card glow-inner ${cometProps(scores ? scores.overall_score : undefined, 'var(--cyan)').className}`} style={{
+          ...cometProps(scores ? scores.overall_score : undefined, 'var(--cyan)').style,
           minWidth: 130, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: '24px 28px',
         }}>

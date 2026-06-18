@@ -14,6 +14,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Animatable angle for the KPI card comet (keyframes interpolate it). */
+@property --comet-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 45deg;
+}
+
 /* ── DARK MODE (default — matches E1 exactly) ───────────────── */
 :root,
 [data-theme="dark"] {
@@ -374,9 +381,62 @@ body {
 .insight-card.glow-inner {
   border: none;
   box-shadow: none;
-  background: transparent;   /* BorderGlow owns the bg + ambient glow + comet */
   width: 100%;
   height: 100%;
+}
+
+/* KPI card surface + glow live ON the card itself (not a separate overlay):
+   a premium sheen, and a top-right inner glow that — for scores ≤ 60 — leaves,
+   becomes a comet around the border, and returns home. */
+.kpi-card.glow-inner {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--card-sheen), transparent 42%), transparent;
+}
+.kpi-card.glow-inner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(130% 90% at 100% 0%, var(--card-glow, transparent), transparent 60%);
+}
+/* score ≤ 60: the inner glow animates into a comet (anti-phased with the bloom,
+   so the corner goes dark during the trip and the light returns home). */
+.kpi-card.glow-inner.comet::before {
+  animation: kpi-bloom var(--comet-dur, 14s) linear infinite;
+}
+.kpi-card.glow-inner.comet::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  -webkit-mask-image: conic-gradient(from var(--comet-angle), #000 0deg, transparent 7deg, transparent calc(360deg - var(--comet-tail, 28deg)), #000 360deg);
+  mask-image: conic-gradient(from var(--comet-angle), #000 0deg, transparent 7deg, transparent calc(360deg - var(--comet-tail, 28deg)), #000 360deg);
+  box-shadow:
+    inset 0 0 0 1.5px var(--comet-color),
+    inset 0 0 14px 0 var(--comet-c50),
+    inset 0 0 40px 4px var(--comet-c25);
+  animation: kpi-comet var(--comet-dur, 14s) linear infinite;
+}
+@keyframes kpi-comet {
+  0%, 60% { opacity: 0; --comet-angle: 45deg; }
+  66%     { opacity: 1; --comet-angle: 45deg; }
+  96%     { opacity: 1; --comet-angle: 405deg; }
+  100%    { opacity: 0; --comet-angle: 405deg; }
+}
+@keyframes kpi-bloom {
+  0%, 60% { opacity: 1; }
+  66%     { opacity: 0; }
+  96%     { opacity: 0; }
+  100%    { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kpi-card.glow-inner.comet::before { animation: none; opacity: 1; }
+  .kpi-card.glow-inner.comet::after  { animation: none; opacity: 0; }
 }
 
 .section-title {

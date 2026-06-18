@@ -3,7 +3,7 @@ import { useId } from 'react';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import BorderGlow from './BorderGlow';
-import ScoreComet from './ScoreComet';
+import { cometProps } from '@/lib/cometStyle';
 
 interface KPICardProps {
   label: string;
@@ -35,6 +35,8 @@ export default function KPICard({
   const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
   // Badge colour reflects good/bad, not just direction: rising costs are red.
   const badgeGood = growth !== undefined && (goodWhenUp ? growth >= 0 : growth <= 0);
+  // The card's own inner glow → comet config (score ≤ 60). Not a separate layer.
+  const comet = cometProps(score, sparkColor);
 
   return (
     <motion.div
@@ -53,8 +55,7 @@ export default function KPICard({
       colors={MESH}
       style={{ height: '100%' }}
     >
-      <ScoreComet color={sparkColor} score={score} />
-      <div className="kpi-card glow-inner" style={{ position: 'relative', zIndex: 1 }}>
+      <div className={`kpi-card glow-inner ${comet.className}`} style={comet.style}>
         {/* Top row: icon + label + growth badge */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
