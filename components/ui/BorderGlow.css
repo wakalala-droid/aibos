@@ -1,12 +1,15 @@
-/* BorderGlow — two independent systems on one card:
-   1) CURSOR EDGE GLOW (React Bits, restored): a glow that follows the cursor
-      near the card edges. Driven entirely by pointer (--edge-proximity /
-      --cursor-angle). Idle = invisible. This is the only job of the base layer.
-   2) CRITICAL-KPI COMET (.severity-comet): an autonomous comet, only rendered
-      for cards scoring < 50. The card's ambient glow comes alive, traces the
-      perimeter once (only the touched segment lit) and reabsorbs. Separate
-      element, separate vars (--comet-angle / --sev-color*) — no interaction
-      with the cursor layer. */
+/* BorderGlow
+   ─────────────────────────────────────────────────────────────────────────
+   SYSTEM 1 — React Bits cursor edge glow (restored as given). The glow follows
+   the cursor near the card edges; mesh border + fill + outer glow are driven by
+   --edge-proximity / --cursor-angle from the pointer. Idle = invisible.
+
+   SYSTEM 2 — Single-light comet for cards scoring < 60 (.sev). The card's inner
+   top-right ambient glow IS the comet: at rest it sits in the corner; on each
+   cycle it leaves (the corner goes dark), traces the inner perimeter once, then
+   returns to the corner and settles back into the ambient glow. The ambient
+   glow and comet are perfectly anti-phased so it reads as one travelling light.
+*/
 
 @property --cursor-angle { syntax: '<angle>'; inherits: false; initial-value: 45deg; }
 @property --comet-angle  { syntax: '<angle>'; inherits: false; initial-value: 45deg; }
@@ -20,6 +23,10 @@
   --glow-padding: 40px;
   --cone-spread: 25;
 
+  --comet-angle: 45deg;
+  --comet-tail: 24deg;
+  --comet-duration: 14s;
+
   position: relative;
   border-radius: var(--border-radius);
   isolation: isolate;
@@ -27,10 +34,13 @@
   display: grid;
   border: 1px solid var(--border-md);
   background: var(--card-bg, var(--bg-card));
+  overflow: visible;
   box-shadow: var(--shadow-card);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
+.border-glow-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 
-/* ── 1 · CURSOR EDGE GLOW (pointer-driven) ──────────────────────────────── */
+/* ── SYSTEM 1 · cursor edge glow (React Bits) ───────────────────────────── */
 .border-glow-card::before,
 .border-glow-card::after,
 .border-glow-card > .edge-light {
@@ -48,7 +58,6 @@
   transition: opacity 0.75s ease-in-out;
 }
 
-/* colored mesh-gradient border (near cursor) */
 .border-glow-card::before {
   border: 1px solid transparent;
   background:
@@ -71,8 +80,6 @@
     black calc((100 - var(--cone-spread)) * 1%)
   );
 }
-
-/* colored mesh-gradient fill (near cursor) */
 .border-glow-card::after {
   border: 1px solid transparent;
   background:
@@ -96,8 +103,6 @@
   opacity: calc(var(--fill-opacity, 0.5) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
   mix-blend-mode: soft-light;
 }
-
-/* outer glow that tracks the cursor */
 .border-glow-card > .edge-light {
   inset: calc(var(--glow-padding) * -1);
   pointer-events: none;
@@ -123,60 +128,71 @@
     0 0 25px 2px var(--glow-color-20);
 }
 
-.border-glow-inner {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: visible;
-  z-index: 1;
-  height: 100%;
-}
-
-/* ── 2 · CRITICAL-KPI COMET (autonomous, score < 50 only) ───────────────── */
-.severity-comet {
+/* ── SYSTEM 2 · single-light comet (score < 60) ─────────────────────────── */
+/* The inner ambient corner glow. Static for healthy cards; for .sev cards it is
+   anti-phased with the comet so it visibly leaves and returns. */
+.border-glow-card > .bg-ambient {
   position: absolute;
-  inset: calc(var(--sev-padding, 30px) * -1);
+  inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  z-index: 2;
-  opacity: 0;
-  mix-blend-mode: plus-lighter;
-  -webkit-mask-image: conic-gradient(
-    from var(--comet-angle),
-    #000 0deg, transparent 6deg,
-    transparent calc(360deg - var(--comet-tail, 24deg)),
-    #000 360deg
-  );
-  mask-image: conic-gradient(
-    from var(--comet-angle),
-    #000 0deg, transparent 6deg,
-    transparent calc(360deg - var(--comet-tail, 24deg)),
-    #000 360deg
-  );
-  animation: sev-comet var(--comet-duration, 14s) linear infinite;
+  z-index: 0;
+  background: radial-gradient(120% 82% at 100% 0%, var(--ambient-color), transparent 60%);
 }
-.severity-comet::before {
+.border-glow-card.sev > .bg-ambient {
+  animation: bloom-leave var(--comet-duration) linear infinite;
+  animation-delay: var(--anim-delay, 0s);
+}
+
+/* The comet — an inner-perimeter arc with a trailing tail. Only on .sev cards. */
+.border-glow-card > .severity-comet {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  -webkit-mask-image: conic-gradient(from var(--comet-angle), #000 0deg, transparent 6deg, transparent calc(360deg - var(--comet-tail)), #000 360deg);
+  mask-image: conic-gradient(from var(--comet-angle), #000 0deg, transparent 6deg, transparent calc(360deg - var(--comet-tail)), #000 360deg);
+  animation: sev-comet var(--comet-duration) linear infinite;
+  animation-delay: var(--anim-delay, 0s);
+}
+.border-glow-card > .severity-comet::before {
   content: "";
   position: absolute;
-  inset: var(--sev-padding, 30px);
+  inset: 0;
   border-radius: inherit;
   box-shadow:
     inset 0 0 0 1px var(--sev-color),
-    inset 0 0 4px 0 var(--sev-color-50),
-    inset 0 0 10px 0 var(--sev-color-30),
-    0 0 4px 0 var(--sev-color-50),
-    0 0 12px 0 var(--sev-color-30),
-    0 0 22px 2px var(--sev-color-20);
+    inset 0 0 7px 0 var(--sev-color-50),
+    inset 0 0 18px 2px var(--sev-color-20);
 }
 
-/* idle (card identical) → accumulate at top-right → orbit → reabsorb home */
+/* Comet: hidden at rest → wakes at top-right → orbits inner edge → home. */
 @keyframes sev-comet {
   0%, 55% { opacity: 0; --comet-angle: 45deg; }
   62%     { opacity: 1; --comet-angle: 45deg; }
   92%     { opacity: 1; --comet-angle: 405deg; }
   100%    { opacity: 0; --comet-angle: 405deg; }
 }
+/* Ambient corner glow: present at rest → gone while the comet travels → returns. */
+@keyframes bloom-leave {
+  0%, 55% { opacity: 1; }
+  62%     { opacity: 0; }
+  92%     { opacity: 0; }
+  100%    { opacity: 1; }
+}
+
+.border-glow-inner {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: visible;
+  z-index: 2;
+  height: 100%;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .severity-comet { animation: none; opacity: 0; }
+  .border-glow-card.sev > .bg-ambient { animation: none; opacity: 1; }
+  .border-glow-card > .severity-comet { animation: none; opacity: 0; }
 }

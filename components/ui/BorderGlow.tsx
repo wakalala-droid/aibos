@@ -1,10 +1,12 @@
 'use client';
 
-// BorderGlow — React Bits cursor-driven edge glow (its only job), plus an
-// optional, independent Critical-KPI comet for cards scoring < 50.
-//   • Cursor layer: glow follows the pointer near the edges. Idle = invisible.
-//   • Comet layer (.severity-comet): autonomous; the ambient glow comes alive,
-//     traces the perimeter once and reabsorbs. Only when severityScore < 50.
+// BorderGlow
+//  System 1: React Bits cursor-driven edge glow (restored). Pointer sets
+//            --edge-proximity / --cursor-angle; idle = invisible.
+//  System 2: for cards scoring < 60, the inner top-right ambient glow itself
+//            becomes a comet — it leaves the corner, traces the inner perimeter
+//            once, and returns. The ambient glow and comet are anti-phased so it
+//            reads as one travelling light.
 
 import { useCallback, useEffect, useRef } from 'react';
 import './BorderGlow.css';
@@ -15,11 +17,11 @@ type Band = 'warning' | 'high' | 'critical';
 interface BorderGlowProps {
   children: React.ReactNode;
   className?: string;
-  /** Cursor edge-glow colour — any CSS colour. */
+  /** Cursor glow + healthy ambient colour — any CSS colour. */
   glowColor?: string;
-  /** Drives the Critical-KPI comet. < 50 activates it (bands per spec). */
+  /** < 60 turns the inner glow into a comet (bands below). */
   severityScore?: number;
-  /** Fallback comet trigger when no numeric score: 'critical' → high band. */
+  /** Fallback comet trigger when no numeric score is available. */
   status?: GlowStatus;
   backgroundColor?: string;
   borderRadius?: number;
@@ -38,14 +40,17 @@ const BANDS: Record<Band, { tail: number; dur: number; intensity: number; color:
   critical: { tail: 38, dur: 11, intensity: 1.45, color: 'var(--crit)' },
 };
 
+// Rating starts from 60: anything below activates the comet.
 function severityBand(score: number | undefined, status: GlowStatus | undefined): Band | null {
   if (typeof score === 'number') {
-    if (score >= 50) return null;
-    if (score >= 40) return 'warning';
-    if (score >= 20) return 'high';
+    if (score >= 60) return null;
+    if (score >= 45) return 'warning';
+    if (score >= 25) return 'high';
     return 'critical';
   }
-  return status === 'critical' ? 'high' : null;
+  if (status === 'critical') return 'high';
+  if (status === 'warning') return 'warning';
+  return null;
 }
 
 function glowVars(prefix: string, color: string, intensity: number): Record<string, string> {
@@ -85,10 +90,10 @@ export default function BorderGlow({
   style,
 }: BorderGlowProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const cometRef = useRef<HTMLSpanElement>(null);
   const band = severityBand(severityScore, status);
+  const ambientColor = band ? BANDS[band].color : glowColor;
 
-  // ── Cursor edge glow — pointer drives --edge-proximity + --cursor-angle ──
+  // React Bits cursor tracking — only function is the edge glow.
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const card = cardRef.current;
     if (!card) return;
@@ -108,10 +113,14 @@ export default function BorderGlow({
     card.style.setProperty('--cursor-angle', `${deg.toFixed(2)}deg`);
   }, []);
 
-  // Desync comet cycles so they aren't in lockstep (client-only).
+  const handlePointerLeave = useCallback(() => {
+    cardRef.current?.style.setProperty('--edge-proximity', '0');
+  }, []);
+
+  // Desync the comet cycle per card (and keep ambient + comet in lockstep).
   useEffect(() => {
-    if (band && cometRef.current) {
-      cometRef.current.style.animationDelay = `${-(Math.random() * BANDS[band].dur).toFixed(2)}s`;
+    if (band && cardRef.current) {
+      cardRef.current.style.setProperty('--anim-delay', `${-(Math.random() * BANDS[band].dur).toFixed(2)}s`);
     }
   }, [band]);
 
@@ -122,6 +131,7 @@ export default function BorderGlow({
     '--edge-sensitivity': edgeSensitivity,
     '--cone-spread': coneSpread,
     '--fill-opacity': fillOpacity,
+    '--ambient-color': `color-mix(in srgb, ${ambientColor} 22%, transparent)`,
     ...glowVars('--glow-color', glowColor, glowIntensity),
     ...gradientVars(colors),
     ...(band
@@ -135,9 +145,16 @@ export default function BorderGlow({
   } as React.CSSProperties;
 
   return (
-    <div ref={cardRef} onPointerMove={handlePointerMove} className={`border-glow-card${className ? ` ${className}` : ''}`} style={cssVars}>
+    <div
+      ref={cardRef}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className={`border-glow-card${band ? ' sev' : ''}${className ? ` ${className}` : ''}`}
+      style={cssVars}
+    >
+      <span className="bg-ambient" aria-hidden="true" />
       <span className="edge-light" aria-hidden="true" />
-      {band && <span ref={cometRef} className="severity-comet" aria-hidden="true" />}
+      {band && <span className="severity-comet" aria-hidden="true" />}
       <div className="border-glow-inner">{children}</div>
     </div>
   );

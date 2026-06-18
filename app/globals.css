@@ -374,6 +374,7 @@ body {
 .insight-card.glow-inner {
   border: none;
   box-shadow: none;
+  background: transparent;   /* BorderGlow owns the bg + ambient glow + comet */
   width: 100%;
   height: 100%;
 }
