@@ -197,6 +197,9 @@ export interface FinancialState {
   uploadError: string | null;
   isSwitchingSheet: boolean;
   cabinet: CabinetEntry[];
+  // Persisted analysis payload per cabinet id, so files reload after a page
+  // refresh even when the backend's in-memory store has been wiped by a restart.
+  cabinetData: Record<string, Record<string, unknown>>;
 
   sidebarCollapsed: boolean;
   mobileNavOpen: boolean;
@@ -283,6 +286,7 @@ const INITIAL: FinancialState = {
   uploadError: null,
   isSwitchingSheet: false,
   cabinet: [],
+  cabinetData: {},
 
   sidebarCollapsed: false,
   mobileNavOpen: false,
@@ -489,6 +493,19 @@ const _store = create<FinancialState & FinancialActions>()(
           set((s) => ({ cabinet: [entry, ...s.cabinet].slice(0, 20) }));
         }
 
+        // Cache the full analysis payload so this file can be reloaded after a
+        // page refresh without the backend (whose store is in-memory and wiped
+        // on restart). Bounded to the most recent 10 cabinet ids to cap size.
+        if (cabId) {
+          set((s) => {
+            const merged = { ...s.cabinetData, [cabId]: result };
+            const keep = new Set([cabId, ...s.cabinet.map((e) => e.id)].slice(0, 10));
+            const pruned: Record<string, Record<string, unknown>> = {};
+            for (const k of Object.keys(merged)) if (keep.has(k)) pruned[k] = merged[k];
+            return { cabinetData: pruned };
+          });
+        }
+
         // ── Which engine(s) does THIS upload carry? ──────────────────────────
         // Detect by the declared engine and by the data slices present, so each
         // upload updates only its own engine — other engines already in the
@@ -619,10 +636,29 @@ const _store = create<FinancialState & FinancialActions>()(
       },
 
       loadFromCabinet: async (id) => {
+        // Prefer the locally-cached payload so reloads work instantly and even
+        // when the backend has forgotten this file. Then refresh in the
+        // background if the server still has it.
+        const cached = get().cabinetData[id];
+        if (cached) {
+          get().setUploadResult({ ...cached, cabinet_id: id });
+          fetch(`/api/proxy/cabinet/${id}`)
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+              if (d) get().setUploadResult({ ...(d as Record<string, unknown>), cabinet_id: id });
+            })
+            .catch(() => {});
+          return;
+        }
+
         set({ isUploading: true, uploadError: null });
         try {
           const res = await fetch(`/api/proxy/cabinet/${id}`);
-          if (!res.ok) throw new Error("Could not load from cabinet");
+          if (!res.ok) {
+            throw new Error(
+              "This file isn't on the server anymore (the analysis service restarted). Re-upload it to refresh the cabinet."
+            );
+          }
           const data = (await res.json()) as Record<string, unknown>;
           get().setUploadResult({ ...data, cabinet_id: id });
         } catch (e) {
@@ -633,14 +669,19 @@ const _store = create<FinancialState & FinancialActions>()(
       },
 
       removeFromCabinet: (id) =>
-        set((s) => ({ cabinet: s.cabinet.filter((e) => e.id !== id) })),
+        set((s) => {
+          const rest = { ...s.cabinetData };
+          delete rest[id];
+          return { cabinet: s.cabinet.filter((e) => e.id !== id), cabinetData: rest };
+        }),
 
-      reset: () => set({ ...INITIAL, cabinet: get().cabinet }),
+      reset: () => set({ ...INITIAL, cabinet: get().cabinet, cabinetData: get().cabinetData }),
     }),
     {
       name: "aibos-store-v4",
       partialize: (s) => ({
         cabinet: s.cabinet,
+        cabinetData: s.cabinetData,
         currencySymbol: s.currencySymbol,
         sidebarCollapsed: s.sidebarCollapsed,
         tier: s.tier,
