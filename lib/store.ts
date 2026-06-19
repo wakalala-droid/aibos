@@ -197,6 +197,7 @@ export interface ItemBreakdownRow {
   profit: number;
   margin: number;
   rows: number;
+  units?: number;
 }
 
 export interface CabinetEntry {

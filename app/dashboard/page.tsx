@@ -99,7 +99,7 @@ export default function OverviewPage() {
     engineFlags, hasEngine2Data, hasEngine3Data,
     currencySymbol, rfm, retention,
     posGrandTotals, attachRates, benchmarks,
-    dataShape,
+    dataShape, breakdown,
   } = useStore();
   const sym    = currencySymbol || 'K';
   const scores = intelligenceScores;
@@ -159,6 +159,18 @@ export default function OverviewPage() {
   const drinkAttach = attachRates?.drink_attach_pct ?? 0;
   const safeBench   = Array.isArray(benchmarks) ? benchmarks : [];
   const warnB       = safeBench.filter(b => b.status !== 'good').length;
+
+  // Item-level operations (e.g. the flower model): real product data that should
+  // light up the Operations engine even when it isn't a restaurant POS export.
+  const safeBreakdown = Array.isArray(breakdown) ? breakdown : [];
+  const hasItemOps  = safeBreakdown.length > 0;
+  const topSeller   = hasItemOps
+    ? safeBreakdown.reduce((a, b) => ((b.units ?? 0) > (a.units ?? 0) ? b : a))
+    : null;
+  const bestMargin  = hasItemOps
+    ? safeBreakdown.reduce((a, b) => (b.margin > a.margin ? b : a))
+    : null;
+  const opsActive   = hasEngine3Data || hasItemOps;
 
   // Cross insights + brief
   const safeInsights = Array.isArray(crossInsights) ? crossInsights : [];
@@ -229,12 +241,12 @@ export default function OverviewPage() {
   }
 
   const unifiedInsights = (orderedInsights.length > 0 ? orderedInsights : synthSignals).slice(0, 6);
-  const activeEngineCount = [hasEngine1, hasEngine2Data, hasEngine3Data].filter(Boolean).length;
+  const activeEngineCount = [hasEngine1, hasEngine2Data, opsActive].filter(Boolean).length;
   const engineStrip = [
     { label: 'Overall',    score: scores?.overall_score, colour: 'var(--cyan)', active: !!scores },
     { label: 'Financial',  score: scores?.e1_score,      colour: 'var(--e1)',   active: hasEngine1 },
     { label: 'Customer',   score: scores?.e2_score,      colour: 'var(--e2)',   active: hasEngine2Data },
-    { label: 'Operations', score: scores?.e3_score,      colour: 'var(--e3)',   active: hasEngine3Data },
+    { label: 'Operations', score: scores?.e3_score,      colour: 'var(--e3)',   active: opsActive },
   ];
 
   return (
@@ -294,7 +306,7 @@ export default function OverviewPage() {
           href="/dashboard/customers"  locked={!hasEngine2Data} />
         <EngineScoreCard label="OPERATIONS"             sub="POS · Benchmarks · Velocity"
           score={scores?.e3_score ?? 0} colour="var(--e3)"
-          href="/dashboard/pos"         locked={!hasEngine3Data} />
+          href="/dashboard/pos"         locked={!opsActive} />
       </div>
 
       {/* ── KPI cards ───────────────────────────────────────────────────── */}
@@ -445,6 +457,23 @@ export default function OverviewPage() {
                         {item.l}
                       </p>
                       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
+                        {item.v}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : hasItemOps ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                  {[
+                    { l: 'Products',    v: String(safeBreakdown.length),                           c: 'var(--e3)' },
+                    { l: 'Top Seller',  v: topSeller?.item ?? '—',                                 c: 'var(--good)' },
+                    { l: 'Best Margin', v: bestMargin ? `${bestMargin.margin.toFixed(0)}%` : '—',  c: (bestMargin?.margin ?? 0) >= 0 ? 'var(--good)' : 'var(--crit)' },
+                  ].map(item => (
+                    <div key={item.l}>
+                      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        {item.l}
+                      </p>
+                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.v}>
                         {item.v}
                       </p>
                     </div>
