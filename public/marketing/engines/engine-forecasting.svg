@@ -1,0 +1,38 @@
+<svg width="240" height="264" viewBox="0 0 240 264" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Forecasting and Prediction engine">
+  <defs>
+    <linearGradient id="fc-face" x1="120" y1="28" x2="120" y2="196" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#18233a"/>
+      <stop offset="0.55" stop-color="#0f1726"/>
+      <stop offset="1" stop-color="#0a0f1c"/>
+    </linearGradient>
+    <linearGradient id="fc-rim" x1="44" y1="24" x2="196" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d6c4ff"/>
+      <stop offset="0.45" stop-color="#a78bfa"/>
+      <stop offset="0.7" stop-color="#60a5fa"/>
+      <stop offset="1" stop-color="#00d4ff"/>
+    </linearGradient>
+    <radialGradient id="fc-glow" cx="0.5" cy="0.4" r="0.7">
+      <stop offset="0" stop-color="#a78bfa" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#a78bfa" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="fc-sheen" x1="120" y1="28" x2="120" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="fc-soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="120" cy="226" rx="70" ry="13" fill="#a78bfa" fill-opacity="0.18" filter="url(#fc-soft)"/>
+  <rect x="40" y="22" width="160" height="178" rx="34" fill="url(#fc-rim)"/>
+  <rect x="44.5" y="26.5" width="151" height="169" rx="30" fill="url(#fc-face)" stroke="#000000" stroke-opacity="0.25"/>
+  <ellipse cx="120" cy="118" rx="74" ry="82" fill="url(#fc-glow)"/>
+  <rect x="52" y="33" width="136" height="60" rx="24" fill="url(#fc-sheen)"/>
+
+  <path d="M74 156 L100 128 L120 142 L150 100" fill="none" stroke="#d6c4ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M150 100 L168 84" fill="none" stroke="#60a5fa" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 8"/>
+  <circle cx="150" cy="100" r="6" fill="#a78bfa"/>
+  <circle cx="168" cy="84" r="5" fill="#60a5fa" fill-opacity="0.8"/>
+  <path d="M74 156 H166" stroke="#a78bfa" stroke-opacity="0.3" stroke-width="2"/>
+</svg>

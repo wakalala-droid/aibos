@@ -1,0 +1,38 @@
+<svg width="240" height="264" viewBox="0 0 240 264" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Decision engine — AI Business Consultant">
+  <defs>
+    <linearGradient id="dec-face" x1="120" y1="28" x2="120" y2="196" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#18233a"/>
+      <stop offset="0.55" stop-color="#0f1726"/>
+      <stop offset="1" stop-color="#0a0f1c"/>
+    </linearGradient>
+    <linearGradient id="dec-rim" x1="44" y1="24" x2="196" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#bfe0ff"/>
+      <stop offset="0.4" stop-color="#60a5fa"/>
+      <stop offset="0.7" stop-color="#00d4ff"/>
+      <stop offset="1" stop-color="#34d399"/>
+    </linearGradient>
+    <radialGradient id="dec-glow" cx="0.5" cy="0.4" r="0.7">
+      <stop offset="0" stop-color="#60a5fa" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#60a5fa" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="dec-sheen" x1="120" y1="28" x2="120" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="dec-soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="120" cy="226" rx="70" ry="13" fill="#60a5fa" fill-opacity="0.18" filter="url(#dec-soft)"/>
+  <rect x="40" y="22" width="160" height="178" rx="34" fill="url(#dec-rim)"/>
+  <rect x="44.5" y="26.5" width="151" height="169" rx="30" fill="url(#dec-face)" stroke="#000000" stroke-opacity="0.25"/>
+  <ellipse cx="120" cy="118" rx="74" ry="82" fill="url(#dec-glow)"/>
+  <rect x="52" y="33" width="136" height="60" rx="24" fill="url(#dec-sheen)"/>
+
+  <circle cx="120" cy="118" r="44" fill="none" stroke="#bfe0ff" stroke-width="4" stroke-opacity="0.5"/>
+  <path d="M120 118 L150 88" stroke="#34d399" stroke-width="6" stroke-linecap="round"/>
+  <path d="M120 118 L100 138" stroke="#60a5fa" stroke-width="6" stroke-linecap="round"/>
+  <polygon points="120,118 156,82 138,100" fill="#bfe0ff"/>
+  <circle cx="120" cy="118" r="7" fill="#bfe0ff"/>
+</svg>

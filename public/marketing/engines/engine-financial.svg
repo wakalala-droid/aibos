@@ -1,0 +1,38 @@
+<svg width="240" height="264" viewBox="0 0 240 264" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Financial Intelligence engine — AI CFO">
+  <defs>
+    <linearGradient id="fin-face" x1="120" y1="28" x2="120" y2="196" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#18233a"/>
+      <stop offset="0.55" stop-color="#0f1726"/>
+      <stop offset="1" stop-color="#0a0f1c"/>
+    </linearGradient>
+    <linearGradient id="fin-rim" x1="44" y1="24" x2="196" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7af0ff"/>
+      <stop offset="0.45" stop-color="#00d4ff"/>
+      <stop offset="0.7" stop-color="#a78bfa"/>
+      <stop offset="1" stop-color="#f97316"/>
+    </linearGradient>
+    <radialGradient id="fin-glow" cx="0.5" cy="0.4" r="0.7">
+      <stop offset="0" stop-color="#00d4ff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#00d4ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="fin-sheen" x1="120" y1="28" x2="120" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="fin-soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="120" cy="226" rx="70" ry="13" fill="#00d4ff" fill-opacity="0.18" filter="url(#fin-soft)"/>
+  <rect x="40" y="22" width="160" height="178" rx="34" fill="url(#fin-rim)"/>
+  <rect x="44.5" y="26.5" width="151" height="169" rx="30" fill="url(#fin-face)" stroke="#000000" stroke-opacity="0.25"/>
+  <ellipse cx="120" cy="118" rx="74" ry="82" fill="url(#fin-glow)"/>
+  <rect x="52" y="33" width="136" height="60" rx="24" fill="url(#fin-sheen)"/>
+
+  <g stroke="#7af0ff" stroke-width="6" stroke-linecap="round" fill="none">
+    <path d="M120 78 V160"/>
+    <path d="M96 100 h40 a14 14 0 0 1 0 28 h-34 a14 14 0 0 0 0 28 h40"/>
+  </g>
+  <circle cx="120" cy="118" r="58" stroke="#00d4ff" stroke-opacity="0.5" stroke-width="2" fill="none"/>
+</svg>
