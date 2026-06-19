@@ -21,7 +21,12 @@ interface Proposal {
   confidence: number;
   assumptions: string[];
   risks: string[];
-  critique: { passed?: boolean; checks?: Record<string, boolean>; critic_notes?: string };
+  critique: {
+    passed?: boolean;
+    checks?: Record<string, boolean>;
+    critic_notes?: string;
+    llm?: { checked?: boolean; sound?: boolean; score?: number; notes?: string };
+  };
   source: string;
   status: string;
   source_file: string | null;
@@ -178,6 +183,20 @@ export default function AdminProposalsPage() {
                   <div><span style={{ color: 'var(--text-4)' }}>extends</span> {p.extends_engine ?? '—'} · <span style={{ color: 'var(--text-4)' }}>inputs</span> {p.inputs?.join(', ') || '—'}</div>
                   <div><span style={{ color: 'var(--text-4)' }}>formula</span> <code style={{ color: 'var(--text-2)' }}>{p.formula}</code></div>
                   <div><span style={{ color: 'var(--text-4)' }}>preview</span> <span style={{ color: 'var(--good)' }}>{previewStr}</span></div>
+                  {p.critique?.llm && (
+                    <div>
+                      <span style={{ color: 'var(--text-4)' }}>AI critic</span>{' '}
+                      {p.critique.llm.checked ? (
+                        <span style={{ color: p.critique.llm.sound ? 'var(--good)' : 'var(--crit)' }}>
+                          {p.critique.llm.sound ? '✓ sound' : '✕ rejected'}
+                          {typeof p.critique.llm.score === 'number' ? ` (${Math.round(p.critique.llm.score * 100)}%)` : ''}
+                          {p.critique.llm.notes ? ` — ${p.critique.llm.notes}` : ''}
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-4)' }}>not independently reviewed</span>
+                      )}
+                    </div>
+                  )}
                   {p.risks?.length > 0 && <div><span style={{ color: 'var(--warn)' }}>risks</span> {p.risks.join('; ')}</div>}
                 </div>
 

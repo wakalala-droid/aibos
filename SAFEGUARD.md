@@ -142,7 +142,17 @@ interface FunctionProposal {
 
 ## 4. Implementation status
 - **Layer 1 (read-fidelity manifest + honest no-forecast + per-item breakdown):** implemented
-  in `aibos-api` (`_build_manifest`, `_detect_data_shape`, additive `manifest`/`breakdown`
-  on `/upload`). Existing time-series files are unchanged.
-- **Layer 2 (proposal + critique gate + review queue):** specified here; implemented behind
-  an owner-only flag, preview-only, in a later increment.
+  in `aibos-api` (`_build_manifest`, `_detect_data_shape`, `_build_item_breakdown` incl. units).
+  The frontend surfaces it (`DataManifestCard`) and **gates every time-series feature**
+  (forecast/anomaly/variance/cash/breakeven + dashboard growth badges) behind a real time axis —
+  cross-sectional files never get a fabricated trend (`TimeSeriesUnavailable`).
+- **Layer 2 (proposal + safe sandbox + critique gate + review queue):** implemented.
+  `extensions.py` (AST-whitelisted formula sandbox), `/propose` + `/compute-metrics`,
+  `function_proposals` table, owner-only `/admin/proposals`, live `CustomMetricsCard`.
+- **Critique gate checks (live):** formula-valid, inputs-exist, core-immutable, sandbox-ok,
+  traceable, non-degenerate, **non-trivial**, **bounded**, and an independent **LLM
+  second-opinion critic** (`_llm_critic`) that must judge the metric *sound* before it passes
+  (fail-open on infra error, recorded as `not independently reviewed`).
+- **Layer 3 (Monitoring & Evaluation):** implemented. Approval → 15-day monitoring window;
+  re-critiqued on every use (`monitor_runs`/`monitor_fails`); promotes to `stable` only after the
+  window elapses with zero failures. Migration `0004_proposal_monitoring.sql`.
