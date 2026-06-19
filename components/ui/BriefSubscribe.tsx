@@ -107,7 +107,7 @@ export default function BriefSubscribe() {
           >
             {status === 'saving' ? 'Saving…' : 'Send me the brief'}
           </button>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', margin: 0 }}>
+          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', margin: 0 }}>
             WhatsApp delivery coming soon. Unsubscribe anytime from any brief.
           </p>
         </div>

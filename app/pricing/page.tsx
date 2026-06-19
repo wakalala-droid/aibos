@@ -33,7 +33,7 @@ export default function PricingPage() {
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 16px 64px' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 8 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>
           Pricing · Priced in Kwacha
         </p>
         <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.9rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 8px', letterSpacing: '-0.03em' }}>
@@ -62,7 +62,7 @@ export default function PricingPage() {
           >
             {b === 'monthly' ? 'Monthly' : 'Annual'}
             {b === 'annual' && (
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', marginLeft: 8, color: 'var(--good)' }}>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', marginLeft: 8, color: 'var(--good)' }}>
                 2 months free
               </span>
             )}
@@ -96,12 +96,12 @@ export default function PricingPage() {
                     {meta.name}
                   </h2>
                   {popular && (
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--cyan)', background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)', padding: '2px 8px', borderRadius: 6 }}>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--cyan)', background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)', padding: '2px 8px', borderRadius: 6 }}>
                       MOST POPULAR
                     </span>
                   )}
                   {isCurrent && !popular && (
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.55rem', fontWeight: 700, color: 'var(--text-3)', border: '1px solid var(--border-md)', padding: '2px 8px', borderRadius: 6 }}>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', fontWeight: 700, color: 'var(--text-3)', border: '1px solid var(--border-md)', padding: '2px 8px', borderRadius: 6 }}>
                       CURRENT
                     </span>
                   )}
@@ -114,7 +114,7 @@ export default function PricingPage() {
                   <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '2rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>
                     {big}
                   </span>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-4)' }}>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-4)' }}>
                     {small}
                   </span>
                 </div>

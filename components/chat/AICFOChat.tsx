@@ -409,7 +409,7 @@ export default function AICFOChat() {
                 transition={{ duration: 2, repeat: Infinity }}
                 style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--good)' }}
               />
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--good)' }}>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--good)' }}>
                 Online · Analysing your data
               </span>
             </div>

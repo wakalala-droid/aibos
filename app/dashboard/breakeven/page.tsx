@@ -67,9 +67,9 @@ export default function BreakevenPage() {
     >
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
         <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Breakeven Analysis</h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Fixed costs · variable costs · contribution margin · breakeven point</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Fixed costs · variable costs · contribution margin · breakeven point</p>
       </div>
 
       {/* KPI cards */}
@@ -92,7 +92,7 @@ export default function BreakevenPage() {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         style={{ background: 'var(--bg-card)', border: `1px solid ${statusColor}`, borderRadius: 12, padding: '18px 22px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: 'var(--shadow-card)' }}>
         <div>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Breakeven Status</p>
+          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Breakeven Status</p>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 700, color: statusColor, margin: 0 }}>
             {status === 'safe' ? `${fmt(gap, false, sym)} above breakeven` : status === 'warning' ? `Only ${fmt(gap, false, sym)} above breakeven — tight margin` : `${fmt(Math.abs(gap), false, sym)} below breakeven — revenue required`}
           </p>
@@ -128,12 +128,12 @@ export default function BreakevenPage() {
             { label: 'Variable Costs', value: variableCosts, pct: (1 - fixedCostPct) * 100,  color: 'var(--purple)', desc: 'COGS, commissions, packaging — scale with revenue' },
           ].map(item => (
             <div key={item.label} style={{ background: 'var(--bg-badge)', borderRadius: 10, padding: '16px 18px', border: '1px solid var(--border)' }}>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>{item.label}</p>
+              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>{item.label}</p>
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: item.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{fmt(item.value, false, sym)}</p>
               <div className="progress-track" style={{ marginBottom: 6 }}>
                 <motion.div className="progress-fill" style={{ background: item.color }} initial={{ width: 0 }} animate={{ width: `${item.pct}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
               </div>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', margin: 0 }}>{item.desc}</p>
+              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0 }}>{item.desc}</p>
             </div>
           ))}
         </div>

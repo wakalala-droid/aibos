@@ -11,7 +11,7 @@ function BriefPoint({ text, index }: { text: string; index: number }) {
   return (
     <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + index * 0.07 }}
       style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: index > 0 ? '1px solid var(--border)' : 'none' }}>
-      <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: 'var(--cyan-dim)', border: '1px solid rgba(0,212,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', fontWeight: 700, color: 'var(--cyan)' }}>{index + 1}</span>
+      <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: 'var(--cyan-dim)', border: '1px solid rgba(0,212,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 700, color: 'var(--cyan)' }}>{index + 1}</span>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>{content}</p>
     </motion.div>
   );
@@ -33,9 +33,9 @@ export default function OpsBriefPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
         <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Operations Intelligence Brief</h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</p>
       </div>
 
       {/* Score strip */}
@@ -46,10 +46,10 @@ export default function OpsBriefPage() {
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '3rem', fontWeight: 900, color: scoreColor(scores.overall_score), letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
               {scores.overall_score}
             </p>
-            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--cyan)', margin: '5px 0 0', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--cyan)', margin: '5px 0 0', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               {scores.overall_label}
             </p>
-            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem', color: 'var(--text-4)', margin: '2px 0 0' }}>OVERALL</p>
+            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', margin: '2px 0 0' }}>OVERALL</p>
           </div>
           {[
             { l: 'FINANCIAL',              s: scores.e1_score, c: 'var(--e1)' },

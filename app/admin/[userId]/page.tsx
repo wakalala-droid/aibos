@@ -101,7 +101,7 @@ export default function AdminAccountDetailPage() {
       </header>
 
       <div className="section-card" style={{ marginBottom: 16 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Profile</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Profile</p>
         <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
           <Fact label="Plan" value={<span style={{ textTransform: 'uppercase' }}>{tier}</span>} />
           <Fact label="Tier source" value={p.tier_source} />
@@ -119,7 +119,7 @@ export default function AdminAccountDetailPage() {
       </div>
 
       <div className="section-card" style={{ marginBottom: 16 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Tier history</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Tier history</p>
         {data.audit.length === 0 ? (
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-3)', margin: 0 }}>No admin tier changes recorded.</p>
         ) : (
@@ -138,7 +138,7 @@ export default function AdminAccountDetailPage() {
       </div>
 
       <div className="section-card">
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Recent activity</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Recent activity</p>
         {data.events.length === 0 ? (
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-3)', margin: 0 }}>No usage events yet.</p>
         ) : (

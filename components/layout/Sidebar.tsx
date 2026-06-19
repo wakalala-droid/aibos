@@ -108,7 +108,7 @@ export default function Sidebar() {
           background: 'linear-gradient(135deg, #0097b2, #00d4ff)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.6rem', fontWeight: 800, color: '#fff' }}>AI</span>
+          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.68rem', fontWeight: 800, color: '#fff' }}>AI</span>
         </div>
         <AnimatePresence>
           {!col && (
@@ -258,7 +258,7 @@ export default function Sidebar() {
           }}
         >
           <span style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Current plan
             </span>
             <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-1)' }}>
@@ -298,7 +298,7 @@ export default function Sidebar() {
           {!col && uploadedFile && (
             <motion.span
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
+              style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
             >
               {uploadedFile}
             </motion.span>

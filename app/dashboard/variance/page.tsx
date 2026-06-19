@@ -81,13 +81,13 @@ export default function VariancePage() {
     >
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
           Financial Intelligence
         </p>
         <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
           Variance Analysis
         </h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
           Month-over-month changes · cost spikes · margin trends
         </p>
       </div>
@@ -137,7 +137,7 @@ export default function VariancePage() {
               {[['var(--cyan)', 'Revenue'], ['var(--e2)', 'Costs']].map(([c, l]) => (
                 <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <div style={{ width: 10, height: 10, borderRadius: 3, background: c as string, opacity: 0.8 }} />
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)' }}>{l}</span>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)' }}>{l}</span>
                 </div>
               ))}
             </div>
@@ -230,7 +230,7 @@ export default function VariancePage() {
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: sevColor, flexShrink: 0, marginTop: 4 }} />
                   <div style={{ flex: 1 }}>
                     <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 3px' }}>{alert.title}</p>
-                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-3)', margin: 0 }}>{alert.description}</p>
+                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)', margin: 0 }}>{alert.description}</p>
                   </div>
                   <span className="badge" style={{ color: sevColor, background: `color-mix(in srgb, ${sevColor} 12%, transparent)`, borderColor: `color-mix(in srgb, ${sevColor} 28%, transparent)`, flexShrink: 0 }}>
                     {(alert.severity ?? 'info').toUpperCase()}

@@ -154,15 +154,15 @@ export default function AdminProposalsPage() {
           <div style={{ flex: '1 1 320px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
               <h3 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>{p.name}</h3>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.source === 'ai' ? 'var(--purple)' : 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: '1px solid var(--border-md)' }}>{p.source}</span>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: STATUS_TONE[p.status] ?? 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: `1px solid color-mix(in srgb, ${STATUS_TONE[p.status] ?? 'var(--text-3)'} 35%, transparent)` }}>{p.status}</span>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.source === 'ai' ? 'var(--purple)' : 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: '1px solid var(--border-md)' }}>{p.source}</span>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: STATUS_TONE[p.status] ?? 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: `1px solid color-mix(in srgb, ${STATUS_TONE[p.status] ?? 'var(--text-3)'} 35%, transparent)` }}>{p.status}</span>
               <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: passed ? 'var(--good)' : 'var(--crit)' }}>{passed ? '✓ passed critique' : '✕ failed critique'}</span>
             </div>
             {p.purpose && <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.84rem', color: 'var(--text-2)', margin: '0 0 8px', lineHeight: 1.5 }}>{p.purpose}</p>}
           </div>
           <div style={{ textAlign: 'right' }}>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'var(--cyan)', margin: 0, letterSpacing: '-0.03em' }}>{Math.round(p.confidence * 100)}%</p>
-            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>confidence</p>
+            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>confidence</p>
           </div>
         </div>
 
@@ -266,7 +266,7 @@ export default function AdminProposalsPage() {
           <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
             Function Proposals
           </h1>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
+          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
             AI/rule-proposed metrics · sandbox-validated · you approve before anything ships
           </p>
         </div>

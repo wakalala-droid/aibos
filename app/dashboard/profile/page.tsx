@@ -241,7 +241,7 @@ export default function BusinessProfilePage() {
                 {logoBusy ? 'Uploading…' : form.logo_url ? 'Replace logo' : 'Upload logo'}
               </button>
               <input ref={fileRef} type="file" accept="image/*" onChange={onLogo} aria-label="Upload business logo" style={{ display: 'none' }} />
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', margin: '8px 0 0' }}>
+              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: '8px 0 0' }}>
                 PNG or JPG · shown in the header
               </p>
             </div>
@@ -315,7 +315,7 @@ export default function BusinessProfilePage() {
 
         {/* Read-only account facts */}
         <div className="section-card">
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>
+          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>
             Account
           </p>
           <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>

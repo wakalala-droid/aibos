@@ -90,7 +90,7 @@ export default function LockedPreviewCard({
   if (state === 'error') {
     return (
       <CardFrame colour="var(--crit)" delay={delay}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--crit)', margin: '0 0 8px' }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--crit)', margin: '0 0 8px' }}>
           {title}
         </p>
         <div role="alert" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -110,7 +110,7 @@ export default function LockedPreviewCard({
   if (state === 'empty') {
     return (
       <CardFrame colour={colour} delay={delay}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: colour, margin: '0 0 8px' }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: colour, margin: '0 0 8px' }}>
           {title}
         </p>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-3)', lineHeight: 1.55, margin: 0 }}>
@@ -127,12 +127,12 @@ export default function LockedPreviewCard({
     <CardFrame colour={colour} delay={delay}>
       {/* Header: capability + plan badge */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: colour, margin: 0 }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: colour, margin: 0 }}>
           {title}
         </p>
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 5,
-          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.55rem', fontWeight: 700,
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', fontWeight: 700,
           letterSpacing: '0.06em', color: disabled ? 'var(--text-4)' : colour,
           background: disabled ? 'var(--bg-badge)' : `color-mix(in srgb, ${colour} 12%, transparent)`,
           border: `1px solid ${disabled ? 'var(--border)' : `color-mix(in srgb, ${colour} 30%, transparent)`}`,

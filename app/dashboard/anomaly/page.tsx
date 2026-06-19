@@ -87,13 +87,13 @@ export default function AnomalyPage() {
     >
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
           Financial Intelligence
         </p>
         <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
           Anomaly Intelligence
         </h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
           Statistical outlier detection · Z-score analysis · variance flags
         </p>
       </div>
@@ -160,7 +160,7 @@ export default function AnomalyPage() {
             {[['var(--cyan)', 'Revenue Z-score'], ['var(--e2)', 'Cost Z-score']].map(([c, l]) => (
               <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <div style={{ width: 10, height: 10, borderRadius: 3, background: c as string, opacity: 0.8 }} />
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)' }}>{l}</span>
+                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)' }}>{l}</span>
               </div>
             ))}
           </div>
@@ -201,7 +201,7 @@ export default function AnomalyPage() {
                         Z = {Number(a.zScore ?? 0).toFixed(1)}
                       </span>
                     </div>
-                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: 0 }}>
+                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: 0 }}>
                       Actual: {fmt(Number(a.value) || 0, false, sym)} · Expected: {fmt(Number(a.expected) || 0, false, sym)} · Δ {diff >= 0 ? '+' : ''}{fmt(diff, false, sym)}
                     </p>
                   </div>
@@ -222,7 +222,7 @@ export default function AnomalyPage() {
               <path d="M5 13l4 4L19 7" stroke="var(--good)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--good)', margin: '0 0 4px' }}>All clear</p>
-            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-4)', margin: 0 }}>
+            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-4)', margin: 0 }}>
               No statistical anomalies detected in the current dataset
             </p>
           </div>

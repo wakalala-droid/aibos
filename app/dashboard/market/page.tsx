@@ -32,9 +32,9 @@ export default function MarketPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
         <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Market Intelligence</h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Segment revenue breakdown · CLV distribution · AI strategic brief</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Segment revenue breakdown · CLV distribution · AI strategic brief</p>
       </div>
 
       {/* KPI cards */}
@@ -105,7 +105,7 @@ export default function MarketPage() {
                       <div className="progress-track" style={{ width: 60 }}>
                         <div className="progress-fill" style={{ width: `${share}%`, background: SEG_COLORS[s.segment] ?? 'var(--text-4)' }} />
                       </div>
-                      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: SEG_COLORS[s.segment] ?? 'var(--text-3)' }}>{share}%</span>
+                      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: SEG_COLORS[s.segment] ?? 'var(--text-3)' }}>{share}%</span>
                     </div>
                   </td>
                 </motion.tr>
@@ -122,7 +122,7 @@ export default function MarketPage() {
           briefLines.map((line, i) => (
             <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.08 }}
               style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-              <span style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', fontWeight: 700, color: 'var(--e2)' }}>{i + 1}</span>
+              <span style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', fontWeight: 700, color: 'var(--e2)' }}>{i + 1}</span>
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>{line.replace(/^\d+\.\s*/, '')}</p>
             </motion.div>
           ))

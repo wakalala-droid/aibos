@@ -18,7 +18,7 @@ function BenchmarkCard({ b, delay }: { b: any; delay: number }) {
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}
       style={{ background: 'var(--bg-card)', border: `1px solid ${cfg.border}`, borderRadius: 12, padding: '20px', boxShadow: 'var(--shadow-card)', position: 'relative', overflow: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0, maxWidth: 130 }}>{b.label}</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0, maxWidth: 130 }}>{b.label}</p>
         <span className="badge" style={{ color: cfg.color, background: cfg.bg, borderColor: cfg.border }}>{cfg.label}</span>
       </div>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '2rem', fontWeight: 800, color: cfg.color, letterSpacing: '-0.03em', margin: '0 0 12px' }}>
@@ -30,8 +30,8 @@ function BenchmarkCard({ b, delay }: { b: any; delay: number }) {
           transition={{ duration: 1, ease: 'easeOut', delay: delay + 0.2 }} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)' }}>Benchmark: {b.benchmark}{b.unit !== 'K' ? b.unit : ''}</span>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: cfg.color, fontWeight: 700 }}>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)' }}>Benchmark: {b.benchmark}{b.unit !== 'K' ? b.unit : ''}</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: cfg.color, fontWeight: 700 }}>
           {b.gap > 0 ? '+' : ''}{b.gap.toFixed(1)}{b.unit !== 'K' ? b.unit : ''}
         </span>
       </div>
@@ -45,10 +45,10 @@ function AttachMeter({ label, value, benchmark, color }: { label: string; value:
   return (
     <div style={{ marginBottom: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-2)' }}>{label}</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-2)' }}>{label}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.1rem', fontWeight: 800, color: barCol }}>{value.toFixed(1)}%</span>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)' }}>/ {benchmark}%</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)' }}>/ {benchmark}%</span>
         </div>
       </div>
       <div className="progress-track" style={{ height: 6 }}>
@@ -56,7 +56,7 @@ function AttachMeter({ label, value, benchmark, color }: { label: string; value:
           initial={{ width: 0 }} animate={{ width: `${Math.min(value / benchmark * 100, 100)}%` }}
           transition={{ duration: 1.1, ease: 'easeOut', delay: 0.2 }} />
       </div>
-      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: barCol, textAlign: 'right', margin: '4px 0 0' }}>
+      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: barCol, textAlign: 'right', margin: '4px 0 0' }}>
         {good ? `+${(value - benchmark).toFixed(1)}% above target` : `${(value - benchmark).toFixed(1)}% below target`}
       </p>
     </div>
@@ -74,9 +74,9 @@ export default function BenchmarksPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
         <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Operational Benchmarks</h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</p>
       </div>
 
       {/* KPI summary strip */}
@@ -124,12 +124,12 @@ export default function BenchmarksPage() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-1)' }}>{g.name}</span>
-                  <span className="badge" style={{ color: 'var(--text-3)', background: 'var(--bg-badge)', borderColor: 'var(--border)', fontSize: '0.58rem' }}>{g.category}</span>
+                  <span className="badge" style={{ color: 'var(--text-3)', background: 'var(--bg-badge)', borderColor: 'var(--border)', fontSize: '0.66rem' }}>{g.category}</span>
                 </div>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', color: 'var(--warn)', margin: '0 0 3px' }}>{g.issue}</p>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', color: 'var(--good)', margin: 0 }}>→ {g.opportunity}</p>
               </div>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', whiteSpace: 'nowrap', paddingTop: 2 }}>SKU: {g.sku}</span>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', whiteSpace: 'nowrap', paddingTop: 2 }}>SKU: {g.sku}</span>
             </div>
           ))}
         </SectionCard>

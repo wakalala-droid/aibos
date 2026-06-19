@@ -163,7 +163,7 @@ function CheckoutInner() {
 
       {/* Order summary — full price up front, no drip pricing. */}
       <div className="section-card" style={{ marginBottom: 16 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px' }}>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px' }}>
           Order summary
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
@@ -187,7 +187,7 @@ function CheckoutInner() {
 
       {/* Network selection */}
       <fieldset className="section-card" style={{ marginBottom: 16, border: '1px solid var(--border)' }}>
-        <legend style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 6px' }}>
+        <legend style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 6px' }}>
           Pay with mobile money
         </legend>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 8 }}>
@@ -224,7 +224,7 @@ function CheckoutInner() {
             Enter your {m.label} number below and tap <strong>Pay</strong>. You’ll get a prompt
             on your phone to approve <strong>K{amount.toLocaleString()}</strong>.
           </p>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', margin: '8px 0 0' }}>
+          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: '8px 0 0' }}>
             Prefer manual? Dial {m.ussd} and send to {m.number} (AI-BOS · {m.label}).
           </p>
         </div>

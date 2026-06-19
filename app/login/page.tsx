@@ -176,7 +176,7 @@ function LoginForm() {
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.5 }}
-            style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: '#4a6285', textTransform: 'uppercase', letterSpacing: '0.18em' }}
+            style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: '#4a6285', textTransform: 'uppercase', letterSpacing: '0.18em' }}
           >
             Financial Intelligence Platform
           </motion.p>
@@ -229,15 +229,15 @@ function LoginForm() {
         </motion.button>
 
         {/* Keyboard hint */}
-        <p style={{ textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: '0.62rem', color: '#2d4a70', marginTop: 12 }}>
-          Press <kbd style={{ padding: '2px 6px', border: '1px solid #2d4a70', borderRadius: 4, fontSize: '0.58rem', background: '#090d1e', color: '#4a6285' }}>Enter</kbd> to continue
+        <p style={{ textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: '#2d4a70', marginTop: 12 }}>
+          Press <kbd style={{ padding: '2px 6px', border: '1px solid #2d4a70', borderRadius: 4, fontSize: '0.66rem', background: '#090d1e', color: '#4a6285' }}>Enter</kbd> to continue
         </p>
 
         {/* Footer */}
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(99,179,237,0.08)', textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: '#2d4a70', lineHeight: 1.8 }}>
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(99,179,237,0.08)', textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: '#2d4a70', lineHeight: 1.8 }}>
           Powered by AI · Built for Finance
           <br />
-          <span style={{ fontSize: '0.58rem' }}>
+          <span style={{ fontSize: '0.66rem' }}>
             By continuing you agree to our{' '}
             <a href="/terms"   style={{ color: '#4a6285', textDecoration: 'underline', textUnderlineOffset: 2 }}>Terms</a>
             {' '}and{' '}
@@ -267,7 +267,7 @@ export default function LoginPage() {
         <LoginForm />
       </Suspense>
       <div className="absolute bottom-6 left-0 right-0 flex justify-center">
-        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: '#2d4a70', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: '#2d4a70', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           AI-BOS v2.0 · Next.js + Supabase
         </p>
       </div>

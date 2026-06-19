@@ -30,9 +30,9 @@ export default function ProductsPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
         <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Product Intelligence</h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>BCG classification · revenue ranking · market basket analysis</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>BCG classification · revenue ranking · market basket analysis</p>
       </div>
 
       {/* KPI cards */}
@@ -63,13 +63,13 @@ export default function ProductsPage() {
             }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: cfg.color, opacity: 0.6 }} />
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', margin: '0 0 3px' }}>{classLabel}</p>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', margin: '0 0 14px', lineHeight: 1.4 }}>{cfg.desc}</p>
+              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 14px', lineHeight: 1.4 }}>{cfg.desc}</p>
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.8rem', fontWeight: 800, color: cfg.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{items.length}</p>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', margin: '0 0 12px' }}>products</p>
+              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: '0 0 12px' }}>products</p>
               {items.slice(0, 3).map(p => (
                 <div key={p.product} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderTop: '1px solid var(--border)' }}>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-2)', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.product}</span>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: cfg.color, fontWeight: 600 }}>{fmt(p.total_revenue, true, sym)}</span>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-2)', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.product}</span>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: cfg.color, fontWeight: 600 }}>{fmt(p.total_revenue, true, sym)}</span>
                 </div>
               ))}
             </div>
@@ -108,7 +108,7 @@ export default function ProductsPage() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-1)', fontWeight: 600 }}>{pair.product_a}</span>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)' }}>+</span>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)' }}>+</span>
                   <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-1)', fontWeight: 600 }}>{pair.product_b}</span>
                 </div>
                 <span className="badge" style={{ color: 'var(--e2)', background: 'rgba(249,115,22,0.10)', borderColor: 'rgba(249,115,22,0.22)', fontWeight: 700, whiteSpace: 'nowrap' }}>

@@ -67,7 +67,7 @@ export default function KPICard({
             <div>
               <p className="kpi-label" style={{ margin: 0 }}>{label}</p>
               {sublabel && (
-                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', margin: 0 }}>
+                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', margin: 0 }}>
                   {sublabel}
                 </p>
               )}

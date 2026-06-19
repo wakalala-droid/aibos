@@ -27,7 +27,7 @@ function RetentionRing({ rate }: { rate: number }) {
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'var(--e2)' }}>{rate.toFixed(0)}%</span>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem', color: 'var(--text-4)', letterSpacing: '0.08em' }}>RETENTION</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', letterSpacing: '0.08em' }}>RETENTION</span>
       </div>
     </div>
   );
@@ -45,9 +45,9 @@ export default function CustomersPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
         <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Customer Intelligence</h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>RFM segmentation · CLV · Retention · Churn risk</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>RFM segmentation · CLV · Retention · Churn risk</p>
       </div>
 
       {/* KPI cards - E1 style */}
@@ -100,11 +100,11 @@ export default function CustomersPage() {
             <RetentionRing rate={retRate} />
             <div>
               <div style={{ marginBottom: 12 }}>
-                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Returning</p>
+                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Returning</p>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: 'var(--good)', margin: 0 }}>{retention?.returning_customers ?? 0}</p>
               </div>
               <div>
-                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>First-time</p>
+                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>First-time</p>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: 'var(--blue)', margin: 0 }}>{total - (retention?.returning_customers ?? 0)}</p>
               </div>
             </div>
@@ -119,11 +119,11 @@ export default function CustomersPage() {
               <div key={tier.tier} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 28, height: 28, borderRadius: 7, background: 'var(--bg-badge)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: c, fontWeight: 700 }}>{tier.tier[0]}</span>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: c, fontWeight: 700 }}>{tier.tier[0]}</span>
                   </div>
                   <div>
                     <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{tier.tier} Value</p>
-                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', margin: 0 }}>{tier.count} customers</p>
+                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0 }}>{tier.count} customers</p>
                   </div>
                 </div>
                 <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: c }}>{fmt(tier.total_clv, true, sym)}</span>

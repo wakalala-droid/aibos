@@ -66,9 +66,9 @@ export default function CashPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
         <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Cash Intelligence</h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Runway · burn rate · cash position · forward projections</p>
+        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Runway · burn rate · cash position · forward projections</p>
       </div>
 
       {/* KPI cards */}
@@ -108,12 +108,12 @@ export default function CashPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <div>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
-            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', margin: 0 }}>
+            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0 }}>
               {runway}mo remaining · {runway < runwayTarget ? `⚠ Below ${runwayTarget}mo target` : `✓ Above ${runwayTarget}mo target`}
             </p>
           </div>
           <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: runwayColor }}>
-            {runway}mo <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: 'var(--text-4)', fontWeight: 400 }}>/ {runwayTarget}mo</span>
+            {runway}mo <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-4)', fontWeight: 400 }}>/ {runwayTarget}mo</span>
           </span>
         </div>
         {/* Runway bar */}
@@ -127,7 +127,7 @@ export default function CashPage() {
         {/* Scale labels */}
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           {[0, 6, 12, 18, 24].map(mo => (
-            <span key={mo} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: mo === 12 ? 'var(--warn)' : 'var(--text-4)' }}>
+            <span key={mo} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: mo === 12 ? 'var(--warn)' : 'var(--text-4)' }}>
               {mo}mo{mo === 12 ? ' ⚑' : ''}
             </span>
           ))}

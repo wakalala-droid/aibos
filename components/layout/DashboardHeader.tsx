@@ -216,7 +216,7 @@ export default function DashboardHeader() {
                   style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '9px 10px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer' }}
                 >
                   <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-1)', fontWeight: 500 }}>{r.label}</span>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.group}</span>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.group}</span>
                 </button>
               ))}
             </div>
@@ -233,7 +233,7 @@ export default function DashboardHeader() {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
               <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Alerts</span>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text-4)', background: 'var(--bg-badge)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: 999 }}>{unread} total</span>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', background: 'var(--bg-badge)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: 999 }}>{unread} total</span>
             </div>
             <div style={{ maxHeight: 360, overflowY: 'auto' }}>
               {unread === 0 ? (
@@ -271,7 +271,7 @@ export default function DashboardHeader() {
             <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{businessName}</p>
               {email && <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</p>}
-              <span style={{ display: 'inline-block', marginTop: 10, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--cyan)', background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)', padding: '3px 8px', borderRadius: 6 }}>
+              <span style={{ display: 'inline-block', marginTop: 10, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--cyan)', background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)', padding: '3px 8px', borderRadius: 6 }}>
                 {TIERS[tier].name} plan
               </span>
             </div>
