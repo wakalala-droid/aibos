@@ -40,8 +40,10 @@
   /* Text */
   --text-1:         #ffffff;
   --text-2:         #e2e8f0;
-  --text-3:         #94a3b8;
-  --text-4:         #475569;
+  --text-3:         #9fabbd;
+  /* was #475569 — too dark on the near-black card bg, tiny labels were barely
+     legible. Lifted to a readable muted slate while staying clearly tertiary. */
+  --text-4:         #707d8e;
 
   /* Accent colours — identical to E1 */
   --cyan:           #00d4ff;
@@ -121,8 +123,9 @@
 
   --text-1:         #1c1917;
   --text-2:         #292524;
-  --text-3:         #6b6864;
-  --text-4:         #9c9892;
+  --text-3:         #5d5954;
+  /* was #9c9892 — only ~2.3:1 on white. Darkened for ~4:1 legibility. */
+  --text-4:         #7a746d;
 
   --cyan:           #0284c7;
   --cyan-dim:       rgba(2,132,199,0.08);
@@ -497,7 +500,7 @@ body {
 
 .insight-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.64rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -529,7 +532,7 @@ body {
 
 .engine-tag {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
@@ -580,7 +583,7 @@ body {
 .nav-section {
   padding: 14px 20px 4px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -593,7 +596,7 @@ body {
   align-items: center;
   gap: 3px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.64rem;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 4px;
@@ -610,9 +613,9 @@ body {
   text-align: left;
   padding: 8px 12px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
-  font-weight: 500;
-  color: var(--text-4);
+  font-size: 0.64rem;
+  font-weight: 600;
+  color: var(--text-3);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   border-bottom: 1px solid var(--border);
