@@ -53,6 +53,7 @@ export default function AdminProposalsPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
+  const [tab, setTab] = useState<'pending' | 'active'>('pending');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -244,12 +245,6 @@ export default function AdminProposalsPage() {
   const active = items.filter((p) => p.status === 'monitoring' || p.status === 'stable' || p.status === 'approved');
   const hasLegacy = items.some((p) => p.status === 'approved');
 
-  const sectionHeader = (label: string, count: number) => (
-    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-3)', margin: '20px 0 10px' }}>
-      {label} <span style={{ color: 'var(--text-4)' }}>({count})</span>
-    </p>
-  );
-
   const nav = (
     <nav aria-label="Admin sections" style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
       <Link href="/admin" style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Accounts</Link>
@@ -293,22 +288,58 @@ export default function AdminProposalsPage() {
         </SectionCard>
       ) : (
         <div>
-          {hasLegacy && (
+          {/* Tabs — switch between proposals awaiting review and ones you've approved. */}
+          <div role="tablist" aria-label="Proposal status" style={{ display: 'flex', gap: 6, marginBottom: 18, borderBottom: '1px solid var(--border-md)' }}>
+            {([
+              { key: 'pending', label: 'Pending review', count: pending.length },
+              { key: 'active', label: 'Approved', count: active.length },
+            ] as const).map((t) => {
+              const on = tab === t.key;
+              return (
+                <button key={t.key} role="tab" aria-selected={on} onClick={() => setTab(t.key)}
+                  style={{
+                    fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: on ? 700 : 600,
+                    color: on ? 'var(--text-1)' : 'var(--text-3)', background: 'transparent',
+                    border: 'none', borderBottom: `2px solid ${on ? 'var(--cyan)' : 'transparent'}`,
+                    padding: '10px 14px', marginBottom: -1, cursor: 'pointer',
+                  }}>
+                  {t.label}
+                  <span style={{
+                    marginLeft: 7, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', fontWeight: 700,
+                    color: on ? 'var(--cyan)' : 'var(--text-4)', background: 'var(--bg-badge)',
+                    border: '1px solid var(--border-md)', borderRadius: 20, padding: '1px 7px',
+                  }}>{t.count}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {tab === 'active' && hasLegacy && (
             <button onClick={sweepLegacy} disabled={busy}
-              style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.76rem', fontWeight: 600, color: 'var(--warn)', background: 'var(--bg-badge)', border: '1px solid color-mix(in srgb, var(--warn) 40%, transparent)', borderRadius: 8, padding: '8px 14px', cursor: busy ? 'wait' : 'pointer' }}>
+              style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.76rem', fontWeight: 600, color: 'var(--warn)', background: 'var(--bg-badge)', border: '1px solid color-mix(in srgb, var(--warn) 40%, transparent)', borderRadius: 8, padding: '8px 14px', cursor: busy ? 'wait' : 'pointer', marginBottom: 14 }}>
               Clear all legacy approved rows
             </button>
           )}
 
-          {pending.length > 0 ? sectionHeader('Pending review', pending.length) : null}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {pending.map(renderCard)}
-          </div>
-
-          {active.length > 0 ? sectionHeader('Approved · monitoring & stable', active.length) : null}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {active.map(renderCard)}
-          </div>
+          {(() => {
+            const list = tab === 'pending' ? pending : active;
+            if (list.length === 0) {
+              return (
+                <SectionCard>
+                  <p style={{ color: 'var(--text-3)', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', margin: 0 }}>
+                    {tab === 'pending'
+                      ? 'Nothing awaiting review. Scan a file to generate proposals.'
+                      : 'No approved metrics yet. Approve a pending proposal to start its 15-day monitoring.'}
+                  </p>
+                </SectionCard>
+              );
+            }
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {list.map(renderCard)}
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
