@@ -5,6 +5,7 @@ import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
+import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
 import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid,
@@ -12,8 +13,12 @@ import {
 } from 'recharts';
 
 export default function BreakevenPage() {
-  const { breakeven, monthly, currencySymbol } = useStore();
+  const { breakeven, monthly, currencySymbol, dataShape } = useStore();
   const sym = currencySymbol || 'K';
+
+  if (dataShape === 'cross_sectional') {
+    return <TimeSeriesUnavailable title="Breakeven Analysis" feature="Breakeven analysis" />;
+  }
 
   // ── Null-safe: compute from monthly if breakeven is null ──────────────────
   const totalRevenue = monthly.reduce((s, m) => s + (Number(m.Revenue) || 0), 0);

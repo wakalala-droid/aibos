@@ -127,8 +127,12 @@ export default function OverviewPage() {
   // Real month-over-month growth (no hardcoded numbers — trust is design).
   // Returns undefined when there's no prior month, so KPICard hides the badge
   // rather than showing a fabricated trend.
+  // Month-over-month only makes sense with a real time axis. For item-level
+  // (cross-sectional) files, suppress growth badges — comparing product rows as
+  // "last month vs this month" would be fabricated.
+  const isTimeSeries = dataShape !== 'cross_sectional';
   const lastM = safeMonthly[safeMonthly.length - 1];
-  const prevM = safeMonthly[safeMonthly.length - 2];
+  const prevM = isTimeSeries ? safeMonthly[safeMonthly.length - 2] : undefined;
   const pctGrowth = (cur: number, prev: number | undefined) =>
     prevM && prev !== undefined && prev !== 0 ? ((cur - prev) / Math.abs(prev)) * 100 : undefined;
 

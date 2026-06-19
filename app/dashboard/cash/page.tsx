@@ -4,6 +4,7 @@ import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
+import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -11,8 +12,12 @@ import {
 } from 'recharts';
 
 export default function CashPage() {
-  const { cashflow, monthly, kpi, currencySymbol } = useStore();
+  const { cashflow, monthly, kpi, currencySymbol, dataShape } = useStore();
   const sym = currencySymbol || 'K';
+
+  if (dataShape === 'cross_sectional') {
+    return <TimeSeriesUnavailable title="Cash Position" feature="Cash flow projection" />;
+  }
 
   // ── Null-safe: derive values from real data ──────────────────────────────
   const months      = Math.max(monthly.length, 1);

@@ -5,6 +5,7 @@ import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
+import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
@@ -13,8 +14,12 @@ import {
 } from 'recharts';
 
 export default function AnomalyPage() {
-  const { anomalies, monthly, alerts, currencySymbol } = useStore();
+  const { anomalies, monthly, alerts, currencySymbol, dataShape } = useStore();
   const sym = currencySymbol || 'K';
+
+  if (dataShape === 'cross_sectional') {
+    return <TimeSeriesUnavailable title="Anomaly Detection" feature="Anomaly detection" />;
+  }
 
   // ── Null-safe: derive anomalies from monthly if store.anomalies is empty ─
   const derivedAnomalies = anomalies.length > 0

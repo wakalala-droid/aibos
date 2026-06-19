@@ -5,6 +5,7 @@ import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
+import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -12,8 +13,12 @@ import {
 } from 'recharts';
 
 export default function VariancePage() {
-  const { monthly, alerts, kpi, currencySymbol } = useStore();
+  const { monthly, alerts, kpi, currencySymbol, dataShape } = useStore();
   const sym = currencySymbol || 'K';
+
+  if (dataShape === 'cross_sectional') {
+    return <TimeSeriesUnavailable title="Variance Analysis" feature="Variance analysis" />;
+  }
 
   // ── Null-safe derived metrics ─────────────────────────────────────────────
   const months = Math.max(monthly.length, 1);

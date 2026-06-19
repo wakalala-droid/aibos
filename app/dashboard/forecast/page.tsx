@@ -6,6 +6,7 @@ import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
+import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -66,8 +67,13 @@ function linearFit(ys: number[]): { slope: number; intercept: number } {
 interface Row { month: string; hist?: number; fcast?: number; lower?: number; upper?: number; }
 
 export default function ForecastPage() {
-  const { monthly, kpi, currencySymbol } = useStore();
+  const { monthly, kpi, currencySymbol, dataShape } = useStore();
   const sym = currencySymbol || 'K';
+
+  // No time axis → never fabricate a forecast over item rows (SAFEGUARD).
+  if (dataShape === 'cross_sectional') {
+    return <TimeSeriesUnavailable title="Forecast Engine" feature="Forecasting" />;
+  }
 
   const safeMonthly: Array<Record<string, unknown>> =
     Array.isArray(monthly) ? (monthly as Array<Record<string, unknown>>) : [];
