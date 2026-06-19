@@ -196,8 +196,14 @@ export default function OverviewPage() {
 
   if (hasEngine1) {
     const m = kpi?.avgMargin ?? 0;
+    // Don't call item rows "months" — describe the real scope of the data.
+    const scope = isTimeSeries
+      ? `${safeMonthly.length} month${safeMonthly.length === 1 ? '' : 's'}`
+      : hasItemOps
+        ? `${safeBreakdown.length} product${safeBreakdown.length === 1 ? '' : 's'}`
+        : 'the dataset';
     synthSignals.push({
-      insight: `Average net margin is ${m.toFixed(1)}% across ${safeMonthly.length} month${safeMonthly.length === 1 ? '' : 's'}.`,
+      insight: `Average net margin is ${m.toFixed(1)}% across ${scope}.`,
       action: m < 10 ? 'Margins are thin — review pricing and your largest cost lines.'
             : m < 20 ? 'Workable, but improvable — target your top variable costs.'
             : 'Strong margins — protect them as you scale.',

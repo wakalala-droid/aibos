@@ -240,10 +240,17 @@ export async function checkPaymentStatus(reference: string): Promise<{ reference
 // ─── Subscribe ────────────────────────────────────────────────────────────────
 
 export async function subscribeEmail(payload: { user_id: string; email: string; frequency?: string }): Promise<{ ok: boolean }> {
-  const res = await fetch(`${PROXY}?endpoint=/email/subscribe`, {
+  // Use the Supabase-backed Next route (durable), not the proxy — the old
+  // `?endpoint=` form hit no backend route and returned an HTML 404 page,
+  // which broke JSON parsing.
+  const res = await fetch('/api/brief/subscribe', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(payload),
+    body:    JSON.stringify({ email: payload.email, frequency: payload.frequency }),
   });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error || `Could not subscribe (${res.status}).`);
+  }
   return res.json();
 }

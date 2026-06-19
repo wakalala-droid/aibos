@@ -71,9 +71,45 @@ export async function POST(req: NextRequest) {
 
   try {
     const admin = createServiceClient();
-    const { data, error } = await admin.from('function_proposals').insert(rows).select('id');
+    // Re-scanning REPLACES the previous proposed batch instead of piling up
+    // duplicates. Actioned rows (monitoring/stable/approved) are untouched.
+    await admin.from('function_proposals').delete().eq('status', 'proposed');
+    // Don't re-propose a metric that's already been actioned (match by name).
+    const { data: existing } = await admin
+      .from('function_proposals')
+      .select('name')
+      .neq('status', 'proposed');
+    const taken = new Set((existing ?? []).map((r) => String(r.name).toLowerCase()));
+    const fresh = rows.filter((r) => !taken.has(r.name.toLowerCase()));
+    if (fresh.length === 0) {
+      return NextResponse.json({ ok: true, inserted: 0 });
+    }
+    const { data, error } = await admin.from('function_proposals').insert(fresh).select('id');
     if (error) throw new Error(error.message);
     return NextResponse.json({ ok: true, inserted: data?.length ?? 0 });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
+
+  const url = new URL(req.url);
+  const id = url.searchParams.get('id');
+  const sweep = url.searchParams.get('sweep'); // 'rejected' | 'approved' (legacy cleanup)
+  try {
+    const admin = createServiceClient();
+    if (sweep === 'rejected' || sweep === 'approved') {
+      const { error } = await admin.from('function_proposals').delete().eq('status', sweep);
+      if (error) throw new Error(error.message);
+      return NextResponse.json({ ok: true, swept: sweep });
+    }
+    if (!id) return NextResponse.json({ error: 'id is required.' }, { status: 400 });
+    const { error } = await admin.from('function_proposals').delete().eq('id', id);
+    if (error) throw new Error(error.message);
+    return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
