@@ -74,7 +74,7 @@ export default function AICFOChat() {
     posBusinessName, posPeriod,
     hasEngine2Data, hasEngine3Data,
     intelligenceScores, crossInsights, unifiedBrief,
-    cabinetId, breakdown,
+    cabinetId, breakdown, dataShape,
   } = useStore();
   const sym     = currencySymbol || 'K';
   const userId  = 'default-user';
@@ -101,14 +101,22 @@ export default function AICFOChat() {
     setInit(true);
 
     const loaded: string[] = [];
+    const itemCount = Array.isArray(breakdown) ? breakdown.length : 0;
     if (hasFinancial) {
       const avgMargin = kpi?.avgMargin ?? 0;
-      loaded.push(`${monthly.length}-month financials (${avgMargin.toFixed(1)}% avg margin)`);
+      // Don't say "N-month" for item-level files — those rows are products, not months.
+      if (dataShape === 'cross_sectional') {
+        loaded.push(`item-level financials${itemCount ? ` across ${itemCount} products` : ''} (${avgMargin.toFixed(1)}% avg margin)`);
+      } else {
+        loaded.push(`${monthly.length}-month financials (${avgMargin.toFixed(1)}% avg margin)`);
+      }
     }
     if (hasCustomer) loaded.push(`customer intelligence (${safeRfm.length} customers)`);
     if (hasOps) {
       const net = posGrandTotals?.net_revenue ?? posGrandTotals?.gross_revenue ?? 0;
       loaded.push(`operations data${net ? ` (${sym}${Math.round(net).toLocaleString()} sales)` : ''}`);
+    } else if (itemCount > 0) {
+      loaded.push(`per-item operations (${itemCount} products)`);
     }
 
     const content = loaded.length
@@ -124,7 +132,7 @@ export default function AICFOChat() {
       timestamp: nowTime(),
     };
     setMessages([greeting]);
-  }, [initialized, hasFinancial, hasCustomer, hasOps, kpi, monthly, safeRfm, posGrandTotals, sym]);
+  }, [initialized, hasFinancial, hasCustomer, hasOps, kpi, monthly, safeRfm, posGrandTotals, sym, breakdown, dataShape]);
 
   // Auto-scroll to bottom — but NOT on mount, and only if the user is already
   // at the bottom (no forced scroll when they've scrolled up to read history).
