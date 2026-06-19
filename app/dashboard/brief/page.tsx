@@ -3,6 +3,7 @@ import { useStore } from '@/lib/store';
 import { fmt, scoreColor } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
+import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
 
 function BriefPoint({ text, index, colour }: { text: string; index: number; colour?: string }) {
@@ -98,10 +99,16 @@ function RecommendationCard({
 export default function BriefPage() {
   const {
     kpi, health, monthly, alerts, currencySymbol,
-    intelligenceScores, crossInsights, unifiedBrief,
+    intelligenceScores, crossInsights, unifiedBrief, dataShape,
   } = useStore();
   const sym    = currencySymbol || 'K';
   const scores = intelligenceScores;
+
+  // The brief leans on month-over-month / best-month framing — meaningless for
+  // item-level files, so show the honest notice rather than "Best Month: Period 9".
+  if (dataShape === 'cross_sectional') {
+    return <TimeSeriesUnavailable title="Intelligence Brief" feature="The financial brief" />;
+  }
 
   // ── Safe-derived recommendations from store state ─────────────────────────
   const recs: Array<{ title: string; recommendation: string; priority: string }> = [];
