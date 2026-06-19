@@ -42,7 +42,7 @@ Humble's craft signals, and the AI-BOS analog:
 
 | Humble device | What it does | AI-BOS translation |
 |---|---|---|
-| Warm off-white bg (#f4f3ef), black text, **orange** accent | Premium, human, un-corporate | **DECISION NEEDED — see §10.** Either (a) carry AI-BOS's product identity (deep navy/near-black + **cyan** `--cyan #00d4ff` + engine accents) for continuity, or (b) a warm "premium light" marketing skin. Recommendation: a **light, premium marketing theme** (warm paper bg, near-black ink, cyan + the 3 engine accents as highlights) — bright and trustworthy for first-time SME viewers, while the product stays dark. Reuse the exact Design OS tokens. |
+| Warm off-white bg (#f4f3ef), black text, **orange** accent | Premium, human, un-corporate | **LOCKED (§10.1): warm premium-light base + hybrid dark wow-bands.** Warm paper bg, near-black ink, cyan + engine accents for the marketing frame; full-bleed dark navy+cyan bands (matching the app) for the AI-CFO and product showcases. Reuse the exact Design OS tokens. |
 | Painterly, anime-style hero illustration (factory in a green valley at sunset) | Aspirational, calm, "your world but better" | A painterly **African business scene** — a Lusaka high-street shop / market / restaurant at golden hour, warm and hopeful, with subtle data/light motifs. Commission or AI-generate at high res; one consistent illustrator style across all hero/footer scenes. |
 | Glossy **3D floating chips** with iridescent edges (ERP/QMS/MES/XLSX) | "Powerful systems, made tangible" | The **5 engines as floating 3D objects**: Financial (AI CFO), Customer, Operations, Forecasting, Decision. Glassy, soft-blurred, slow float. Built in Spline/Three.js or pre-rendered PNG/WebP sprites with CSS transform float. (See §4 for motion + the in-product ban.) |
 | Bold grotesque headlines, generous whitespace, centered sections | Confident, calm, scannable | Inter 800/900 for headlines (already the product font), JetBrains Mono for eyebrows/labels. Big type, lots of air, one idea per section. |
@@ -225,15 +225,31 @@ critique_engine's six levels before "done".
 
 ---
 
-## 10. OPEN QUESTIONS — discuss before building
-1. **Identity:** keep AI-BOS dark-cyber for the landing, or a warm "premium light" marketing
-   skin (recommended)? This sets everything else.
-2. **Illustration:** painterly African-business scenes — commission, AI-generate, or stock?
-   Need one consistent style + source.
-3. **3D engines:** Spline (live, heavier) vs pre-rendered sprites (lighter)? Performance vs wow.
-4. **Hosting:** apex marketing + app subdomain, separate route group, or separate app?
-5. **ROI calculator:** how aggressive on claims? (Doctrine says honest/ranged only.)
-6. **Testimonials:** none yet — placeholder slots now, or omit until real ones exist?
+## 10. DECISIONS (locked 2026-06-19 — build to these)
+1. **Identity = warm premium-light BASE + hybrid dark wow-bands.** The hero and all copy/
+   trust/pricing sections use the warm premium-light skin (warm paper bg, near-black ink,
+   cyan + engine accents). Insert a few **full-bleed dark "product showcase" bands** (deep
+   navy + cyan glow, matching the app) for the dramatic moments — the **AI CFO "ask
+   anything"** demo, the **forecast/engines showcase** — so the product is shown in its
+   native dark skin while the marketing frame stays bright and human. Reuse Design OS tokens
+   for both; define a `[data-marketing]` light token set + reuse the product dark tokens for
+   the dark bands.
+2. **3D engines = pre-rendered sprites by default, Spline live where the wow earns it.**
+   Default to lightweight pre-rendered PNG/WebP engine objects with CSS-transform float
+   (fast LCP everywhere). Use a **live Spline scene only for the hero engine cluster** (and
+   possibly one showcase band) where interactivity/depth materially raises the wow — lazy-
+   loaded, paused offscreen, with a static sprite fallback for reduced-motion / slow devices.
+3. **Illustration = AI-generated, art-directed.** Generate a consistent painterly style
+   (Lusaka shop / market / restaurant at golden hour, warm + hopeful, subtle data-light
+   motifs). Lock one style reference first, then generate the set; export high-res WebP.
+4. **Hosting = separate route group `app/(marketing)/`** in this repo, with its own layout
+   (no AppShell/sidebar) and the marketing theme. Move the product entry so `/` can serve
+   marketing (e.g. product on `/app` or keep `/dashboard`), and **update `middleware.ts`** so
+   marketing routes are public. One repo, one deploy, shared tokens/components.
+5. **ROI calculator:** honest, ranged claims only (no fabricated precision) — per
+   `conversion_psychology.md` + the SAFEGUARD no-fabrication ethos.
+6. **Testimonials:** placeholder slots now (clearly marked), swap in named Lusaka customers
+   once 3–5 exist.
 
 ---
 
