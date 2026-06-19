@@ -11,6 +11,7 @@ import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
 import BriefSubscribe from '@/components/ui/BriefSubscribe';
 import DataManifestCard from '@/components/ui/DataManifestCard';
+import CustomMetricsCard from '@/components/ui/CustomMetricsCard';
 import BorderGlow from '@/components/ui/BorderGlow';
 import { cometProps } from '@/lib/cometStyle';
 import Link from 'next/link';
@@ -328,6 +329,9 @@ export default function OverviewPage() {
 
           {/* How AI-BOS read your file (self-hides when there's no manifest) */}
           <DataManifestCard />
+
+          {/* Owner-approved custom metrics, computed live (self-hides otherwise) */}
+          <CustomMetricsCard />
 
           {/* Revenue chart — hidden for cross-sectional files, where a time line
               over non-time rows would be misleading (SAFEGUARD: no fabrication). */}

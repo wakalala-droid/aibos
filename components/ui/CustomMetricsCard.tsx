@@ -1,0 +1,92 @@
+'use client';
+
+// CustomMetricsCard — shows owner-APPROVED function proposals (SAFEGUARD Layer 2)
+// computed live on the current file. Owner-only. Every metric is re-critiqued at
+// compute time, so a metric that no longer passes the gate is flagged for review
+// instead of showing a bogus number (no deception).
+
+import { useCallback, useEffect, useState } from 'react';
+import { useStore } from '@/lib/store';
+import { useProfile } from '@/lib/profile';
+import SectionCard from './SectionCard';
+
+interface ComputeResult {
+  name: string;
+  value?: number;
+  ok: boolean;
+  error?: string;
+}
+interface ApprovedProposal {
+  name: string;
+  formula: string;
+  inputs: string[];
+  status: string;
+  critique?: { passed?: boolean };
+}
+
+export default function CustomMetricsCard() {
+  const { isAdmin } = useProfile();
+  const { cabinetId } = useStore();
+  const [results, setResults] = useState<ComputeResult[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const run = useCallback(async () => {
+    if (!isAdmin || !cabinetId) return;
+    setLoading(true);
+    try {
+      const r = await fetch('/api/admin/proposals');
+      if (!r.ok) return;
+      const j = await r.json();
+      const approved = ((j.proposals as ApprovedProposal[]) ?? []).filter((p) => p.status === 'approved');
+      if (approved.length === 0) { setResults([]); return; }
+
+      const c = await fetch(`/api/proxy/compute-metrics?cabinet_id=${encodeURIComponent(cabinetId)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ metrics: approved.map((p) => ({ name: p.name, formula: p.formula, inputs: p.inputs })) }),
+      });
+      if (!c.ok) return;
+      const cj = await c.json();
+      setResults((cj.results as ComputeResult[]) ?? []);
+    } catch {
+      /* non-fatal */
+    } finally {
+      setLoading(false);
+    }
+  }, [isAdmin, cabinetId]);
+
+  useEffect(() => { void run(); }, [run]);
+
+  if (!isAdmin || (!loading && results.length === 0)) return null;
+
+  return (
+    <SectionCard
+      title="Custom Metrics"
+      subtitle="Owner-approved functions, computed live on this file · re-checked each run"
+      delay={0.16}
+    >
+      {loading ? (
+        <p style={{ color: 'var(--text-3)', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', margin: 0 }}>Computing…</p>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+          {results.map((m) => (
+            <div key={m.name} style={{ padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border)' }}>
+              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.4 }}>
+                {m.name}
+              </p>
+              {m.ok ? (
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--cyan)', margin: 0, letterSpacing: '-0.03em' }}>
+                  {typeof m.value === 'number' ? m.value.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}
+                </p>
+              ) : (
+                <p title={m.error} style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: 'var(--warn)', margin: 0, lineHeight: 1.4 }}>
+                  ⚠ flagged — failed re-check
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </SectionCard>
+  );
+}
