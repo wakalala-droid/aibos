@@ -15,8 +15,10 @@ interface ComputeResult {
   value?: number;
   ok: boolean;
   error?: string;
+  status?: string;
 }
 interface ApprovedProposal {
+  id: string;
   name: string;
   formula: string;
   inputs: string[];
@@ -37,17 +39,37 @@ export default function CustomMetricsCard() {
       const r = await fetch('/api/admin/proposals');
       if (!r.ok) return;
       const j = await r.json();
-      const approved = ((j.proposals as ApprovedProposal[]) ?? []).filter((p) => p.status === 'approved');
-      if (approved.length === 0) { setResults([]); return; }
+      // Live metrics = those past the gate: in their monitoring window or stable.
+      const active = ((j.proposals as ApprovedProposal[]) ?? []).filter(
+        (p) => p.status === 'monitoring' || p.status === 'stable',
+      );
+      if (active.length === 0) { setResults([]); return; }
 
       const c = await fetch(`/api/proxy/compute-metrics?cabinet_id=${encodeURIComponent(cabinetId)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ metrics: approved.map((p) => ({ name: p.name, formula: p.formula, inputs: p.inputs })) }),
+        body: JSON.stringify({ metrics: active.map((p) => ({ name: p.name, formula: p.formula, inputs: p.inputs })) }),
       });
       if (!c.ok) return;
       const cj = await c.json();
-      setResults((cj.results as ComputeResult[]) ?? []);
+      const results = ((cj.results as ComputeResult[]) ?? []).map((res) => {
+        const p = active.find((a) => a.name === res.name);
+        return { ...res, status: p?.status };
+      });
+      setResults(results);
+
+      // Monitoring = 15 days of back-to-back scrutiny: record each re-check so the
+      // metric only earns "stable" after holding up over the window.
+      void Promise.all(
+        results.map((res) => {
+          const p = active.find((a) => a.name === res.name);
+          if (!p || p.status !== 'monitoring') return null;
+          return fetch('/api/admin/proposals', {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: p.id, action: 'record-run', pass: res.ok }),
+          }).catch(() => null);
+        }),
+      );
     } catch {
       /* non-fatal */
     } finally {
@@ -81,6 +103,11 @@ export default function CustomMetricsCard() {
               ) : (
                 <p title={m.error} style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: 'var(--warn)', margin: 0, lineHeight: 1.4 }}>
                   ⚠ flagged — failed re-check
+                </p>
+              )}
+              {m.status && (
+                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: m.status === 'stable' ? 'var(--good)' : 'var(--cyan)', margin: '6px 0 0' }}>
+                  {m.status === 'stable' ? 'stable' : 'monitoring'}
                 </p>
               )}
             </div>

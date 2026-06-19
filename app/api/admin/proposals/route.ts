@@ -16,7 +16,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-server';
 import { createServiceClient } from '@/lib/supabase-admin';
 
-const STATUSES = ['proposed', 'approved', 'rejected', 'implemented'] as const;
+const STATUSES = ['proposed', 'rejected', 'monitoring', 'stable', 'implemented'] as const;
+const MONITOR_DAYS = 15;
 
 export async function GET() {
   const auth = await requireAdmin();
@@ -82,17 +83,59 @@ export async function PATCH(req: NextRequest) {
   const auth = await requireAdmin();
   if (!auth.ok) return auth.response;
 
-  const body = (await req.json().catch(() => ({}))) as { id?: string; status?: string };
-  if (!body.id || !STATUSES.includes(body.status as (typeof STATUSES)[number])) {
-    return NextResponse.json({ error: 'id and a valid status are required.' }, { status: 400 });
+  const body = (await req.json().catch(() => ({}))) as {
+    id?: string;
+    status?: string;
+    action?: string;
+    pass?: boolean;
+  };
+  if (!body.id) {
+    return NextResponse.json({ error: 'id is required.' }, { status: 400 });
   }
+
+  const admin = createServiceClient();
+  const now = new Date().toISOString();
+
   try {
-    const admin = createServiceClient();
+    // ── Monitoring run: record one re-evaluation during the 15-day window. ────
+    if (body.action === 'record-run') {
+      const { data: cur } = await admin
+        .from('function_proposals')
+        .select('monitor_runs, monitor_fails')
+        .eq('id', body.id)
+        .maybeSingle();
+      const runs = (cur?.monitor_runs ?? 0) + 1;
+      const fails = (cur?.monitor_fails ?? 0) + (body.pass === false ? 1 : 0);
+      const { error } = await admin
+        .from('function_proposals')
+        .update({ monitor_runs: runs, monitor_fails: fails, last_monitored_at: now })
+        .eq('id', body.id);
+      if (error) throw new Error(error.message);
+      return NextResponse.json({ ok: true, monitor_runs: runs, monitor_fails: fails });
+    }
+
+    // ── Status change ─────────────────────────────────────────────────────────
+    if (!STATUSES.includes(body.status as (typeof STATUSES)[number])) {
+      return NextResponse.json({ error: 'a valid status or action is required.' }, { status: 400 });
+    }
+
+    const patch: Record<string, unknown> = {
+      status: body.status,
+      reviewed_by: auth.user.email,
+      reviewed_at: now,
+    };
+    // Approval = enter the monitoring window, not "final". Reset counters.
+    if (body.status === 'monitoring') {
+      patch.monitor_until = new Date(Date.now() + MONITOR_DAYS * 86400_000).toISOString();
+      patch.monitor_runs = 0;
+      patch.monitor_fails = 0;
+    }
+
     const { data, error } = await admin
       .from('function_proposals')
-      .update({ status: body.status, reviewed_by: auth.user.email, reviewed_at: new Date().toISOString() })
+      .update(patch)
       .eq('id', body.id)
-      .select('id, status')
+      .select('id, status, monitor_until')
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return NextResponse.json({ error: 'Proposal not found.' }, { status: 404 });

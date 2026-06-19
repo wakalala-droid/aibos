@@ -71,10 +71,25 @@ Every proposal must pass **all**:
 | **Sandbox** | Formula runs isolated: no network, no DB, no filesystem, CPU/mem/time-boxed, only the uploaded columns. |
 | **Anti-hallucination** | Every output value must be traceable to real input columns; no constants pulled from nowhere. |
 | **Core-immutability** | Static check: proposal cannot import/modify `engine*.py`; lives in `extensions/` with a fixed read-only interface. |
+| **Non-degenerate** | Rejects self-subtraction (`X − X`), all-zero/constant results, and the same column used for two inputs. |
+| **Non-trivial** | Must combine ≥2 distinct columns or aggregate — blocks "metrics" that just echo/rescale one column. |
+| **Bounded** | Result must be a plausible magnitude (guards unit/scale errors). |
 | **Critic LLM** | A second model scores it against a rubric: real need? math correct? could it mislead? duplicate of existing? |
 | **Provenance** | Must carry confidence + citations for any external benchmark. |
 
-A proposal that fails any check never reaches the owner as "ready."
+A proposal that fails any check never reaches the owner as "ready." Approval is **not** trust — see Layer 3.
+
+### Layer 3 — Monitoring & Evaluation (the cooling-off period)
+Because a human can over-approve, approval does **not** make a metric final. An
+approved metric enters a **15-day monitoring window**:
+- It is **re-critiqued on every use** (the compute path runs the full gate again);
+  each run is recorded (`monitor_runs`), and any failure increments `monitor_fails`.
+- It only becomes **`stable`** after the window elapses **with zero failures**. Any
+  failure keeps it in monitoring (or drops it) — it can never silently go stable.
+- Lifecycle: `proposed → (gate) → monitoring (15d) → stable → implemented`, or
+  `rejected` at any point. A `monitoring`/`stable` metric shows live on the owner
+  dashboard, clearly labelled; a `stable` one has earned trust through time, not a
+  single click.
 
 ### (5) Review queue + approval
 Passing proposals land in an **owner-only review queue** with: plain-English explanation,

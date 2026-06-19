@@ -26,11 +26,20 @@ interface Proposal {
   status: string;
   source_file: string | null;
   created_at: string;
+  monitor_until?: string | null;
+  monitor_runs?: number;
+  monitor_fails?: number;
 }
 
 const STATUS_TONE: Record<string, string> = {
-  proposed: 'var(--warn)', approved: 'var(--good)', rejected: 'var(--crit)', implemented: 'var(--cyan)',
+  proposed: 'var(--warn)', monitoring: 'var(--cyan)', stable: 'var(--good)',
+  rejected: 'var(--crit)', implemented: 'var(--purple)',
 };
+
+function daysLeft(until?: string | null): number {
+  if (!until) return 0;
+  return Math.max(0, Math.ceil((new Date(until).getTime() - Date.now()) / 86400000));
+}
 
 export default function AdminProposalsPage() {
   const { cabinetId, filename } = useStore();
@@ -94,7 +103,8 @@ export default function AdminProposalsPage() {
       if (!r.ok) { const j = await r.json(); throw new Error(j.error || 'Update failed'); }
     } catch (e) {
       setNote((e as Error).message);
-      await load();
+    } finally {
+      await load();  // refresh to pick up monitor_until / counters set server-side
     }
   }, [load]);
 
@@ -173,10 +183,10 @@ export default function AdminProposalsPage() {
 
                 {p.status === 'proposed' && (
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={() => setStatus(p.id, 'approved')} disabled={!passed}
-                      title={passed ? '' : 'Cannot approve — failed the critique gate'}
+                    <button onClick={() => setStatus(p.id, 'monitoring')} disabled={!passed}
+                      title={passed ? 'Approve into a 15-day monitoring window' : 'Cannot approve — failed the critique gate'}
                       style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.76rem', fontWeight: 700, color: passed ? '#04210f' : 'var(--text-4)', background: passed ? 'var(--good)' : 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 14px', cursor: passed ? 'pointer' : 'not-allowed' }}>
-                      Approve
+                      Approve → 15-day monitor
                     </button>
                     <button onClick={() => setStatus(p.id, 'rejected')}
                       style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-2)', background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer' }}>
@@ -184,6 +194,34 @@ export default function AdminProposalsPage() {
                     </button>
                   </div>
                 )}
+
+                {p.status === 'monitoring' && (() => {
+                  const dl = daysLeft(p.monitor_until);
+                  const fails = p.monitor_fails ?? 0;
+                  const runs = p.monitor_runs ?? 0;
+                  const eligible = dl === 0 && fails === 0 && runs > 0;
+                  return (
+                    <div>
+                      <div role="status" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-3)', margin: '0 0 10px' }}>
+                        <span style={{ color: 'var(--cyan)' }}>Monitoring · {dl} day{dl === 1 ? '' : 's'} left</span>
+                        <span>re-checks {runs}</span>
+                        <span style={{ color: fails > 0 ? 'var(--crit)' : 'var(--good)' }}>failures {fails}</span>
+                        {fails > 0 && <span style={{ color: 'var(--crit)' }}>— not stable until it holds 0 failures for the full window</span>}
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => setStatus(p.id, 'stable')} disabled={!eligible}
+                          title={eligible ? 'Promote to stable' : `Stable after ${dl} more day(s) with 0 failures (${runs} re-checks so far)`}
+                          style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.76rem', fontWeight: 700, color: eligible ? '#04210f' : 'var(--text-4)', background: eligible ? 'var(--good)' : 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 14px', cursor: eligible ? 'pointer' : 'not-allowed' }}>
+                          Promote to stable
+                        </button>
+                        <button onClick={() => setStatus(p.id, 'rejected')}
+                          style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-2)', background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer' }}>
+                          Drop
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
               </SectionCard>
             );
           })}

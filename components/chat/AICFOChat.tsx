@@ -74,7 +74,7 @@ export default function AICFOChat() {
     posBusinessName, posPeriod,
     hasEngine2Data, hasEngine3Data,
     intelligenceScores, crossInsights, unifiedBrief,
-    cabinetId,
+    cabinetId, breakdown,
   } = useStore();
   const sym     = currencySymbol || 'K';
   const userId  = 'default-user';
@@ -198,6 +198,12 @@ export default function AICFOChat() {
       };
     }
 
+    // ── Per-item breakdown (item-level files like the product model) ─────────
+    // Sent regardless of engine so the AI can answer "which product sold most".
+    if (Array.isArray(breakdown) && breakdown.length > 0) {
+      ctx.item_breakdown = breakdown.slice(0, 30);
+    }
+
     // ── Cross-engine intelligence ───────────────────────────────────────────
     const safeInsights = Array.isArray(crossInsights) ? crossInsights : [];
     if (intelligenceScores || safeInsights.length || unifiedBrief) {
@@ -215,7 +221,7 @@ export default function AICFOChat() {
     sym, cabinetId, hasFinancial, hasCustomer, hasOps, kpi, health, monthly, alerts,
     safeRfm, segments, clvTiers, retention, posGrandTotals, categories, topItems,
     benchmarks, attachRates, posBusinessName, posPeriod, intelligenceScores,
-    crossInsights, unifiedBrief,
+    crossInsights, unifiedBrief, breakdown,
   ]);
 
   const sendMessage = useCallback(async (text: string) => {
