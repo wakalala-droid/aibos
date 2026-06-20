@@ -302,6 +302,53 @@
 }
 .aibos-window-body { padding: clamp(14px, 2vw, 22px); }
 
+/* ── Strategic Intelligence section (rising-graph divider) ─────── */
+.si-section { position: relative; overflow: hidden; padding-block: clamp(72px, 10vw, 150px); }
+.si-graph { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.si-nodes { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.si-node {
+  position: absolute; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--cyan); transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cyan) 18%, transparent);
+}
+.si-node-end { width: 13px; height: 13px; box-shadow: 0 0 0 5px color-mix(in srgb, var(--cyan) 22%, transparent); }
+.si-node-end::after {
+  content: ''; position: absolute; inset: -6px; border-radius: 50%;
+  border: 1.5px solid var(--cyan); opacity: 0; animation: si-pulse 2.6s ease-out infinite;
+}
+@keyframes si-pulse {
+  0%   { transform: scale(0.6); opacity: 0.7; }
+  70%  { transform: scale(2.1); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+.si-grid {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 0.92fr 1.08fr;
+  gap: clamp(32px, 5vw, 80px); align-items: center;
+}
+.si-left { align-self: center; }
+
+.si-brief-wrap { position: relative; }
+.si-brief { max-height: 620px; overflow: hidden; }
+/* progressive blur + fade at the bottom — the document continues below */
+.si-brief-fade {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 190px;
+  border-radius: 0 0 16px 16px; pointer-events: none;
+  background: linear-gradient(to bottom, transparent 0%, var(--bg-page) 86%);
+  -webkit-backdrop-filter: blur(2.5px); backdrop-filter: blur(2.5px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 70%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 70%);
+}
+
+@media (max-width: 900px) {
+  [data-marketing] .si-grid { grid-template-columns: 1fr; }
+  [data-marketing] .si-graph, [data-marketing] .si-nodes { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-marketing] .si-node-end::after { animation: none; }
+}
+
 /* generic showcase 2-col band (reverses on alternating sections) */
 .mkt-showcase { display:grid; grid-template-columns: 0.92fr 1.08fr; gap: clamp(32px, 5vw, 72px); align-items:center; }
 .mkt-showcase.reverse > :first-child { order: 2; }
