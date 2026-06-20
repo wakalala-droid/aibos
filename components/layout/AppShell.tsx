@@ -12,6 +12,11 @@ import { ProfileProvider } from '@/lib/profile';
 // navigation — you aren't signed in yet.
 const BARE_ROUTES = ['/login', '/auth'];
 
+// Public marketing surface. These live in app/(marketing)/ and bring their own
+// chrome (MarketingNav / MarketingFooter) + warm-light skin, so AppShell must
+// render them bare too.
+const MARKETING_ROUTES = ['/', '/pricing', '/trust', '/about'];
+
 function HamburgerIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -39,9 +44,9 @@ function MoonIcon() {
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
-  const isBare = BARE_ROUTES.some(
-    (r) => pathname === r || pathname.startsWith(`${r}/`)
-  );
+  const isBare =
+    BARE_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`)) ||
+    MARKETING_ROUTES.includes(pathname);
 
   const mobileNavOpen = useStore((s) => s.mobileNavOpen);
   const toggleMobileNav = useStore((s) => s.toggleMobileNav);
