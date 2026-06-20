@@ -114,7 +114,8 @@ export default function AICFOChat() {
     if (hasCustomer) loaded.push(`customer intelligence (${safeRfm.length} customers)`);
     if (hasOps) {
       const net = posGrandTotals?.net_revenue ?? posGrandTotals?.gross_revenue ?? 0;
-      loaded.push(`operations data${net ? ` (${sym}${Math.round(net).toLocaleString()} sales)` : ''}`);
+      const per = typeof posPeriod === 'string' && posPeriod.trim() ? ` for ${posPeriod.trim()}` : '';
+      loaded.push(`POS sales${per}${net ? ` (${sym}${Math.round(net).toLocaleString()})` : ''}`);
     } else if (itemCount > 0) {
       loaded.push(`per-item operations (${itemCount} products)`);
     }
@@ -132,7 +133,7 @@ export default function AICFOChat() {
       timestamp: nowTime(),
     };
     setMessages([greeting]);
-  }, [initialized, hasFinancial, hasCustomer, hasOps, kpi, monthly, safeRfm, posGrandTotals, sym, breakdown, dataShape]);
+  }, [initialized, hasFinancial, hasCustomer, hasOps, kpi, monthly, safeRfm, posGrandTotals, posPeriod, sym, breakdown, dataShape]);
 
   // Auto-scroll to bottom — but NOT on mount, and only if the user is already
   // at the bottom (no forced scroll when they've scrolled up to read history).
