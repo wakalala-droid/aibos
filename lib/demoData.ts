@@ -5,7 +5,38 @@
  * believable data and full interactivity. Honest, internally-consistent numbers;
  * no fabricated trends beyond this demo dataset.
  */
-import type { MonthlyRow, IntelligenceScoresShape, DataManifest, ItemBreakdownRow } from '@/lib/store';
+import type { MonthlyRow, IntelligenceScoresShape, DataManifest, ItemBreakdownRow, KpiShape, HealthShape, AlertRow } from '@/lib/store';
+
+// ── Full Strategic Brief dataset (12 months, internally consistent) ──────────
+// Sums exactly: revenue K3.71M, costs K2.59M, profit K1.12M, 30.2% margin.
+// Best month Dec (K154k profit), worst Sep (K13k). Fed to the genuine
+// StrategicBriefView so the brief derives its own recommendations — no fabrication.
+const BRIEF_MONTHLY: MonthlyRow[] = [
+  { Month: 'Jan', Revenue: 295000, Costs: 207000 },
+  { Month: 'Feb', Revenue: 300000, Costs: 205000 },
+  { Month: 'Mar', Revenue: 308000, Costs: 209000 },
+  { Month: 'Apr', Revenue: 312000, Costs: 210000 },
+  { Month: 'May', Revenue: 298000, Costs: 214000 },
+  { Month: 'Jun', Revenue: 310000, Costs: 214000 },
+  { Month: 'Jul', Revenue: 318000, Costs: 217000 },
+  { Month: 'Aug', Revenue: 300000, Costs: 210000 },
+  { Month: 'Sep', Revenue: 270000, Costs: 257000 },
+  { Month: 'Oct', Revenue: 325000, Costs: 221000 },
+  { Month: 'Nov', Revenue: 305000, Costs: 211000 },
+  { Month: 'Dec', Revenue: 369000, Costs: 215000 },
+];
+
+export const DEMO_BRIEF: {
+  kpi: KpiShape; health: HealthShape; monthly: MonthlyRow[]; alerts: AlertRow[];
+  scores: IntelligenceScoresShape; unifiedBrief: string;
+} = {
+  kpi: { totalRevenue: 3710000, totalCosts: 2590000, totalProfit: 1120000, avgMargin: 30.2 },
+  health: { score: 75, label: 'Excellent', bestMonth: 'December', worstMonth: 'September' },
+  monthly: BRIEF_MONTHLY,
+  alerts: [],
+  scores: { overall_score: 75, overall_label: 'Excellent', e1_score: 75, e2_score: 0, e3_score: 60 },
+  unifiedBrief: '',
+};
 
 export const DEMO_BUSINESS = 'Zoe’s Kitchen · Lusaka';
 
