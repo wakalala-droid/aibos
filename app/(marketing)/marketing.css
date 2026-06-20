@@ -302,63 +302,37 @@
 }
 .aibos-window-body { padding: clamp(14px, 2vw, 22px); }
 
-/* ── Strategic Intelligence section (genuine brief + rising-graph reveal) ─── */
-.si-section { position: relative; overflow: hidden; padding-block: clamp(64px, 9vw, 130px); }
+/* ── Strategic Intelligence (text on white → rising line → genuine brief) ─── */
+.si-section { position: relative; overflow: hidden; padding-top: clamp(60px, 8vw, 110px); }
+.si-top { text-align: left; padding-bottom: clamp(8px, 2vw, 24px); }
+.si-headline { max-width: 860px; }
 
-/* the growth line + nodes sit IN FRONT of the brief — they reveal it */
-.si-graph { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
-.si-nodes { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
-.si-node {
-  position: absolute; width: 9px; height: 9px; border-radius: 50%;
-  background: var(--cyan); transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cyan) 18%, transparent),
-              0 0 14px 2px color-mix(in srgb, var(--cyan) 45%, transparent);
-}
-.si-node-end { width: 13px; height: 13px; }
-.si-node-end::after {
-  content: ''; position: absolute; inset: -6px; border-radius: 50%;
-  border: 1.5px solid var(--cyan); opacity: 0; animation: si-pulse 2.6s ease-out infinite;
-}
-@keyframes si-pulse {
-  0%   { transform: scale(0.6); opacity: 0.7; }
-  70%  { transform: scale(2.1); opacity: 0; }
-  100% { opacity: 0; }
-}
-
-.si-grid {
+/* dark band where the brief is revealed; its top fades up from the warm bg */
+.si-brief-zone {
   position: relative;
-  display: grid; grid-template-columns: 0.8fr 1.2fr;
-  gap: clamp(28px, 4vw, 64px); align-items: start;
+  background: linear-gradient(to bottom, #f4f3ef 0%, #06090f 150px, #06090f 100%);
+  padding-top: clamp(118px, 16vw, 196px);
 }
-.si-left { position: relative; z-index: 3; align-self: start; padding-top: clamp(8px, 4vw, 56px); }
-
-.si-brief-wrap { position: relative; z-index: 1; }
-/* The GENUINE brief, capped + feathered into the dark bg (colours fade, no white) */
+/* the growth line straddles the white→dark seam, rising left→right */
+.si-line {
+  position: absolute; top: 0; left: 0; width: 100%;
+  height: clamp(150px, 20vw, 240px); z-index: 3; pointer-events: none;
+}
+/* the GENUINE brief — full-width, borderless, feathered into the dark at the bottom */
 .si-brief {
   position: relative;
-  max-height: clamp(680px, 96vh, 1080px);
+  max-height: clamp(620px, 88vh, 1020px);
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 66%, transparent 97%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 66%, transparent 97%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 70%, transparent 99%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 70%, transparent 99%);
 }
-/* fit the brief's internal KPI grid into the narrower column */
-.si-brief .grid-kpi { grid-template-columns: repeat(2, 1fr); }
-/* high-quality, colour-preserving blur over the lower half — ramps in downward */
+/* high-quality, colour-preserving blur over the lower decisions (the "red line") */
 .si-brief-blur {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 52%;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 46%;
   pointer-events: none;
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 55%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 55%);
-}
-
-@media (max-width: 900px) {
-  [data-marketing] .si-grid { grid-template-columns: 1fr; }
-  [data-marketing] .si-graph, [data-marketing] .si-nodes { display: none; }
-  [data-marketing] .si-brief { max-height: 560px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-marketing] .si-node-end::after { animation: none; }
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 56%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 56%);
 }
 
 /* generic showcase 2-col band (reverses on alternating sections) */
