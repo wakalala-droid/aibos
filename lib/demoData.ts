@@ -44,6 +44,53 @@ export const DEMO_MANIFEST: DataManifest = {
   grouping_column: null,
 };
 
+// Forecast: historical (hist) + 3-month projection (fcast) with 95% band.
+// The May row carries fcast too, so the dashed forecast line connects to history.
+export const DEMO_FORECAST = [
+  { month: 'Dec', hist: 198000 },
+  { month: 'Jan', hist: 214500 },
+  { month: 'Feb', hist: 231000 },
+  { month: 'Mar', hist: 248000 },
+  { month: 'Apr', hist: 263000 },
+  { month: 'May', hist: 284500, fcast: 284500 },
+  { month: 'Jun', fcast: 299500, lower: 275540, upper: 323460 },
+  { month: 'Jul', fcast: 314500, lower: 289340, upper: 339660 },
+  { month: 'Aug', fcast: 329500, lower: 303140, upper: 355860 },
+];
+
+// Cash position: the May dip (anomaly) then a projected recovery after action.
+export const DEMO_CASH_PROJECTION = [
+  { label: 'Dec', cash: 120000 },
+  { label: 'Jan', cash: 112000 },
+  { label: 'Feb', cash: 118000 },
+  { label: 'Mar', cash: 104000 },
+  { label: 'Apr', cash: 99000 },
+  { label: 'May', cash: 96200 },
+  { label: 'Jun', cash: 108000 },
+  { label: 'Jul', cash: 121000 },
+  { label: 'Aug', cash: 134000 },
+];
+export const DEMO_RUNWAY = 11;
+
+// Anomaly Z-scores: a cost spike in May crosses the critical threshold.
+export const DEMO_ANOMALY_Z = [
+  { month: 'Dec', revZ: 0.4, costZ: 0.5 },
+  { month: 'Jan', revZ: 0.6, costZ: 0.7 },
+  { month: 'Feb', revZ: 0.5, costZ: 0.6 },
+  { month: 'Mar', revZ: 0.8, costZ: 1.1 },
+  { month: 'Apr', revZ: 0.7, costZ: 1.6 },
+  { month: 'May', revZ: 0.9, costZ: 2.3 },
+];
+
+// Customer RFM segments.
+export const DEMO_SEGMENTS = [
+  { name: 'Champions', value: 42, colour: '#34d399' },
+  { name: 'Loyal',     value: 88, colour: '#60a5fa' },
+  { name: 'At Risk',   value: 31, colour: '#fbbf24' },
+  { name: 'Lost',      value: 19, colour: '#f87171' },
+];
+export const DEMO_RETENTION = { rate: 63.4, returning: 114, firstTime: 66 };
+
 export const DEMO_BREAKDOWN: ItemBreakdownRow[] = [
   { item: 'Grilled Chicken Platter', revenue: 64200, costs: 41100, profit: 23100, margin: 36.0, rows: 312, units: 1840 },
   { item: 'Nshima & Stew',           revenue: 29800, costs: 16300, profit: 13500, margin: 45.3, rows: 410, units: 2050 },
