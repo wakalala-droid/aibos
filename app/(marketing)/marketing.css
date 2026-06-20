@@ -302,38 +302,46 @@
 }
 .aibos-window-body { padding: clamp(14px, 2vw, 22px); }
 
-/* ── Strategic Intelligence (text on white → rising line → genuine brief) ─── */
+/* ── Strategic Intelligence (text on white → rising line cuts to dark → brief) ─ */
 .si-section { position: relative; overflow: hidden; padding-top: clamp(60px, 8vw, 110px); }
-.si-top { text-align: left; padding-bottom: clamp(8px, 2vw, 24px); }
+.si-top { text-align: left; padding-bottom: clamp(8px, 2vw, 28px); }
 .si-headline { max-width: 860px; }
 
-/* dark band where the brief is revealed; its top fades up from the warm bg */
-.si-brief-zone {
-  position: relative;
-  background: linear-gradient(to bottom, #f4f3ef 0%, #06090f 150px, #06090f 100%);
-  padding-top: clamp(118px, 16vw, 196px);
+/* White zone. The SVG fills everything BELOW the line dark → a crisp white→dark
+   divider with no grey shadow. */
+.si-brief-zone { position: relative; background: #f4f3ef; padding-top: clamp(150px, 17vw, 210px); }
+.si-line { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.si-tip {
+  position: absolute; left: 97.6%; top: 2.9%; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--cyan); transform: translate(-50%, -50%); z-index: 2; pointer-events: none;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cyan) 16%, transparent),
+              0 0 16px 3px color-mix(in srgb, var(--cyan) 55%, transparent);
 }
-/* the growth line straddles the white→dark seam, rising left→right */
-.si-line {
-  position: absolute; top: 0; left: 0; width: 100%;
-  height: clamp(150px, 20vw, 240px); z-index: 3; pointer-events: none;
+.si-tip::after {
+  content: ''; position: absolute; inset: -5px; border-radius: 50%;
+  border: 1.5px solid var(--cyan); opacity: 0; animation: si-pulse 2.6s ease-out infinite;
 }
-/* the GENUINE brief — full-width, borderless, feathered into the dark at the bottom */
+@keyframes si-pulse {
+  0% { transform: scale(0.6); opacity: 0.7; } 70% { transform: scale(2.2); opacity: 0; } 100% { opacity: 0; }
+}
+
+/* The GENUINE brief — full-width, borderless. Feather begins ~after the
+   Financial Health block and fades into the next (dark) section — no white. */
 .si-brief {
-  position: relative;
-  max-height: clamp(620px, 88vh, 1020px);
+  position: relative; z-index: 1;
+  max-height: clamp(760px, 98vh, 1140px);
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 70%, transparent 99%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 70%, transparent 99%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 92%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 92%);
 }
-/* high-quality, colour-preserving blur over the lower decisions (the "red line") */
 .si-brief-blur {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 46%;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 46%; z-index: 1;
   pointer-events: none;
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 56%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 56%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 58%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 58%);
 }
+@media (prefers-reduced-motion: reduce) { [data-marketing] .si-tip::after { animation: none; } }
 
 /* generic showcase 2-col band (reverses on alternating sections) */
 .mkt-showcase { display:grid; grid-template-columns: 0.92fr 1.08fr; gap: clamp(32px, 5vw, 72px); align-items:center; }
