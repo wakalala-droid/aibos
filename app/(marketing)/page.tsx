@@ -3,6 +3,8 @@ import Link from 'next/link';
 import Hero from '@/components/marketing/Hero';
 import AskAnything from '@/components/marketing/AskAnything';
 import Reveal from '@/components/marketing/Reveal';
+import ShowcaseBand from '@/components/marketing/ShowcaseBand';
+import { ForecastPanel, ManifestPanel, AnomalyPanel } from '@/components/marketing/ProductPanels';
 import { ENGINES } from '@/components/marketing/engines';
 
 export const metadata: Metadata = {
@@ -12,26 +14,19 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 };
 
-const TRUST_PILLS = [
-  'Free to start',
-  'Priced in ZMW',
-  'MTN & Airtel Money',
-  'Upload & go',
-  'Your data stays yours',
-];
+const TRUST_PILLS = ['Free to start', 'Priced in ZMW', 'MTN & Airtel Money', 'Upload & go', 'Your data stays yours'];
 
 const BEFORE_AFTER: { dim: string; before: string; after: string }[] = [
   { dim: 'Your numbers', before: 'Month-old figures you don’t fully trust', after: 'Live numbers, read straight from your files' },
   { dim: 'Stock & reorders', before: 'Guessing what to reorder, and when', after: 'Knows what’s moving and what’s about to run out' },
   { dim: 'Cashflow', before: 'You find out about a cash crunch when it hits', after: 'Warned days before your runway gets tight' },
   { dim: 'Decisions', before: 'Gut feel, generic advice, costly consultants', after: 'One clear, ranked next move from your own data' },
-  { dim: 'Getting an answer', before: 'A week and a spreadsheet later', after: 'Ask in plain words, answered in seconds' },
 ];
 
 const STEPS = [
-  { n: '01', title: 'Upload your data', body: 'Drag in a spreadsheet or export — sales, costs, customers. No integrations, no setup project.' },
-  { n: '02', title: 'AI-BOS reads & analyses it', body: 'It shows exactly how it read every file — what each column means and what it ignored. No black box, no invented trends.' },
-  { n: '03', title: 'Get answers, briefs & decisions', body: 'Ask anything, get a daily brief to your phone, and see the one move that matters today.' },
+  { n: '01', title: 'Upload your data', body: 'Drag in a spreadsheet or export — sales, costs, customers. No integrations, no setup project, no IT team.' },
+  { n: '02', title: 'AI-BOS reads it', body: 'It shows exactly how it read every file — what each column means and what it ignored. No black box, no invented trends.' },
+  { n: '03', title: 'Get answers & briefs', body: 'Ask anything, get a daily brief to your phone, and see the one move that matters today.' },
 ];
 
 const INDUSTRIES = [
@@ -42,7 +37,7 @@ const INDUSTRIES = [
 ];
 
 const FIT_YES = [
-  'You run a real business and already have sales or cost data in spreadsheets or a POS',
+  'You run a real business with sales or cost data in spreadsheets or a POS',
   'You make decisions on gut feel and wish you had the numbers first',
   'You want answers in your own language and currency, not enterprise jargon',
   'You’d rather start free and be convinced than sit through a sales demo',
@@ -52,10 +47,10 @@ const FIT_NOTYET = [
   'You need a full custom ERP rollout with a dedicated IT team',
 ];
 
-function Check({ color = 'var(--good)' }: { color?: string }) {
+function Check({ color = 'var(--good)', size = 20 }: { color?: string; size?: number }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden style={{ flexShrink: 0, marginTop: 2 }}>
-      <path d="M20 6L9 17l-5-5" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden style={{ flexShrink: 0, marginTop: 2 }}>
+      <path d="M20 6L9 17l-5-5" stroke={color} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -65,8 +60,8 @@ export default function MarketingHome() {
     <>
       <Hero />
 
-      {/* 2 · Trust pill strip */}
-      <div className="mkt-wrap" style={{ marginTop: -12, marginBottom: 8 }}>
+      {/* Trust pills */}
+      <div className="mkt-wrap" style={{ marginTop: 4, marginBottom: 8 }}>
         <Reveal>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
             {TRUST_PILLS.map((p) => (
@@ -76,28 +71,30 @@ export default function MarketingHome() {
         </Reveal>
       </div>
 
-      {/* 3 + 4 · Before / After — the emotional turn */}
+      {/* The shift — before / after, the emotional spine */}
       <section className="mkt-section" aria-labelledby="shift-h">
         <div className="mkt-wrap">
           <Reveal>
             <p className="mkt-eyebrow">From flying blind → to seeing clearly</p>
-            <h2 id="shift-h" className="mkt-h2" style={{ maxWidth: 720 }}>
-              You’re smart. You’re just making decisions without the numbers.
+            <h2 id="shift-h" className="mkt-h2" style={{ maxWidth: 860 }}>
+              You’re smart. You’re just deciding without the numbers.
             </h2>
+            <p className="mkt-lead" style={{ marginTop: 20, maxWidth: 560 }}>
+              Here’s the day-to-day that quietly costs you — and what it becomes once your data can finally talk back.
+            </p>
           </Reveal>
 
-          <div className="mkt-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginTop: 36 }}>
-            {/* BEFORE */}
+          <div className="mkt-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginTop: 44 }}>
             <Reveal>
               <div className="mkt-card" style={{ height: '100%' }}>
-                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', margin: '0 0 18px' }}>
+                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.74rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', margin: '0 0 22px' }}>
                   Your business today
                 </p>
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
                   {BEFORE_AFTER.map((r) => (
                     <li key={r.dim}>
-                      <span style={{ display: 'block', fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>{r.dim}</span>
-                      <span style={{ display: 'flex', gap: 9, alignItems: 'flex-start', color: 'var(--text-3)', fontSize: '0.92rem', lineHeight: 1.45 }}>
+                      <span style={{ display: 'block', fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>{r.dim}</span>
+                      <span style={{ display: 'flex', gap: 10, alignItems: 'flex-start', color: 'var(--text-3)', fontSize: '1.05rem', lineHeight: 1.45 }}>
                         <span aria-hidden style={{ color: 'var(--text-4)', marginTop: 1 }}>✕</span>{r.before}
                       </span>
                     </li>
@@ -106,17 +103,16 @@ export default function MarketingHome() {
               </div>
             </Reveal>
 
-            {/* AFTER */}
             <Reveal delay={0.1}>
               <div className="mkt-card" style={{ height: '100%', borderColor: 'color-mix(in srgb, var(--cyan) 35%, var(--border-md))', boxShadow: 'var(--shadow-lg)', background: 'linear-gradient(180deg, var(--cyan-dim), transparent 30%), var(--bg-card)' }}>
-                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 18px' }}>
+                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.74rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 22px' }}>
                   Your business with AI-BOS
                 </p>
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
                   {BEFORE_AFTER.map((r) => (
                     <li key={r.dim}>
-                      <span style={{ display: 'block', fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>{r.dim}</span>
-                      <span style={{ display: 'flex', gap: 9, alignItems: 'flex-start', color: 'var(--text-1)', fontSize: '0.92rem', fontWeight: 600, lineHeight: 1.45 }}>
+                      <span style={{ display: 'block', fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>{r.dim}</span>
+                      <span style={{ display: 'flex', gap: 10, alignItems: 'flex-start', color: 'var(--text-1)', fontSize: '1.05rem', fontWeight: 600, lineHeight: 1.45 }}>
                         <Check />{r.after}
                       </span>
                     </li>
@@ -128,27 +124,59 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* 5 · The five engines */}
-      <section id="engines" className="mkt-section mkt-section--tight" aria-labelledby="engines-h">
+      {/* Ask anything — the loved CFO chat (dark) */}
+      <AskAnything />
+
+      {/* Forecast (light) */}
+      <ShowcaseBand
+        eyebrow="See around the corner"
+        title="Know what’s coming — before it arrives."
+        lead="AI-BOS projects your revenue and cash from your own history, and shows the range instead of one false number. You see the lean month while there’s still time to act."
+        values={['Forecasts built only from your real data', 'An honest range, never fake precision', 'Cash runway warnings days ahead']}
+        cta={{ label: 'Start free', href: '/login' }}
+      >
+        <ForecastPanel />
+      </ShowcaseBand>
+
+      {/* Manifest (light, reverse) */}
+      <ShowcaseBand
+        reverse
+        eyebrow="No black box"
+        title="It shows its working."
+        lead="Before any insight, AI-BOS tells you exactly how it read your file — every column, what it became, and how confident it is. When the data can’t answer something, it says so."
+        values={['A plain-English read-out of every file', 'Confidence shown on each column', 'Refuses to invent what isn’t there']}
+      >
+        <ManifestPanel />
+      </ShowcaseBand>
+
+      {/* Anomaly (dark) */}
+      <ShowcaseBand
+        dark
+        eyebrow="Catch it early"
+        title="Spot the problem before it costs you."
+        lead="AI-BOS watches your numbers between the lines and flags what changed — a margin slipping, cash draining, a cost creeping up — the day your file lands, not at month-end."
+        values={['Anomalies flagged automatically', 'A likely cause, not just a red number', 'A suggested next move you can act on']}
+        cta={{ label: 'See it on your data', href: '/login' }}
+      >
+        <AnomalyPanel />
+      </ShowcaseBand>
+
+      {/* The five engines */}
+      <section id="engines" className="mkt-section" aria-labelledby="engines-h">
         <div className="mkt-wrap">
           <Reveal>
             <p className="mkt-eyebrow">Five expert departments, one command centre</p>
-            <h2 id="engines-h" className="mkt-h2" style={{ maxWidth: 720 }}>
+            <h2 id="engines-h" className="mkt-h2" style={{ maxWidth: 820 }}>
               Every part of your business, watched by an intelligence built for it.
             </h2>
           </Reveal>
-
-          <div className="mkt-engines-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginTop: 40 }}>
+          <div className="mkt-engines-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16, marginTop: 44 }}>
             {ENGINES.map((eng, i) => (
               <Reveal key={eng.id} delay={i * 0.06}>
-                <div className="mkt-card" style={{ height: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ width: 96, height: 96, marginBottom: 8 }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element -- decorative inline SVG sprite, not a next/image candidate */}
-                    <img src={eng.sprite} alt="" className={`mkt-engine-sprite ${i % 2 === 0 ? 'mkt-float' : 'mkt-float-b'}`} />
-                  </div>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: eng.accentVar, marginBottom: 6 }}>{eng.role}</span>
-                  <h3 className="mkt-h3" style={{ fontSize: '1.02rem' }}>{eng.name}</h3>
-                  <p className="mkt-body" style={{ marginTop: 8, fontSize: '0.88rem' }}>{eng.value}</p>
+                <div className="mkt-card" style={{ height: '100%', borderTop: `3px solid ${eng.accentVar}` }}>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: eng.accentVar }}>{eng.role}</span>
+                  <h3 className="mkt-h3" style={{ marginTop: 10 }}>{eng.name}</h3>
+                  <p className="mkt-body" style={{ marginTop: 10 }}>{eng.value}</p>
                 </div>
               </Reveal>
             ))}
@@ -156,22 +184,19 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* 6 · Ask anything (dark wow band) */}
-      <AskAnything />
-
-      {/* 7 · How it works */}
-      <section id="how" className="mkt-section" aria-labelledby="how-h">
+      {/* How it works */}
+      <section id="how" className="mkt-section mkt-section--tight" aria-labelledby="how-h">
         <div className="mkt-wrap">
           <Reveal>
             <p className="mkt-eyebrow">From upload to insight in minutes</p>
-            <h2 id="how-h" className="mkt-h2" style={{ maxWidth: 640 }}>How it works</h2>
+            <h2 id="how-h" className="mkt-h2" style={{ maxWidth: 640 }}>Live in a day, not a quarter.</h2>
           </Reveal>
-          <div className="mkt-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18, marginTop: 40 }}>
+          <div className="mkt-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18, marginTop: 44 }}>
             {STEPS.map((s, i) => (
               <Reveal key={s.n} delay={i * 0.1}>
                 <div className="mkt-card" style={{ height: '100%' }}>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.9rem', fontWeight: 600, color: 'var(--cyan)' }}>{s.n}</span>
-                  <h3 className="mkt-h3" style={{ marginTop: 12 }}>{s.title}</h3>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.05rem', fontWeight: 700, color: 'var(--cyan)' }}>{s.n}</span>
+                  <h3 className="mkt-h3" style={{ marginTop: 14 }}>{s.title}</h3>
                   <p className="mkt-body" style={{ marginTop: 10 }}>{s.body}</p>
                 </div>
               </Reveal>
@@ -180,18 +205,18 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* 8 · Who it's for */}
+      {/* Who it's for */}
       <section id="who" className="mkt-section mkt-section--tight" aria-labelledby="who-h">
         <div className="mkt-wrap">
           <Reveal>
             <p className="mkt-eyebrow">Built for how you actually run</p>
             <h2 id="who-h" className="mkt-h2" style={{ maxWidth: 640 }}>Made for African SMEs — maybe yours.</h2>
           </Reveal>
-          <div className="mkt-engines-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginTop: 36 }}>
+          <div className="mkt-engines-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 16, marginTop: 40 }}>
             {INDUSTRIES.map((ind, i) => (
               <Reveal key={ind.name} delay={i * 0.07}>
                 <div className="mkt-card" style={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
-                  <span aria-hidden style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: ind.tint, opacity: 0.14, filter: 'blur(20px)' }} />
+                  <span aria-hidden style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: ind.tint, opacity: 0.16, filter: 'blur(20px)' }} />
                   <h3 className="mkt-h3" style={{ position: 'relative' }}>{ind.name}</h3>
                   <p className="mkt-body" style={{ marginTop: 8, position: 'relative' }}>{ind.line}</p>
                 </div>
@@ -199,27 +224,27 @@ export default function MarketingHome() {
             ))}
           </div>
           <Reveal>
-            <p style={{ marginTop: 18, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'var(--text-4)', textAlign: 'center' }}>
+            <p style={{ marginTop: 20, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.74rem', color: 'var(--text-4)', textAlign: 'center' }}>
               Named Lusaka customer stories land here soon — we’ll only print real, permissioned ones.
             </p>
           </Reveal>
         </div>
       </section>
 
-      {/* 9 · Self-qualification */}
+      {/* Fit test */}
       <section className="mkt-section" aria-labelledby="fit-h">
         <div className="mkt-wrap mkt-wrap--narrow">
           <Reveal>
             <p className="mkt-eyebrow" style={{ textAlign: 'center' }}>The honest fit test</p>
             <h2 id="fit-h" className="mkt-h2" style={{ textAlign: 'center' }}>Is AI-BOS right for you?</h2>
           </Reveal>
-          <div className="mkt-2col" style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: 18, marginTop: 36 }}>
+          <div className="mkt-2col" style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: 18, marginTop: 40 }}>
             <Reveal>
               <div className="mkt-card" style={{ height: '100%' }}>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 16px' }}>It’s a strong fit if…</p>
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 13 }}>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1.15rem', color: 'var(--text-1)', margin: '0 0 18px' }}>It’s a strong fit if…</p>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 15 }}>
                   {FIT_YES.map((t) => (
-                    <li key={t} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', color: 'var(--text-2)', fontSize: '0.92rem', lineHeight: 1.5 }}>
+                    <li key={t} style={{ display: 'flex', gap: 11, alignItems: 'flex-start', color: 'var(--text-2)', fontSize: '1.02rem', lineHeight: 1.5 }}>
                       <Check />{t}
                     </li>
                   ))}
@@ -228,10 +253,10 @@ export default function MarketingHome() {
             </Reveal>
             <Reveal delay={0.1}>
               <div className="mkt-card" style={{ height: '100%', background: 'var(--bg-badge)' }}>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 16px' }}>Maybe not yet if…</p>
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 13 }}>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1.15rem', color: 'var(--text-1)', margin: '0 0 18px' }}>Maybe not yet if…</p>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 15 }}>
                   {FIT_NOTYET.map((t) => (
-                    <li key={t} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', color: 'var(--text-3)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                    <li key={t} style={{ display: 'flex', gap: 11, alignItems: 'flex-start', color: 'var(--text-3)', fontSize: '1rem', lineHeight: 1.5 }}>
                       <span aria-hidden style={{ color: 'var(--text-4)', marginTop: 1 }}>—</span>{t}
                     </li>
                   ))}
@@ -242,43 +267,18 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* 10 · Trust strip */}
-      <section id="trust" className="mkt-section mkt-section--tight" aria-labelledby="trust-h">
-        <div className="mkt-wrap">
-          <Reveal>
-            <h2 id="trust-h" className="mkt-h2" style={{ textAlign: 'center', maxWidth: 640, marginInline: 'auto' }}>
-              Your numbers are yours. Full stop.
-            </h2>
-          </Reveal>
-          <div className="mkt-engines-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginTop: 32 }}>
-            {[
-              ['Your data stays yours', 'Export your full history on any plan — including after you cancel.'],
-              ['Private AI', 'Your numbers are never used to train anyone’s model. No leak risk.'],
-              ['No fabrication', 'AI-BOS refuses to invent a trend. If the data isn’t there, it says so.'],
-            ].map(([t, d], i) => (
-              <Reveal key={t} delay={i * 0.07}>
-                <div className="mkt-card" style={{ height: '100%' }}>
-                  <h3 className="mkt-h3" style={{ fontSize: '1rem' }}>{t}</h3>
-                  <p className="mkt-body" style={{ marginTop: 8 }}>{d}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 11 · Final CTA */}
+      {/* Final CTA */}
       <section className="mkt-section">
         <div className="mkt-wrap">
           <Reveal>
-            <div className="mkt-card mkt-dark" style={{ textAlign: 'center', padding: 'clamp(40px, 6vw, 72px) clamp(24px, 5vw, 56px)', position: 'relative', overflow: 'hidden' }}>
-              <span className="mkt-glow" style={{ top: '-40%', left: '50%', transform: 'translateX(-50%)', width: 420, height: 420, background: 'radial-gradient(circle, rgba(0,212,255,0.35), transparent 60%)' }} />
+            <div className="mkt-card mkt-dark" style={{ textAlign: 'center', padding: 'clamp(48px, 7vw, 88px) clamp(24px, 5vw, 56px)', position: 'relative', overflow: 'hidden' }}>
+              <span className="mkt-glow" style={{ top: '-40%', left: '50%', transform: 'translateX(-50%)', width: 460, height: 460, background: 'radial-gradient(circle, rgba(0,212,255,0.35), transparent 60%)' }} />
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <h2 className="mkt-h2" style={{ maxWidth: 600, marginInline: 'auto' }}>Ready to see your numbers think?</h2>
-                <p className="mkt-lead" style={{ marginTop: 16, marginInline: 'auto', maxWidth: 480 }}>
+                <h2 className="mkt-h2" style={{ maxWidth: 640, marginInline: 'auto' }}>Ready to see your numbers think?</h2>
+                <p className="mkt-lead" style={{ marginTop: 18, marginInline: 'auto', maxWidth: 480 }}>
                   Start free on your own data. Upgrade only when the value is obvious.
                 </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 30 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 32 }}>
                   <Link href="/login" className="mkt-btn mkt-btn-primary">Start free — upload your data</Link>
                   <Link href="/pricing" className="mkt-btn mkt-btn-secondary">See pricing</Link>
                 </div>

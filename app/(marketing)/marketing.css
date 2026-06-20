@@ -118,22 +118,33 @@
 }
 .mkt-wrap--narrow { max-width: 820px; }
 
-/* ── Type scale ─────────────────────────────────────────────── */
+/* ── Type scale (Humble-grade: big, confident, lots of air) ──── */
 .mkt-eyebrow {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--cyan);
-  margin: 0 0 16px;
+  margin: 0 0 20px;
+}
+/* Hero display — the biggest type on the site. */
+.mkt-display {
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  font-size: clamp(2.9rem, 7vw, 5.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  color: var(--text-1);
+  margin: 0;
+  text-wrap: balance;
 }
 .mkt-h1 {
   font-family: 'Inter', sans-serif;
   font-weight: 900;
-  font-size: clamp(2.3rem, 6vw, 4.1rem);
-  line-height: 1.02;
-  letter-spacing: -0.035em;
+  font-size: clamp(2.6rem, 6.2vw, 4.6rem);
+  line-height: 1.0;
+  letter-spacing: -0.038em;
   color: var(--text-1);
   margin: 0;
   text-wrap: balance;
@@ -141,9 +152,9 @@
 .mkt-h2 {
   font-family: 'Inter', sans-serif;
   font-weight: 850;
-  font-size: clamp(1.7rem, 3.6vw, 2.7rem);
-  line-height: 1.08;
-  letter-spacing: -0.03em;
+  font-size: clamp(2.1rem, 4.4vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.032em;
   color: var(--text-1);
   margin: 0;
   text-wrap: balance;
@@ -151,19 +162,26 @@
 .mkt-h3 {
   font-family: 'Inter', sans-serif;
   font-weight: 800;
-  font-size: 1.16rem;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.3rem, 2vw, 1.6rem);
+  line-height: 1.2;
+  letter-spacing: -0.022em;
   color: var(--text-1);
   margin: 0;
 }
 .mkt-lead {
-  font-size: clamp(1.02rem, 1.6vw, 1.22rem);
-  line-height: 1.6;
+  font-size: clamp(1.18rem, 1.9vw, 1.5rem);
+  line-height: 1.5;
+  font-weight: 400;
   color: var(--text-3);
   margin: 0;
   text-wrap: pretty;
 }
-.mkt-body { font-size: 0.95rem; line-height: 1.62; color: var(--text-3); margin: 0; }
+.mkt-body { font-size: clamp(1rem, 1.3vw, 1.1rem); line-height: 1.65; color: var(--text-3); margin: 0; }
+
+/* Short list of value lines under a section headline (Humble pattern). */
+.mkt-values { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.mkt-values li { display: flex; gap: 12px; align-items: flex-start; font-size: clamp(1rem, 1.4vw, 1.16rem); line-height: 1.5; color: var(--text-2); }
+.mkt-values li svg { flex-shrink: 0; margin-top: 4px; color: var(--cyan); }
 
 /* ── Buttons ────────────────────────────────────────────────── */
 .mkt-btn {
@@ -208,6 +226,64 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 .mkt-dark .mkt-card { background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent 40%), var(--bg-card); }
+
+/* ── Product panel chrome — a faithful "internal screenshot" frame ──
+   Renders the real dashboard UI (KPI cards, charts, manifest) inside a
+   browser-window shell so marketing bands show the genuine product. */
+.mkt-panel {
+  --bg-page: #0a0e1a; --bg-card: #0d1117; --bg-card-hover:#111827; --bg-badge:#161d31;
+  --border: rgba(255,255,255,0.08); --border-md: rgba(255,255,255,0.13);
+  --text-1:#ffffff; --text-2:#e2e8f0; --text-3:#9fabbd; --text-4:#6b7889;
+  --cyan:#00d4ff; --good:#34d399; --warn:#fbbf24; --crit:#f87171;
+  --e1:#00d4ff; --e2:#f97316; --e3:#34d399; --e4:#a78bfa; --e5:#60a5fa; --purple:#a78bfa;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(180deg, #0e1422, #0a0e1a);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 2px 0 rgba(255,255,255,0.04) inset;
+  overflow: hidden;
+  color: var(--text-2);
+  font-family: 'Inter', sans-serif;
+}
+.mkt-panel-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 11px 16px; border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.02);
+}
+.mkt-panel-dots { display: flex; gap: 7px; }
+.mkt-panel-dots i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+.mkt-panel-url {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-4);
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  padding: 4px 12px; border-radius: 7px; flex: 1; max-width: 320px;
+}
+.mkt-panel-body { padding: clamp(16px, 2.4vw, 24px); }
+
+/* mini KPI card inside a panel */
+.mkt-kpi {
+  background: var(--bg-card); border: 1px solid var(--border-md); border-radius: 12px;
+  padding: 14px 15px; position: relative; overflow: hidden;
+}
+.mkt-kpi-top { display:flex; align-items:center; justify-content:space-between; margin-bottom: 6px; }
+.mkt-kpi-label { font-family:'JetBrains Mono',monospace; font-size:0.64rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-3); margin:0; }
+.mkt-kpi-value { font-family:'Inter',sans-serif; font-weight:800; font-size: clamp(1.15rem, 1.7vw, 1.4rem); letter-spacing:-0.03em; color:var(--text-1); margin:2px 0 0; white-space:nowrap; }
+.mkt-kpi-badge { font-family:'JetBrains Mono',monospace; font-size:0.66rem; font-weight:700; padding:3px 7px; border-radius:6px; white-space:nowrap; }
+.mkt-kpi-badge.up   { color:var(--good); background:color-mix(in srgb, var(--good) 14%, transparent); }
+.mkt-kpi-badge.down { color:var(--crit); background:color-mix(in srgb, var(--crit) 14%, transparent); }
+
+/* panel data table */
+.mkt-ptable { width:100%; border-collapse:collapse; font-size:0.82rem; }
+.mkt-ptable th { font-family:'JetBrains Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-4); font-weight:600; text-align:left; padding:0 0 10px; border-bottom:1px solid var(--border); }
+.mkt-ptable td { padding:11px 0; border-bottom:1px solid var(--border); color:var(--text-2); }
+.mkt-ptable tr:last-child td { border-bottom:none; }
+.mkt-tag { font-family:'JetBrains Mono',monospace; font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+
+/* generic showcase 2-col band (reverses on alternating sections) */
+.mkt-showcase { display:grid; grid-template-columns: 0.92fr 1.08fr; gap: clamp(32px, 5vw, 72px); align-items:center; }
+.mkt-showcase.reverse > :first-child { order: 2; }
+@media (max-width: 880px) {
+  [data-marketing] .mkt-showcase { grid-template-columns: 1fr !important; gap: 36px; }
+  [data-marketing] .mkt-showcase.reverse > :first-child { order: 0; }
+}
 
 /* ── Engine objects (CSS-transform idle float, reduced-motion safe) ── */
 .mkt-engine-sprite { display: block; width: 100%; height: auto; filter: drop-shadow(0 18px 30px rgba(0,0,0,0.18)); }
