@@ -4,7 +4,8 @@ import Hero from '@/components/marketing/Hero';
 import AskAnything from '@/components/marketing/AskAnything';
 import Reveal from '@/components/marketing/Reveal';
 import ShowcaseBand from '@/components/marketing/ShowcaseBand';
-import { ForecastPanel, ManifestPanel, AnomalyPanel } from '@/components/marketing/ProductPanels';
+import DataManifestCard from '@/components/ui/DataManifestCard';
+import { DEMO_MANIFEST, DEMO_BREAKDOWN } from '@/lib/demoData';
 import { ENGINES } from '@/components/marketing/engines';
 
 export const metadata: Metadata = {
@@ -31,7 +32,7 @@ const STEPS = [
 
 const INDUSTRIES = [
   { name: 'Restaurants', line: 'Which dishes actually make money', tint: 'var(--e-cust)' },
-  { name: 'Retail & e-commerce', line: 'What to restock before it sells out', tint: 'var(--e-ops)' },
+  { name: 'Retail & online', line: 'What to restock before it sells out', tint: 'var(--e-ops)' },
   { name: 'Hospitality', line: 'Occupancy, rates and real margin', tint: 'var(--e-fore)' },
   { name: 'Mining & services', line: 'Project costs and cash, on time', tint: 'var(--e-dec)' },
 ];
@@ -87,7 +88,7 @@ export default function MarketingHome() {
           <div className="mkt-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginTop: 44 }}>
             <Reveal>
               <div className="mkt-card" style={{ height: '100%' }}>
-                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.74rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', margin: '0 0 22px' }}>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '0.74rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', margin: '0 0 22px' }}>
                   Your business today
                 </p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -105,7 +106,7 @@ export default function MarketingHome() {
 
             <Reveal delay={0.1}>
               <div className="mkt-card" style={{ height: '100%', borderColor: 'color-mix(in srgb, var(--cyan) 35%, var(--border-md))', boxShadow: 'var(--shadow-lg)', background: 'linear-gradient(180deg, var(--cyan-dim), transparent 30%), var(--bg-card)' }}>
-                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.74rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 22px' }}>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '0.74rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 22px' }}>
                   Your business with AI-BOS
                 </p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -127,18 +128,7 @@ export default function MarketingHome() {
       {/* Ask anything — the loved CFO chat (dark) */}
       <AskAnything />
 
-      {/* Forecast (light) */}
-      <ShowcaseBand
-        eyebrow="See around the corner"
-        title="Know what’s coming — before it arrives."
-        lead="AI-BOS projects your revenue and cash from your own history, and shows the range instead of one false number. You see the lean month while there’s still time to act."
-        values={['Forecasts built only from your real data', 'An honest range, never fake precision', 'Cash runway warnings days ahead']}
-        cta={{ label: 'Start free', href: '/login' }}
-      >
-        <ForecastPanel />
-      </ShowcaseBand>
-
-      {/* Manifest (light, reverse) */}
+      {/* Read-fidelity manifest — the REAL DataManifestCard, seeded with demo data */}
       <ShowcaseBand
         reverse
         eyebrow="No black box"
@@ -146,19 +136,15 @@ export default function MarketingHome() {
         lead="Before any insight, AI-BOS tells you exactly how it read your file — every column, what it became, and how confident it is. When the data can’t answer something, it says so."
         values={['A plain-English read-out of every file', 'Confidence shown on each column', 'Refuses to invent what isn’t there']}
       >
-        <ManifestPanel />
-      </ShowcaseBand>
-
-      {/* Anomaly (dark) */}
-      <ShowcaseBand
-        dark
-        eyebrow="Catch it early"
-        title="Spot the problem before it costs you."
-        lead="AI-BOS watches your numbers between the lines and flags what changed — a margin slipping, cash draining, a cost creeping up — the day your file lands, not at month-end."
-        values={['Anomalies flagged automatically', 'A likely cause, not just a red number', 'A suggested next move you can act on']}
-        cta={{ label: 'See it on your data', href: '/login' }}
-      >
-        <AnomalyPanel />
+        <div className="aibos-window" data-theme="dark">
+          <div className="aibos-window-bar">
+            <span className="aibos-window-dots"><i style={{ background: '#ff5f57' }} /><i style={{ background: '#febc2e' }} /><i style={{ background: '#28c840' }} /></span>
+            <span className="aibos-window-url">app.aibos.africa/data-studio</span>
+          </div>
+          <div className="aibos-window-body">
+            <DataManifestCard manifest={DEMO_MANIFEST} breakdown={DEMO_BREAKDOWN} currencySymbol="K" />
+          </div>
+        </div>
       </ShowcaseBand>
 
       {/* The five engines */}
@@ -173,9 +159,9 @@ export default function MarketingHome() {
           <div className="mkt-engines-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16, marginTop: 44 }}>
             {ENGINES.map((eng, i) => (
               <Reveal key={eng.id} delay={i * 0.06}>
-                <div className="mkt-card" style={{ height: '100%', borderTop: `3px solid ${eng.accentVar}` }}>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: eng.accentVar }}>{eng.role}</span>
-                  <h3 className="mkt-h3" style={{ marginTop: 10 }}>{eng.name}</h3>
+                <div className="mkt-card" style={{ height: '100%' }}>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: eng.accentVar }}>{eng.role}</span>
+                  <h3 className="mkt-h3" style={{ marginTop: 12 }}>{eng.name}</h3>
                   <p className="mkt-body" style={{ marginTop: 10 }}>{eng.value}</p>
                 </div>
               </Reveal>
@@ -223,11 +209,6 @@ export default function MarketingHome() {
               </Reveal>
             ))}
           </div>
-          <Reveal>
-            <p style={{ marginTop: 20, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.74rem', color: 'var(--text-4)', textAlign: 'center' }}>
-              Named Lusaka customer stories land here soon — we’ll only print real, permissioned ones.
-            </p>
-          </Reveal>
         </div>
       </section>
 

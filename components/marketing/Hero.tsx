@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import { DashboardPanel } from './ProductPanels';
+import LiveDashboard from './LiveDashboard';
 
 export default function Hero() {
   const reduce = useReducedMotion();
@@ -49,13 +49,14 @@ export default function Hero() {
           </motion.p>
         </div>
 
-        {/* Real dashboard panel — the product, with data, on day one */}
+        {/* Real dashboard — genuine KPICard / RevenueChart / EngineScoreCard
+            components with seeded data and live interactions. */}
         <motion.div
           initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
         >
-          <DashboardPanel />
+          <LiveDashboard />
         </motion.div>
       </div>
     </section>

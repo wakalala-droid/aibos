@@ -120,10 +120,10 @@
 
 /* ── Type scale (Humble-grade: big, confident, lots of air) ──── */
 .mkt-eyebrow {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--cyan);
   margin: 0 0 20px;
@@ -187,7 +187,7 @@
 .mkt-btn {
   display: inline-flex; align-items: center; gap: 8px;
   font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700;
-  padding: 13px 22px; border-radius: 12px; cursor: pointer;
+  padding: 13px 22px; border-radius: 10px; cursor: pointer;
   text-decoration: none; border: 1px solid transparent;
   transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
   white-space: nowrap;
@@ -220,7 +220,7 @@
 .mkt-card {
   background: linear-gradient(180deg, rgba(255,255,255,0.6), transparent 32%), var(--bg-card);
   border: 1px solid var(--border-md);
-  border-radius: 18px;
+  border-radius: 16px;
   padding: clamp(20px, 3vw, 30px);
   box-shadow: var(--shadow-card);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -276,6 +276,31 @@
 .mkt-ptable td { padding:11px 0; border-bottom:1px solid var(--border); color:var(--text-2); }
 .mkt-ptable tr:last-child td { border-bottom:none; }
 .mkt-tag { font-family:'JetBrains Mono',monospace; font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+
+/* ── Genuine-component window frame ─────────────────────────────
+   Wraps REAL dashboard components (KPICard, RevenueChart, …). The wrapper
+   carries data-theme="dark" so the product's actual dark tokens resolve here,
+   identical to the in-app dashboard. */
+.aibos-window {
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: #0a0e1a;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 2px 0 rgba(255,255,255,0.04) inset;
+  overflow: hidden;
+}
+.aibos-window-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 11px 16px; border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.02);
+}
+.aibos-window-dots { display: flex; gap: 7px; }
+.aibos-window-dots i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+.aibos-window-url {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #6b7889;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  padding: 4px 12px; border-radius: 7px; flex: 1; max-width: 320px;
+}
+.aibos-window-body { padding: clamp(14px, 2vw, 22px); }
 
 /* generic showcase 2-col band (reverses on alternating sections) */
 .mkt-showcase { display:grid; grid-template-columns: 0.92fr 1.08fr; gap: clamp(32px, 5vw, 72px); align-items:center; }

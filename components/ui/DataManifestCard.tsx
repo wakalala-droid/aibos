@@ -6,6 +6,7 @@
 // first: the user sees exactly how their data was interpreted.
 
 import { useStore } from '@/lib/store';
+import type { DataManifest, ItemBreakdownRow } from '@/lib/store';
 import SectionCard from './SectionCard';
 
 const ROLE_COLOUR: Record<string, string> = {
@@ -24,9 +25,16 @@ function money(n: number, sym: string) {
   return `${sym}${Math.round(n).toLocaleString()}`;
 }
 
-export default function DataManifestCard() {
-  const { manifest, breakdown, currencySymbol } = useStore();
-  const sym = currencySymbol || 'K';
+export default function DataManifestCard({
+  manifest: pManifest, breakdown: pBreakdown, currencySymbol: pSym,
+}: {
+  manifest?: DataManifest | null; breakdown?: ItemBreakdownRow[]; currencySymbol?: string;
+} = {}) {
+  const store = useStore();
+  // Props win when provided (marketing/demo); otherwise read live store (in-app).
+  const manifest = pManifest !== undefined ? pManifest : store.manifest;
+  const breakdown = pBreakdown !== undefined ? pBreakdown : store.breakdown;
+  const sym = pSym ?? store.currencySymbol ?? 'K';
   if (!manifest) return null;
 
   const isCross = manifest.data_shape === 'cross_sectional';
