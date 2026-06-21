@@ -2,30 +2,44 @@
 
 // Strategic Intelligence — vertical reveal:
 //   1. the text, on the warm (white) background
-//   2. a growth line that RISES as you scroll — it cuts the white cleanly
-//      (no shadow) and below it the dark brief is revealed
-//   3. the GENUINE Strategic Brief, borderless; the feather begins after the
-//      Financial Health block and fades into the next (dark) section.
+//   2. a white→navy GRADIENT that reveals the brief, with a growth line that
+//      draws as you scroll and a glowing tip that travels along it
+//   3. the GENUINE Strategic Brief, borderless; the feather/blur begins well
+//      past the Financial Health block and fades into the next dark section.
 // Nothing fabricated — the brief derives its own figures + recommendations
 // from a coherent demo dataset (DEMO_BRIEF).
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
 import StrategicBriefView from '@/components/dashboard/StrategicBriefView';
 import { DEMO_BRIEF } from '@/lib/demoData';
 
-// Organic data-style line (rises L→R with a dip near the right) in a 1200×1000
-// viewBox that spans the whole dark zone; everything BELOW it is filled dark so
-// the line is a crisp white→dark divider.
-const LINE = 'M0,150 C 80,146 110,140 150,140 C 200,140 232,126 272,128 C 322,130 352,118 392,120 C 442,122 470,130 500,118 C 542,102 560,86 600,86 C 650,86 672,76 702,84 C 732,92 746,112 778,106 C 808,100 818,82 848,76 C 908,66 968,48 1028,42 C 1088,36 1138,32 1176,27';
+// Smooth, organic data line (rises L→R with a gentle dip) — matches the
+// hand-drawn reference. viewBox 1200×1000 spans the whole zone.
+const LINE = 'M0,150 C 60,146 110,140 150,142 C 210,145 262,154 300,150 C 360,144 402,124 430,120 C 482,114 532,121 560,118 C 612,114 650,98 680,96 C 716,94 746,109 772,104 C 802,99 826,88 860,86 C 922,81 966,66 1000,58 C 1056,45 1112,40 1176,30';
 
 export default function StrategicIntelligence() {
   const reduce = useReducedMotion();
   const zoneRef = useRef<HTMLDivElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const tipRef = useRef<HTMLSpanElement>(null);
   const { scrollYProgress } = useScroll({ target: zoneRef, offset: ['start end', 'center center'] });
-  const drawn = useTransform(scrollYProgress, [0, 0.8], [0, 1]);
-  const tipOpacity = useTransform(scrollYProgress, [0.5, 0.78], [0, 1]);
+  const drawn = useTransform(scrollYProgress, [0, 0.82], [0, 1]);
   const pathLength = reduce ? 1 : drawn;
+
+  // Move the glowing tip to the leading end of the drawn line (viewBox coords →
+  // % of the zone, since the SVG covers the zone via preserveAspectRatio=none).
+  const placeTip = (v: number) => {
+    const p = pathRef.current, t = tipRef.current;
+    if (!p || !t) return;
+    const f = Math.max(0, Math.min(1, v));
+    const pt = p.getPointAtLength(p.getTotalLength() * f);
+    t.style.left = `${(pt.x / 1200) * 100}%`;
+    t.style.top = `${(pt.y / 1000) * 100}%`;
+    t.style.opacity = reduce || v > 0.015 ? '1' : '0';
+  };
+  useMotionValueEvent(drawn, 'change', placeTip);
+  useEffect(() => { placeTip(reduce ? 1 : drawn.get()); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
   return (
     <section className="mkt-section si-section" aria-labelledby="si-h">
@@ -48,22 +62,19 @@ export default function StrategicIntelligence() {
         </motion.div>
       </div>
 
-      {/* 2 · the rising line cutting the white  +  3 · the genuine brief beneath */}
+      {/* 2 · the gradient reveal + rising line  ·  3 · the genuine brief beneath */}
       <div className="si-brief-zone" data-theme="dark" ref={zoneRef}>
         <svg className="si-line" viewBox="0 0 1200 1000" preserveAspectRatio="none" aria-hidden>
           <defs>
             <linearGradient id="siLine" x1="0" y1="1" x2="1" y2="0">
-              <stop offset="0%" stopColor="var(--text-4)" stopOpacity="0.4" />
+              <stop offset="0%" stopColor="var(--text-4)" stopOpacity="0.35" />
               <stop offset="40%" stopColor="var(--cyan)" stopOpacity="0.75" />
               <stop offset="100%" stopColor="var(--cyan)" />
             </linearGradient>
           </defs>
-          {/* everything below the line is dark — the crisp white→dark cut */}
-          <path d={`${LINE} L1200,27 L1200,1000 L0,1000 Z`} fill="#0a0e1a" />
-          <motion.path d={LINE} fill="none" stroke="url(#siLine)" strokeWidth={3} strokeLinecap="round" vectorEffect="non-scaling-stroke" style={{ pathLength }} />
+          <motion.path ref={pathRef} d={LINE} fill="none" stroke="url(#siLine)" strokeWidth={3} strokeLinecap="round" vectorEffect="non-scaling-stroke" style={{ pathLength }} />
         </svg>
-        {/* glowing tip at the leading end of the line */}
-        <motion.span className="si-tip" style={{ opacity: reduce ? 1 : tipOpacity }} aria-hidden />
+        <span className="si-tip" ref={tipRef} aria-hidden />
 
         <div className="mkt-wrap si-brief">
           <StrategicBriefView {...DEMO_BRIEF} sym="K" />

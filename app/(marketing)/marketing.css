@@ -307,15 +307,20 @@
 .si-top { text-align: left; padding-bottom: clamp(8px, 2vw, 28px); }
 .si-headline { max-width: 860px; }
 
-/* White zone. The SVG fills everything BELOW the line dark → a crisp white→dark
-   divider with no grey shadow. */
-.si-brief-zone { position: relative; background: #f4f3ef; padding-top: clamp(150px, 17vw, 210px); }
+/* The reveal: white at top fading to navy — the gradient that uncovers the
+   brief. Bottom stays dark so it blends seamlessly into the next section. */
+.si-brief-zone {
+  position: relative;
+  background: linear-gradient(to bottom, #f4f3ef 0, #f4f3ef 72px, #0a0e1a 300px, #0a0e1a 100%);
+  padding-top: clamp(190px, 23vw, 330px);
+}
 .si-line { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+/* tip position (left/top) is set in JS so it travels along the drawn line */
 .si-tip {
-  position: absolute; left: 97.6%; top: 2.9%; width: 12px; height: 12px; border-radius: 50%;
-  background: var(--cyan); transform: translate(-50%, -50%); z-index: 2; pointer-events: none;
+  position: absolute; left: 0; top: 0; width: 13px; height: 13px; border-radius: 50%;
+  background: var(--cyan); transform: translate(-50%, -50%); z-index: 2; pointer-events: none; opacity: 0;
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--cyan) 16%, transparent),
-              0 0 16px 3px color-mix(in srgb, var(--cyan) 55%, transparent);
+              0 0 18px 4px color-mix(in srgb, var(--cyan) 55%, transparent);
 }
 .si-tip::after {
   content: ''; position: absolute; inset: -5px; border-radius: 50%;
@@ -325,21 +330,22 @@
   0% { transform: scale(0.6); opacity: 0.7; } 70% { transform: scale(2.2); opacity: 0; } 100% { opacity: 0; }
 }
 
-/* The GENUINE brief — full-width, borderless. Feather begins ~after the
-   Financial Health block and fades into the next (dark) section — no white. */
+/* The GENUINE brief — full-width, borderless. Clear through the Strategic
+   Recommendations; the feather/blur hides only the deepest decisions and fades
+   into the next dark section. */
 .si-brief {
   position: relative; z-index: 1;
-  max-height: clamp(760px, 98vh, 1140px);
+  max-height: clamp(900px, 130vh, 1400px);
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 92%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 92%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 80%, transparent 97%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 80%, transparent 97%);
 }
 .si-brief-blur {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 46%; z-index: 1;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 32%; z-index: 1;
   pointer-events: none;
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 58%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 58%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 60%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 60%);
 }
 @media (prefers-reduced-motion: reduce) { [data-marketing] .si-tip::after { animation: none; } }
 
