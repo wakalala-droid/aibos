@@ -1,22 +1,22 @@
 'use client';
 
 // Strategic Intelligence — vertical reveal:
-//   1. text on warm white
-//   2. a fixed-height reveal band: SOLID white above the rising line (no shadow),
-//      a white→navy GRADIENT below it that uncovers the brief; the line draws as
-//      you scroll with a glowing tip that travels along it
-//   3. the GENUINE Strategic Brief beneath, borderless; only the deepest
-//      decisions blur, fading into the next dark section.
-// Nothing fabricated — the brief derives its figures + recommendations from a
-// coherent demo dataset (DEMO_BRIEF).
+//   1. text on warm white (tight to the line)
+//   2. a rising graph line with data dots + a leading tip; below it a cyan
+//      area-fill GRADIENT (like the fill under a chart line) that reveals…
+//   3. the GENUINE Strategic Brief beneath, borderless; a "see your brief" CTA
+//      floats at the brief's fade point; the deepest rows blur into the next
+//      (dark) section. Nothing fabricated — derived from DEMO_BRIEF.
 import { useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion, useMotionValue, useMotionValueEvent, animate } from 'framer-motion';
 import StrategicBriefView from '@/components/dashboard/StrategicBriefView';
 import { DEMO_BRIEF } from '@/lib/demoData';
 
-// Smooth, organic rising line with a gentle dip — in a fixed 1200×380 band.
-const LINE = 'M0,258 C 60,252 110,244 150,246 C 210,249 262,260 300,254 C 360,246 402,220 430,214 C 482,206 532,216 560,212 C 612,206 650,180 680,178 C 716,176 746,196 772,188 C 802,180 826,162 860,158 C 922,148 966,126 1000,116 C 1056,100 1112,92 1176,80';
+// Flatter rising line with a gentle dip, in a 1200×240 band. Ends at x=1176.
+const LINE = 'M0,108 C 60,104 110,98 150,100 C 210,103 262,112 300,106 C 360,99 402,82 430,78 C 482,72 532,80 560,76 C 612,71 650,56 680,54 C 716,52 746,68 772,62 C 802,56 826,44 860,42 C 922,36 966,30 1000,27 C 1056,24 1112,26 1176,28';
+const END_Y = 28; // y of the line's last point — used to extend fills flat to the right edge (no wedge)
+const DOTS = [0.14, 0.33, 0.52, 0.7, 0.86]; // data points along the line
 
 export default function StrategicIntelligence() {
   const reduce = useReducedMotion();
@@ -24,34 +24,40 @@ export default function StrategicIntelligence() {
   const pathRef = useRef<SVGPathElement>(null);
   const tipRef = useRef<HTMLSpanElement>(null);
   const startedRef = useRef(false);
-
-  // One progress value drives BOTH the line draw and the tip, so the point
-  // always travels with the line.
   const progress = useMotionValue(0);
 
-  const placeTip = (v: number) => {
-    const t = tipRef.current;
+  // Position the tip + dots along the path and reveal them as the line draws.
+  const paint = (v: number) => {
     const p = (pathRef.current ?? document.querySelector('.si-line path[data-siline]')) as SVGPathElement | null;
-    if (!p || !t) return;
-    const f = Math.max(0, Math.min(1, v));
-    const pt = p.getPointAtLength(p.getTotalLength() * f);
-    t.style.left = `${(pt.x / 1200) * 100}%`;
-    t.style.top = `${pt.y}px`;
-    t.style.opacity = reduce || f > 0.02 ? '1' : '0';
+    if (!p) return;
+    const total = p.getTotalLength();
+    const t = tipRef.current;
+    if (t) {
+      const f = Math.max(0, Math.min(1, v));
+      const pt = p.getPointAtLength(total * f);
+      t.style.left = `${(pt.x / 1200) * 100}%`;
+      t.style.top = `${pt.y}px`;
+      t.style.opacity = reduce || f > 0.015 ? '1' : '0';
+    }
+    zoneElRef.current?.querySelectorAll<HTMLElement>('.si-dot').forEach((el) => {
+      const f = parseFloat(el.dataset.f || '0');
+      const pt = p.getPointAtLength(total * f);
+      el.style.left = `${(pt.x / 1200) * 100}%`;
+      el.style.top = `${pt.y}px`;
+      el.style.opacity = reduce || v >= f ? '1' : '0';
+    });
   };
-  useMotionValueEvent(progress, 'change', placeTip);
+  useMotionValueEvent(progress, 'change', paint);
 
-  // Draw the line + travel the tip once the band genuinely enters the viewport
-  // (IntersectionObserver fires after layout settles, so it can't trigger early).
   useEffect(() => {
-    if (reduce) { progress.set(1); placeTip(1); return; }
-    placeTip(0);
+    if (reduce) { progress.set(1); paint(1); return; }
+    paint(0);
     const el = zoneElRef.current;
     if (!el) return;
     const io = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !startedRef.current) {
         startedRef.current = true;
-        animate(progress, 1, { duration: 1.8, ease: [0.22, 1, 0.36, 1] });
+        animate(progress, 1, { duration: 1.9, ease: [0.22, 1, 0.36, 1] });
         io.disconnect();
       }
     }, { rootMargin: '0px 0px -20% 0px' });
@@ -62,7 +68,7 @@ export default function StrategicIntelligence() {
 
   return (
     <section className="mkt-section si-section" aria-labelledby="si-h">
-      {/* 1 · the text — warm white background */}
+      {/* 1 · the text — tight to the line */}
       <div className="mkt-wrap si-top">
         <motion.p className="mkt-eyebrow" initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
           Decision intelligence, made visible
@@ -71,46 +77,45 @@ export default function StrategicIntelligence() {
           You’re not making bad decisions.<br />
           <span style={{ color: 'var(--cyan)' }}>You’re just making them without the numbers.</span>
         </motion.h2>
-        <motion.p className="mkt-lead" style={{ marginTop: 22, maxWidth: 560 }} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.16 }}>
+        <motion.p className="mkt-lead" style={{ marginTop: 20, maxWidth: 560 }} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.16 }}>
           The signals that decide whether a month works — a margin slipping, a
           customer drifting, cash tightening — stay invisible until it’s too late.
           AI-BOS surfaces them while you can still act, and writes the brief for you.
         </motion.p>
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.26 }} style={{ marginTop: 28 }}>
-          <Link href="/login" className="mkt-btn mkt-btn-primary">See your brief — free</Link>
-        </motion.div>
       </div>
 
-      {/* 2 · reveal band (white above line, gradient below) · 3 · genuine brief */}
+      {/* 2 · the line + cyan gradient · 3 · the genuine brief beneath */}
       <div className="si-brief-zone" data-theme="dark" ref={zoneElRef}>
-        <svg className="si-line" viewBox="0 0 1200 380" preserveAspectRatio="none" aria-hidden>
+        <svg className="si-line" viewBox="0 0 1200 240" preserveAspectRatio="none" aria-hidden>
           <defs>
             <linearGradient id="siLine" x1="0" y1="1" x2="1" y2="0">
               <stop offset="0%" stopColor="var(--text-4)" stopOpacity="0.35" />
               <stop offset="40%" stopColor="var(--cyan)" stopOpacity="0.8" />
               <stop offset="100%" stopColor="var(--cyan)" />
             </linearGradient>
-            {/* The gradient that FALLS from the line — an area-chart-style cyan
-                fill: white at the line, a cyan glow spilling down, fading to
-                transparent over the navy brief. Luminous, not grey. */}
+            {/* the gradient that falls from the line — cyan area-fill, not grey */}
             <linearGradient id="siReveal" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#f4f3ef" stopOpacity="0.92" />
-              <stop offset="13%" stopColor="#00d4ff" stopOpacity="0.34" />
+              <stop offset="14%" stopColor="#00d4ff" stopOpacity="0.34" />
               <stop offset="100%" stopColor="#00d4ff" stopOpacity="0" />
             </linearGradient>
           </defs>
-          {/* solid white above the line — no shadow */}
-          <path d={`${LINE} L1200,0 L0,0 Z`} fill="#f4f3ef" />
-          {/* the gradient below the line — reveals the brief */}
-          <path d={`${LINE} L1200,380 L0,380 Z`} fill="url(#siReveal)" />
+          {/* solid white above the line; fills extend FLAT to the right edge (no wedge) */}
+          <path d={`${LINE} L1200,${END_Y} L1200,0 L0,0 Z`} fill="#f4f3ef" />
+          <path d={`${LINE} L1200,${END_Y} L1200,240 L0,240 Z`} fill="url(#siReveal)" />
           <motion.path ref={pathRef} data-siline d={LINE} fill="none" stroke="url(#siLine)" strokeWidth={3} strokeLinecap="round" vectorEffect="non-scaling-stroke" style={{ pathLength: progress }} />
         </svg>
+        {DOTS.map((f) => (<span key={f} className="si-dot" data-f={f} aria-hidden />))}
         <span className="si-tip" ref={tipRef} aria-hidden />
 
         <div className="mkt-wrap si-brief">
           <StrategicBriefView {...DEMO_BRIEF} sym="K" />
         </div>
         <div className="si-brief-blur" aria-hidden />
+        {/* CTA floats at the brief's fade point */}
+        <div className="si-cta">
+          <Link href="/login" className="mkt-btn mkt-btn-primary">See your brief — free</Link>
+        </div>
       </div>
     </section>
   );
