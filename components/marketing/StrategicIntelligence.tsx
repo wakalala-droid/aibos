@@ -16,7 +16,7 @@ import StrategicBriefView from '@/components/dashboard/StrategicBriefView';
 import { DEMO_BRIEF } from '@/lib/demoData';
 
 // Smooth, organic rising line with a gentle dip — in a fixed 1200×380 band.
-const LINE = 'M0,230 C 60,224 110,216 150,218 C 210,221 262,232 300,226 C 360,218 402,192 430,186 C 482,178 532,188 560,184 C 612,178 650,152 680,150 C 716,148 746,168 772,160 C 802,152 826,134 860,130 C 922,120 966,98 1000,88 C 1056,72 1112,64 1176,52';
+const LINE = 'M0,258 C 60,252 110,244 150,246 C 210,249 262,260 300,254 C 360,246 402,220 430,214 C 482,206 532,216 560,212 C 612,206 650,180 680,178 C 716,176 746,196 772,188 C 802,180 826,162 860,158 C 922,148 966,126 1000,116 C 1056,100 1112,92 1176,80';
 
 export default function StrategicIntelligence() {
   const reduce = useReducedMotion();

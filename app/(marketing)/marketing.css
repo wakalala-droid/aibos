@@ -311,7 +311,7 @@
 
 /* Dark zone (so the bottom blends into the next section — no white band). The
    top reveal (white above line → gradient below) is the fixed-height SVG band. */
-.si-brief-zone { position: relative; background: #0a0e1a; padding-top: clamp(240px, 24vw, 292px); }
+.si-brief-zone { position: relative; background: #0a0e1a; padding-top: clamp(272px, 26vw, 320px); }
 /* the reveal band sits ABOVE the brief (z-index) so its gradient genuinely
    uncovers it; the line/tip ride on top of that. */
 .si-line { position: absolute; top: 0; left: 0; width: 100%; height: 380px; z-index: 2; pointer-events: none; }
