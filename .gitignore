@@ -29,3 +29,6 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# local visual-check helper (puppeteer-core via system Edge)
+.screenshots/
