@@ -89,14 +89,16 @@ export default function StrategicIntelligence() {
         <svg className="si-line" viewBox="0 0 1200 240" preserveAspectRatio="none" aria-hidden>
           <defs>
             <linearGradient id="siLine" x1="0" y1="1" x2="1" y2="0">
-              <stop offset="0%" stopColor="#0a8fc7" />
-              <stop offset="45%" stopColor="#00d4ff" />
-              <stop offset="100%" stopColor="#7df3ff" />
+              <stop offset="0%" stopColor="#0aa6dd" />
+              <stop offset="55%" stopColor="#00d4ff" />
+              <stop offset="100%" stopColor="#22ddff" />
             </linearGradient>
-            {/* the gradient that falls from the line — cyan area-fill, not grey */}
+            {/* the gradient that falls from the line — a true chart area-fill:
+                cyan right at the line (so the line stays vivid to the tip),
+                spilling down and fading to transparent over the navy brief. */}
             <linearGradient id="siReveal" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f4f3ef" stopOpacity="0.92" />
-              <stop offset="14%" stopColor="#00d4ff" stopOpacity="0.34" />
+              <stop offset="0%" stopColor="#00d4ff" stopOpacity="0.46" />
+              <stop offset="52%" stopColor="#00d4ff" stopOpacity="0.13" />
               <stop offset="100%" stopColor="#00d4ff" stopOpacity="0" />
             </linearGradient>
           </defs>
