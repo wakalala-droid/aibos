@@ -90,12 +90,13 @@ export default function StrategicIntelligence() {
               <stop offset="40%" stopColor="var(--cyan)" stopOpacity="0.8" />
               <stop offset="100%" stopColor="var(--cyan)" />
             </linearGradient>
-            {/* White fading to TRANSPARENT (over the navy brief beneath) — a
-                clean reveal, no grey mud. */}
+            {/* The gradient that FALLS from the line — an area-chart-style cyan
+                fill: white at the line, a cyan glow spilling down, fading to
+                transparent over the navy brief. Luminous, not grey. */}
             <linearGradient id="siReveal" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f4f3ef" stopOpacity="1" />
-              <stop offset="64%" stopColor="#f4f3ef" stopOpacity="0" />
-              <stop offset="100%" stopColor="#f4f3ef" stopOpacity="0" />
+              <stop offset="0%" stopColor="#f4f3ef" stopOpacity="0.92" />
+              <stop offset="13%" stopColor="#00d4ff" stopOpacity="0.34" />
+              <stop offset="100%" stopColor="#00d4ff" stopOpacity="0" />
             </linearGradient>
           </defs>
           {/* solid white above the line — no shadow */}
