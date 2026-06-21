@@ -302,23 +302,23 @@
 }
 .aibos-window-body { padding: clamp(14px, 2vw, 22px); }
 
-/* ── Strategic Intelligence (text on white → rising line cuts to dark → brief) ─ */
-.si-section { position: relative; overflow: hidden; padding-top: clamp(60px, 8vw, 110px); }
+/* ── Strategic Intelligence (text on white → reveal band → genuine brief) ─── */
+/* padding-bottom: 0 overrides .mkt-section's padding-block — that stray bottom
+   padding was the warm page bg showing as a white band under the section. */
+.si-section { position: relative; overflow: hidden; padding-top: clamp(60px, 8vw, 110px); padding-bottom: 0; }
 .si-top { text-align: left; padding-bottom: clamp(8px, 2vw, 28px); }
 .si-headline { max-width: 860px; }
 
-/* The reveal: white at top fading to navy — the gradient that uncovers the
-   brief. Bottom stays dark so it blends seamlessly into the next section. */
-.si-brief-zone {
-  position: relative;
-  background: linear-gradient(to bottom, #f4f3ef 0, #f4f3ef 72px, #0a0e1a 300px, #0a0e1a 100%);
-  padding-top: clamp(190px, 23vw, 330px);
-}
-.si-line { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+/* Dark zone (so the bottom blends into the next section — no white band). The
+   top reveal (white above line → gradient below) is the fixed-height SVG band. */
+.si-brief-zone { position: relative; background: #0a0e1a; padding-top: clamp(240px, 24vw, 292px); }
+/* the reveal band sits ABOVE the brief (z-index) so its gradient genuinely
+   uncovers it; the line/tip ride on top of that. */
+.si-line { position: absolute; top: 0; left: 0; width: 100%; height: 380px; z-index: 2; pointer-events: none; }
 /* tip position (left/top) is set in JS so it travels along the drawn line */
 .si-tip {
   position: absolute; left: 0; top: 0; width: 13px; height: 13px; border-radius: 50%;
-  background: var(--cyan); transform: translate(-50%, -50%); z-index: 2; pointer-events: none; opacity: 0;
+  background: var(--cyan); transform: translate(-50%, -50%); z-index: 3; pointer-events: none; opacity: 0;
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--cyan) 16%, transparent),
               0 0 18px 4px color-mix(in srgb, var(--cyan) 55%, transparent);
 }
@@ -341,7 +341,7 @@
   mask-image: linear-gradient(to bottom, #000 0%, #000 80%, transparent 97%);
 }
 .si-brief-blur {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 32%; z-index: 1;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 32%; z-index: 2;
   pointer-events: none;
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 60%);
