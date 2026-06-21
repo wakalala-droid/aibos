@@ -311,10 +311,11 @@
 
 /* Dark zone (so the bottom blends into the next section — no white band). The
    top reveal (white above line → gradient below) is the fixed-height SVG band. */
-.si-brief-zone { position: relative; background: #0a0e1a; padding-top: clamp(126px, 13vw, 162px); }
+.si-brief-zone { position: relative; background: #0a0e1a; padding-top: clamp(146px, 13vw, 168px); }
 /* the reveal band sits ABOVE the brief (z-index) so its gradient genuinely
    uncovers it; the line/dots/tip ride on top of that. */
 .si-line { position: absolute; top: 0; left: 0; width: 100%; height: 240px; z-index: 2; pointer-events: none; }
+.si-graphline { filter: drop-shadow(0 0 4px var(--cyan)) drop-shadow(0 0 12px color-mix(in srgb, var(--cyan) 45%, transparent)); }
 /* data points along the line (positioned in JS); reveal as the line draws */
 .si-dot {
   position: absolute; left: 0; top: 0; width: 9px; height: 9px; border-radius: 50%;

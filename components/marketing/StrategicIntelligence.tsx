@@ -13,9 +13,9 @@ import { motion, useReducedMotion, useMotionValue, useMotionValueEvent, animate 
 import StrategicBriefView from '@/components/dashboard/StrategicBriefView';
 import { DEMO_BRIEF } from '@/lib/demoData';
 
-// Flatter rising line with a gentle dip, in a 1200×240 band. Ends at x=1176.
-const LINE = 'M0,108 C 60,104 110,98 150,100 C 210,103 262,112 300,106 C 360,99 402,82 430,78 C 482,72 532,80 560,76 C 612,71 650,56 680,54 C 716,52 746,68 772,62 C 802,56 826,44 860,42 C 922,36 966,30 1000,27 C 1056,24 1112,26 1176,28';
-const END_Y = 28; // y of the line's last point — used to extend fills flat to the right edge (no wedge)
+// One clean, confident upward curve (no dips), in a 1200×240 band. Ends at x=1176.
+const LINE = 'M0,132 C 260,126 460,104 680,78 C 880,54 1020,38 1176,22';
+const END_Y = 22; // y of the line's last point — fills extend flat to the right edge (no wedge)
 const DOTS = [0.14, 0.33, 0.52, 0.7, 0.86]; // data points along the line
 
 export default function StrategicIntelligence() {
@@ -89,9 +89,9 @@ export default function StrategicIntelligence() {
         <svg className="si-line" viewBox="0 0 1200 240" preserveAspectRatio="none" aria-hidden>
           <defs>
             <linearGradient id="siLine" x1="0" y1="1" x2="1" y2="0">
-              <stop offset="0%" stopColor="var(--text-4)" stopOpacity="0.35" />
-              <stop offset="40%" stopColor="var(--cyan)" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="var(--cyan)" />
+              <stop offset="0%" stopColor="#0a8fc7" />
+              <stop offset="45%" stopColor="#00d4ff" />
+              <stop offset="100%" stopColor="#7df3ff" />
             </linearGradient>
             {/* the gradient that falls from the line — cyan area-fill, not grey */}
             <linearGradient id="siReveal" x1="0" y1="0" x2="0" y2="1">
@@ -103,7 +103,7 @@ export default function StrategicIntelligence() {
           {/* solid white above the line; fills extend FLAT to the right edge (no wedge) */}
           <path d={`${LINE} L1200,${END_Y} L1200,0 L0,0 Z`} fill="#f4f3ef" />
           <path d={`${LINE} L1200,${END_Y} L1200,240 L0,240 Z`} fill="url(#siReveal)" />
-          <motion.path ref={pathRef} data-siline d={LINE} fill="none" stroke="url(#siLine)" strokeWidth={3} strokeLinecap="round" vectorEffect="non-scaling-stroke" style={{ pathLength: progress }} />
+          <motion.path ref={pathRef} data-siline className="si-graphline" d={LINE} fill="none" stroke="url(#siLine)" strokeWidth={4} strokeLinecap="round" vectorEffect="non-scaling-stroke" style={{ pathLength: progress }} />
         </svg>
         {DOTS.map((f) => (<span key={f} className="si-dot" data-f={f} aria-hidden />))}
         <span className="si-tip" ref={tipRef} aria-hidden />
