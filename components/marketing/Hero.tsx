@@ -14,8 +14,9 @@ export default function Hero() {
 
   return (
     <section style={{ position: 'relative', overflow: 'hidden', paddingTop: 'clamp(40px, 6vw, 80px)', paddingBottom: 'clamp(40px, 6vw, 80px)' }}>
-      <span className="mkt-glow" style={{ top: '-14%', right: '-8%', width: 600, height: 600, background: 'radial-gradient(circle, rgba(224,121,42,0.26), transparent 60%)' }} />
-      <span className="mkt-glow" style={{ bottom: '-24%', left: '-10%', width: 520, height: 520, background: 'radial-gradient(circle, rgba(124,92,240,0.20), transparent 62%)' }} />
+      {/* Animated aurora behind the hero (masked to the top) */}
+      <div className="mkt-aurora" aria-hidden />
+      <span className="mkt-glow" style={{ bottom: '-24%', left: '-10%', width: 520, height: 520, background: 'radial-gradient(circle, rgba(224,121,42,0.20), transparent 62%)' }} />
 
       <div
         className="mkt-wrap mkt-hero-grid"

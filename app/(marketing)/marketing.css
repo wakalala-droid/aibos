@@ -383,6 +383,28 @@
   pointer-events: none; z-index: 0; opacity: 0.55;
 }
 
+/* ── Aurora hero background (Aceternity look, adapted to plain CSS) ──────
+   Animated banded aurora, masked to the top so it sits behind the hero
+   content as a premium accent. Collapses under prefers-reduced-motion (the
+   universal rule at the bottom kills the animation). */
+.mkt-aurora {
+  position: absolute; inset: -15%; z-index: 0; pointer-events: none;
+  opacity: 0.62; filter: blur(13px) saturate(1.15); will-change: background-position;
+  --aurora:  repeating-linear-gradient(100deg, #3b82f6 6%, #8b5cf6 13%, #22d3ee 20%, #a5b4fc 27%, #3b82f6 34%);
+  --stripes: repeating-linear-gradient(100deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.72) 6%, transparent 9%, transparent 13%, rgba(255,255,255,0.72) 16%);
+  background-image: var(--stripes), var(--aurora);
+  background-size: 220% 170%, 200% 170%;
+  /* visible top-right (behind the dashboard area) fading down + left so the
+     headline stays readable */
+  -webkit-mask-image: radial-gradient(135% 100% at 74% -14%, #000 16%, transparent 72%);
+  mask-image: radial-gradient(135% 100% at 74% -14%, #000 16%, transparent 72%);
+  animation: mkt-aurora 22s linear infinite alternate;
+}
+@keyframes mkt-aurora {
+  0%   { background-position: 0% 50%, 0% 50%; }
+  100% { background-position: 100% 50%, 100% 50%; }
+}
+
 /* ── Reveal (paired with framer-motion; CSS fallback if JS off) ── */
 .mkt-reveal-css { opacity: 0; transform: translateY(14px); animation: mkt-rise 0.7s ease forwards; }
 @keyframes mkt-rise { to { opacity: 1; transform: none; } }
