@@ -13,9 +13,13 @@ import { motion, useReducedMotion, useMotionValue, useMotionValueEvent, animate 
 import StrategicBriefView from '@/components/dashboard/StrategicBriefView';
 import { DEMO_BRIEF } from '@/lib/demoData';
 
-// One clean, confident upward curve (no dips), in a 1200×240 band. Ends at x=1176.
-const LINE = 'M0,132 C 260,126 460,104 680,78 C 880,54 1020,38 1176,22';
-const END_Y = 22; // y of the line's last point — fills extend flat to the right edge (no wedge)
+// One clean, confident upward curve (no dips), in a 1200×240 band. The curve
+// ends at x=1176 (where the tip dot sits); a short flat tail runs to the right
+// edge so the STROKE covers the white/fill boundary there (no faint sliver).
+const CURVE = 'M0,132 C 260,126 460,104 680,78 C 880,54 1020,38 1176,22';
+const LINE = `${CURVE} L1200,22`;
+const TAIL = 24; // viewBox length of the flat tail (1200 - 1176); tip stops before it
+const END_Y = 22;
 const DOTS = [0.14, 0.33, 0.52, 0.7, 0.86]; // data points along the line
 
 export default function StrategicIntelligence() {
@@ -34,7 +38,9 @@ export default function StrategicIntelligence() {
     const t = tipRef.current;
     if (t) {
       const f = Math.max(0, Math.min(1, v));
-      const pt = p.getPointAtLength(total * f);
+      // stop the tip at the end of the CURVE (before the flat tail) so it sits
+      // exactly on the dot and the line clearly terminates there.
+      const pt = p.getPointAtLength(Math.min(total * f, total - TAIL));
       t.style.left = `${(pt.x / 1200) * 100}%`;
       t.style.top = `${pt.y}px`;
       t.style.opacity = reduce || f > 0.015 ? '1' : '0';
