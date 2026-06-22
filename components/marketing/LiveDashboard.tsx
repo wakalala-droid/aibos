@@ -45,11 +45,7 @@ export default function LiveDashboard() {
   const chartData = m.map((x) => ({ month: x.Month, Revenue: x.Revenue, Profit: x.Revenue - x.Costs }));
 
   return (
-    <div className="aibos-window" data-theme="dark">
-      <div className="aibos-window-bar">
-        <span className="aibos-window-dots"><i style={{ background: '#ff5f57' }} /><i style={{ background: '#febc2e' }} /><i style={{ background: '#28c840' }} /></span>
-        <span className="aibos-window-url">app.aibos.africa/dashboard</span>
-      </div>
+    <div className="mkt-livedash" data-theme="dark">
       <div className="aibos-window-body">
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 6 }}>
           <p style={{ margin: 0, fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-1)', letterSpacing: '-0.02em' }}>{DEMO_BUSINESS}</p>

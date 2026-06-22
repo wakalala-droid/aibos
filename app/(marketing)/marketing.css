@@ -302,6 +302,15 @@
 }
 .aibos-window-body { padding: clamp(14px, 2vw, 22px); }
 
+/* Hero dashboard surface — the REAL components on a clean dark panel, with NO
+   fabricated browser-window chrome/border around them. */
+.mkt-livedash {
+  border-radius: 20px;
+  background: var(--bg-page);
+  box-shadow: 0 40px 90px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+
 /* ── Strategic Intelligence (text on white → reveal band → genuine brief) ─── */
 /* padding-bottom: 0 overrides .mkt-section's padding-block — that stray bottom
    padding was the warm page bg showing as a white band under the section. */
