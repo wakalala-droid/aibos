@@ -1,55 +1,26 @@
 'use client';
 
 // components/ui/glowing-ai-chat-assistant.tsx
-// FloatingAiAssistant — a floating, brand-marked AI chat launcher for AI-BOS.
+// FloatingAiAssistant — a floating, brand-marked launcher for the AI CFO.
 //
-//  • Collapsed: a glowing circular button showing the AI-BOS mark (the correct
-//    light / dark variant for the active theme).
+//  • Collapsed: a glowing circular button showing the AI-BOS mark (light / dark
+//    variant for the active theme). Toggles to an X when open.
 //  • Expanded: a glassy chat panel (status · model · tier · close, big prompt,
 //    composer with attach / voice / send, char counter, footer).
 //
-// Functionality:
-//  • Prompts the user to ask questions and surfaces suggested prompts.
-//  • Long-press ANY card on the dashboard (see lib/aiAssistant) → the assistant
-//    opens and explains that exact component from the pre-recorded knowledge base.
-//  • "Master context": it reads every live number from the store, so questions
-//    about specific KPIs / charts are answered from real data.
-//  • Cost control: definitions, component explanations and direct metric lookups
-//    are answered locally (no Grok call). Only open-ended reasoning hits the API.
+// This is the SAME assistant as the embedded AI CFO panel (chat/AICFOChat) — the
+// conversation is shared via AiAssistantProvider, so history persists between
+// the floating launcher and the dashboard panel. Long-press any [data-ai-explain]
+// card to have it explained instantly from the local knowledge base.
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme';
-import { fmt } from '@/lib/utils';
-import { logUsage } from '@/lib/usage';
 import { TIERS } from '@/lib/tiers';
-import { useAiAssistant } from '@/lib/aiAssistant';
-import {
-  localAnswer, getComponentDoc, renderExplanation, DEFAULT_PROMPTS,
-  type LiveMetrics,
-} from '@/lib/aiKnowledge';
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: string;
-  /** Marks a locally-answered message (no API), for the subtle "instant" tag. */
-  local?: boolean;
-}
-
-const MAX_CHARS = 2000;
-
-// Always proxy through Next in production (CORS-safe); hit the local backend in dev.
-const API =
-  typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:8000'
-    : '/api/proxy';
-
-const nowTime = () =>
-  new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+import { useAiAssistant, MAX_CHARS } from '@/lib/aiAssistant';
+import { DEFAULT_PROMPTS } from '@/lib/aiKnowledge';
 
 // ── Minimal stroke icons (2px, per visual_language_system.md) ────────────────
 const Icon = {
@@ -84,19 +55,17 @@ const Icon = {
 };
 
 // ── Tiny markdown-ish renderer for **bold** + bullet lines ───────────────────
-function RichText({ text, light }: { text: string; light: boolean }) {
+function RichText({ text }: { text: string }) {
   return (
     <>
       {text.split('\n').map((line, i) => {
         if (line.trim() === '') return <div key={i} style={{ height: 6 }} />;
         const parts = line.split(/(\*\*[^*]+\*\*)/g);
         return (
-          <p key={i} style={{ margin: '0 0 2px', lineHeight: 1.55, color: light ? '#fff' : 'var(--text-2)' }}>
+          <p key={i} style={{ margin: '0 0 2px', lineHeight: 1.55, color: 'var(--text-2)' }}>
             {parts.map((p, j) =>
               p.startsWith('**') && p.endsWith('**') ? (
-                <strong key={j} style={{ fontWeight: 700, color: light ? '#fff' : 'var(--text-1)' }}>
-                  {p.slice(2, -2)}
-                </strong>
+                <strong key={j} style={{ fontWeight: 700, color: 'var(--text-1)' }}>{p.slice(2, -2)}</strong>
               ) : (
                 <span key={j}>{p}</span>
               )
@@ -109,17 +78,15 @@ function RichText({ text, light }: { text: string; light: boolean }) {
 }
 
 export function FloatingAiAssistant() {
-  const { open, setOpen, toggle, explainTarget, clearExplain, pendingAsk, clearAsk } = useAiAssistant();
+  const {
+    open, setOpen, toggle,
+    messages, loading, online, suggestions, setSuggestions,
+    sendMessage, pushAssistant,
+  } = useAiAssistant();
   const { isDark } = useTheme();
+  const tier = useStore((s) => s.tier);
 
-  const store = useStore();
-  const sym = store.currencySymbol || 'K';
-
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [online, setOnline] = useState(true);
-  const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_PROMPTS);
   const [listening, setListening] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -128,156 +95,12 @@ export function FloatingAiAssistant() {
   const atBottomRef = useRef(true);
   const recognitionRef = useRef<any>(null);
 
-  // ── Live metrics snapshot for the local answer engine ──────────────────────
-  const lv: LiveMetrics = useMemo(() => {
-    const s = store;
-    const hasFinancial = Array.isArray(s.monthly) && s.monthly.length > 0;
-    const safeRfm = Array.isArray(s.rfm) ? s.rfm : [];
-    const hasCustomer = s.hasEngine2Data || safeRfm.length > 0;
-    const hasOps = s.hasEngine3Data || !!s.posGrandTotals;
-    const money = (raw: number): { raw: number; fmt: string } => ({ raw, fmt: fmt(raw, true, sym) });
-    return {
-      currency: sym,
-      hasFinancial, hasCustomer, hasOps,
-      revenue: hasFinancial ? money(s.kpi?.totalRevenue ?? 0) : undefined,
-      costs: hasFinancial ? money(s.kpi?.totalCosts ?? 0) : undefined,
-      profit: hasFinancial ? money(s.kpi?.totalProfit ?? 0) : undefined,
-      margin: hasFinancial ? s.kpi?.avgMargin ?? 0 : undefined,
-      healthScore: s.health?.score,
-      healthLabel: s.health?.label,
-      monthsCount: hasFinancial ? s.monthly.length : undefined,
-      overallScore: s.intelligenceScores?.overall_score,
-      overallLabel: s.intelligenceScores?.overall_label,
-      e1Score: s.intelligenceScores?.e1_score,
-      e2Score: s.intelligenceScores?.e2_score,
-      e3Score: s.intelligenceScores?.e3_score,
-      champions: hasCustomer ? safeRfm.filter((r) => r.segment === 'Champion').length : undefined,
-      highChurn: hasCustomer ? safeRfm.filter((r) => (r.churn_risk ?? 0) >= 70).length : undefined,
-      retentionRate: s.retention?.retention_rate,
-      customersCount: hasCustomer ? (s.retention?.total_customers ?? safeRfm.length) : undefined,
-      netRevenue: hasOps ? money(s.posGrandTotals?.net_revenue ?? s.posGrandTotals?.gross_revenue ?? 0) : undefined,
-      drinkAttach: hasOps ? s.attachRates?.drink_attach_pct ?? 0 : undefined,
-      benchmarksWarn: hasOps ? (Array.isArray(s.benchmarks) ? s.benchmarks.filter((b) => b.status !== 'good').length : 0) : undefined,
-      productsCount: Array.isArray(s.breakdown) ? s.breakdown.length : undefined,
-    };
-  }, [store, sym]);
-
-  // ── Full context for the Grok backend (only sent on API fall-through) ──────
-  const buildContext = useCallback(() => {
-    const s = store;
-    const ctx: Record<string, unknown> = { currency_symbol: sym, cabinet_id: s.cabinetId ?? undefined };
-    if (lv.hasFinancial) {
-      ctx.pnl = {
-        total_revenue: s.kpi?.totalRevenue ?? 0, total_costs: s.kpi?.totalCosts ?? 0,
-        total_profit: s.kpi?.totalProfit ?? 0, avg_margin: s.kpi?.avgMargin ?? 0,
-      };
-      ctx.health_score = s.health?.score ?? 0;
-      ctx.health_label = s.health?.label ?? '';
-      ctx.monthly = (Array.isArray(s.monthly) ? s.monthly : []).slice(0, 24);
-    }
-    if (Array.isArray(s.alerts) && s.alerts.length) ctx.alerts = s.alerts;
-    if (lv.hasCustomer) {
-      const safeRfm = Array.isArray(s.rfm) ? s.rfm : [];
-      ctx.customer = {
-        total_customers: s.retention?.total_customers ?? safeRfm.length,
-        champions: lv.champions, high_churn: lv.highChurn,
-        retention_rate: s.retention?.retention_rate ?? 0,
-        segments: Array.isArray(s.segments) ? s.segments : [],
-        clv_tiers: Array.isArray(s.clvTiers) ? s.clvTiers : [],
-      };
-    }
-    if (lv.hasOps) {
-      ctx.operations = {
-        business_name: s.posBusinessName || undefined, period: s.posPeriod || undefined,
-        grand_totals: s.posGrandTotals ?? undefined,
-        categories: (Array.isArray(s.categories) ? s.categories : []).slice(0, 12),
-        top_items: (Array.isArray(s.topItems) ? s.topItems : []).slice(0, 10),
-        benchmarks: Array.isArray(s.benchmarks) ? s.benchmarks : [],
-        attach_rates: s.attachRates ?? undefined,
-      };
-    }
-    if (Array.isArray(s.breakdown) && s.breakdown.length) ctx.item_breakdown = s.breakdown.slice(0, 30);
-    if (s.intelligenceScores || (Array.isArray(s.crossInsights) && s.crossInsights.length) || s.unifiedBrief) {
-      ctx.intelligence = {
-        scores: s.intelligenceScores ?? undefined,
-        cross_insights: (Array.isArray(s.crossInsights) ? s.crossInsights : []).slice(0, 5),
-        unified_brief: s.unifiedBrief || undefined,
-      };
-    }
-    return ctx;
-  }, [store, sym, lv]);
-
-  const pushAssistant = useCallback((content: string, local = false) => {
-    setMessages((prev) => [...prev, { id: `a-${Date.now()}-${prev.length}`, role: 'assistant', content, timestamp: nowTime(), local }]);
-  }, []);
-
-  // ── Send a message: local knowledge first, Grok only when needed ───────────
-  const sendMessage = useCallback(
-    async (raw: string) => {
-      const text = raw.trim().slice(0, MAX_CHARS);
-      if (!text || loading) return;
-
-      setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: 'user', content: text, timestamp: nowTime() }]);
-      setInput('');
-      setSuggestions([]);
-      atBottomRef.current = true;
-
-      // 1) Local answer (definitions, explanations, direct metric lookups).
-      const local = localAnswer(text, lv);
-      if (local) { pushAssistant(local, true); return; }
-
-      // 2) Open-ended reasoning → Grok backend with full master context.
-      setLoading(true);
-      logUsage('chat');
-      try {
-        const res = await fetch(`${API}/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, user_id: 'default-user', context: buildContext() }),
-        });
-        const body = await res.text();
-        let data: Record<string, unknown> = {};
-        try { data = body ? JSON.parse(body) : {}; } catch {
-          const snippet = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
-          throw new Error(res.ok ? `Non-JSON response. ${snippet}` : `Server error ${res.status}. ${snippet || 'The AI service may be offline.'}`);
-        }
-        if (!res.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `HTTP ${res.status}`);
-        setOnline(true);
-        pushAssistant((data.reply as string) ?? (data.response as string) ?? 'No response received.');
-      } catch (err) {
-        setOnline(false);
-        pushAssistant(`Sorry, I hit an error reaching the AI service: ${(err as Error).message}`);
-      } finally {
-        setLoading(false);
-        inputRef.current?.focus();
-      }
-    },
-    [loading, lv, buildContext, pushAssistant]
-  );
-
-  // ── Long-press explanation: answer instantly from the knowledge base ───────
-  useEffect(() => {
-    if (!explainTarget) return;
-    const doc = getComponentDoc(explainTarget.id);
-    if (doc) {
-      pushAssistant(renderExplanation(doc, lv), true);
-      setSuggestions(doc.followups ?? []);
-    } else {
-      // Unknown component → describe what we can from the label/value, no fabrication.
-      const label = explainTarget.label || 'this component';
-      const valueLine = explainTarget.value ? `\n\n📊 It currently shows ${explainTarget.value}.` : '';
-      pushAssistant(`**${label}**\n\nThis is part of your AI-BOS dashboard. Ask me what you'd like to know about it and I'll pull the detail from your data.${valueLine}`, true);
-      setSuggestions([]);
-    }
-    clearExplain();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [explainTarget]);
-
-  // ── External ask (quick actions) ───────────────────────────────────────────
-  useEffect(() => {
-    if (pendingAsk) { sendMessage(pendingAsk); clearAsk(); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingAsk]);
+  const submit = useCallback((text: string) => {
+    if (!text.trim() || loading) return;
+    atBottomRef.current = true;
+    sendMessage(text);
+    setInput('');
+  }, [loading, sendMessage]);
 
   // Auto-scroll only when the user is already pinned to the bottom.
   useEffect(() => {
@@ -291,7 +114,6 @@ export function FloatingAiAssistant() {
     if (el) atBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
   }, []);
 
-  // Focus the composer when the panel opens.
   useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 120); }, [open]);
 
   // Escape closes the panel (accessibility_system.md KEYBOARD RULE).
@@ -321,17 +143,16 @@ export function FloatingAiAssistant() {
     rec.start();
   }, [listening, speechSupported]);
 
-  // Attach → jump to the upload section if it's on the current page.
   const onAttach = useCallback(() => {
     const el = document.getElementById('upload-section');
     if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); setOpen(false); }
-    else pushAssistant('Open the Overview page and use **Upload & Analyse** to bring in a CSV or Excel file — month, revenue and cost columns to start.', true);
+    else pushAssistant('Open the Overview page and use **Upload & Analyse** to bring in a CSV or Excel file — month, revenue and cost columns to start.');
   }, [setOpen, pushAssistant]);
 
-  const tierMeta = TIERS[store.tier] ?? TIERS.free;
-  const paid = store.tier !== 'free';
+  const tierMeta = TIERS[tier] ?? TIERS.free;
+  const paid = tier !== 'free';
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(input); }
   };
 
   const mark = isDark ? '/brand/aibos-mark-dark.png' : '/brand/aibos-mark-light.png';
@@ -345,7 +166,7 @@ export function FloatingAiAssistant() {
           <motion.div
             key="panel"
             role="dialog"
-            aria-label="AI-BOS assistant"
+            aria-label="Ask me anything — AI CFO"
             initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.96 }}
@@ -370,7 +191,7 @@ export function FloatingAiAssistant() {
                   transition={{ duration: 2, repeat: Infinity }}
                   style={{ width: 8, height: 8, borderRadius: '50%', background: online ? 'var(--good)' : 'var(--warn)', flexShrink: 0, boxShadow: online ? '0 0 8px var(--good)' : 'none' }}
                 />
-                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>AI Assistant</span>
+                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>Ask me anything</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', fontWeight: 600, color: 'var(--text-3)', border: '1px solid var(--border-md)', borderRadius: 6, padding: '3px 7px', whiteSpace: 'nowrap' }}>
@@ -419,10 +240,10 @@ export function FloatingAiAssistant() {
                       fontFamily: 'Inter, sans-serif', fontSize: '0.82rem',
                     }}>
                       {m.role === 'assistant'
-                        ? <RichText text={m.content} light={false} />
+                        ? <RichText text={m.content} />
                         : <p style={{ margin: 0, lineHeight: 1.55, color: '#fff' }}>{m.content}</p>}
                       <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', margin: '5px 0 0', textAlign: m.role === 'user' ? 'right' : 'left', color: m.role === 'user' ? 'rgba(255,255,255,0.6)' : 'var(--text-4)' }}>
-                        {m.local ? '⚡ instant · ' : ''}{m.timestamp}
+                        {m.timestamp}
                       </p>
                     </div>
                   </motion.div>
@@ -444,7 +265,7 @@ export function FloatingAiAssistant() {
               {suggestions.length > 0 && !loading && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 2 }}>
                   {suggestions.map((p) => (
-                    <button key={p} type="button" onClick={() => sendMessage(p)}
+                    <button key={p} type="button" onClick={() => submit(p)}
                       style={{ padding: '6px 11px', borderRadius: 16, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: 'var(--text-2)', transition: 'all 0.15s ease' }}
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--cyan)'; e.currentTarget.style.color = 'var(--cyan)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-md)'; e.currentTarget.style.color = 'var(--text-2)'; }}>
@@ -460,7 +281,7 @@ export function FloatingAiAssistant() {
             {/* Composer */}
             <div style={{ padding: '12px 14px 14px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 12, padding: '12px 12px 10px' }}>
-                <label htmlFor="ai-assistant-input" className="sr-only">Ask the AI assistant</label>
+                <label htmlFor="ai-assistant-input" className="sr-only">Ask the AI CFO</label>
                 <textarea id="ai-assistant-input" ref={inputRef} value={input} rows={2}
                   onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))} onKeyDown={handleKey}
                   placeholder="Ask anything, or long-press a card to learn about it…"
@@ -479,7 +300,7 @@ export function FloatingAiAssistant() {
                     <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: input.length > MAX_CHARS * 0.9 ? 'var(--warn)' : 'var(--text-4)' }}>
                       {input.length}/{MAX_CHARS}
                     </span>
-                    <button type="button" onClick={() => sendMessage(input)} disabled={!input.trim() || loading} aria-label="Send message"
+                    <button type="button" onClick={() => submit(input)} disabled={!input.trim() || loading} aria-label="Send message"
                       style={{ width: 38, height: 38, borderRadius: 10, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                         background: input.trim() && !loading ? 'linear-gradient(135deg, #0097b2, #00d4ff)' : 'var(--border)',
                         color: input.trim() && !loading ? '#fff' : 'var(--text-4)',

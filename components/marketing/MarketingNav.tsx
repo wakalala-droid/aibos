@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const LINKS = [
   { href: '/#engines', label: 'The engines' },
@@ -50,11 +51,7 @@ export default function MarketingNav() {
           style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}
           aria-label="AI-BOS home"
         >
-          <span aria-hidden style={{
-            width: 26, height: 26, borderRadius: 7,
-            background: 'linear-gradient(135deg, var(--e-fin), var(--e-fore))',
-            boxShadow: '0 4px 12px rgba(10,143,199,0.4)',
-          }} />
+          <Image src="/brand/aibos-mark.png" alt="" aria-hidden width={28} height={28} style={{ width: 28, height: 28, objectFit: 'contain' }} priority />
           <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '-0.03em', color: 'var(--text-1)' }}>
             AI-BOS
           </span>

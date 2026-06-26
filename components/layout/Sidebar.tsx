@@ -1,6 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
@@ -104,11 +105,17 @@ export default function Sidebar() {
         }}
       >
         <div style={{
-          width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-          background: 'linear-gradient(135deg, #0097b2, #00d4ff)',
+          width: 30, height: 30, flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.68rem', fontWeight: 800, color: '#fff' }}>AI</span>
+          <Image
+            src={isDark ? '/brand/aibos-mark-circle-dark.png' : '/brand/aibos-mark.png'}
+            alt="AI-BOS"
+            width={30}
+            height={30}
+            style={{ width: 30, height: 30, objectFit: 'contain' }}
+            priority
+          />
         </div>
         <AnimatePresence>
           {!col && (
