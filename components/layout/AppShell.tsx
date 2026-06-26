@@ -6,6 +6,8 @@ import Sidebar from './Sidebar';
 import { useStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme';
 import { ProfileProvider } from '@/lib/profile';
+import { AiAssistantProvider } from '@/lib/aiAssistant';
+import { FloatingAiAssistant } from '@/components/ui/glowing-ai-chat-assistant';
 
 // Routes that render full-screen WITHOUT the app chrome (sidebar + padded
 // main area). The login/auth screens are standalone and must not show the
@@ -64,6 +66,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <ProfileProvider>
+    <AiAssistantProvider>
     <MotionConfig reducedMotion="user">
       <a href="#main" className="skip-link">Skip to main content</a>
 
@@ -125,8 +128,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           <main id="main" tabIndex={-1} style={{ outline: 'none' }}>{children}</main>
         </div>
+
+        {/* Floating AI assistant — available across the dashboard chrome. */}
+        <FloatingAiAssistant />
       </div>
     </MotionConfig>
+    </AiAssistantProvider>
     </ProfileProvider>
   );
 }

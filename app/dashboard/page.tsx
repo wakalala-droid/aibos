@@ -26,9 +26,9 @@ const CURSOR_GLOW = '190 95 62';
 const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
 
 function EngineScoreCard({
-  label, sub, score, colour, href, locked,
+  label, sub, score, colour, href, locked, explainId,
 }: {
-  label: string; sub: string; score: number; colour: string; href: string; locked?: boolean;
+  label: string; sub: string; score: number; colour: string; href: string; locked?: boolean; explainId?: string;
 }) {
   const col = scoreColor(score);
   const comet = cometProps(locked ? undefined : score, colour);
@@ -41,6 +41,9 @@ function EngineScoreCard({
       <BorderGlow glowColor={CURSOR_GLOW} backgroundColor="var(--bg-card)" borderRadius={14} glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH} style={{ height: '100%' }}>
       <div
         className={`kpi-card glow-inner ${comet.className}`}
+        data-ai-explain={explainId}
+        data-ai-label={explainId ? label : undefined}
+        data-ai-value={explainId && !locked ? String(score) : undefined}
         style={{
           ...comet.style,
           opacity: locked ? 0.5 : 1,
@@ -280,7 +283,11 @@ export default function OverviewPage() {
       <div className="grid-engines" style={{ marginBottom: 24 }}>
         {/* Overall hero */}
         <BorderGlow glowColor={CURSOR_GLOW} backgroundColor="var(--bg-card)" borderRadius={14} glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH} style={{ height: '100%' }}>
-        <div className={`kpi-card glow-inner ${cometProps(scores ? scores.overall_score : undefined, 'var(--cyan)').className}`} style={{
+        <div className={`kpi-card glow-inner ${cometProps(scores ? scores.overall_score : undefined, 'var(--cyan)').className}`}
+          data-ai-explain="score.overall"
+          data-ai-label="Health Score"
+          data-ai-value={scores ? String(scores.overall_score) : undefined}
+          style={{
           ...cometProps(scores ? scores.overall_score : undefined, 'var(--cyan)').style,
           minWidth: 130, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: '24px 28px',
@@ -304,13 +311,13 @@ export default function OverviewPage() {
         </div>
         </BorderGlow>
 
-        <EngineScoreCard label="ENGINE 1 · FINANCIAL"   sub="Cash · Forecast · P&L"
+        <EngineScoreCard explainId="score.e1" label="ENGINE 1 · FINANCIAL"   sub="Cash · Forecast · P&L"
           score={scores?.e1_score ?? 0} colour="var(--e1)"
           href="/dashboard/cash"        locked={!engineFlags?.e1} />
-        <EngineScoreCard label="CUSTOMER INTELLIGENCE"  sub="RFM · CLV · Churn"
+        <EngineScoreCard explainId="score.e2" label="CUSTOMER INTELLIGENCE"  sub="RFM · CLV · Churn"
           score={scores?.e2_score ?? 0} colour="var(--e2)"
           href="/dashboard/customers"  locked={!hasEngine2Data} />
-        <EngineScoreCard label="OPERATIONS"             sub="POS · Benchmarks · Velocity"
+        <EngineScoreCard explainId="score.e3" label="OPERATIONS"             sub="POS · Benchmarks · Velocity"
           score={scores?.e3_score ?? 0} colour="var(--e3)"
           href="/dashboard/pos"         locked={!opsActive} />
       </div>
@@ -318,24 +325,28 @@ export default function OverviewPage() {
       {/* ── KPI cards ───────────────────────────────────────────────────── */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
+          explainId="kpi.revenue"
           label="TOTAL REVENUE" value={fmt(kpi?.totalRevenue ?? 0, true, sym)}
           growth={revGrowth} sub={growthSub} sparkData={revSpark} sparkColor="var(--spark-revenue)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--blue)" strokeWidth="1.8" fill="none"/><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H9m0 0h4.5a1.5 1.5 0 010 3H9" stroke="var(--blue)" strokeWidth="1.4" strokeLinecap="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)" delay={0}
         />
         <KPICard
+          explainId="kpi.costs"
           label="TOTAL COSTS" value={fmt(kpi?.totalCosts ?? 0, true, sym)}
           growth={costGrowth} goodWhenUp={false} sub={growthSub} sparkData={costSpark} sparkColor="var(--spark-cost)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 8h20v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8z" stroke="var(--orange)" strokeWidth="1.6" fill="none"/><path d="M2 8l2-4h16l2 4" stroke="var(--orange)" strokeWidth="1.5" strokeLinejoin="round"/></svg>}
           iconBg="rgba(249,115,22,0.15)" delay={0.06}
         />
         <KPICard
+          explainId="kpi.profit"
           label="NET PROFIT" value={fmt(kpi?.totalProfit ?? 0, true, sym)}
           growth={profitGrowth} sub={growthSub} sparkData={profSpark} sparkColor="var(--spark-profit)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" delay={0.12}
         />
         <KPICard
+          explainId="kpi.margin"
           label="AVG NET MARGIN" value={`${(kpi?.avgMargin ?? 0).toFixed(1)}%`}
           growth={marginGrowth} sub={growthSub} sparkData={marginSpark} sparkColor="var(--spark-margin)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--purple)" strokeWidth="1.6" fill="none"/><path d="M12 8v4l3 3" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
@@ -358,7 +369,7 @@ export default function OverviewPage() {
           {/* Revenue chart — hidden for cross-sectional files, where a time line
               over non-time rows would be misleading (SAFEGUARD: no fabrication). */}
           {chartData.length > 0 && dataShape !== 'cross_sectional' && (
-            <SectionCard title="Revenue Intelligence" subtitle={`Monthly revenue & profit · ${sym} ZMW`} delay={0.1}>
+            <SectionCard explainId="chart.revenue" title="Revenue Intelligence" subtitle={`Monthly revenue & profit · ${sym} ZMW`} delay={0.1}>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={chartData}>
                   <defs>
@@ -404,7 +415,7 @@ export default function OverviewPage() {
               otherwise a clearly-labeled "coming soon" state (never zero-filled
               cards that look broken). */}
           <div className="grid-2">
-            <SectionCard delay={0.15}>
+            <SectionCard explainId="card.customer" delay={0.15}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 600, color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                   Customer Intelligence
@@ -440,7 +451,7 @@ export default function OverviewPage() {
               )}
             </SectionCard>
 
-            <SectionCard delay={0.18}>
+            <SectionCard explainId="card.operations" delay={0.18}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 600, color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                   Operations
@@ -497,6 +508,7 @@ export default function OverviewPage() {
           {/* Unified Engine Intelligence — always synthesises from whatever
               engines have data (even one), so this space is never empty. */}
           <SectionCard
+            explainId="card.unifiedIntelligence"
             title="Unified Engine Intelligence"
             subtitle="Synthesised across Financial · Customer · Operations"
             delay={0.22}
@@ -555,6 +567,7 @@ export default function OverviewPage() {
           {/* Executive brief preview */}
           {briefLines.length > 0 && (
             <SectionCard
+              explainId="card.executiveBrief"
               title="Executive Action Plan"
               subtitle="AI-BOS unified brief · Financial + Customer Intelligence + Operations"
               delay={0.26}
@@ -592,7 +605,7 @@ export default function OverviewPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* Upload */}
-          <SectionCard title="Upload & Analyse" subtitle="CSV or Excel · month, revenue, costs columns" delay={0.08}>
+          <SectionCard explainId="card.upload" title="Upload & Analyse" subtitle="CSV or Excel · month, revenue, costs columns" delay={0.08}>
             <div id="upload-section">
               <FileUpload />
             </div>
@@ -600,7 +613,7 @@ export default function OverviewPage() {
 
           {/* Active alerts */}
           {safeAlerts.length > 0 && (
-            <SectionCard title="Active Alerts" subtitle="Variance & anomaly flags" delay={0.14}>
+            <SectionCard explainId="card.alerts" title="Active Alerts" subtitle="Variance & anomaly flags" delay={0.14}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {safeAlerts.slice(0, 4).map((a: any, i: number) => (
                   <div key={i} style={{
@@ -620,7 +633,7 @@ export default function OverviewPage() {
           )}
 
           {/* Quick access */}
-          <SectionCard title="Quick Access" delay={0.2}>
+          <SectionCard explainId="card.quickAccess" title="Quick Access" delay={0.2}>
             {[
               { href: '/dashboard/customers',  label: 'Customer Intelligence', sub: 'RFM · CLV · Segments',    colour: 'var(--e2)'   },
               { href: '/dashboard/pos',         label: 'POS Intelligence',      sub: 'Revenue · Velocity · BCG', colour: 'var(--e3)'   },

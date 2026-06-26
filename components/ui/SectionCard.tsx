@@ -9,6 +9,8 @@ interface SectionCardProps {
   style?: React.CSSProperties;
   delay?: number;
   action?: React.ReactNode;
+  /** Knowledge-base id — long-press the card to have the AI assistant explain it. */
+  explainId?: string;
 }
 
 // React Bits cursor edge-glow, tuned to match the KPI cards so the whole
@@ -20,7 +22,7 @@ const CURSOR_GLOW = '190 95 62';
 const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
 
 export default function SectionCard({
-  title, subtitle, children, style = {}, delay = 0, action,
+  title, subtitle, children, style = {}, delay = 0, action, explainId,
 }: SectionCardProps) {
   return (
     <motion.div
@@ -39,7 +41,11 @@ export default function SectionCard({
         colors={MESH}
         style={{ height: '100%' }}
       >
-        <div className="section-card glow-inner">
+        <div
+          className="section-card glow-inner"
+          data-ai-explain={explainId}
+          data-ai-label={explainId ? title : undefined}
+        >
           {(title || action) && (
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: subtitle ? 2 : 20 }}>
               {title && <h3 className="section-title">{title}</h3>}

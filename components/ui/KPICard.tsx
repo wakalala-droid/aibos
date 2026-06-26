@@ -20,6 +20,8 @@ interface KPICardProps {
   score?: number;
   /** Whether rising is good (revenue) or bad (costs). Controls badge colour. */
   goodWhenUp?: boolean;
+  /** Knowledge-base id — long-press the card to have the AI assistant explain it. */
+  explainId?: string;
 }
 
 // Cursor edge-glow tuning shared by every KPI card (hsl "h s l" per React Bits).
@@ -30,6 +32,7 @@ export default function KPICard({
   label, sublabel, value, sub = 'vs prior period',
   growth, icon, iconBg = 'rgba(96,165,250,0.15)',
   sparkData, sparkColor = '#60a5fa', delay = 0, score, goodWhenUp = true,
+  explainId,
 }: KPICardProps) {
   const spark = sparkData?.map((v, i) => ({ v, i }));
   const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
@@ -55,7 +58,13 @@ export default function KPICard({
       colors={MESH}
       style={{ height: '100%' }}
     >
-      <div className={`kpi-card glow-inner ${comet.className}`} style={comet.style}>
+      <div
+        className={`kpi-card glow-inner ${comet.className}`}
+        style={comet.style}
+        data-ai-explain={explainId}
+        data-ai-label={explainId ? label : undefined}
+        data-ai-value={explainId ? value : undefined}
+      >
         {/* Top row: icon + label + growth badge */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
