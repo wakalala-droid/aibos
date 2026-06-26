@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 const COLS: { title: string; links: { href: string; label: string }[] }[] = [
   {
@@ -34,11 +35,8 @@ export default function MarketingFooter() {
         >
           {/* Brand + tagline */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 14 }}>
-              <span aria-hidden style={{
-                width: 26, height: 26, borderRadius: 7,
-                background: 'linear-gradient(135deg, #00d4ff, #a78bfa)',
-              }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 14 }}>
+              <Image src="/brand/aibos-mark-white.png" alt="" aria-hidden width={34} height={34} style={{ width: 34, height: 34, objectFit: 'contain' }} />
               <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '-0.03em', color: '#fff' }}>
                 AI-BOS
               </span>
