@@ -115,7 +115,7 @@
      texture is at rest before hover brings it to full strength. */
   --bento-cell:     6px;
   --bento-dot:      rgba(255,255,255,0.10);
-  --bento-rest:     0.22;
+  --bento-rest:     0.32;
 }
 
 /* ── LIGHT PREMIUM MODE ─────────────────────────────────────── */
@@ -187,7 +187,7 @@
   /* Bento dots — warm ink on the off-white surface. Cranked up a touch
      vs dark mode so the dots read like texture on warm paper. */
   --bento-dot:      rgba(28,25,23,0.12);
-  --bento-rest:     0.3;
+  --bento-rest:     0.4;
 }
 
 /* ── RESET ──────────────────────────────────────────────────── */
