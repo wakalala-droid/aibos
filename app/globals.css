@@ -115,7 +115,7 @@
      texture is at rest before hover brings it to full strength. */
   --bento-cell:     6px;
   --bento-dot:      rgba(255,255,255,0.10);
-  --bento-rest:     0.42;
+  --bento-rest:     0.22;
 }
 
 /* ── LIGHT PREMIUM MODE ─────────────────────────────────────── */
@@ -187,7 +187,7 @@
   /* Bento dots — warm ink on the off-white surface. Cranked up a touch
      vs dark mode so the dots read like texture on warm paper. */
   --bento-dot:      rgba(28,25,23,0.12);
-  --bento-rest:     0.5;
+  --bento-rest:     0.3;
 }
 
 /* ── RESET ──────────────────────────────────────────────────── */
@@ -482,6 +482,10 @@ body {
   opacity: var(--bento-rest);
   background-image: radial-gradient(circle at center, var(--bento-dot) 1px, transparent 1px);
   background-size: var(--bento-cell) var(--bento-cell);
+  /* The grid is anchored to the bottom and fades out uniformly toward the
+     top, so the dots read as rising from the base of every card. */
+  -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,0.55) 42%, transparent 78%);
+  mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,0.55) 42%, transparent 78%);
   transition: opacity 0.3s ease;
 }
 [data-bento] .kpi-card:hover .bento-tex,

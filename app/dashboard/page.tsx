@@ -50,6 +50,8 @@ function EngineScoreCard({
           cursor: locked ? 'default' : 'pointer',
         }}
       >
+        {/* Bento dot texture — fades in from the bottom on hover */}
+        <span className="bento-tex" aria-hidden="true" />
         <p className="kpi-label" style={{ color: colour }}>{label}</p>
         <p style={{
           fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem',
@@ -292,6 +294,8 @@ export default function OverviewPage() {
           minWidth: 130, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: '24px 28px',
         }}>
+          {/* Bento dot texture — fades in from the bottom on hover */}
+          <span className="bento-tex" aria-hidden="true" />
           <p style={{
             fontFamily: 'Inter, sans-serif', fontSize: '3.2rem', fontWeight: 900,
             color: scores ? scoreColor(scores.overall_score) : 'var(--text-4)',
