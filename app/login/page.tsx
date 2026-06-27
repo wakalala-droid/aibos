@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase';
 
 // ─── Google Icon ───────────────────────────────────────────────────
@@ -57,25 +58,14 @@ function Particles() {
 
 function LogoMark() {
   return (
-    <svg width={52} height={52} viewBox="0 0 48 48" fill="none" style={{ filter: 'drop-shadow(0 0 12px rgba(96,165,250,0.5))' }}>
-      <defs>
-        <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#60a5fa"/>
-          <stop offset="100%" stopColor="#06b6d4"/>
-        </linearGradient>
-      </defs>
-      <circle cx="24" cy="24" r="22" stroke="url(#lg)" strokeWidth="1.5" opacity="0.35"/>
-      <path d="M24 8 L37.5 15.5 L37.5 30.5 L24 38 L10.5 30.5 L10.5 15.5 Z" stroke="url(#lg)" strokeWidth="1.5" fill="rgba(96,165,250,0.06)"/>
-      <circle cx="24" cy="24" r="3.5" fill="url(#lg)"/>
-      <circle cx="16" cy="18" r="2.5" fill="url(#lg)" opacity="0.65"/>
-      <circle cx="32" cy="18" r="2.5" fill="url(#lg)" opacity="0.65"/>
-      <circle cx="16" cy="30" r="2.5" fill="url(#lg)" opacity="0.65"/>
-      <circle cx="32" cy="30" r="2.5" fill="url(#lg)" opacity="0.65"/>
-      <line x1="24" y1="24" x2="16" y2="18" stroke="url(#lg)" strokeWidth="1.2" opacity="0.45"/>
-      <line x1="24" y1="24" x2="32" y2="18" stroke="url(#lg)" strokeWidth="1.2" opacity="0.45"/>
-      <line x1="24" y1="24" x2="16" y2="30" stroke="url(#lg)" strokeWidth="1.2" opacity="0.45"/>
-      <line x1="24" y1="24" x2="32" y2="30" stroke="url(#lg)" strokeWidth="1.2" opacity="0.45"/>
-    </svg>
+    <Image
+      src="/brand/aibos-mark-white.png"
+      alt="AI-BOS"
+      width={92}
+      height={92}
+      style={{ width: 92, height: 92, objectFit: 'contain', filter: 'drop-shadow(0 0 16px rgba(96,165,250,0.45))' }}
+      priority
+    />
   );
 }
 
