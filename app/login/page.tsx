@@ -60,10 +60,10 @@ function LogoMark() {
   return (
     <Image
       src="/brand/aibos-mark-white.png"
-      alt="AI-BOS"
-      width={92}
-      height={92}
-      style={{ width: 92, height: 92, objectFit: 'contain', filter: 'drop-shadow(0 0 16px rgba(96,165,250,0.45))' }}
+      alt="AI-BOS — Artificial Intelligence Business Operating System"
+      width={240}
+      height={178}
+      style={{ width: 240, height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 0 18px rgba(96,165,250,0.4))' }}
       priority
     />
   );
@@ -154,22 +154,10 @@ function LoginForm() {
         <div style={{ position: 'absolute', inset: -1, borderRadius: 21, zIndex: -1, background: 'linear-gradient(135deg,#60a5fa,#06b6d4)', opacity: 0.12, filter: 'blur(8px)' }} />
 
         {/* Logo */}
-        <div className="flex flex-col items-center gap-3 mb-8">
+        <div className="flex flex-col items-center mb-8">
           <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15, duration: 0.5, type: 'spring', stiffness: 200 }}>
             <LogoMark />
           </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.4 }}
-            style={{ fontSize: '2.4rem', fontWeight: 800, fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.03em', lineHeight: 1, background: 'linear-gradient(270deg,#60a5fa,#06b6d4,#a78bfa,#60a5fa)', backgroundSize: '300% 300%', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', animation: 'gradtxt 6s ease infinite' }}
-          >
-            AI-BOS
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.5 }}
-            style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: '#4a6285', textTransform: 'uppercase', letterSpacing: '0.18em' }}
-          >
-            Financial Intelligence Platform
-          </motion.p>
         </div>
 
         {/* Divider */}
