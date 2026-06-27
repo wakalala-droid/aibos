@@ -46,6 +46,9 @@ export default function SectionCard({
           data-ai-explain={explainId}
           data-ai-label={explainId ? title : undefined}
         >
+          {/* Bento dot texture — faint grid that lights up on hover (dashboard only) */}
+          <span className="bento-tex" aria-hidden="true" />
+
           {(title || action) && (
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: subtitle ? 2 : 20 }}>
               {title && <h3 className="section-title">{title}</h3>}

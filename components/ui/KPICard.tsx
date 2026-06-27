@@ -65,6 +65,9 @@ export default function KPICard({
         data-ai-label={explainId ? label : undefined}
         data-ai-value={explainId ? value : undefined}
       >
+        {/* Bento dot texture — faint grid that lights up on hover (dashboard only) */}
+        <span className="bento-tex" aria-hidden="true" />
+
         {/* Top row: icon + label + growth badge */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

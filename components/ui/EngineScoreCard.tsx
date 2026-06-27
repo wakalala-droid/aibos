@@ -29,6 +29,9 @@ export default function EngineScoreCard({
           className={`kpi-card glow-inner ${comet.className}`}
           style={{ ...comet.style, opacity: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer' }}
         >
+          {/* Bento dot texture — faint grid that lights up on hover (dashboard only) */}
+          <span className="bento-tex" aria-hidden="true" />
+
           <p className="kpi-label" style={{ color: colour }}>{label}</p>
           <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: '2px 0 10px' }}>
             {sub}

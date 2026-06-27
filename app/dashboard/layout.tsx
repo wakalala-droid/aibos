@@ -36,7 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [pathname]);
 
   return (
-    <div className="page-container">
+    <div className="page-container" data-bento>
       <DashboardHeader />
       {children}
     </div>

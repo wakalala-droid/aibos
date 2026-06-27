@@ -105,6 +105,17 @@
   --card-glow:      rgba(96,165,250,0.16);
   --card-sheen:     rgba(255,255,255,0.035);
   --card-top:       rgba(255,255,255,0.06);
+
+  /* ── BENTO DOT TEXTURE ─────────────────────────────────────────
+     A fine dot grid that sits behind a card's content and lights up
+     on hover (à la the kokonutui BentoGrid). Painted by a dedicated
+     `.bento-tex` overlay element, scoped to surfaces under
+     [data-bento] (the dashboard). --bento-cell keeps the dots small;
+     --bento-dot is the per-theme ink. --bento-rest is how visible the
+     texture is at rest before hover brings it to full strength. */
+  --bento-cell:     6px;
+  --bento-dot:      rgba(255,255,255,0.10);
+  --bento-rest:     0.42;
 }
 
 /* ── LIGHT PREMIUM MODE ─────────────────────────────────────── */
@@ -172,6 +183,11 @@
   --card-glow:      rgba(2,132,199,0.08);
   --card-sheen:     rgba(255,255,255,0.5);
   --card-top:       rgba(255,255,255,0.8);
+
+  /* Bento dots — warm ink on the off-white surface. Cranked up a touch
+     vs dark mode so the dots read like texture on warm paper. */
+  --bento-dot:      rgba(28,25,23,0.12);
+  --bento-rest:     0.5;
 }
 
 /* ── RESET ──────────────────────────────────────────────────── */
@@ -440,6 +456,40 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .kpi-card.glow-inner.comet::before { animation: none; opacity: 1; }
   .kpi-card.glow-inner.comet::after  { animation: none; opacity: 0; }
+}
+
+/* ── BENTO DOT TEXTURE OVERLAY ──────────────────────────────────
+   A fine dot grid laid behind the card's content (z-index:-1, so it
+   sits above the card background and below text/charts). It rides at a
+   faint rest opacity and lights up to full on hover. The element is
+   always rendered by the card components, but only paints under a
+   [data-bento] scope (the dashboard) — landing-site cards stay clean
+   until we extend the scope there. */
+.bento-tex {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;            /* inert outside a [data-bento] scope */
+}
+[data-bento] .kpi-card,
+[data-bento] .section-card {
+  position: relative;   /* contain the overlay; kpi-card is already relative */
+  isolation: isolate;   /* keep z-index:-1 behind content, not the page */
+}
+[data-bento] .bento-tex {
+  opacity: var(--bento-rest);
+  background-image: radial-gradient(circle at center, var(--bento-dot) 1px, transparent 1px);
+  background-size: var(--bento-cell) var(--bento-cell);
+  transition: opacity 0.3s ease;
+}
+[data-bento] .kpi-card:hover .bento-tex,
+[data-bento] .section-card:hover .bento-tex {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-bento] .bento-tex { transition: none; }
 }
 
 .section-title {
