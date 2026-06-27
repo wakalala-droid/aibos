@@ -111,7 +111,13 @@ function buildLiveMetrics(s: StoreState): LiveMetrics {
 // Full master context sent to the Grok backend on API fall-through.
 function buildContext(s: StoreState, lv: LiveMetrics): Record<string, unknown> {
   const sym = s.currencySymbol || 'K';
-  const ctx: Record<string, unknown> = { currency_symbol: sym, cabinet_id: s.cabinetId ?? undefined };
+  const ctx: Record<string, unknown> = {
+    currency_symbol: sym,
+    cabinet_id: s.cabinetId ?? undefined,
+    has_data: lv.hasFinancial || lv.hasCustomer || lv.hasOps,
+    // Anti-fabrication contract for the model (trust is the product).
+    guardrails: 'Only state numbers that appear in this context. If a figure is not provided, say you do not have it and that no data has been uploaded for it. Never estimate, assume, round-trip, or invent figures.',
+  };
   if (lv.hasFinancial) {
     ctx.pnl = {
       total_revenue: s.kpi?.totalRevenue ?? 0, total_costs: s.kpi?.totalCosts ?? 0,
@@ -189,7 +195,16 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     const local = localAnswer(text, lv);
     if (local) { pushAssistant(local); return; }
 
-    // 2) Open-ended reasoning → Grok backend with full master context.
+    // 2) No data uploaded yet → DO NOT call the model. With an empty context it
+    //    will happily invent the user's figures, which is exactly the trust
+    //    failure we must never ship. Answer honestly instead.
+    if (!lv.hasFinancial && !lv.hasCustomer && !lv.hasOps) {
+      pushAssistant("I don't have any of your data loaded yet, so I can't give you real figures — and I won't make them up.\n\nUpload a CSV or Excel file (financial, customer or POS) on the **Overview** page and I'll analyse your actual numbers. Until then I can still explain any metric or term — try \"Explain net margin\" or \"What is RFM?\".");
+      setSuggestions(['Explain net margin', 'What is a health score?', 'How do I upload data?']);
+      return;
+    }
+
+    // 3) Open-ended reasoning → Grok backend with full master context.
     setLoading(true);
     logUsage('chat');
     try {

@@ -306,7 +306,12 @@ export function localAnswer(rawQuery: string, lv: LiveMetrics): string | null {
     return "Hello! I'm your AI-BOS assistant. I can explain anything on your dashboard, define any term, and pull up your live numbers. Long-press any card to have me break it down — or just ask.";
   }
   if (has(q, 'what can you do', 'how do you work', 'who are you', 'what are you', 'how can you help', 'help me')) {
-    return "I'm built into your AI-BOS dashboard. I can:\n\n• **Explain any component** — long-press a card and I'll tell you what it is and why it matters.\n• **Define any term** — ask “what is net margin?” or “explain RFM”.\n• **Read your live numbers** — ask “what's my total revenue?” and I'll pull the current figure.\n• **Reason across your data** — deeper “why” and “what should I do” questions go to the full AI CFO.";
+    return "I'm built into your AI-BOS dashboard. I can:\n\n• **Explain any component** — long-press a card and I'll tell you what it is and why it matters.\n• **Define any term** — ask “what is net margin?” or “explain RFM”.\n• **Read your live numbers** — once you've uploaded data, ask “what's my total revenue?” and I'll pull the real figure.\n• **Reason across your data** — deeper “why” and “what should I do” questions go to the full AI CFO.";
+  }
+
+  // How to upload / add data — always useful, answered locally.
+  if (has(q, 'upload', 'import', 'add data', 'add my data', 'load data', 'load my data', 'attach a file', 'attach data', 'bring in data', 'how do i add my', 'where do i put my')) {
+    return UPLOAD_HOWTO;
   }
 
   // Open-ended reasoning belongs to the API, even if it mentions a known term.
@@ -317,12 +322,20 @@ export function localAnswer(rawQuery: string, lv: LiveMetrics): string | null {
   // Direct value lookup intent.
   const isLookup = /\b(how much|how many|what's my|whats my|what is my|what are my|my current|show me my|value of|figure for)\b/.test(q);
 
+  // Self-referential = the user is asking about THEIR figure ("my", "our", "we").
+  const selfRef = /\b(my|mine|our|ours|we|us)\b/.test(q);
+
   if (!isReasoning && (isDefinition || isLookup)) {
     for (const g of GLOSSARY) {
       if (g.keys.some((k) => q.includes(k))) {
         const live = g.metric ? METRIC_RESOLVERS[g.metric](lv) : null;
+        // Asking for THEIR number but we have no value for it → be honest and
+        // NEVER imply a figure. (Trust is the product — no fabrication.)
+        if (g.metric && !live && (isLookup || selfRef)) {
+          return `I don't have your ${g.term.toLowerCase()} yet — nothing has been uploaded for it, so there's no real figure to show and I won't guess one.\n\nUpload the relevant file on the **Overview** page and I'll pull it instantly. For reference: ${g.def}`;
+        }
         // Pure lookup ("how much revenue") and we have a number → lead with it.
-        if (isLookup && !isDefinition && live) return `${capitalise(g.term)}: ${live.replace(/^Yours (currently reads|is) /, '')}`.replace(/\.$/, '.') ;
+        if (isLookup && !isDefinition && live) return `${capitalise(g.term)}: ${live.replace(/^Yours (currently reads|is) /, '')}`;
         return live ? `${g.def}\n\n📊 ${live}` : g.def;
       }
     }
@@ -330,6 +343,9 @@ export function localAnswer(rawQuery: string, lv: LiveMetrics): string | null {
 
   return null;
 }
+
+const UPLOAD_HOWTO =
+  "To bring in your data: open the **Overview** page → **Upload & Analyse**, and drop a CSV or Excel file. For financials, include month, revenue and cost columns. You can also upload a POS export or a customer/sales file. As soon as it's in, I can analyse your real numbers — until then I won't make any up.";
 
 function capitalise(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
