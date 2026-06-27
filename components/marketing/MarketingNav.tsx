@@ -51,7 +51,8 @@ export default function MarketingNav() {
           style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}
           aria-label="AI-BOS home"
         >
-          <Image src="/brand/aibos-mark.png" alt="" aria-hidden width={36} height={36} style={{ width: 36, height: 36, objectFit: 'contain' }} priority />
+          <Image src="/brand/aibos-mark.png" alt="" aria-hidden width={34} height={34} style={{ width: 34, height: 34, objectFit: 'contain' }} priority />
+          <Image src="/brand/aibos-wordmark.png" alt="" aria-hidden width={86} height={23} style={{ width: 86, height: 'auto', objectFit: 'contain' }} priority />
         </Link>
 
         {/* Desktop links */}

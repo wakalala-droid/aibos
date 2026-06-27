@@ -35,8 +35,8 @@ export default function MarketingFooter() {
         >
           {/* Brand + tagline */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, marginLeft: -8 }}>
-              <Image src="/brand/aibos-mark-white.png" alt="AI-BOS" width={128} height={128} style={{ width: 128, height: 128, objectFit: 'contain' }} />
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, marginLeft: -10 }}>
+              <Image src="/brand/aibos-mark-white.png" alt="AI-BOS — Artificial Intelligence Business Operating System" width={210} height={154} style={{ width: 210, height: 'auto', objectFit: 'contain' }} />
             </div>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.05rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
               The brain behind every business.

@@ -122,9 +122,16 @@ export default function Sidebar() {
             <motion.span
               initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.15 }}
-              style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}
+              style={{ display: 'inline-flex', alignItems: 'center' }}
             >
-              AI-BOS
+              <Image
+                src={isDark ? '/brand/aibos-wordmark-white.png' : '/brand/aibos-wordmark.png'}
+                alt="AI-BOS"
+                width={74}
+                height={19}
+                style={{ width: 74, height: 'auto', objectFit: 'contain' }}
+                priority
+              />
             </motion.span>
           )}
         </AnimatePresence>
