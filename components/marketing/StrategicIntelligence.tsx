@@ -84,8 +84,8 @@ export default function StrategicIntelligence() {
           <span style={{ color: 'var(--cyan)' }}>You’re just making them without the numbers.</span>
         </motion.h2>
         <motion.p className="mkt-lead" style={{ marginTop: 20, maxWidth: 560 }} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.16 }}>
-          The signals that decide whether a month works — a margin slipping, a
-          customer drifting, cash tightening — stay invisible until it’s too late.
+          The signals that decide whether a month works, like a margin slipping, a
+          customer drifting, or cash tightening, stay invisible until it’s too late.
           AI-BOS surfaces them while you can still act, and writes the brief for you.
         </motion.p>
       </div>
@@ -122,7 +122,7 @@ export default function StrategicIntelligence() {
         <div className="si-brief-blur" aria-hidden />
         {/* CTA floats at the brief's fade point */}
         <div className="si-cta">
-          <Link href="/login" className="mkt-btn mkt-btn-primary">See your brief — free</Link>
+          <Link href="/login" className="mkt-btn mkt-btn-primary">See your brief for free</Link>
         </div>
       </div>
     </section>

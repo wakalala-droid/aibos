@@ -6,9 +6,9 @@ import { motion, useReducedMotion } from 'framer-motion';
 // Content is illustrative; the caption keeps the no-fabrication promise honest.
 const ANSWER_LINES = [
   { text: 'Your Grilled Chicken Platter made the most: ', strong: 'K18,400 gross profit in May' },
-  { text: '— about 22% of your total profit across 14 products.', strong: '' },
+  { text: ', about 22% of your total profit across 14 products.', strong: '' },
   { text: 'But its margin slipped from 41% to 36% as chicken prices rose.', strong: '', muted: true },
-  { text: 'Next move: ', strong: 'raise its price by ~K6 or renegotiate poultry supply', after: ' — recovers ≈ K2,900/month.' },
+  { text: 'Next move: ', strong: 'raise its price by ~K6 or renegotiate poultry supply', after: ', which recovers roughly K2,900 a month.' },
 ];
 
 export default function AskAnything() {
@@ -23,11 +23,11 @@ export default function AskAnything() {
           <h2 className="mkt-h2">Ask your business anything.</h2>
           <p className="mkt-lead" style={{ marginTop: 18 }}>
             No dashboards to learn, no formulas to write. Type a question the way
-            you’d ask a sharp employee — your AI CFO answers from your own numbers,
+            you’d ask a sharp employee, and your AI CFO answers from your own numbers
             in seconds.
           </p>
           <ul style={{ listStyle: 'none', margin: '24px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {['Reads straight from the files you upload', 'Shows its working — never invents a trend', 'Answers in plain English, priced in Kwacha'].map((t) => (
+            {['Reads straight from the files you upload', 'Shows its working and never invents a trend', 'Answers in plain English, priced in Kwacha'].map((t) => (
               <li key={t} style={{ display: 'flex', gap: 10, alignItems: 'center', color: 'var(--text-2)', fontSize: '0.92rem' }}>
                 <span aria-hidden style={{ color: 'var(--cyan)' }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -82,7 +82,7 @@ export default function AskAnything() {
           </div>
 
           <p style={{ margin: '18px 0 0', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', textAlign: 'right' }}>
-            Illustrative — AI-BOS answers only from your own uploaded data.
+            Illustrative. AI-BOS answers only from your own uploaded data.
           </p>
         </motion.div>
       </div>

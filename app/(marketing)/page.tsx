@@ -48,12 +48,12 @@ export default function MarketingHome() {
       {/* Forecast (light) — real ForecastChart */}
       <ShowcaseBand
         eyebrow="See around the corner"
-        title="Know what’s coming — while you can still act."
+        title="Know what’s coming, while you can still act."
         lead="AI-BOS projects your revenue from your own history and shows the range, not a fake single number. You see the strong month to ride, and the soft one to brace for."
         values={['Built only from your real data', 'A 95% confidence band, never false precision', 'Updates the moment you upload']}
         cta={{ label: 'Start free', href: '/login' }}
       >
-        <AibosWindow url="app.aibos.africa/dashboard/forecast">
+        <AibosWindow>
           <p style={{ margin: '0 0 12px', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>AI Revenue Forecast</p>
           <ForecastChart data={DEMO_FORECAST} sym="K" />
         </AibosWindow>
@@ -64,10 +64,10 @@ export default function MarketingHome() {
         dark
         eyebrow="Never get caught short"
         title="Know your runway to the day."
-        lead="Stop finding out about a cash crunch when it hits. AI-BOS tracks your runway and projects your cash position forward, so a tight month is a warning you act on — weeks early."
+        lead="Stop finding out about a cash crunch when it hits. AI-BOS tracks your runway and projects your cash position forward, so a tight month becomes a warning you can act on weeks early."
         values={['Live runway against your target', 'Forward cash projection from your trend', 'Flags the month you dip before you do']}
       >
-        <AibosWindow url="app.aibos.africa/dashboard/cash">
+        <AibosWindow>
           <div style={{ marginBottom: 14 }}><RunwayBar runway={DEMO_RUNWAY} /></div>
           <p style={{ margin: '0 0 6px', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-3)' }}>Projected cash position</p>
           <CashProjectionChart data={DEMO_CASH_PROJECTION} sym="K" />
@@ -79,11 +79,11 @@ export default function MarketingHome() {
         reverse
         eyebrow="Know who really pays you"
         title="Your best customers, not just your busiest."
-        lead="AI-BOS sorts every customer by what they’re actually worth — champions to spotlight, at-risk to win back — so your time and your offers land where the money is."
+        lead="AI-BOS sorts every customer by what they’re actually worth, from the champions you should spotlight to the ones slipping away you can win back, so your time and your offers land where the money is."
         values={['RFM segments straight from your sales', 'Retention and churn risk surfaced', 'Who to keep, who to win back']}
         cta={{ label: 'Start free', href: '/login' }}
       >
-        <AibosWindow url="app.aibos.africa/dashboard/customers">
+        <AibosWindow>
           <p style={{ margin: '0 0 14px', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>Customer Intelligence</p>
           <SegmentDonut segments={DEMO_SEGMENTS} />
           <div style={{ display: 'flex', gap: 24, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
@@ -108,10 +108,10 @@ export default function MarketingHome() {
         dark
         eyebrow="Catch it early"
         title="Spot the problem before it costs you."
-        lead="AI-BOS watches your numbers statistically and flags what breaks the pattern — a cost spike, a margin slip — the day your file lands, with a likely cause and a next move."
+        lead="AI-BOS watches your numbers statistically and flags whatever breaks the pattern, whether it’s a cost spike or a margin slip, the day your file lands, with a likely cause and a next move."
         values={['Statistical anomaly detection', 'Critical vs warning, colour-coded', 'A cause and an action, not just a red number']}
       >
-        <AibosWindow url="app.aibos.africa/dashboard/anomaly">
+        <AibosWindow>
           <p style={{ margin: '0 0 12px', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>Z-Score Distribution</p>
           <AnomalyZChart data={DEMO_ANOMALY_Z} />
         </AibosWindow>
@@ -122,10 +122,10 @@ export default function MarketingHome() {
         reverse
         eyebrow="No black box"
         title="It shows its working."
-        lead="Before any insight, AI-BOS tells you exactly how it read your file — every column, what it became, how confident it is. When the data can’t answer, it says so."
+        lead="Before any insight, AI-BOS tells you exactly how it read your file: every column, what it became, and how confident it is. When the data can’t answer, it says so."
         values={['A plain-English read-out of every file', 'Confidence shown on each column', 'Refuses to invent what isn’t there']}
       >
-        <AibosWindow url="app.aibos.africa/data-studio">
+        <AibosWindow>
           <DataManifestCard manifest={DEMO_MANIFEST} breakdown={DEMO_BREAKDOWN} currencySymbol="K" />
         </AibosWindow>
       </ShowcaseBand>
@@ -145,10 +145,10 @@ export default function MarketingHome() {
                 </div>
                 <h2 className="mkt-h2" style={{ maxWidth: 640, marginInline: 'auto' }}>Ready to see your numbers think?</h2>
                 <p className="mkt-lead" style={{ marginTop: 18, marginInline: 'auto', maxWidth: 500 }}>
-                  This is your business, an hour after you upload. Start free on your own data — upgrade only when the value is obvious.
+                  This is your business, an hour after you upload. Start free on your own data and upgrade only when the value is obvious.
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 32 }}>
-                  <Link href="/login" className="mkt-btn mkt-btn-primary">Start free — upload your data</Link>
+                  <Link href="/login" className="mkt-btn mkt-btn-primary">Start free with your data</Link>
                   <Link href="/pricing" className="mkt-btn mkt-btn-secondary">See pricing</Link>
                 </div>
               </div>

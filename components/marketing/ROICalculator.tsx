@@ -65,7 +65,7 @@ export default function ROICalculator() {
         <Field label="Monthly revenue" suffix="K" value={revenue} min={5000} max={1000000} step={5000} onChange={setRevenue} />
         <Field label="Hours a week on spreadsheets & reports" suffix="hrs" value={hours} min={1} max={40} step={1} onChange={setHours} />
         <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', margin: '6px 0 0', lineHeight: 1.5 }}>
-          Drag to match your business. Nothing is sent anywhere — this runs in your browser.
+          Drag to match your business. Nothing is sent anywhere; this runs entirely in your browser.
         </p>
       </div>
 
@@ -77,10 +77,10 @@ export default function ROICalculator() {
 
         <div style={{ marginBottom: 18 }}>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.9rem', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-0.03em', margin: 0 }}>
-            {out.hoursLow}–{out.hoursHigh} hrs
+            {out.hoursLow} to {out.hoursHigh} hrs
           </p>
           <p className="mkt-body" style={{ fontSize: '0.86rem' }}>
-            likely back in your month once the reporting runs itself — about {out.daysLow}–{out.daysHigh} working days.
+            likely back in your month once the reporting runs itself, about {out.daysLow} to {out.daysHigh} working days.
           </p>
         </div>
 
@@ -89,15 +89,15 @@ export default function ROICalculator() {
         <p className="mkt-body" style={{ fontSize: '0.88rem' }}>
           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Example</span><br />
           Catching even a <strong style={{ color: 'var(--text-1)' }}>1% margin leak</strong> on K{fmt(revenue)}/mo is{' '}
-          <strong style={{ color: 'var(--text-1)' }}>K{fmt(out.leak1pct)} a month</strong> — about {out.multiple}× the price of Pro (K{fmt(PRO)}/mo).
+          <strong style={{ color: 'var(--text-1)' }}>K{fmt(out.leak1pct)} a month</strong>, about {out.multiple}× the price of Pro (K{fmt(PRO)}/mo).
         </p>
 
         <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', margin: '16px 0 0', lineHeight: 1.5 }}>
-          Estimates, not promises — your numbers, your call. AI-BOS won’t invent a result it can’t see in your data.
+          Estimates, not promises. Your numbers, your call. AI-BOS won’t invent a result it can’t see in your data.
         </p>
 
         <Link href="/login" className="mkt-btn mkt-btn-primary" style={{ marginTop: 18, justifyContent: 'center', width: '100%' }}>
-          Start free — run it on your real numbers
+          Start free and run it on your real numbers
         </Link>
       </div>
     </div>

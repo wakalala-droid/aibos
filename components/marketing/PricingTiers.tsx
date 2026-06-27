@@ -149,7 +149,7 @@ export default function PricingTiers() {
 
               {tier === 'free' && (
                 <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', margin: '12px 0 0', textAlign: 'center' }}>
-                  Locked features stay visible — you see the value before you pay.
+                  Locked features stay visible, so you see the value before you pay.
                 </p>
               )}
             </motion.div>
@@ -164,7 +164,7 @@ export default function PricingTiers() {
             Pay with Mobile Money
           </p>
           <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-3)', margin: 0 }}>
-            MTN Mobile Money &amp; Airtel Money — no card required.
+            MTN Mobile Money &amp; Airtel Money. No card required.
           </p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>

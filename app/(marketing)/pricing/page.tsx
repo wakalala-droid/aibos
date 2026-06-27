@@ -12,20 +12,20 @@ export const metadata: Metadata = {
 };
 
 const FEATURE_GLOSSARY: { term: string; plain: string }[] = [
-  { term: 'An engine', plain: 'A whole department’s intelligence — Financial, Customer or Operations — not a single chart. Free gives you the Financial engine; Pro unlocks the rest.' },
+  { term: 'An engine', plain: 'A whole department’s intelligence, covering Financial, Customer or Operations, not just a single chart. Free gives you the Financial engine, and Pro unlocks the rest.' },
   { term: 'AI CFO chat', plain: 'Ask your business anything in plain words, as often as you like. It answers from your own uploaded data, in Kwacha.' },
-  { term: 'A scheduled brief', plain: 'The one number that matters, sent to your email (or WhatsApp) daily or weekly — so you don’t have to remember to check.' },
+  { term: 'A scheduled brief', plain: 'The one number that matters, sent to your email (or WhatsApp) daily or weekly, so you don’t have to remember to check.' },
   { term: 'A location', plain: 'One shop, branch or site. Pro runs one beautifully; Growth is for when you’re juggling several at once.' },
 ];
 
 const TIMELINE: { when: string; what: string }[] = [
   { when: 'Minutes', what: 'Upload a spreadsheet and see your P&L and cashflow read straight back to you.' },
   { when: 'An hour', what: 'Ask your first questions and set the brief that lands on your phone each morning.' },
-  { when: 'A day', what: 'The full picture — money, customers and operations — in one command centre.' },
+  { when: 'A day', what: 'The full picture across money, customers and operations, in one command centre.' },
 ];
 
 const TRUST: [string, string][] = [
-  ['Cancel anytime', 'The cancel button is never hidden. Stop whenever you like — no phone call, no retention maze.'],
+  ['Cancel anytime', 'The cancel button is never hidden. Stop whenever you like, with no phone call and no retention maze.'],
   ['Your data is yours', 'Export your full history on any plan, including after you cancel. We never hold it hostage.'],
   ['No surprise fees', 'The price you see is the price you pay. No drip pricing, no pre-ticked add-ons at checkout.'],
   ['Fair price changes', 'We give advance notice before any plan or price change. No silent increases.'],
@@ -43,7 +43,7 @@ export default function PricingPage() {
               One CFO for your business. Pay in ZMW.
             </h1>
             <p className="mkt-lead" style={{ marginTop: 18, marginInline: 'auto', maxWidth: 560 }}>
-              Start free on your own numbers. Upgrade when the value is obvious — never before.
+              Start free on your own numbers. Upgrade when the value is obvious, never before.
             </p>
           </Reveal>
         </div>
@@ -91,7 +91,7 @@ export default function PricingPage() {
                   of revenue.
                 </p>
                 <p className="mkt-body" style={{ marginTop: 8 }}>
-                  We never hide that a feature exists — you see the value first, then choose to unlock the detail. No bait, no dead ends.
+                  We never hide that a feature exists. You see the value first, then choose to unlock the detail. No bait, no dead ends.
                 </p>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -153,7 +153,7 @@ export default function PricingPage() {
         <div className="mkt-wrap">
           <Reveal>
             <h2 id="ptrust-h" className="mkt-h2" style={{ textAlign: 'center', maxWidth: 600, marginInline: 'auto' }}>
-              Priced to be fair — and to stay that way
+              Priced to be fair, and built to stay that way
             </h2>
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 14, marginTop: 28 }}>
@@ -181,7 +181,7 @@ export default function PricingPage() {
                   Upload your numbers, see it work, and only pay when it’s obvious. That’s the whole pitch.
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 30 }}>
-                  <Link href="/login" className="mkt-btn mkt-btn-primary">Start free — upload your data</Link>
+                  <Link href="/login" className="mkt-btn mkt-btn-primary">Start free with your data</Link>
                   <Link href="/" className="mkt-btn mkt-btn-secondary">Back to overview</Link>
                 </div>
               </div>

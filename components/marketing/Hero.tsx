@@ -32,14 +32,14 @@ export default function Hero() {
             <span style={{ color: 'var(--cyan)' }}>anything.</span>
           </motion.h1>
           <motion.p className="mkt-lead" style={{ marginTop: 24, maxWidth: 480 }} {...rise(0.18)}>
-            Upload your numbers and get the answer — in Kwacha, in seconds. AI-BOS is
+            Upload your numbers and get the answer back in Kwacha, in seconds. AI-BOS is
             the AI business operating system that gives African SMEs a CFO, analyst
             and consultant in their pocket.
           </motion.p>
 
           <motion.div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 32 }} {...rise(0.28)}>
             <Link href="/login" className="mkt-btn mkt-btn-primary">
-              Start free — upload your data
+              Start free with your data
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </Link>
             <Link href="/pricing" className="mkt-btn mkt-btn-secondary">See pricing</Link>

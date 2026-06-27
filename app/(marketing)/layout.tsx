@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: '%s · AI-BOS',
   },
   description:
-    'AI-BOS is the AI business operating system for African SMEs. Ask your business anything and get the answer — in Kwacha — instantly. Start free.',
+    'AI-BOS is the AI business operating system for African SMEs. Ask your business anything and get the answer back in Kwacha, instantly. Start free.',
   openGraph: {
     title: 'AI-BOS — The brain behind every business',
     description:

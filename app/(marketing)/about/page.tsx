@@ -5,7 +5,7 @@ import Reveal from '@/components/marketing/Reveal';
 export const metadata: Metadata = {
   title: 'Our Story',
   description:
-    'Why AI-BOS exists: to give every African SME the kind of financial intelligence that used to be reserved for big companies — affordable, in Kwacha, and built for how they actually run.',
+    'Why AI-BOS exists: to give every African SME the kind of financial intelligence that used to be reserved for big companies, made affordable, priced in Kwacha, and built for how they actually run.',
   alternates: { canonical: '/about' },
 };
 
@@ -21,29 +21,29 @@ const FOUNDER = {
   videoHref: '',                    // optional 'Our Story' video link
   quote: 'Ask your business anything.',
   story:
-    'I kept picturing a world where every business simply ran — no nasty surprises, no finding out too late that you’d been bleeding cash, just because nobody was turning the numbers into real insight. That’s the day I stopped wishing and started building AI-BOS.',
+    'I kept picturing a world where every business simply ran: no nasty surprises, no finding out too late that you’d been bleeding cash just because nobody was turning the numbers into real insight. That’s the day I stopped wishing and started building AI-BOS.',
 };
 
 const ARC: { eyebrow: string; title: string; body: string }[] = [
   {
     eyebrow: 'Your reality today',
     title: 'Smart owners, flying blind',
-    body: 'Across Lusaka and beyond, brilliant business owners make life-or-death decisions on gut feel and month-old spreadsheets. Not because they’re careless — because real financial insight has always been too expensive, too complex, or simply not built for them.',
+    body: 'Across Lusaka and beyond, brilliant business owners make life-or-death decisions on gut feel and month-old spreadsheets. Not because they’re careless, but because real financial insight has always been too expensive, too complex, or simply not built for them.',
   },
   {
     eyebrow: 'Your business tomorrow',
     title: 'A CFO in your pocket',
-    body: 'Imagine asking your business a question in plain words and getting a straight answer, in Kwacha, in seconds. Knowing your runway before it runs out. Seeing which product really pays. That’s not enterprise software — that’s AI-BOS, and it costs less than one bad decision.',
+    body: 'Imagine asking your business a question in plain words and getting a straight answer, in Kwacha, in seconds. Knowing your runway before it runs out. Seeing which product really pays. That’s not enterprise software; that’s AI-BOS, and it costs less than one bad decision.',
   },
   {
     eyebrow: 'The world we’re building',
     title: 'Every African business, intelligent',
-    body: 'When millions of SMEs can see clearly, they hire with confidence, price fairly, and survive the lean months. We think that’s how economies are built — not from the top down, but from every shop, restaurant and workshop getting a little bit smarter.',
+    body: 'When millions of SMEs can see clearly, they hire with confidence, price fairly, and survive the lean months. We think that’s how economies are built: not from the top down, but from every shop, restaurant and workshop getting a little bit smarter.',
   },
   {
     eyebrow: 'Our commitment to you',
     title: 'We earn it on your numbers',
-    body: 'We will price in your currency, take mobile money, never hold your data hostage, and never invent a number we can’t back. You can start free and judge us on your own business — which is exactly how it should be.',
+    body: 'We will price in your currency, take mobile money, never hold your data hostage, and never invent a number we can’t back. You can start free and judge us on your own business, which is exactly how it should be.',
   },
 ];
 
@@ -61,7 +61,7 @@ export default function AboutPage() {
               Make every African business intelligent.
             </h1>
             <p className="mkt-lead" style={{ marginTop: 20, marginInline: 'auto', maxWidth: 580 }}>
-              AI-BOS exists for one reason: the tools that let big companies see clearly should belong to the small ones too — in their language, their currency, and their reach.
+              AI-BOS exists for one reason: the tools that let big companies see clearly should belong to the small ones too, in their language, their currency, and their reach.
             </p>
           </Reveal>
         </div>
@@ -108,7 +108,7 @@ export default function AboutPage() {
                 {FOUNDER.name ? (
                   <p style={{ marginTop: 18, fontFamily: 'Inter, sans-serif', fontSize: '0.92rem' }}>
                     <span style={{ fontWeight: 800, color: 'var(--text-1)' }}>{FOUNDER.name}</span>
-                    <span style={{ color: 'var(--text-3)' }}> — {FOUNDER.title}{FOUNDER.location ? `, ${FOUNDER.location}` : ''}</span>
+                    <span style={{ color: 'var(--text-3)' }}>, {FOUNDER.title}{FOUNDER.location ? `, ${FOUNDER.location}` : ''}</span>
                   </p>
                 ) : (
                   <p className="mkt-body" style={{ marginTop: 16 }}>
@@ -157,7 +157,7 @@ export default function AboutPage() {
               <div style={{ position: 'relative', zIndex: 1 }}>
                 <h2 className="mkt-h2" style={{ maxWidth: 560, marginInline: 'auto' }}>Build the future with us.</h2>
                 <p className="mkt-lead" style={{ marginTop: 16, marginInline: 'auto', maxWidth: 460 }}>
-                  Your business is exactly the kind we built this for. See what it can do — free, on your own numbers.
+                  Your business is exactly the kind we built this for. See what it can do, free, on your own numbers.
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 30 }}>
                   <Link href="/login" className="mkt-btn mkt-btn-primary">Start free</Link>

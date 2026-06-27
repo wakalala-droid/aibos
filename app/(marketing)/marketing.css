@@ -288,18 +288,6 @@
   box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 2px 0 rgba(255,255,255,0.04) inset;
   overflow: hidden;
 }
-.aibos-window-bar {
-  display: flex; align-items: center; gap: 14px;
-  padding: 11px 16px; border-bottom: 1px solid rgba(255,255,255,0.07);
-  background: rgba(255,255,255,0.02);
-}
-.aibos-window-dots { display: flex; gap: 7px; }
-.aibos-window-dots i { width: 11px; height: 11px; border-radius: 50%; display: block; }
-.aibos-window-url {
-  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #6b7889;
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-  padding: 4px 12px; border-radius: 7px; flex: 1; max-width: 320px;
-}
 .aibos-window-body { padding: clamp(14px, 2vw, 22px); }
 
 /* Hero dashboard surface — the REAL components on a clean dark panel, with NO
