@@ -9,6 +9,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { setCurrencyGlobal } from "./currency";
 import type { Tier } from "./tiers";
+import { getTwin, getTwinFinancials, type Twin, type BusinessEvent } from "./api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -271,6 +272,11 @@ export interface FinancialState {
   unifiedBrief: string;
   opsIntelBrief: string;
   customerIntelBrief: string;
+
+  // ── Evolution spine — Digital Twin (derived from Business Events) ────────────
+  twin: Twin | null;
+  recentEvents: BusinessEvent[];
+  twinLoading: boolean;
 }
 
 interface FinancialActions {
@@ -286,6 +292,8 @@ interface FinancialActions {
   switchSheet: (sheetName: string) => Promise<void>;
   loadFromCabinet: (id: string) => Promise<void>;
   removeFromCabinet: (id: string) => void;
+  refreshTwin: () => Promise<void>;
+  setRecentEvents: (events: BusinessEvent[]) => void;
   reset: () => void;
 }
 
@@ -361,6 +369,10 @@ const INITIAL: FinancialState = {
   unifiedBrief: "",
   opsIntelBrief: "",
   customerIntelBrief: "",
+
+  twin: null,
+  recentEvents: [],
+  twinLoading: false,
 };
 
 // ── Helpers: derive kpi/health from monthly[] when backend doesn't supply them ─
@@ -718,6 +730,33 @@ const _store = create<FinancialState & FinancialActions>()(
           delete rest[id];
           return { cabinet: s.cabinet.filter((e) => e.id !== id), cabinetData: rest };
         }),
+
+      // ── Evolution spine ──────────────────────────────────────────────────────
+      // Pull the Digital Twin and, when the user has recorded activity but has NOT
+      // loaded an uploaded file this session, light up the EXISTING dashboards from
+      // the twin via setUploadResult (Initiative 9 — feed richer data, no redesign).
+      // Guarded by `uploadedFile` so a real upload is never clobbered.
+      refreshTwin: async () => {
+        set({ twinLoading: true });
+        try {
+          const [twin, fin] = await Promise.all([
+            getTwin().catch(() => null),
+            getTwinFinancials().catch(() => null),
+          ]);
+          if (twin) set({ twin });
+          const hasEvents = !!twin && Number(twin.event_count) > 0;
+          const monthly = fin && Array.isArray(fin.monthly) ? (fin.monthly as unknown[]) : [];
+          if (hasEvents && monthly.length && !get().uploadedFile) {
+            get().setUploadResult({ ...(fin as Record<string, unknown>), engine: "engine1" });
+          }
+        } catch {
+          // Spine may be unconfigured (503) or the user signed out — stay silent.
+        } finally {
+          set({ twinLoading: false });
+        }
+      },
+
+      setRecentEvents: (events) => set({ recentEvents: events }),
 
       reset: () => set({ ...INITIAL, cabinet: get().cabinet, cabinetData: get().cabinetData }),
     }),

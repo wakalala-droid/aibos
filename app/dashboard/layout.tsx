@@ -15,7 +15,14 @@ function engineForPath(path: string): UsageEngine | undefined {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const collapsed = useStore(s => s.sidebarCollapsed);
+  const refreshTwin = useStore(s => s.refreshTwin);
   const pathname = usePathname();
+
+  // Evolution spine: pull the Digital Twin once on entry. When the user has
+  // recorded activity but not loaded a file, this lights up the existing
+  // dashboards from events (Initiative 9). Safe no-op if the spine is
+  // unconfigured or a file is already loaded (guarded inside refreshTwin).
+  useEffect(() => { refreshTwin(); }, [refreshTwin]);
 
   useEffect(() => {
     const el = document.getElementById('main-content');

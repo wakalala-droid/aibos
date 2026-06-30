@@ -4,6 +4,8 @@
  * This avoids CORS entirely — server-to-server calls have no restrictions.
  */
 
+import { createClient } from '@/lib/supabase';
+
 const PROXY = '/api/proxy';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -238,6 +240,324 @@ export async function checkPaymentStatus(reference: string): Promise<{ reference
 }
 
 // ─── Subscribe ────────────────────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EVOLUTION SPINE — Business Events + Digital Twin
+// All calls are tenant-scoped on the backend via the Supabase JWT, which the proxy
+// forwards from the Authorization header (app/api/proxy/[...path]/route.ts).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** Attach the current Supabase access token so the backend can verify the user. */
+async function authHeaders(): Promise<Record<string, string>> {
+  try {
+    const { data } = await createClient().auth.getSession();
+    const token = data.session?.access_token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+}
+
+export type EventType =
+  | 'Sale' | 'Purchase' | 'Expense' | 'InventoryReceipt' | 'InventoryAdjustment'
+  | 'Salary' | 'SupplierPayment' | 'CustomerPayment' | 'AssetPurchase'
+  | 'TaxPayment' | 'Loan' | 'Refund' | 'Transfer';
+
+export type EventSource = 'manual' | 'voice' | 'receipt' | 'qr' | 'excel' | 'csv' | 'pos' | 'api';
+export type EventStatus = 'pending' | 'confirmed' | 'void';
+
+export interface EventInput {
+  event_type: EventType;
+  payload: Record<string, unknown>;
+  source?: EventSource;
+  occurred_at?: string;
+  confidence?: number;
+  status?: 'pending' | 'confirmed';
+  currency?: string;
+  note?: string;
+}
+
+export interface BusinessEvent {
+  id: string;
+  event_type: EventType;
+  occurred_at: string;
+  recorded_at: string;
+  source: EventSource;
+  confidence: number;
+  status: EventStatus;
+  payload: Record<string, unknown>;
+  corrections?: Record<string, unknown>;
+  audit?: Array<{ at: string; actor: string; action: string; note?: string }>;
+}
+
+export interface EventProposal {
+  event_type: EventType | null;
+  payload: Record<string, unknown>;
+  confidence: number;
+  reasoning: string;
+}
+
+export interface Twin {
+  currency: string;
+  cash: number;
+  total_revenue: number;
+  total_costs: number;
+  total_profit: number;
+  avg_margin: number;
+  receivables: number;
+  payables: number;
+  inventory_value: number;
+  customers: number;
+  suppliers: number;
+  employees: number;
+  health_score: number;
+  health_label: string;
+  monthly: Array<{ month: string; revenue: number; costs: number }>;
+  event_count: number;
+}
+
+async function spineFetch(path: string, init: RequestInit = {}): Promise<Record<string, unknown>> {
+  const headers = { ...(init.headers as Record<string, string>), ...(await authHeaders()) };
+  const res = await fetch(`${PROXY}${path}`, { ...init, headers });
+  const raw = await res.text();
+  let data: Record<string, unknown> = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch { /* non-JSON */ }
+  if (!res.ok) {
+    const detail = typeof data.detail === 'string' ? data.detail : `Request failed (${res.status})`;
+    throw new Error(detail);
+  }
+  return data;
+}
+
+/** Free text → a proposed (not yet saved) event. */
+export async function classifyActivity(text: string, currency = 'ZMW'): Promise<EventProposal> {
+  const data = await spineFetch('/events/classify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, currency }),
+  });
+  return data.proposal as EventProposal;
+}
+
+/** Persist a (reviewed) event through the Nervous-System pipeline. */
+export async function createEvent(input: EventInput): Promise<BusinessEvent> {
+  const data = await spineFetch('/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return data.event as BusinessEvent;
+}
+
+export async function listEvents(params: { status?: EventStatus; event_type?: EventType; limit?: number } = {}): Promise<BusinessEvent[]> {
+  const q = new URLSearchParams();
+  if (params.status) q.set('status', params.status);
+  if (params.event_type) q.set('event_type', params.event_type);
+  q.set('limit', String(params.limit ?? 200));
+  const data = await spineFetch(`/events?${q.toString()}`);
+  return (data.events as BusinessEvent[]) ?? [];
+}
+
+export async function confirmEvent(id: string): Promise<BusinessEvent> {
+  const data = await spineFetch(`/events/${id}/confirm`, { method: 'POST' });
+  return data.event as BusinessEvent;
+}
+
+export async function correctEvent(id: string, patch: { payload?: Record<string, unknown>; occurred_at?: string; event_type?: EventType }): Promise<BusinessEvent> {
+  const data = await spineFetch(`/events/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  return data.event as BusinessEvent;
+}
+
+export async function voidEvent(id: string, reason?: string): Promise<BusinessEvent> {
+  const q = reason ? `?reason=${encodeURIComponent(reason)}` : '';
+  const data = await spineFetch(`/events/${id}${q}`, { method: 'DELETE' });
+  return data.event as BusinessEvent;
+}
+
+// ── Ingestion: Excel → events + QR (Initiatives 2, 7) ──────────────────────────
+
+export interface ExcelPreview {
+  columns: string[];
+  rows: Record<string, unknown>[];
+  row_count: number;
+  sheets: string[];
+  active_sheet: string;
+  suggestion: Record<string, string>;
+  event_types: EventType[];
+}
+
+export interface BulkResult {
+  saved_count: number;
+  error_count: number;
+  errors: Array<{ row?: number; index?: number; error: string }>;
+}
+
+/** Parse a spreadsheet and get columns + sample rows + a suggested mapping. */
+export async function excelPreview(file: File, sheet?: string): Promise<ExcelPreview> {
+  const form = new FormData();
+  form.append('file', file);
+  const q = sheet ? `?sheet=${encodeURIComponent(sheet)}` : '';
+  const data = await spineFetch(`/events/excel/preview${q}`, { method: 'POST', body: form });
+  return data as unknown as ExcelPreview;
+}
+
+/** Map reviewed rows → events and bulk-import (partial import supported). */
+export async function excelCommit(
+  rows: Record<string, unknown>[],
+  mapping: Record<string, string>,
+  defaults: { event_type?: EventType; currency?: string },
+): Promise<BulkResult> {
+  const data = await spineFetch('/events/excel/commit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rows, mapping, defaults }),
+  });
+  return data as unknown as BulkResult;
+}
+
+/** Receipt photo/upload → vision-OCR → a proposed Purchase (reviewed before saving). */
+export async function ingestReceipt(file: File, currency = 'ZMW'): Promise<EventProposal> {
+  const form = new FormData();
+  form.append('file', file);
+  const data = await spineFetch(`/ingest/receipt?currency=${encodeURIComponent(currency)}`, {
+    method: 'POST',
+    body: form,
+  });
+  return data.proposal as EventProposal;
+}
+
+/** Decoded QR string → a proposed event (reviewed before saving). */
+export async function ingestQr(payload: string, currency = 'ZMW'): Promise<EventProposal> {
+  const data = await spineFetch('/ingest/qr', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ payload, currency }),
+  });
+  return data.proposal as EventProposal;
+}
+
+// ── Products catalog (Initiative 3) ────────────────────────────────────────────
+
+export interface Product {
+  id: string;
+  name: string;
+  sku?: string;
+  category?: string;
+  unit: string;
+  buy_price: number;
+  sell_price: number;
+  opening_stock: number;
+  reorder_level: number;
+  supplier?: string;
+  on_hand?: number;
+}
+
+export type ProductInput = Partial<Omit<Product, 'id' | 'on_hand'>> & { name: string };
+
+export async function listProducts(): Promise<Product[]> {
+  const data = await spineFetch('/products');
+  return (data.products as Product[]) ?? [];
+}
+
+export async function createProduct(p: ProductInput): Promise<Product> {
+  const data = await spineFetch('/products', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p),
+  });
+  return data.product as Product;
+}
+
+export async function updateProduct(id: string, patch: Partial<ProductInput>): Promise<Product> {
+  const data = await spineFetch(`/products/${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch),
+  });
+  return data.product as Product;
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  await spineFetch(`/products/${id}`, { method: 'DELETE' });
+}
+
+// ── Future hooks: recommendations + simulation (Initiatives 10, 12) ────────────
+
+export interface Recommendation {
+  title: string;
+  rationale: string;
+  expected_outcome: string;
+  downside: string;
+  confidence: number;
+  source_engine: string;
+  evidence: Array<{ label: string; value: string }>;
+  alternatives: string[];
+  impact: { metric?: string; delta?: number; unit?: string };
+  priority: 'low' | 'medium' | 'high';
+}
+
+export async function getRecommendations(): Promise<Recommendation[]> {
+  const data = await spineFetch('/recommendations');
+  return (data.recommendations as Recommendation[]) ?? [];
+}
+
+export interface SimResult {
+  ok: boolean;
+  error?: string;
+  baseline: Record<string, number>;
+  projected: Record<string, number>;
+  deltas: Record<string, number>;
+  assumptions: string[];
+  explanation: string;
+  note: string;
+}
+
+export async function simulate(scenario: {
+  type: string; value?: number; count?: number; monthly_salary?: number; months?: number;
+}): Promise<SimResult> {
+  const data = await spineFetch('/simulate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(scenario),
+  });
+  return data as unknown as SimResult;
+}
+
+/** Seed the twin's opening cash + currency (Setup Wizard). */
+export async function seedTwin(opening_cash: number, currency = 'ZMW'): Promise<Twin> {
+  const data = await spineFetch('/twin/seed', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ opening_cash, currency }),
+  });
+  return data.twin as Twin;
+}
+
+/** Update the caller's own profile (onboarding/business details) via the Next route. */
+export async function updateProfile(patch: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const res = await fetch('/api/profile', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error || `Could not save profile (${res.status}).`);
+  }
+  const data = await res.json();
+  return (data.profile ?? {}) as Record<string, unknown>;
+}
+
+export async function getTwin(): Promise<Twin> {
+  const data = await spineFetch('/twin');
+  return data.twin as Twin;
+}
+
+/** The twin shaped like an upload payload (monthly/kpi/health) so the existing
+ *  dashboard store can consume it via setUploadResult — backward-compat bridge. */
+export async function getTwinFinancials(): Promise<Record<string, unknown>> {
+  return spineFetch('/twin/financials');
+}
 
 export async function subscribeEmail(payload: { user_id: string; email: string; frequency?: string }): Promise<{ ok: boolean }> {
   // Use the Supabase-backed Next route (durable), not the proxy — the old

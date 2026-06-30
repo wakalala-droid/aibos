@@ -12,6 +12,11 @@ import { TIERS } from '@/lib/tiers';
 // ── SVG icon primitives (matching E1 sidebar icon style) ──────────────────
 const IC: Record<string, JSX.Element> = {
   overview:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" fill="none"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" fill="none"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" fill="none"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" fill="none"/></svg>,
+  record:     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  timeline:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 3v18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".5"/><circle cx="6" cy="7" r="2" stroke="currentColor" strokeWidth="1.6" fill="none"/><circle cx="6" cy="15" r="2" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M11 7h9M11 15h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+  import:     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v12M7 10l5 5 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+  advisor:    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2a7 7 0 00-4 12.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3A7 7 0 0012 2z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="M9 21h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+  inventory:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/><path d="M3 7v10l9 4 9-4V7M12 11v10" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>,
   cash:       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 8h20v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8z" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M2 8l2-4h16l2 4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><circle cx="12" cy="14" r="2" stroke="currentColor" strokeWidth="1.4" fill="none"/></svg>,
   variance:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 18l5-5 4 3 5-7 4 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/><path d="M3 20h18" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity=".4"/></svg>,
   forecast:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 12l4-4 4 4 4-6 4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/><path d="M16 10l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity=".5"/></svg>,
@@ -41,6 +46,10 @@ type NavEntry = NavItem | NavSection;
 
 const NAV: NavEntry[] = [
   { href: '/dashboard',            label: 'Overview',         icon: IC.overview   },
+  { href: '/dashboard/record',     label: 'Record',           icon: IC.record     },
+  { href: '/dashboard/timeline',   label: 'Timeline',         icon: IC.timeline   },
+  { href: '/dashboard/import',     label: 'Import',           icon: IC.import     },
+  { href: '/dashboard/advisor',    label: 'Advisor',          icon: IC.advisor    },
   { href: '/dashboard/cash',       label: 'Cash Intel',       icon: IC.cash       },
   { href: '/dashboard/variance',   label: 'Variance',         icon: IC.variance   },
   { href: '/dashboard/forecast',   label: 'Forecast',         icon: IC.forecast   },

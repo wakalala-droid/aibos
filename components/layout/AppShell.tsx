@@ -12,7 +12,7 @@ import { FloatingAiAssistant } from '@/components/ui/glowing-ai-chat-assistant';
 // Routes that render full-screen WITHOUT the app chrome (sidebar + padded
 // main area). The login/auth screens are standalone and must not show the
 // navigation — you aren't signed in yet.
-const BARE_ROUTES = ['/login', '/auth'];
+const BARE_ROUTES = ['/login', '/auth', '/onboarding'];
 
 // Public marketing surface. These live in app/(marketing)/ and bring their own
 // chrome (MarketingNav / MarketingFooter) + warm-light skin, so AppShell must

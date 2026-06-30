@@ -30,6 +30,12 @@ const EDITABLE = [
   'whatsapp',
   'contact_email',
   'logo_url',
+  // Onboarding fields (migration 0007 · Evolution Initiative 1).
+  'tax_status',
+  'employees',
+  'operating_hours',
+  'language',
+  'onboarded_at',
 ] as const;
 
 export async function GET() {
