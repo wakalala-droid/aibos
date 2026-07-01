@@ -35,12 +35,8 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
   const auth = req.headers.get("authorization");
   if (auth) headers["authorization"] = auth;
 
-  // Stream the request body straight through instead of buffering it.
-  // Buffering multipart uploads via req.blob()/req.formData() is what throws
-  // Next.js's "There was an error parsing the body". Forwarding req.body as a
-  // ReadableStream sidesteps the parse step entirely (and avoids loading whole
-  // files into memory). When the body is a stream, fetch requires duplex:"half".
   const hasBody = method !== "GET" && method !== "DELETE" && req.body != null;
+  const isMultipart = ct.includes("multipart/form-data");
 
   if (hasBody && ct) {
     // Preserve the original Content-Type. For multipart this is essential — it
@@ -48,12 +44,23 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
     headers["content-type"] = ct;
   }
 
-  // `duplex` is valid at runtime but missing from the TS RequestInit type.
-  const init = {
-    method,
-    headers,
-    ...(hasBody ? { body: req.body, duplex: "half" } : {}),
-  } as RequestInit & { duplex?: "half" };
+  let init: RequestInit & { duplex?: "half" };
+  if (hasBody && isMultipart) {
+    // Stream file uploads straight through instead of buffering — buffering via
+    // req.blob()/req.formData() is what throws Next.js's "There was an error
+    // parsing the body". Forwarding req.body as a ReadableStream sidesteps the
+    // parse step entirely and avoids loading whole files into memory. When the
+    // body is a stream, fetch requires duplex:"half".
+    // (`duplex` is valid at runtime but missing from the TS RequestInit type.)
+    init = { method, headers, body: req.body, duplex: "half" };
+  } else if (hasBody) {
+    // Everything else (JSON etc) is small — buffer it. Streaming these via
+    // duplex:"half" is unreliable on Vercel's production Node runtime and
+    // throws "expected non-null body source" even for empty/tiny bodies.
+    init = { method, headers, body: await req.text() };
+  } else {
+    init = { method, headers };
+  }
 
   try {
     const res = await fetch(upstream, init);
