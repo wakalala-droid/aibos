@@ -67,9 +67,13 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`[proxy] ${method} ${upstream} → ${msg}`);
+    // Node's fetch wraps the real network error in `.cause` (e.g. ECONNRESET,
+    // UND_ERR_*) — without logging it, every failure looks like a bare
+    // "fetch failed" with no way to diagnose it.
+    const cause = err instanceof Error && err.cause ? ` cause=${String(err.cause)}` : "";
+    console.error(`[proxy] ${method} ${upstream} → ${msg}${cause}`);
     return NextResponse.json(
-      { error: "Proxy error", detail: `Could not reach backend: ${msg}` },
+      { error: "Proxy error", detail: `Could not reach backend: ${msg}${cause}` },
       { status: 502 }
     );
   }

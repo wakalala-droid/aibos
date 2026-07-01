@@ -43,8 +43,11 @@ const nextConfig = {
           { key: 'Referrer-Policy',          value: 'strict-origin-when-cross-origin' },
           { key: 'X-XSS-Protection',         value: '1; mode=block' },
           {
+            // self: first-party pages may request camera/mic (QR scan, voice
+            // recording). Third-party iframes still get none. geolocation is
+            // unused by the app, stays blocked.
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            value: 'camera=(self), microphone=(self), geolocation=()',
           },
         ],
       },
