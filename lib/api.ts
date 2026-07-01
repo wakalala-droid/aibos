@@ -134,20 +134,6 @@ export async function uploadFile(
   return res.json();
 }
 
-// ─── Re-analyse ───────────────────────────────────────────────────────────────
-
-export async function reanalyse(
-  records: Record<string, unknown>[],
-  options: { current_cash?: number; months_ahead?: number; z_threshold?: number; fixed_cost_pct?: number } = {}
-): Promise<Omit<UploadResult, 'records' | 'rows' | 'columns'>> {
-  const res = await fetch(`${PROXY}/analyse`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ records, ...options }),
-  });
-  return res.json();
-}
-
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 
 export async function sendChatMessage(payload: {
