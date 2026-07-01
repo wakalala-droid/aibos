@@ -65,7 +65,7 @@ type SpeechRec = {
   lang: string; interimResults: boolean; continuous: boolean;
   start: () => void; stop: () => void;
   onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-  onerror: (() => void) | null; onend: (() => void) | null;
+  onerror: ((e: { error?: string }) => void) | null; onend: (() => void) | null;
 };
 function getSpeechCtor(): (new () => SpeechRec) | null {
   if (typeof window === 'undefined') return null;
@@ -176,7 +176,17 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
       const transcript = e.results?.[0]?.[0]?.transcript ?? '';
       if (transcript) { setText(transcript); handleClassify(transcript, 'voice'); }
     };
-    rec.onerror = () => { setListening(false); setError('Could not hear that — try again or type it.'); };
+    rec.onerror = (e) => {
+      setListening(false);
+      const msg = e?.error === 'not-allowed' || e?.error === 'service-not-allowed'
+        ? 'Mic access is blocked — allow microphone permission for this site and try again.'
+        : e?.error === 'no-speech'
+        ? "Didn't catch that — try again or type it."
+        : e?.error === 'audio-capture'
+        ? 'No microphone found — try typing instead.'
+        : 'Could not hear that — try again or type it.';
+      setError(msg);
+    };
     rec.onend = () => setListening(false);
     recRef.current = rec;
     setError(null); setListening(true);

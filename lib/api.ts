@@ -112,7 +112,6 @@ export async function uploadFile(
   options: { current_cash?: number; months_ahead?: number; z_threshold?: number; fixed_cost_pct?: number } = {}
 ): Promise<UploadResult> {
   const params = new URLSearchParams({
-    endpoint:       '/upload',
     current_cash:   String(options.current_cash   ?? 50000),
     months_ahead:   String(options.months_ahead   ?? 3),
     z_threshold:    String(options.z_threshold    ?? 2.0),
@@ -122,7 +121,7 @@ export async function uploadFile(
   const form = new FormData();
   form.append('file', file);
 
-  const res = await fetch(`${PROXY}?${params}`, {
+  const res = await fetch(`${PROXY}/upload?${params}`, {
     method: 'POST',
     body:   form,
   });
@@ -141,7 +140,7 @@ export async function reanalyse(
   records: Record<string, unknown>[],
   options: { current_cash?: number; months_ahead?: number; z_threshold?: number; fixed_cost_pct?: number } = {}
 ): Promise<Omit<UploadResult, 'records' | 'rows' | 'columns'>> {
-  const res = await fetch(`${PROXY}?endpoint=/analyse`, {
+  const res = await fetch(`${PROXY}/analyse`, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify({ records, ...options }),
@@ -159,7 +158,7 @@ export async function sendChatMessage(payload: {
   alerts?:        Alert[];
   persist?:       boolean;
 }): Promise<{ ok: boolean; answer: string }> {
-  const res = await fetch(`${PROXY}?endpoint=/chat`, {
+  const res = await fetch(`${PROXY}/chat`, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify(payload),
@@ -170,7 +169,7 @@ export async function sendChatMessage(payload: {
 // ─── Excel export ─────────────────────────────────────────────────────────────
 
 export async function downloadExcel(payload: Record<string, unknown>): Promise<void> {
-  const res = await fetch(`${PROXY}?endpoint=/export/excel`, {
+  const res = await fetch(`${PROXY}/export/excel`, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify(payload),
@@ -189,7 +188,7 @@ export async function downloadExcel(payload: Record<string, unknown>): Promise<v
 
 export async function pingAPI(): Promise<boolean> {
   try {
-    const res = await fetch(`${PROXY}?endpoint=/health`, { signal: AbortSignal.timeout(5000) });
+    const res = await fetch(`${PROXY}/health`, { signal: AbortSignal.timeout(5000) });
     return res.ok;
   } catch {
     return false;
