@@ -165,8 +165,8 @@ function LoginForm() {
 
         {/* Heading */}
         <div className="text-center mb-5">
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Outfit, sans-serif', margin: 0 }}>Sign in to continue</h2>
-          <p style={{ fontSize: '0.68rem', color: '#4a6285', fontFamily: 'DM Mono, monospace', marginTop: 4 }}>Your session is protected and encrypted</p>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 600, color: '#e2eeff', fontFamily: 'Geist, sans-serif', margin: 0 }}>Sign in to continue</h2>
+          <p style={{ fontSize: '0.68rem', color: '#4a6285', fontFamily: 'Geist, sans-serif', marginTop: 4 }}>Your session is protected and encrypted</p>
         </div>
 
         {/* Error */}
@@ -176,7 +176,7 @@ function LoginForm() {
               initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', marginBottom: 16, borderRadius: 8, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.1)' }}
             >
-              <span style={{ fontSize: '0.72rem', color: '#ef4444', fontFamily: 'DM Mono, monospace' }}>⚠ {errorMsg}</span>
+              <span style={{ fontSize: '0.72rem', color: '#ef4444', fontFamily: 'Geist, sans-serif' }}>⚠ {errorMsg}</span>
             </motion.div>
           )}
           {redirecting && (
@@ -184,7 +184,7 @@ function LoginForm() {
               initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', marginBottom: 16, borderRadius: 8, border: '1px solid rgba(96,165,250,0.3)', background: 'rgba(96,165,250,0.1)' }}
             >
-              <span style={{ fontSize: '0.72rem', color: '#60a5fa', fontFamily: 'DM Mono, monospace' }}>Redirecting to Google…</span>
+              <span style={{ fontSize: '0.72rem', color: '#60a5fa', fontFamily: 'Geist, sans-serif' }}>Redirecting to Google…</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -195,7 +195,7 @@ function LoginForm() {
           disabled={loading || redirecting}
           whileHover={(!loading && !redirecting) ? { y: -2 } : {}}
           whileTap={(!loading && !redirecting) ? { scale: 0.98 } : {}}
-          style={{ width: '100%', height: 52, borderRadius: 11, border: '1px solid rgba(0,0,0,0.06)', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: '0.9rem', fontWeight: 500, color: '#1a1a2e', fontFamily: 'Outfit, sans-serif', cursor: loading || redirecting ? 'not-allowed' : 'pointer', opacity: loading || redirecting ? 0.65 : 1, transition: 'box-shadow 0.15s ease' }}
+          style={{ width: '100%', height: 52, borderRadius: 11, border: '1px solid rgba(0,0,0,0.06)', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: '0.9rem', fontWeight: 500, color: '#1a1a2e', fontFamily: 'Geist, sans-serif', cursor: loading || redirecting ? 'not-allowed' : 'pointer', opacity: loading || redirecting ? 0.65 : 1, transition: 'box-shadow 0.15s ease' }}
           aria-label="Continue with Google"
         >
           {loading || redirecting ? (
@@ -207,12 +207,12 @@ function LoginForm() {
         </motion.button>
 
         {/* Keyboard hint */}
-        <p style={{ textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: '#2d4a70', marginTop: 12 }}>
+        <p style={{ textAlign: 'center', fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: '#2d4a70', marginTop: 12 }}>
           Press <kbd style={{ padding: '2px 6px', border: '1px solid #2d4a70', borderRadius: 4, fontSize: '0.66rem', background: '#090d1e', color: '#4a6285' }}>Enter</kbd> to continue
         </p>
 
         {/* Footer */}
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(99,179,237,0.08)', textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: '#2d4a70', lineHeight: 1.8 }}>
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(99,179,237,0.08)', textAlign: 'center', fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: '#2d4a70', lineHeight: 1.8 }}>
           Powered by AI · Built for Finance
           <br />
           <span style={{ fontSize: '0.66rem' }}>
@@ -240,12 +240,12 @@ export default function LoginPage() {
         style={{ backgroundImage: 'linear-gradient(rgba(99,179,237,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(99,179,237,0.03) 1px,transparent 1px)', backgroundSize: '64px 64px' }}
       />
       <Suspense fallback={
-        <div style={{ color: '#4a6285', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem' }}>Loading…</div>
+        <div style={{ color: '#4a6285', fontFamily: 'Geist, sans-serif', fontSize: '0.75rem' }}>Loading…</div>
       }>
         <LoginForm />
       </Suspense>
       <div className="absolute bottom-6 left-0 right-0 flex justify-center">
-        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: '#2d4a70', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: '#2d4a70', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           AI-BOS v2.0 · Next.js + Supabase
         </p>
       </div>

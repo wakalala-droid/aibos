@@ -2,8 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Google Fonts ─────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+/* ─── Geist (Vercel) — self-hosted, the standard AI-BOS typeface ── */
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/GeistVF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/GeistVF-Italic.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
 
 /* ─── CSS Design Tokens ─────────────────────────────────────────── */
 :root {
@@ -56,7 +69,7 @@ html {
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Geist', sans-serif;
   background-color: var(--bg-base);
   color: var(--text-primary);
   min-height: 100vh;
@@ -65,7 +78,7 @@ body {
 
 /* ─── Typography Utilities ───────────────────────────────────────── */
 .font-mono-data {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Geist', sans-serif;
   letter-spacing: 0.02em;
 }
 
@@ -253,7 +266,7 @@ body {
   background: linear-gradient(135deg, #60a5fa 0%, #06b6d4 100%);
   color: #03060d;
   font-weight: 600;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Geist', sans-serif;
   border-radius: var(--radius-btn);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -273,7 +286,7 @@ body {
   background: #ffffff;
   color: #1a1a2e;
   font-weight: 500;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Geist', sans-serif;
   border-radius: var(--radius-btn);
   border: 1px solid rgba(255,255,255,0.12);
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;

@@ -191,14 +191,14 @@ export function FloatingAiAssistant() {
                   transition={{ duration: 2, repeat: Infinity }}
                   style={{ width: 8, height: 8, borderRadius: '50%', background: online ? 'var(--good)' : 'var(--warn)', flexShrink: 0, boxShadow: online ? '0 0 8px var(--good)' : 'none' }}
                 />
-                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>Ask me anything</span>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>Ask me anything</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', fontWeight: 600, color: 'var(--text-3)', border: '1px solid var(--border-md)', borderRadius: 6, padding: '3px 7px', whiteSpace: 'nowrap' }}>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.6rem', fontWeight: 600, color: 'var(--text-3)', border: '1px solid var(--border-md)', borderRadius: 6, padding: '3px 7px', whiteSpace: 'nowrap' }}>
                   AI CFO
                 </span>
                 <span style={{
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', fontWeight: 700, borderRadius: 6, padding: '3px 7px', whiteSpace: 'nowrap',
+                  fontFamily: 'Geist, sans-serif', fontSize: '0.6rem', fontWeight: 700, borderRadius: 6, padding: '3px 7px', whiteSpace: 'nowrap',
                   color: paid ? '#fff' : 'var(--text-3)',
                   background: paid ? 'linear-gradient(135deg, #0097b2, #00d4ff)' : 'var(--bg-badge)',
                   border: paid ? 'none' : '1px solid var(--border-md)',
@@ -218,10 +218,10 @@ export function FloatingAiAssistant() {
 
               {!hasUserMsg && messages.length === 0 && (
                 <div style={{ margin: 'auto 0', paddingTop: 8 }}>
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.18rem', fontWeight: 600, lineHeight: 1.4, color: 'var(--text-3)', margin: '0 0 6px' }}>
+                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.18rem', fontWeight: 600, lineHeight: 1.4, color: 'var(--text-3)', margin: '0 0 6px' }}>
                     What would you like to explore today?
                   </p>
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', lineHeight: 1.55, color: 'var(--text-4)', margin: 0 }}>
+                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', lineHeight: 1.55, color: 'var(--text-4)', margin: 0 }}>
                     Ask about any number on your dashboard — or <strong style={{ color: 'var(--cyan)', fontWeight: 600 }}>long-press any card</strong> and I&apos;ll explain what it is and why it matters.
                   </p>
                 </div>
@@ -237,12 +237,12 @@ export function FloatingAiAssistant() {
                       border: m.role === 'user' ? 'none' : '1px solid var(--border)',
                       borderRadius: m.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
                       padding: '11px 14px',
-                      fontFamily: 'Inter, sans-serif', fontSize: '0.82rem',
+                      fontFamily: 'Geist, sans-serif', fontSize: '0.82rem',
                     }}>
                       {m.role === 'assistant'
                         ? <RichText text={m.content} />
                         : <p style={{ margin: 0, lineHeight: 1.55, color: '#fff' }}>{m.content}</p>}
-                      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', margin: '5px 0 0', textAlign: m.role === 'user' ? 'right' : 'left', color: m.role === 'user' ? 'rgba(255,255,255,0.6)' : 'var(--text-4)' }}>
+                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.56rem', margin: '5px 0 0', textAlign: m.role === 'user' ? 'right' : 'left', color: m.role === 'user' ? 'rgba(255,255,255,0.6)' : 'var(--text-4)' }}>
                         {m.timestamp}
                       </p>
                     </div>
@@ -266,7 +266,7 @@ export function FloatingAiAssistant() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 2 }}>
                   {suggestions.map((p) => (
                     <button key={p} type="button" onClick={() => submit(p)}
-                      style={{ padding: '6px 11px', borderRadius: 16, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: 'var(--text-2)', transition: 'all 0.15s ease' }}
+                      style={{ padding: '6px 11px', borderRadius: 16, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', cursor: 'pointer', fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-2)', transition: 'all 0.15s ease' }}
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--cyan)'; e.currentTarget.style.color = 'var(--cyan)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-md)'; e.currentTarget.style.color = 'var(--text-2)'; }}>
                       {p}
@@ -286,7 +286,7 @@ export function FloatingAiAssistant() {
                   onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))} onKeyDown={handleKey}
                   placeholder="Ask anything, or long-press a card to learn about it…"
                   maxLength={MAX_CHARS} disabled={loading}
-                  style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontFamily: 'Inter, sans-serif', fontSize: '0.84rem', color: 'var(--text-1)', lineHeight: 1.5, maxHeight: 110, overflow: 'auto' }} />
+                  style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontFamily: 'Geist, sans-serif', fontSize: '0.84rem', color: 'var(--text-1)', lineHeight: 1.5, maxHeight: 110, overflow: 'auto' }} />
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -297,7 +297,7 @@ export function FloatingAiAssistant() {
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: input.length > MAX_CHARS * 0.9 ? 'var(--warn)' : 'var(--text-4)' }}>
+                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', color: input.length > MAX_CHARS * 0.9 ? 'var(--warn)' : 'var(--text-4)' }}>
                       {input.length}/{MAX_CHARS}
                     </span>
                     <button type="button" onClick={() => submit(input)} disabled={!input.trim() || loading} aria-label="Send message"
@@ -312,10 +312,10 @@ export function FloatingAiAssistant() {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 9 }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: 'var(--text-4)' }}>
-                  Press <kbd style={{ fontFamily: 'JetBrains Mono, monospace', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 4, padding: '1px 5px', color: 'var(--text-3)' }}>Shift + Enter</kbd> for new line
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.58rem', color: 'var(--text-4)' }}>
+                  Press <kbd style={{ fontFamily: 'Geist, sans-serif', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 4, padding: '1px 5px', color: 'var(--text-3)' }}>Shift + Enter</kbd> for new line
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: online ? 'var(--good)' : 'var(--warn)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'Geist, sans-serif', fontSize: '0.58rem', color: online ? 'var(--good)' : 'var(--warn)' }}>
                   <span style={{ width: 5, height: 5, borderRadius: '50%', background: online ? 'var(--good)' : 'var(--warn)' }} />
                   {online ? 'All systems operational' : 'Reconnecting…'}
                 </span>

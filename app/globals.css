@@ -3,13 +3,35 @@
    Dark (default, matches E1 dashboard exactly) + Light Premium
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800;900&family=DM+Mono:wght@300;400;500&display=swap');
+/* Geist (Vercel) — the one and only AI-BOS typeface. Self-hosted variable
+   fonts from /public/fonts; every text on every page renders in Geist. */
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/GeistVF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/GeistVF-Italic.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/GeistMonoVF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* Tailwind layers — the app uses utility classes (max-w-md, flex, grid, …) on
    the login & Data Studio pages. Without these directives no utilities are
-   generated, so those layouts collapse to full width. Placed after the font
-   @import (which must stay first) and before the custom design system below,
-   so the hand-written rules override Tailwind on any conflict. */
+   generated, so those layouts collapse to full width. Placed before the custom
+   design system below, so the hand-written rules override Tailwind on any
+   conflict. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -209,7 +231,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Geist', system-ui, sans-serif;
   background: var(--bg-page);
   color: var(--text-2);
   min-height: 100vh;
@@ -322,7 +344,7 @@ body {
 }
 
 .kpi-card .kpi-label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist', sans-serif;
   font-size: 0.7rem;
   font-weight: 500;
   color: var(--text-3);
@@ -335,7 +357,7 @@ body {
 }
 
 .kpi-card .kpi-value {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 2rem;
   font-weight: 800;
   color: var(--text-1);
@@ -345,7 +367,7 @@ body {
 }
 
 .kpi-card .kpi-sub {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist', sans-serif;
   font-size: 0.7rem;
   color: var(--text-4);
   letter-spacing: 0.02em;
@@ -355,7 +377,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist', sans-serif;
   font-size: 0.7rem;
   font-weight: 600;
   padding: 2px 7px;
@@ -506,7 +528,7 @@ body {
 }
 
 .section-title {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-1);
@@ -514,7 +536,7 @@ body {
 }
 
 .section-sub {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist', sans-serif;
   font-size: 0.7rem;
   color: var(--text-3);
   letter-spacing: 0.02em;
@@ -562,7 +584,7 @@ body {
 .insight-body {}
 
 .insight-label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist', sans-serif;
   font-size: 0.68rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -571,7 +593,7 @@ body {
 }
 
 .insight-text {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 0.82rem;
   color: var(--text-2);
   line-height: 1.55;
@@ -579,7 +601,7 @@ body {
 }
 
 .insight-action {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist', sans-serif;
   font-size: 0.68rem;
   color: var(--text-3);
   margin: 0;
@@ -594,7 +616,7 @@ body {
 }
 
 .engine-tag {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist', sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
   padding: 2px 6px;
@@ -636,7 +658,7 @@ body {
 }
 
 .nav-item .nav-label {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 0.82rem;
   font-weight: 500;
   white-space: nowrap;
@@ -645,7 +667,7 @@ body {
 /* Section dividers */
 .nav-section {
   padding: 14px 20px 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist', sans-serif;
   font-size: 0.68rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -658,7 +680,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist', sans-serif;
   font-size: 0.68rem;
   font-weight: 600;
   padding: 2px 8px;
@@ -675,7 +697,7 @@ body {
 .data-table th {
   text-align: left;
   padding: 8px 12px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist', sans-serif;
   font-size: 0.68rem;
   font-weight: 600;
   color: var(--text-3);
@@ -687,7 +709,7 @@ body {
 
 .data-table td {
   padding: 11px 12px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist', sans-serif;
   font-size: 0.72rem;
   color: var(--text-2);
   border-bottom: 1px solid var(--table-border);
@@ -812,7 +834,7 @@ select optgroup {
   color: var(--text-1);
   padding: 10px 16px;
   border-radius: 8px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 0.82rem;
   transition: top 0.15s ease;
 }

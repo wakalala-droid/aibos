@@ -63,7 +63,7 @@ export default function PricingTiers() {
             aria-pressed={billing === b}
             onClick={() => setBilling(b)}
             style={{
-              fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 600,
+              fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600,
               padding: '9px 18px', borderRadius: 999, cursor: 'pointer',
               border: `1px solid ${billing === b ? 'var(--cyan)' : 'var(--border-md)'}`,
               background: billing === b ? 'var(--cyan-dim)' : 'var(--bg-card)',
@@ -72,7 +72,7 @@ export default function PricingTiers() {
           >
             {b === 'monthly' ? 'Monthly' : 'Annual'}
             {b === 'annual' && (
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', marginLeft: 8, color: 'var(--good)' }}>
+              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', marginLeft: 8, color: 'var(--good)' }}>
                 2 months free
               </span>
             )}
@@ -104,24 +104,24 @@ export default function PricingTiers() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, minHeight: 26 }}>
-                <h3 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.15rem', fontWeight: 800, color: meta.accent, margin: 0 }}>
+                <h3 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.15rem', fontWeight: 800, color: meta.accent, margin: 0 }}>
                   {meta.name}
                 </h3>
                 {popular && (
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--cyan)', background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)', padding: '3px 9px', borderRadius: 999 }}>
+                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--cyan)', background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)', padding: '3px 9px', borderRadius: 999 }}>
                     MOST POPULAR
                   </span>
                 )}
               </div>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-3)', margin: '0 0 18px' }}>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)', margin: '0 0 18px' }}>
                 {meta.tagline}
               </p>
 
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 20 }}>
-                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>
                   {big}
                 </span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-4)' }}>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-4)' }}>
                   {small}
                 </span>
               </div>
@@ -130,7 +130,7 @@ export default function PricingTiers() {
                 {meta.inclusions.map((inc) => (
                   <li key={inc} style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>
                     <Check colour={meta.accent} />
-                    <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.84rem', color: 'var(--text-2)', lineHeight: 1.45 }}>
+                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.84rem', color: 'var(--text-2)', lineHeight: 1.45 }}>
                       {inc}
                     </span>
                   </li>
@@ -138,7 +138,7 @@ export default function PricingTiers() {
               </ul>
 
               {action.disabled ? (
-                <span style={{ textAlign: 'center', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-3)', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
+                <span style={{ textAlign: 'center', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-3)', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
                   {action.label}
                 </span>
               ) : (
@@ -148,7 +148,7 @@ export default function PricingTiers() {
               )}
 
               {tier === 'free' && (
-                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', margin: '12px 0 0', textAlign: 'center' }}>
+                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', color: 'var(--text-4)', margin: '12px 0 0', textAlign: 'center' }}>
                   Locked features stay visible, so you see the value before you pay.
                 </p>
               )}
@@ -160,18 +160,18 @@ export default function PricingTiers() {
       {/* Mobile money — first-class, not an afterthought (conversion_psychology.md). */}
       <div className="mkt-card" style={{ marginTop: 22, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 3px' }}>
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 3px' }}>
             Pay with Mobile Money
           </p>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-3)', margin: 0 }}>
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)', margin: 0 }}>
             MTN Mobile Money &amp; Airtel Money. No card required.
           </p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 800, color: '#000', background: '#ffcc00', padding: '9px 15px', borderRadius: 10 }}>
+          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 800, color: '#000', background: '#ffcc00', padding: '9px 15px', borderRadius: 10 }}>
             MTN MoMo
           </span>
-          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 800, color: '#fff', background: '#e40000', padding: '9px 15px', borderRadius: 10 }}>
+          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 800, color: '#fff', background: '#e40000', padding: '9px 15px', borderRadius: 10 }}>
             Airtel Money
           </span>
         </div>

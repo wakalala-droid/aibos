@@ -56,7 +56,7 @@ function fmtDate(v: string | null): string {
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontFamily: 'Inter, sans-serif',
+  fontFamily: 'Geist, sans-serif',
   fontSize: '0.76rem',
   fontWeight: 600,
   color: 'var(--text-2)',
@@ -71,7 +71,7 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid var(--border-md)',
   background: 'var(--bg-input)',
   color: 'var(--text-1)',
-  fontFamily: 'Inter, sans-serif',
+  fontFamily: 'Geist, sans-serif',
   fontSize: '0.85rem',
   outline: 'none',
 };
@@ -196,7 +196,7 @@ export default function BusinessProfilePage() {
     return (
       <div style={{ padding: '24px 0' }}>
         <div className="section-card" aria-busy="true" style={{ maxWidth: 760 }}>
-          <p style={{ fontFamily: 'Inter, sans-serif', color: 'var(--text-3)', margin: 0 }}>
+          <p style={{ fontFamily: 'Geist, sans-serif', color: 'var(--text-3)', margin: 0 }}>
             Loading your business profile…
           </p>
         </div>
@@ -210,10 +210,10 @@ export default function BusinessProfilePage() {
   return (
     <div style={{ padding: '8px 0 48px' }}>
       <header style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
           Business profile
         </h1>
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>
           The details here power your dashboard identity — the name and logo shown in the header come from this page.
         </p>
       </header>
@@ -227,7 +227,7 @@ export default function BusinessProfilePage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={form.logo_url} alt="" width={56} height={56} style={{ borderRadius: 12, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border)' }} />
             ) : (
-              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 12, flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 800 }}>
+              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 12, flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Geist, sans-serif', fontSize: '1rem', fontWeight: 800 }}>
                 {initials}
               </span>
             )}
@@ -236,12 +236,12 @@ export default function BusinessProfilePage() {
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={logoBusy}
-                style={{ minHeight: 44, padding: '10px 16px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 600, cursor: logoBusy ? 'wait' : 'pointer', opacity: logoBusy ? 0.6 : 1 }}
+                style={{ minHeight: 44, padding: '10px 16px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, cursor: logoBusy ? 'wait' : 'pointer', opacity: logoBusy ? 0.6 : 1 }}
               >
                 {logoBusy ? 'Uploading…' : form.logo_url ? 'Replace logo' : 'Upload logo'}
               </button>
               <input ref={fileRef} type="file" accept="image/*" onChange={onLogo} aria-label="Upload business logo" style={{ display: 'none' }} />
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: '8px 0 0' }}>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: '8px 0 0' }}>
                 PNG or JPG · shown in the header
               </p>
             </div>
@@ -251,7 +251,7 @@ export default function BusinessProfilePage() {
             <div>
               <label htmlFor="bp-name" style={labelStyle}>Business name <span style={{ color: 'var(--crit)' }}>*</span></label>
               <input id="bp-name" value={form.business_name} onChange={(e) => set('business_name', e.target.value)} required aria-required="true" aria-invalid={!nameValid} style={inputStyle} placeholder="e.g. Lusaka Bites" />
-              {!nameValid && <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: 'var(--crit)', margin: '6px 0 0' }}>A business name is required.</p>}
+              {!nameValid && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--crit)', margin: '6px 0 0' }}>A business name is required.</p>}
             </div>
 
             <div>
@@ -292,7 +292,7 @@ export default function BusinessProfilePage() {
             <div>
               <label htmlFor="bp-email" style={labelStyle}>Contact email</label>
               <input id="bp-email" type="email" value={form.contact_email} onChange={(e) => set('contact_email', e.target.value)} aria-invalid={!emailValid} style={inputStyle} placeholder="hello@yourbusiness.com" />
-              {!emailValid && <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: 'var(--crit)', margin: '6px 0 0' }}>Enter a valid email address.</p>}
+              {!emailValid && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--crit)', margin: '6px 0 0' }}>Enter a valid email address.</p>}
             </div>
           </div>
 
@@ -300,13 +300,13 @@ export default function BusinessProfilePage() {
             <button
               type="submit"
               disabled={!canSave}
-              style={{ minHeight: 44, padding: '12px 22px', borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#fff', fontFamily: 'Inter, sans-serif', fontSize: '0.86rem', fontWeight: 700, cursor: canSave ? 'pointer' : 'not-allowed', opacity: canSave ? 1 : 0.55 }}
+              style={{ minHeight: 44, padding: '12px 22px', borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#fff', fontFamily: 'Geist, sans-serif', fontSize: '0.86rem', fontWeight: 700, cursor: canSave ? 'pointer' : 'not-allowed', opacity: canSave ? 1 : 0.55 }}
             >
               {save === 'saving' ? 'Saving…' : 'Save changes'}
             </button>
 
             {/* aria-live save confirmation / error */}
-            <span role="status" aria-live="polite" style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', color: save === 'error' ? 'var(--crit)' : 'var(--good)' }}>
+            <span role="status" aria-live="polite" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: save === 'error' ? 'var(--crit)' : 'var(--good)' }}>
               {save === 'saved' && 'Saved.'}
               {save === 'error' && (errorMsg || 'Could not save.')}
             </span>
@@ -315,26 +315,26 @@ export default function BusinessProfilePage() {
 
         {/* Read-only account facts */}
         <div className="section-card">
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>
             Account
           </p>
           <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
             <div>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 4px' }}>Plan</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 4px' }}>Plan</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>{TIERS[tier].name}</span>
-                <Link href="/pricing" style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.74rem', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>{TIERS[tier].name}</span>
+                <Link href="/pricing" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.74rem', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
                   {tier === 'growth' ? 'Manage' : 'Upgrade'} →
                 </Link>
               </div>
             </div>
             <div>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 4px' }}>Member since</p>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{fmtDate(profile?.created_at ?? null)}</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 4px' }}>Member since</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{fmtDate(profile?.created_at ?? null)}</p>
             </div>
             <div>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 4px' }}>Last active</p>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{fmtDate(profile?.last_active_at ?? null)}</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 4px' }}>Last active</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{fmtDate(profile?.last_active_at ?? null)}</p>
             </div>
           </div>
         </div>

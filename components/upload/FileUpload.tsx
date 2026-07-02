@@ -112,7 +112,7 @@ export default function FileUpload() {
         <label
           htmlFor="currency-symbol"
           className="text-[12px]"
-          style={{ color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}
+          style={{ color: "var(--text-3)", fontFamily: "Geist, sans-serif" }}
         >
           Currency symbol:
         </label>
@@ -131,7 +131,7 @@ export default function FileUpload() {
             background: "var(--bg-card)",
             borderColor: "var(--border)",
             color: "var(--cyan)",
-            fontFamily: "JetBrains Mono, monospace",
+            fontFamily: "Geist, sans-serif",
           }}
         />
       </div>
@@ -184,7 +184,7 @@ export default function FileUpload() {
             />
             <p
               className="text-sm"
-              style={{ color: "var(--text-2)", fontFamily: "Inter, sans-serif" }}
+              style={{ color: "var(--text-2)", fontFamily: "Geist, sans-serif" }}
             >
               Analysing your data…
             </p>
@@ -211,13 +211,13 @@ export default function FileUpload() {
             <div>
               <p
                 className="text-sm font-medium"
-                style={{ color: "var(--text-1)", fontFamily: "Inter, sans-serif" }}
+                style={{ color: "var(--text-1)", fontFamily: "Geist, sans-serif" }}
               >
                 Drop your financial file here
               </p>
               <p
                 className="text-xs mt-0.5"
-                style={{ color: "var(--text-3)", fontFamily: "Inter, sans-serif" }}
+                style={{ color: "var(--text-3)", fontFamily: "Geist, sans-serif" }}
               >
                 CSV · XLSX · XLS — engine auto-detected
               </p>
@@ -227,7 +227,7 @@ export default function FileUpload() {
               style={{
                 borderColor: "var(--border)",
                 color: "var(--text-2)",
-                fontFamily: "JetBrains Mono, monospace",
+                fontFamily: "Geist, sans-serif",
               }}
             >
               Browse files
@@ -250,7 +250,7 @@ export default function FileUpload() {
               background: "rgba(239,68,68,0.08)",
               border: "1px solid rgba(239,68,68,0.25)",
               color: "var(--crit)",
-              fontFamily: "JetBrains Mono, monospace",
+              fontFamily: "Geist, sans-serif",
             }}
           >
             {store.uploadError}
@@ -273,7 +273,7 @@ export default function FileUpload() {
                 className="text-[12px] font-medium"
                 style={{
                   color: "var(--text-3)",
-                  fontFamily: "JetBrains Mono, monospace",
+                  fontFamily: "Geist, sans-serif",
                 }}
               >
                 SHEETS — {store.filename}
@@ -281,7 +281,7 @@ export default function FileUpload() {
               {isSwitchingSheet && (
                 <span
                   className="text-[12px]"
-                  style={{ color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace" }}
+                  style={{ color: "var(--cyan)", fontFamily: "Geist, sans-serif" }}
                 >
                   Switching…
                 </span>
@@ -301,7 +301,7 @@ export default function FileUpload() {
                     border: "1px solid",
                     borderColor:
                       activeSheet === sheet ? "var(--cyan)" : "var(--border)",
-                    fontFamily: "JetBrains Mono, monospace",
+                    fontFamily: "Geist, sans-serif",
                     opacity: isSwitchingSheet ? 0.5 : 1,
                     cursor: isSwitchingSheet ? "wait" : "pointer",
                   }}
@@ -315,7 +315,7 @@ export default function FileUpload() {
                 className="text-[12px] mt-2"
                 style={{
                   color: "var(--text-3)",
-                  fontFamily: "JetBrains Mono, monospace",
+                  fontFamily: "Geist, sans-serif",
                 }}
               >
                 Active: {activeSheet} · each sheet re-computes independently
@@ -355,7 +355,7 @@ export default function FileUpload() {
                 className="text-xs font-medium"
                 style={{
                   color: "var(--text-2)",
-                  fontFamily: "JetBrains Mono, monospace",
+                  fontFamily: "Geist, sans-serif",
                 }}
               >
                 FILE CABINET
@@ -365,7 +365,7 @@ export default function FileUpload() {
                 style={{
                   background: "rgba(0,212,255,0.12)",
                   color: "var(--cyan)",
-                  fontFamily: "JetBrains Mono, monospace",
+                  fontFamily: "Geist, sans-serif",
                 }}
               >
                 {cabinet.length}
@@ -424,7 +424,7 @@ export default function FileUpload() {
                                 : entry.engine === "engine2"
                                 ? "var(--e2, #f97316)"
                                 : "var(--cyan)",
-                            fontFamily: "JetBrains Mono, monospace",
+                            fontFamily: "Geist, sans-serif",
                           }}
                         >
                           {entry.fileType.toUpperCase()}
@@ -434,7 +434,7 @@ export default function FileUpload() {
                             className="text-xs truncate font-medium"
                             style={{
                               color: "var(--text-1)",
-                              fontFamily: "Inter, sans-serif",
+                              fontFamily: "Geist, sans-serif",
                             }}
                           >
                             {entry.name}
@@ -444,7 +444,7 @@ export default function FileUpload() {
                               className="text-[12px]"
                               style={{
                                 color: "var(--text-3)",
-                                fontFamily: "JetBrains Mono, monospace",
+                                fontFamily: "Geist, sans-serif",
                               }}
                             >
                               {entry.sheets.length} sheets
@@ -466,7 +466,7 @@ export default function FileUpload() {
                             color:
                               cabinetId === entry.id ? "#000" : "var(--cyan)",
                             border: "1px solid rgba(0,212,255,0.3)",
-                            fontFamily: "JetBrains Mono, monospace",
+                            fontFamily: "Geist, sans-serif",
                           }}
                         >
                           {cabinetId === entry.id ? "Active" : "Load"}
@@ -495,7 +495,7 @@ export default function FileUpload() {
                     className="text-[12px]"
                     style={{
                       color: "var(--text-3)",
-                      fontFamily: "JetBrains Mono, monospace",
+                      fontFamily: "Geist, sans-serif",
                     }}
                   >
                     Cabinet persists across sessions · max 20 files

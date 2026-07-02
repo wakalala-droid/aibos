@@ -61,7 +61,7 @@ export default function MarketingNav() {
             <Link
               key={l.href}
               href={l.href}
-              style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-2)', textDecoration: 'none' }}
+              style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-2)', textDecoration: 'none' }}
             >
               {l.label}
             </Link>
@@ -70,7 +70,7 @@ export default function MarketingNav() {
 
         {/* Desktop CTAs */}
         <div className="mkt-nav-cta" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Link href="/login" style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-2)', textDecoration: 'none' }}>
+          <Link href="/login" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-2)', textDecoration: 'none' }}>
             Sign in
           </Link>
           <Link href="/login" className="mkt-btn mkt-btn-primary mkt-btn-sm">
@@ -112,7 +112,7 @@ export default function MarketingNav() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 600, color: 'var(--text-1)', textDecoration: 'none', padding: '12px 4px', borderBottom: '1px solid var(--border)' }}
+              style={{ fontFamily: 'Geist, sans-serif', fontSize: '1rem', fontWeight: 600, color: 'var(--text-1)', textDecoration: 'none', padding: '12px 4px', borderBottom: '1px solid var(--border)' }}
             >
               {l.label}
             </Link>

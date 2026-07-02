@@ -54,7 +54,7 @@ export default function MarketingHome() {
         cta={{ label: 'Start free', href: '/login' }}
       >
         <AibosWindow>
-          <p style={{ margin: '0 0 12px', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>AI Revenue Forecast</p>
+          <p style={{ margin: '0 0 12px', fontFamily: 'Geist, sans-serif', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>AI Revenue Forecast</p>
           <ForecastChart data={DEMO_FORECAST} sym="K" />
         </AibosWindow>
       </ShowcaseBand>
@@ -69,7 +69,7 @@ export default function MarketingHome() {
       >
         <AibosWindow>
           <div style={{ marginBottom: 14 }}><RunwayBar runway={DEMO_RUNWAY} /></div>
-          <p style={{ margin: '0 0 6px', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-3)' }}>Projected cash position</p>
+          <p style={{ margin: '0 0 6px', fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)' }}>Projected cash position</p>
           <CashProjectionChart data={DEMO_CASH_PROJECTION} sym="K" />
         </AibosWindow>
       </ShowcaseBand>
@@ -84,20 +84,20 @@ export default function MarketingHome() {
         cta={{ label: 'Start free', href: '/login' }}
       >
         <AibosWindow>
-          <p style={{ margin: '0 0 14px', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>Customer Intelligence</p>
+          <p style={{ margin: '0 0 14px', fontFamily: 'Geist, sans-serif', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>Customer Intelligence</p>
           <SegmentDonut segments={DEMO_SEGMENTS} />
           <div style={{ display: 'flex', gap: 24, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
             <div>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Retention</p>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'var(--good)', margin: 0 }}>{DEMO_RETENTION.rate}%</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Retention</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'var(--good)', margin: 0 }}>{DEMO_RETENTION.rate}%</p>
             </div>
             <div>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Returning</p>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'var(--blue)', margin: 0 }}>{DEMO_RETENTION.returning}</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Returning</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'var(--blue)', margin: 0 }}>{DEMO_RETENTION.returning}</p>
             </div>
             <div>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>First-time</p>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-2)', margin: 0 }}>{DEMO_RETENTION.firstTime}</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>First-time</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-2)', margin: 0 }}>{DEMO_RETENTION.firstTime}</p>
             </div>
           </div>
         </AibosWindow>
@@ -112,7 +112,7 @@ export default function MarketingHome() {
         values={['Statistical anomaly detection', 'Critical vs warning, colour-coded', 'A cause and an action, not just a red number']}
       >
         <AibosWindow>
-          <p style={{ margin: '0 0 12px', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>Z-Score Distribution</p>
+          <p style={{ margin: '0 0 12px', fontFamily: 'Geist, sans-serif', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>Z-Score Distribution</p>
           <AnomalyZChart data={DEMO_ANOMALY_Z} />
         </AibosWindow>
       </ShowcaseBand>

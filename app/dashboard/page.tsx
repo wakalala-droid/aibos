@@ -54,13 +54,13 @@ function EngineScoreCard({
         <span className="bento-tex" aria-hidden="true" />
         <p className="kpi-label" style={{ color: colour }}>{label}</p>
         <p style={{
-          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem',
+          fontFamily: 'Geist, sans-serif', fontSize: '0.68rem',
           color: 'var(--text-4)', margin: '2px 0 10px',
         }}>
           {sub}
         </p>
         <p style={{
-          fontFamily: 'Inter, sans-serif', fontSize: '2.4rem', fontWeight: 800,
+          fontFamily: 'Geist, sans-serif', fontSize: '2.4rem', fontWeight: 800,
           color: locked ? 'var(--text-4)' : col,
           letterSpacing: '-0.04em', margin: '0 0 10px',
         }}>
@@ -82,7 +82,7 @@ function ComingSoon({ colour, text }: { colour: string; text: string }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 0 2px' }}>
       <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', fontWeight: 700,
+        fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: '0.08em', color: colour,
         background: `color-mix(in srgb, ${colour} 12%, transparent)`,
         border: `1px solid color-mix(in srgb, ${colour} 30%, transparent)`,
@@ -90,7 +90,7 @@ function ComingSoon({ colour, text }: { colour: string; text: string }) {
       }}>
         Coming soon
       </span>
-      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, margin: 0 }}>
+      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, margin: 0 }}>
         {text}
       </p>
     </div>
@@ -265,13 +265,13 @@ export default function OverviewPage() {
       {/* ── Page header ─────────────────────────────────────────────────── */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{
-          fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800,
+          fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800,
           color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em',
         }}>
           Overview
         </h1>
         <p style={{
-          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem',
+          fontFamily: 'Geist, sans-serif', fontSize: '0.7rem',
           color: 'var(--text-3)', margin: '4px 0 0',
         }}>
           Financial · Customer · Operations — unified Kwacha intelligence
@@ -297,19 +297,19 @@ export default function OverviewPage() {
           {/* Bento dot texture — fades in from the bottom on hover */}
           <span className="bento-tex" aria-hidden="true" />
           <p style={{
-            fontFamily: 'Inter, sans-serif', fontSize: '3.2rem', fontWeight: 900,
+            fontFamily: 'Geist, sans-serif', fontSize: '3.2rem', fontWeight: 900,
             color: scores ? scoreColor(scores.overall_score) : 'var(--text-4)',
             letterSpacing: '-0.05em', margin: 0, lineHeight: 1,
           }}>
             {scores?.overall_score ?? '—'}
           </p>
           <p style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem',
+            fontFamily: 'Geist, sans-serif', fontSize: '0.68rem',
             color: 'var(--cyan)', margin: '6px 0 0', letterSpacing: '0.1em', textTransform: 'uppercase',
           }}>
             {scores?.overall_label ?? 'No data'}
           </p>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', margin: '2px 0 0' }}>
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', margin: '2px 0 0' }}>
             HEALTH SCORE
           </p>
         </div>
@@ -388,10 +388,10 @@ export default function OverviewPage() {
                   </defs>
                   <CartesianGrid stroke="var(--border)" vertical={false}/>
                   <XAxis dataKey="month"
-                    tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-3)' }}
+                    tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-3)' }}
                     axisLine={false} tickLine={false}/>
                   <YAxis
-                    tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-3)' }}
+                    tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-3)' }}
                     axisLine={false} tickLine={false}
                     tickFormatter={(v) => formatAxis(Number(v))}/>
                   <Tooltip content={<ChartTooltip sym={sym}/>}
@@ -408,7 +408,7 @@ export default function OverviewPage() {
                 {[['var(--spark-revenue)', 'Revenue'], ['var(--spark-profit)', 'Profit']].map(([c, l]) => (
                   <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <div style={{ width: 12, height: 2, borderRadius: 2, background: c }}/>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)' }}>{l}</span>
+                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)' }}>{l}</span>
                   </div>
                 ))}
               </div>
@@ -421,11 +421,11 @@ export default function OverviewPage() {
           <div className="grid-2">
             <SectionCard explainId="card.customer" delay={0.15}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 600, color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600, color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                   Customer Intelligence
                 </p>
                 {hasEngine2Data && (
-                  <Link href="/dashboard/customers" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
+                  <Link href="/dashboard/customers" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
                     View →
                   </Link>
                 )}
@@ -438,10 +438,10 @@ export default function OverviewPage() {
                     { l: 'Retention', v: `${retRate.toFixed(0)}%`, c: 'var(--e2)'  },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         {item.l}
                       </p>
-                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>
+                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>
                         {item.v}
                       </p>
                     </div>
@@ -457,11 +457,11 @@ export default function OverviewPage() {
 
             <SectionCard explainId="card.operations" delay={0.18}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 600, color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600, color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                   Operations
                 </p>
                 {hasEngine3Data && (
-                  <Link href="/dashboard/pos" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
+                  <Link href="/dashboard/pos" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
                     View →
                   </Link>
                 )}
@@ -474,10 +474,10 @@ export default function OverviewPage() {
                     { l: 'Benchmarks',    v: `${warnB} warn`,                        c: warnB > 0 ? 'var(--warn)' : 'var(--good)' },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         {item.l}
                       </p>
-                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
+                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
                         {item.v}
                       </p>
                     </div>
@@ -491,10 +491,10 @@ export default function OverviewPage() {
                     { l: 'Best Margin', v: bestMargin ? `${bestMargin.margin.toFixed(0)}%` : '—',  c: (bestMargin?.margin ?? 0) >= 0 ? 'var(--good)' : 'var(--crit)' },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         {item.l}
                       </p>
-                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.v}>
+                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.v}>
                         {item.v}
                       </p>
                     </div>
@@ -518,7 +518,7 @@ export default function OverviewPage() {
             delay={0.22}
             action={
               orderedInsights.length > 0 ? (
-                <Link href="/dashboard/ops-brief" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
+                <Link href="/dashboard/ops-brief" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
                   View all →
                 </Link>
               ) : undefined
@@ -531,10 +531,10 @@ export default function OverviewPage() {
                   flex: '1 1 0', minWidth: 92, padding: '10px 12px', borderRadius: 10,
                   border: '1px solid var(--border)', opacity: s.active ? 1 : 0.4,
                 }}>
-                  <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     {s.label}
                   </p>
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: s.active ? s.colour : 'var(--text-4)', margin: 0, letterSpacing: '-0.03em' }}>
+                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: s.active ? s.colour : 'var(--text-4)', margin: 0, letterSpacing: '-0.03em' }}>
                     {s.active && s.score !== undefined ? s.score : '—'}
                   </p>
                 </div>
@@ -560,7 +560,7 @@ export default function OverviewPage() {
 
             {/* Encourage more engines — informational, never a blocking lock. */}
             {activeEngineCount < 3 && unifiedInsights.length > 0 && (
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: '14px 0 0', lineHeight: 1.5 }}>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: '14px 0 0', lineHeight: 1.5 }}>
                 {activeEngineCount === 1
                   ? 'Add customer or POS data to unlock full cross-engine synthesis.'
                   : 'Add the remaining engine to unlock full cross-engine synthesis.'}
@@ -576,7 +576,7 @@ export default function OverviewPage() {
               subtitle="AI-BOS unified brief · Financial + Customer Intelligence + Operations"
               delay={0.26}
               action={
-                <Link href="/dashboard/ops-brief" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
+                <Link href="/dashboard/ops-brief" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
                   Full brief →
                 </Link>
               }
@@ -592,11 +592,11 @@ export default function OverviewPage() {
                     background: 'var(--cyan-dim)',
                     border: '1px solid rgba(0,212,255,0.25)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', fontWeight: 700, color: 'var(--cyan)',
+                    fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', fontWeight: 700, color: 'var(--cyan)',
                   }}>
                     {i + 1}
                   </span>
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>
+                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>
                     {line.replace(/^\d+\.\s*/, '')}
                   </p>
                 </div>
@@ -624,10 +624,10 @@ export default function OverviewPage() {
                     padding: '10px 12px', borderRadius: 8,
                     background: 'var(--bg-badge)', border: '1px solid var(--border)',
                   }}>
-                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
+                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
                       {a.title ?? a.type}
                     </p>
-                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)', margin: 0 }}>
+                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', margin: 0 }}>
                       {a.description ?? a.month}
                     </p>
                   </div>
@@ -657,8 +657,8 @@ export default function OverviewPage() {
                 >
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: item.colour, flexShrink: 0 }}/>
                   <div>
-                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{item.label}</p>
-                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)', margin: 0 }}>{item.sub}</p>
+                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{item.label}</p>
+                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', margin: 0 }}>{item.sub}</p>
                   </div>
                 </div>
               </Link>

@@ -48,8 +48,8 @@ export default function LiveDashboard() {
     <div className="mkt-livedash" data-theme="dark">
       <div className="aibos-window-body">
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 6 }}>
-          <p style={{ margin: 0, fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-1)', letterSpacing: '-0.02em' }}>{DEMO_BUSINESS}</p>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)' }}>Updated today · ZMW</span>
+          <p style={{ margin: 0, fontFamily: 'Geist, sans-serif', fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-1)', letterSpacing: '-0.02em' }}>{DEMO_BUSINESS}</p>
+          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)' }}>Updated today · ZMW</span>
         </div>
 
         {/* Real KPI cards — cursor glow + recharts sparklines */}
@@ -62,7 +62,7 @@ export default function LiveDashboard() {
 
         {/* Real revenue/profit chart */}
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 12, padding: '14px 14px 10px', marginBottom: 16 }}>
-          <p style={{ margin: '0 0 6px', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-3)' }}>Revenue Intelligence · monthly</p>
+          <p style={{ margin: '0 0 6px', fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)' }}>Revenue Intelligence · monthly</p>
           <RevenueChart data={chartData} sym="K" height={170} />
         </div>
 

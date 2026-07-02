@@ -90,7 +90,7 @@ export default function TrustPage() {
             </div>
           </Reveal>
           <Reveal delay={0.1}>
-            <div className="mkt-card" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+            <div className="mkt-card" style={{ fontFamily: 'Geist, sans-serif' }}>
               <p style={{ fontSize: '0.66rem', color: 'var(--text-3)', margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>How AI-BOS read your file</p>
               {[
                 ['date', 'read as the time axis', 'var(--good)'],

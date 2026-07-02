@@ -171,14 +171,14 @@ export default function DashboardHeader() {
           background: 'var(--bg-card)', maxWidth: 200,
         }}
       >
-        <span className="dash-profile-name" style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>
+        <span className="dash-profile-name" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>
           {businessName}
         </span>
         {avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatarUrl} alt="" width={28} height={28} style={{ borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
         ) : (
-          <span style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', fontSize: '0.66rem', fontWeight: 800 }}>
+          <span style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', fontWeight: 800 }}>
             {initials}
           </span>
         )}
@@ -202,12 +202,12 @@ export default function DashboardHeader() {
                 onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) go(results[0].href); }}
                 placeholder="Search pages…"
                 aria-label="Search pages"
-                style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', outline: 'none' }}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', outline: 'none' }}
               />
             </div>
             <div role="listbox" aria-label="Search results" style={{ maxHeight: 320, overflowY: 'auto', padding: 6 }}>
               {results.length === 0 ? (
-                <p style={{ padding: '14px 12px', fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', color: 'var(--text-3)', margin: 0 }}>No matching pages.</p>
+                <p style={{ padding: '14px 12px', fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-3)', margin: 0 }}>No matching pages.</p>
               ) : results.map((r) => (
                 <button
                   key={r.href} type="button" role="option" aria-selected={false}
@@ -215,8 +215,8 @@ export default function DashboardHeader() {
                   className="dash-row"
                   style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '9px 10px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer' }}
                 >
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-1)', fontWeight: 500 }}>{r.label}</span>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.group}</span>
+                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-1)', fontWeight: 500 }}>{r.label}</span>
+                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.group}</span>
                 </button>
               ))}
             </div>
@@ -232,12 +232,12 @@ export default function DashboardHeader() {
             className="dash-pop" style={{ width: 'min(360px, 90vw)' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Alerts</span>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', background: 'var(--bg-badge)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: 999 }}>{unread} total</span>
+              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>Alerts</span>
+              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', background: 'var(--bg-badge)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: 999 }}>{unread} total</span>
             </div>
             <div style={{ maxHeight: 360, overflowY: 'auto' }}>
               {unread === 0 ? (
-                <p style={{ padding: '20px 16px', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-3)', margin: 0 }}>
+                <p style={{ padding: '20px 16px', fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-3)', margin: 0 }}>
                   You’re all clear — no alerts right now. Upload data and AI-BOS will flag anything that breaks trend.
                 </p>
               ) : safeAlerts.slice(0, 12).map((a, i) => {
@@ -247,14 +247,14 @@ export default function DashboardHeader() {
                   <div key={i} style={{ display: 'flex', gap: 10, padding: '12px 16px', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
                     <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: sevColor(String(a.severity ?? '')), flexShrink: 0, marginTop: 5 }} />
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>{title}</p>
-                      {desc && <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.74rem', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>{desc}</p>}
+                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>{title}</p>
+                      {desc && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.74rem', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>{desc}</p>}
                     </div>
                   </div>
                 );
               })}
             </div>
-            <Link href="/dashboard/anomaly" onClick={() => setOpen(null)} style={{ display: 'block', textAlign: 'center', padding: '11px 16px', borderTop: '1px solid var(--border)', fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
+            <Link href="/dashboard/anomaly" onClick={() => setOpen(null)} style={{ display: 'block', textAlign: 'center', padding: '11px 16px', borderTop: '1px solid var(--border)', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
               View anomaly intelligence →
             </Link>
           </motion.div>
@@ -269,25 +269,25 @@ export default function DashboardHeader() {
             className="dash-pop" style={{ width: 'min(280px, 90vw)' }}
           >
             <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{businessName}</p>
-              {email && <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</p>}
-              <span style={{ display: 'inline-block', marginTop: 10, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--cyan)', background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)', padding: '3px 8px', borderRadius: 6 }}>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{businessName}</p>
+              {email && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</p>}
+              <span style={{ display: 'inline-block', marginTop: 10, fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--cyan)', background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)', padding: '3px 8px', borderRadius: 6 }}>
                 {TIERS[tier].name} plan
               </span>
             </div>
             <div style={{ padding: 6 }}>
-              <Link href="/pricing" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', textDecoration: 'none' }}>
+              <Link href="/pricing" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', textDecoration: 'none' }}>
                 {tier === 'growth' ? 'Manage plan' : 'Upgrade plan'}
               </Link>
-              <Link href="/dashboard/profile" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', textDecoration: 'none' }}>
+              <Link href="/dashboard/profile" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', textDecoration: 'none' }}>
                 Your business data
               </Link>
               {isAdmin && (
-                <Link href="/admin" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', textDecoration: 'none' }}>
+                <Link href="/admin" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', textDecoration: 'none' }}>
                   Admin panel
                 </Link>
               )}
-              <button type="button" role="menuitem" onClick={() => { setOpen(null); logout(); }} className="dash-row" style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--crit)' }}>
+              <button type="button" role="menuitem" onClick={() => { setOpen(null); logout(); }} className="dash-row" style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--crit)' }}>
                 Sign out
               </button>
             </div>

@@ -22,12 +22,12 @@ export default function LockOverlay({ colour = 'var(--cyan)', title, description
         <rect x="5" y="11" width="14" height="10" rx="2" stroke={colour} strokeWidth="1.5" fill="none"/>
         <path d="M8 11V7a4 4 0 018 0v4" stroke={colour} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
       </svg>
-      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: colour, margin: '0 0 6px' }}>{title}</p>
-      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 14px', maxWidth: 300, lineHeight: 1.5 }}>
+      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: colour, margin: '0 0 6px' }}>{title}</p>
+      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 14px', maxWidth: 300, lineHeight: 1.5 }}>
         {description}
       </p>
       {bullets?.map(b => (
-        <p key={b} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: '3px 0' }}>
+        <p key={b} style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: '3px 0' }}>
           <span style={{ color: colour }}>› </span>{b}
         </p>
       ))}
@@ -37,7 +37,7 @@ export default function LockOverlay({ colour = 'var(--cyan)', title, description
           marginTop: 18,
           background: colour, color: '#fff', border: 'none',
           borderRadius: 8, padding: '9px 22px',
-          fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
+          fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
         }}
       >
         Upload Data →

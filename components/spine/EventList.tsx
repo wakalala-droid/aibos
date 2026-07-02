@@ -23,7 +23,7 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
 
   if (!events.length) {
     return (
-      <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-3)', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem' }}>
+      <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-3)', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem' }}>
         {emptyHint ?? 'No activity yet. Record your first business event above.'}
       </div>
     );
@@ -53,19 +53,19 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
             {/* Summary + date */}
             <div style={{ flex: 1, minWidth: 140 }}>
               <div style={{
-                fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)',
+                fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)',
                 textDecoration: voided ? 'line-through' : 'none',
               }}>
                 {summarize(ev)}
               </div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', marginTop: 2 }}>
+              <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', marginTop: 2 }}>
                 {fmtDate(ev.occurred_at)} · {ev.source}
               </div>
             </div>
 
             {/* Amount */}
             <div style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.9rem', fontWeight: 600,
+              fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 600,
               color: moneyColor, whiteSpace: 'nowrap',
             }}>
               {amt ? `${sign < 0 ? '−' : sign > 0 ? '+' : ''}${fmt(Math.abs(amt), false, sym)}` : '—'}
@@ -81,7 +81,7 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
                   <button
                     type="button" onClick={() => onConfirm(ev.id)} disabled={busyId === ev.id} className="touch-target"
                     aria-label="Confirm event"
-                    style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: 'none', background: 'var(--green-dim)', color: 'var(--green)', fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: 'none', background: 'var(--green-dim)', color: 'var(--green)', fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}
                   >
                     {busyId === ev.id ? '…' : 'Confirm'}
                   </button>
@@ -90,7 +90,7 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
                   <button
                     type="button" onClick={() => onVoid(ev.id)} disabled={busyId === ev.id} className="touch-target"
                     aria-label="Void event"
-                    style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer' }}
+                    style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer' }}
                   >
                     {busyId === ev.id ? '…' : 'Void'}
                   </button>

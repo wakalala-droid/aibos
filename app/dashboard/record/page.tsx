@@ -37,10 +37,10 @@ export default function RecordPage() {
   return (
     <>
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>
+        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>
           Record activity
         </h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'var(--text-3)', marginTop: 4 }}>
+        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', marginTop: 4 }}>
           Tell AIBOS what happened — it does the bookkeeping.
         </p>
       </div>
@@ -52,10 +52,10 @@ export default function RecordPage() {
             padding: '14px 16px', borderRadius: 10, border: '1px solid var(--cyan)',
             background: 'rgba(0,212,255,0.06)',
           }}>
-            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', color: 'var(--text-1)', fontWeight: 600 }}>
+            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.88rem', color: 'var(--text-1)', fontWeight: 600 }}>
               Finish setting up your business — it takes a minute and seeds your starting cash.
             </span>
-            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 700, color: 'var(--cyan)' }}>
+            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 700, color: 'var(--cyan)' }}>
               Set up →
             </span>
           </div>
@@ -69,7 +69,7 @@ export default function RecordPage() {
           </SectionCard>
 
           <SectionCard title="Recent activity" subtitle="Your latest recorded events"
-            action={<a href="/dashboard/timeline" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--cyan)', textDecoration: 'none' }}>View all →</a>}>
+            action={<a href="/dashboard/timeline" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--cyan)', textDecoration: 'none' }}>View all →</a>}>
             <EventList events={recent} />
           </SectionCard>
         </div>
@@ -80,20 +80,20 @@ export default function RecordPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {snapshot.map(s => (
               <div key={s.label} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   {s.label}
                 </span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.1rem', fontWeight: 600, color: s.color }}>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.1rem', fontWeight: 600, color: s.color }}>
                   {sym}{fmt(s.value)}
                 </span>
               </div>
             ))}
             <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 2 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   Health
                 </span>
-                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-1)' }}>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-1)' }}>
                   {twin?.health_label ?? 'No Data'}
                 </span>
               </div>

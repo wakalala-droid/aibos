@@ -26,7 +26,7 @@ export default function GrowthJourney() {
                 opacity: current ? 1 : reached ? 0.7 : 1,
               }} />
               <div style={{
-                marginTop: 6, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem',
+                marginTop: 6, fontFamily: 'Geist, sans-serif', fontSize: '0.62rem',
                 fontWeight: current ? 700 : 500,
                 color: current ? 'var(--cyan)' : reached ? 'var(--text-2)' : 'var(--text-4)',
                 textTransform: 'uppercase', letterSpacing: '0.04em',
@@ -41,13 +41,13 @@ export default function GrowthJourney() {
 
       {/* Current stage blurb + next action */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)' }}>
+        <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)' }}>
           Stage {p.stage.id} · {p.stage.title}
         </span>
-        <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.5 }}>
+        <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.5 }}>
           {p.stage.blurb}
         </span>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'var(--text-3)', marginTop: 4 }}>
+        <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', marginTop: 4 }}>
           {p.nextAction}
         </span>
       </div>
@@ -56,10 +56,10 @@ export default function GrowthJourney() {
       {p.next && (
         <div style={{ marginTop: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               Toward {p.next.title}
             </span>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', color: 'var(--text-3)' }}>
+            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', color: 'var(--text-3)' }}>
               {p.pctToNext}%
             </span>
           </div>

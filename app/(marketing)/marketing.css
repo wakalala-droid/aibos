@@ -60,7 +60,7 @@
 
   background: var(--bg-page);
   color: var(--text-2);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Geist', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   position: relative;
@@ -120,7 +120,7 @@
 
 /* ── Type scale (Humble-grade: big, confident, lots of air) ──── */
 .mkt-eyebrow {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -130,7 +130,7 @@
 }
 /* Hero display — the biggest type on the site. */
 .mkt-display {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-weight: 900;
   font-size: clamp(2.9rem, 7vw, 5.4rem);
   line-height: 0.98;
@@ -140,7 +140,7 @@
   text-wrap: balance;
 }
 .mkt-h1 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-weight: 900;
   font-size: clamp(2.6rem, 6.2vw, 4.6rem);
   line-height: 1.0;
@@ -150,7 +150,7 @@
   text-wrap: balance;
 }
 .mkt-h2 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-weight: 850;
   font-size: clamp(2.1rem, 4.4vw, 3.5rem);
   line-height: 1.05;
@@ -160,7 +160,7 @@
   text-wrap: balance;
 }
 .mkt-h3 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-weight: 800;
   font-size: clamp(1.3rem, 2vw, 1.6rem);
   line-height: 1.2;
@@ -186,7 +186,7 @@
 /* ── Buttons ────────────────────────────────────────────────── */
 .mkt-btn {
   display: inline-flex; align-items: center; gap: 8px;
-  font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700;
+  font-family: 'Geist', sans-serif; font-size: 0.95rem; font-weight: 700;
   padding: 13px 22px; border-radius: 10px; cursor: pointer;
   text-decoration: none; border: 1px solid transparent;
   transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
@@ -209,7 +209,7 @@
 /* ── Pills ──────────────────────────────────────────────────── */
 .mkt-pill {
   display: inline-flex; align-items: center; gap: 8px;
-  font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600;
+  font-family: 'Geist', sans-serif; font-size: 0.82rem; font-weight: 600;
   color: var(--text-2); background: var(--bg-card);
   border: 1px solid var(--border); border-radius: 999px;
   padding: 8px 15px; white-space: nowrap; box-shadow: var(--shadow-card);
@@ -242,7 +242,7 @@
   box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 2px 0 rgba(255,255,255,0.04) inset;
   overflow: hidden;
   color: var(--text-2);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
 }
 .mkt-panel-bar {
   display: flex; align-items: center; gap: 14px;
@@ -252,7 +252,7 @@
 .mkt-panel-dots { display: flex; gap: 7px; }
 .mkt-panel-dots i { width: 11px; height: 11px; border-radius: 50%; display: block; }
 .mkt-panel-url {
-  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-4);
+  font-family: 'Geist', sans-serif; font-size: 0.72rem; color: var(--text-4);
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
   padding: 4px 12px; border-radius: 7px; flex: 1; max-width: 320px;
 }
@@ -264,18 +264,18 @@
   padding: 14px 15px; position: relative; overflow: hidden;
 }
 .mkt-kpi-top { display:flex; align-items:center; justify-content:space-between; margin-bottom: 6px; }
-.mkt-kpi-label { font-family:'JetBrains Mono',monospace; font-size:0.64rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-3); margin:0; }
-.mkt-kpi-value { font-family:'Inter',sans-serif; font-weight:800; font-size: clamp(1.15rem, 1.7vw, 1.4rem); letter-spacing:-0.03em; color:var(--text-1); margin:2px 0 0; white-space:nowrap; }
-.mkt-kpi-badge { font-family:'JetBrains Mono',monospace; font-size:0.66rem; font-weight:700; padding:3px 7px; border-radius:6px; white-space:nowrap; }
+.mkt-kpi-label { font-family:'Geist',sans-serif; font-size:0.64rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-3); margin:0; }
+.mkt-kpi-value { font-family:'Geist',sans-serif; font-weight:800; font-size: clamp(1.15rem, 1.7vw, 1.4rem); letter-spacing:-0.03em; color:var(--text-1); margin:2px 0 0; white-space:nowrap; }
+.mkt-kpi-badge { font-family:'Geist',sans-serif; font-size:0.66rem; font-weight:700; padding:3px 7px; border-radius:6px; white-space:nowrap; }
 .mkt-kpi-badge.up   { color:var(--good); background:color-mix(in srgb, var(--good) 14%, transparent); }
 .mkt-kpi-badge.down { color:var(--crit); background:color-mix(in srgb, var(--crit) 14%, transparent); }
 
 /* panel data table */
 .mkt-ptable { width:100%; border-collapse:collapse; font-size:0.82rem; }
-.mkt-ptable th { font-family:'JetBrains Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-4); font-weight:600; text-align:left; padding:0 0 10px; border-bottom:1px solid var(--border); }
+.mkt-ptable th { font-family:'Geist',sans-serif; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-4); font-weight:600; text-align:left; padding:0 0 10px; border-bottom:1px solid var(--border); }
 .mkt-ptable td { padding:11px 0; border-bottom:1px solid var(--border); color:var(--text-2); }
 .mkt-ptable tr:last-child td { border-bottom:none; }
-.mkt-tag { font-family:'JetBrains Mono',monospace; font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+.mkt-tag { font-family:'Geist',sans-serif; font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
 
 /* ── Genuine-component window frame ─────────────────────────────
    Wraps REAL dashboard components (KPICard, RevenueChart, …). The wrapper

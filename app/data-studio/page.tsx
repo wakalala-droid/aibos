@@ -206,13 +206,13 @@ export default function DataStudio() {
 
       {/* ── Page header ─────────────────────────────────────────────────── */}
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "0.62rem", color: "var(--cyan)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>
+        <p style={{ fontFamily: "Geist, sans-serif", fontSize: "0.62rem", color: "var(--cyan)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>
           Data Intelligence
         </p>
-        <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.5rem", fontWeight: 800, color: "var(--text-1)", margin: 0, letterSpacing: "-0.03em" }}>
+        <h1 style={{ fontFamily: "Geist, sans-serif", fontSize: "1.5rem", fontWeight: 800, color: "var(--text-1)", margin: 0, letterSpacing: "-0.03em" }}>
           Data Studio
         </h1>
-        <p style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "0.65rem", color: "var(--text-3)", margin: "4px 0 0" }}>
+        <p style={{ fontFamily: "Geist, sans-serif", fontSize: "0.65rem", color: "var(--text-3)", margin: "4px 0 0" }}>
           {hasData
             ? `${filename ?? "file"}${activeSheet ? ` · ${activeSheet}` : ""} · ${rows.length} periods · Excel-style + AI formulas`
             : "Excel-style formula engine + plain-English AI formulas"}
@@ -232,7 +232,7 @@ export default function DataStudio() {
                 borderRadius: 8,
                 fontSize: "0.78rem",
                 fontWeight: 600,
-                fontFamily: "Inter, sans-serif",
+                fontFamily: "Geist, sans-serif",
                 cursor: "pointer",
                 background: active ? "var(--cyan)" : "var(--bg-card)",
                 color: active ? "#000" : "var(--text-2)",
@@ -269,7 +269,7 @@ export default function DataStudio() {
                     color: "var(--text-1)",
                     border: "1px solid var(--border)",
                     background: "var(--bg-page)",
-                    fontFamily: "JetBrains Mono, monospace",
+                    fontFamily: "Geist, sans-serif",
                     fontSize: "0.85rem",
                     padding: "12px 14px",
                     borderRadius: 10,
@@ -284,7 +284,7 @@ export default function DataStudio() {
                     borderRadius: 10,
                     fontSize: "0.82rem",
                     fontWeight: 700,
-                    fontFamily: "Inter, sans-serif",
+                    fontFamily: "Geist, sans-serif",
                     whiteSpace: "nowrap",
                     background: formula.trim() && !loading ? "var(--cyan)" : "var(--bg-page)",
                     color: formula.trim() && !loading ? "#000" : "var(--text-3)",
@@ -313,7 +313,7 @@ export default function DataStudio() {
                       background: "rgba(239,68,68,0.08)",
                       border: "1px solid rgba(239,68,68,0.25)",
                       color: "var(--crit)",
-                      fontFamily: "JetBrains Mono, monospace",
+                      fontFamily: "Geist, sans-serif",
                     }}
                   >
                     {error}
@@ -324,7 +324,7 @@ export default function DataStudio() {
               {/* Column chips */}
               {availCols.length > 0 && (
                 <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
-                  <span style={{ fontSize: "0.62rem", color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}>
+                  <span style={{ fontSize: "0.62rem", color: "var(--text-3)", fontFamily: "Geist, sans-serif" }}>
                     COLUMNS
                   </span>
                   {availCols.map((col) => (
@@ -345,7 +345,7 @@ export default function DataStudio() {
                         background: "var(--cyan-dim)",
                         color: "var(--cyan)",
                         border: "1px solid rgba(0,212,255,0.18)",
-                        fontFamily: "JetBrains Mono, monospace",
+                        fontFamily: "Geist, sans-serif",
                         cursor: "pointer",
                       }}
                     >
@@ -375,10 +375,10 @@ export default function DataStudio() {
                     onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = item.color; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
                   >
-                    <div style={{ fontSize: "0.78rem", fontWeight: 700, marginBottom: 4, color: item.color, fontFamily: "JetBrains Mono, monospace" }}>
+                    <div style={{ fontSize: "0.78rem", fontWeight: 700, marginBottom: 4, color: item.color, fontFamily: "Geist, sans-serif" }}>
                       {item.fn}
                     </div>
-                    <div style={{ fontSize: "0.68rem", lineHeight: 1.4, color: "var(--text-3)", fontFamily: "Inter, sans-serif" }}>
+                    <div style={{ fontSize: "0.68rem", lineHeight: 1.4, color: "var(--text-3)", fontFamily: "Geist, sans-serif" }}>
                       {item.desc}
                     </div>
                   </button>
@@ -391,7 +391,7 @@ export default function DataStudio() {
               <SectionCard title="History" delay={0.1} action={
                 <button
                   onClick={() => setHistory([])}
-                  style={{ fontSize: "0.62rem", color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace", cursor: "pointer", background: "none", border: "none" }}
+                  style={{ fontSize: "0.62rem", color: "var(--text-3)", fontFamily: "Geist, sans-serif", cursor: "pointer", background: "none", border: "none" }}
                 >
                   Clear
                 </button>
@@ -418,29 +418,29 @@ export default function DataStudio() {
                                   borderRadius: 4,
                                   background: h.mode === "ai" ? "var(--cyan-dim)" : "var(--bg-page)",
                                   color: h.mode === "ai" ? "var(--cyan)" : "var(--text-3)",
-                                  fontFamily: "JetBrains Mono, monospace",
+                                  fontFamily: "Geist, sans-serif",
                                   border: "1px solid var(--border)",
                                 }}
                               >
                                 {h.mode.toUpperCase()}
                               </span>
-                              <code style={{ fontSize: "0.72rem", color: "var(--text-2)", fontFamily: "JetBrains Mono, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              <code style={{ fontSize: "0.72rem", color: "var(--text-2)", fontFamily: "Geist, sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                 {h.formula}
                               </code>
                             </div>
                             {h.insight && (
-                              <p style={{ fontSize: "0.72rem", lineHeight: 1.45, color: "var(--text-2)", fontFamily: "Inter, sans-serif", margin: "0 0 4px" }}>
+                              <p style={{ fontSize: "0.72rem", lineHeight: 1.45, color: "var(--text-2)", fontFamily: "Geist, sans-serif", margin: "0 0 4px" }}>
                                 {h.insight}
                               </p>
                             )}
                             <button
                               onClick={() => setFormula(h.formula)}
-                              style={{ fontSize: "0.62rem", color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                              style={{ fontSize: "0.62rem", color: "var(--text-3)", fontFamily: "Geist, sans-serif", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                             >
                               ↺ reuse
                             </button>
                           </div>
-                          <div style={{ fontSize: "0.85rem", fontWeight: 700, flexShrink: 0, color: resultColor(h.result), fontFamily: "JetBrains Mono, monospace" }}>
+                          <div style={{ fontSize: "0.85rem", fontWeight: 700, flexShrink: 0, color: resultColor(h.result), fontFamily: "Geist, sans-serif" }}>
                             {formatResult(h.result)}
                           </div>
                         </div>
@@ -466,10 +466,10 @@ export default function DataStudio() {
                     { label: "Best Revenue",   value: bestRev ? formatCurrency(bestRev.revenue) : "—", color: "var(--cyan)" },
                   ].map((stat) => (
                     <div key={stat.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.74rem", color: "var(--text-3)", fontFamily: "Inter, sans-serif" }}>
+                      <span style={{ fontSize: "0.74rem", color: "var(--text-3)", fontFamily: "Geist, sans-serif" }}>
                         {stat.label}
                       </span>
-                      <span style={{ fontSize: "0.82rem", fontWeight: 700, color: stat.color, fontFamily: "JetBrains Mono, monospace" }}>
+                      <span style={{ fontSize: "0.82rem", fontWeight: 700, color: stat.color, fontFamily: "Geist, sans-serif" }}>
                         {stat.value}
                       </span>
                     </div>
@@ -483,12 +483,12 @@ export default function DataStudio() {
               className="section-card"
               style={{ background: "rgba(0,212,255,0.03)", borderColor: "rgba(0,212,255,0.15)" }}
             >
-              <h3 style={{ fontSize: "0.62rem", fontWeight: 600, marginBottom: 8, color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace", letterSpacing: "0.06em" }}>
+              <h3 style={{ fontSize: "0.62rem", fontWeight: 600, marginBottom: 8, color: "var(--cyan)", fontFamily: "Geist, sans-serif", letterSpacing: "0.06em" }}>
                 AI FORMULA TIP
               </h3>
-              <p style={{ fontSize: "0.74rem", lineHeight: 1.55, marginBottom: 14, color: "var(--text-2)", fontFamily: "Inter, sans-serif" }}>
+              <p style={{ fontSize: "0.74rem", lineHeight: 1.55, marginBottom: 14, color: "var(--text-2)", fontFamily: "Geist, sans-serif" }}>
                 Prefix any question with{" "}
-                <code style={{ color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace" }}>AI:</code>{" "}
+                <code style={{ color: "var(--cyan)", fontFamily: "Geist, sans-serif" }}>AI:</code>{" "}
                 to ask in plain English instead of formula syntax.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -505,7 +505,7 @@ export default function DataStudio() {
                       background: "var(--bg-card)",
                       color: "var(--text-3)",
                       border: "1px solid var(--border)",
-                      fontFamily: "JetBrains Mono, monospace",
+                      fontFamily: "Geist, sans-serif",
                       cursor: "pointer",
                     }}
                   >
@@ -524,10 +524,10 @@ export default function DataStudio() {
                   <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"
                     stroke="var(--warn)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <p style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--warn)", fontFamily: "Inter, sans-serif", margin: "0 0 4px" }}>
+                <p style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--warn)", fontFamily: "Geist, sans-serif", margin: "0 0 4px" }}>
                   No data loaded
                 </p>
-                <p style={{ fontSize: "0.68rem", color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace", margin: 0 }}>
+                <p style={{ fontSize: "0.68rem", color: "var(--text-3)", fontFamily: "Geist, sans-serif", margin: 0 }}>
                   Upload a financial file on the dashboard to run formulas on real data.
                 </p>
               </div>
@@ -545,7 +545,7 @@ export default function DataStudio() {
                 <rect x="3" y="3" width="18" height="18" rx="2" stroke="var(--text-4)" strokeWidth="1.5"/>
                 <path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="var(--text-4)" strokeWidth="1.5"/>
               </svg>
-              <p style={{ color: "var(--text-3)", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", margin: 0 }}>
+              <p style={{ color: "var(--text-3)", fontFamily: "Geist, sans-serif", fontSize: "0.82rem", margin: 0 }}>
                 No data — upload a financial file to populate the grid.
               </p>
             </div>
@@ -563,7 +563,7 @@ export default function DataStudio() {
                           fontWeight: 600,
                           textAlign: h === "#" || h === "Period" ? "left" : "right",
                           color: "var(--text-3)",
-                          fontFamily: "JetBrains Mono, monospace",
+                          fontFamily: "Geist, sans-serif",
                           textTransform: "uppercase",
                           letterSpacing: "0.06em",
                         }}
@@ -582,19 +582,19 @@ export default function DataStudio() {
                       transition={{ delay: i * 0.015 }}
                       style={{ borderBottom: "1px solid var(--border)" }}
                     >
-                      <td style={{ padding: "11px 16px", fontSize: "0.72rem", color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}>
+                      <td style={{ padding: "11px 16px", fontSize: "0.72rem", color: "var(--text-3)", fontFamily: "Geist, sans-serif" }}>
                         {i + 1}
                       </td>
-                      <td style={{ padding: "11px 16px", fontSize: "0.82rem", fontWeight: 600, color: "var(--text-1)", fontFamily: "Inter, sans-serif" }}>
+                      <td style={{ padding: "11px 16px", fontSize: "0.82rem", fontWeight: 600, color: "var(--text-1)", fontFamily: "Geist, sans-serif" }}>
                         {row.month}
                       </td>
-                      <td style={{ padding: "11px 16px", textAlign: "right", fontSize: "0.8rem", color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace" }}>
+                      <td style={{ padding: "11px 16px", textAlign: "right", fontSize: "0.8rem", color: "var(--cyan)", fontFamily: "Geist, sans-serif" }}>
                         {formatCurrency(row.revenue)}
                       </td>
-                      <td style={{ padding: "11px 16px", textAlign: "right", fontSize: "0.8rem", color: "var(--warn)", fontFamily: "JetBrains Mono, monospace" }}>
+                      <td style={{ padding: "11px 16px", textAlign: "right", fontSize: "0.8rem", color: "var(--warn)", fontFamily: "Geist, sans-serif" }}>
                         {formatCurrency(row.costs)}
                       </td>
-                      <td style={{ padding: "11px 16px", textAlign: "right", fontSize: "0.8rem", fontWeight: 600, color: row.profit >= 0 ? "var(--good)" : "var(--crit)", fontFamily: "JetBrains Mono, monospace" }}>
+                      <td style={{ padding: "11px 16px", textAlign: "right", fontSize: "0.8rem", fontWeight: 600, color: row.profit >= 0 ? "var(--good)" : "var(--crit)", fontFamily: "Geist, sans-serif" }}>
                         {formatCurrency(row.profit)}
                       </td>
                       <td style={{ padding: "11px 16px" }}>
@@ -615,7 +615,7 @@ export default function DataStudio() {
                               minWidth: 44,
                               textAlign: "right",
                               color: row.margin >= 25 ? "var(--good)" : row.margin >= 12 ? "var(--warn)" : "var(--crit)",
-                              fontFamily: "JetBrains Mono, monospace",
+                              fontFamily: "Geist, sans-serif",
                             }}
                           >
                             {row.margin.toFixed(1)}%
@@ -627,19 +627,19 @@ export default function DataStudio() {
                 </tbody>
                 <tfoot>
                   <tr style={{ background: "var(--bg-page)", borderTop: "2px solid var(--border)" }}>
-                    <td colSpan={2} style={{ padding: "13px 16px", fontSize: "0.62rem", fontWeight: 700, color: "var(--text-2)", fontFamily: "JetBrains Mono, monospace", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    <td colSpan={2} style={{ padding: "13px 16px", fontSize: "0.62rem", fontWeight: 700, color: "var(--text-2)", fontFamily: "Geist, sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       Totals / Avg
                     </td>
-                    <td style={{ padding: "13px 16px", textAlign: "right", fontSize: "0.8rem", fontWeight: 700, color: "var(--cyan)", fontFamily: "JetBrains Mono, monospace" }}>
+                    <td style={{ padding: "13px 16px", textAlign: "right", fontSize: "0.8rem", fontWeight: 700, color: "var(--cyan)", fontFamily: "Geist, sans-serif" }}>
                       {formatCurrency(totRev)}
                     </td>
-                    <td style={{ padding: "13px 16px", textAlign: "right", fontSize: "0.8rem", fontWeight: 700, color: "var(--warn)", fontFamily: "JetBrains Mono, monospace" }}>
+                    <td style={{ padding: "13px 16px", textAlign: "right", fontSize: "0.8rem", fontWeight: 700, color: "var(--warn)", fontFamily: "Geist, sans-serif" }}>
                       {formatCurrency(totCost)}
                     </td>
-                    <td style={{ padding: "13px 16px", textAlign: "right", fontSize: "0.8rem", fontWeight: 700, color: totProfit >= 0 ? "var(--good)" : "var(--crit)", fontFamily: "JetBrains Mono, monospace" }}>
+                    <td style={{ padding: "13px 16px", textAlign: "right", fontSize: "0.8rem", fontWeight: 700, color: totProfit >= 0 ? "var(--good)" : "var(--crit)", fontFamily: "Geist, sans-serif" }}>
                       {formatCurrency(totProfit)}
                     </td>
-                    <td style={{ padding: "13px 16px", textAlign: "right", fontSize: "0.8rem", fontWeight: 700, color: "var(--good)", fontFamily: "JetBrains Mono, monospace" }}>
+                    <td style={{ padding: "13px 16px", textAlign: "right", fontSize: "0.8rem", fontWeight: 700, color: "var(--good)", fontFamily: "Geist, sans-serif" }}>
                       {`${avgMargin.toFixed(1)}%`}
                     </td>
                   </tr>

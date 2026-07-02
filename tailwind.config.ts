@@ -34,8 +34,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        outfit: ["Outfit", "sans-serif"],
-        mono: ["DM Mono", "monospace"],
+        sans: ["Geist", "sans-serif"],
+        outfit: ["Geist", "sans-serif"],
+        mono: ["Geist", "sans-serif"],
       },
       borderRadius: {
         card: "18px",

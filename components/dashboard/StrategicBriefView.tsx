@@ -18,10 +18,10 @@ function BriefPoint({ text, index, colour }: { text: string; index: number; colo
       initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + index * 0.08 }}
       style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '13px 0', borderTop: index > 0 ? '1px solid var(--border)' : 'none' }}
     >
-      <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: `color-mix(in srgb, ${c} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${c} 25%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 700, color: c }}>
+      <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: `color-mix(in srgb, ${c} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${c} 25%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700, color: c }}>
         {index + 1}
       </span>
-      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>{content}</p>
+      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>{content}</p>
     </motion.div>
   );
 }
@@ -39,10 +39,10 @@ function RecommendationCard({ title, recommendation, priority, index }: { title:
       </div>
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{title}</p>
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{title}</p>
           <span className="badge" style={{ color: priorityColour, background: `color-mix(in srgb, ${priorityColour} 10%, transparent)`, borderColor: `color-mix(in srgb, ${priorityColour} 25%, transparent)` }}>{priority.toUpperCase()}</span>
         </div>
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', color: 'var(--text-3)', lineHeight: 1.55, margin: 0 }}>{recommendation}</p>
+        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-3)', lineHeight: 1.55, margin: 0 }}>{recommendation}</p>
       </div>
     </motion.div>
   );
@@ -96,9 +96,9 @@ export default function StrategicBriefView({
     <>
       {!hideHeader && (
         <div style={{ marginBottom: 24 }}>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
-          <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Strategic Brief</h1>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>AI-generated executive summary · recommendations · action plan</p>
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
+          <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Strategic Brief</h1>
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>AI-generated executive summary · recommendations · action plan</p>
         </div>
       )}
 
@@ -130,27 +130,27 @@ export default function StrategicBriefView({
                 transition={{ duration: 1.4, ease: 'easeOut', delay: 0.3 }} style={{ transform: 'rotate(-90deg)', transformOrigin: '65px 65px' }} />
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.8rem', fontWeight: 900, color: healthColour, lineHeight: 1 }}>{health.score}</span>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3 }}>{health.label}</span>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', marginTop: 1 }}>/100</span>
+              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.8rem', fontWeight: 900, color: healthColour, lineHeight: 1 }}>{health.score}</span>
+              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3 }}>{health.label}</span>
+              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', marginTop: 1 }}>/100</span>
             </div>
           </div>
           <div>
             <div style={{ marginBottom: 14 }}>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Best Month</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Best Month</p>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)' }}>{health.bestMonth}</span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--good)' }}>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)' }}>{health.bestMonth}</span>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--good)' }}>
                   {fmt(monthly.length > 0 ? monthly.reduce((best, m) => { const p = (Number(m.Revenue) || 0) - (Number(m.Costs) || 0); return p > best ? p : best; }, -Infinity) : 0, false, sym)} profit
                 </span>
               </div>
               <div className="progress-track"><motion.div className="progress-fill" style={{ background: 'var(--good)', width: '100%' }} initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1, ease: 'easeOut', delay: 0.4 }} /></div>
             </div>
             <div>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Worst Month</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Worst Month</p>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)' }}>{health.worstMonth}</span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--warn)' }}>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)' }}>{health.worstMonth}</span>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--warn)' }}>
                   {fmt(monthly.length > 0 ? monthly.reduce((worst, m) => { const p = (Number(m.Revenue) || 0) - (Number(m.Costs) || 0); return p < worst ? p : worst; }, Infinity) : 0, false, sym)} profit
                 </span>
               </div>
@@ -160,9 +160,9 @@ export default function StrategicBriefView({
               <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
                 {[{ label: 'Financial', score: scores.e1_score, colour: 'var(--e1)' }, { label: 'Customer', score: scores.e2_score, colour: 'var(--e2)' }, { label: 'Operations', score: scores.e3_score, colour: 'var(--e3)' }].map((item) => (
                   <div key={item.label} style={{ flex: 1 }}>
-                    <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.label}</p>
+                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.label}</p>
                     <div className="progress-track" style={{ marginBottom: 3 }}><motion.div className="progress-fill" style={{ background: item.colour }} initial={{ width: 0 }} animate={{ width: `${item.score}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }} /></div>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: item.colour, fontWeight: 700 }}>{item.score}</span>
+                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: item.colour, fontWeight: 700 }}>{item.score}</span>
                   </div>
                 ))}
               </div>
@@ -196,8 +196,8 @@ export default function StrategicBriefView({
             { label: 'Worst Month', value: health.worstMonth, colour: 'var(--warn)' },
           ].map((item) => (
             <div key={item.label} style={{ padding: '12px 14px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>{item.label}</p>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.1rem', fontWeight: 800, color: item.colour, margin: 0, letterSpacing: '-0.02em' }}>{item.value}</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>{item.label}</p>
+              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.1rem', fontWeight: 800, color: item.colour, margin: 0, letterSpacing: '-0.02em' }}>{item.value}</p>
             </div>
           ))}
         </div>

@@ -282,15 +282,15 @@ export default function Sidebar() {
           }}
         >
           <span style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Current plan
             </span>
-            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-1)' }}>
+            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-1)' }}>
               {TIERS[tier].name}
             </span>
           </span>
           {tier !== 'growth' && (
-            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.68rem', fontWeight: 700, color: '#fff', background: 'var(--cyan)', padding: '5px 10px', borderRadius: 8, whiteSpace: 'nowrap' }}>
+            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700, color: '#fff', background: 'var(--cyan)', padding: '5px 10px', borderRadius: 8, whiteSpace: 'nowrap' }}>
               Upgrade
             </span>
           )}
@@ -322,7 +322,7 @@ export default function Sidebar() {
           {!col && uploadedFile && (
             <motion.span
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
+              style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
             >
               {uploadedFile}
             </motion.span>

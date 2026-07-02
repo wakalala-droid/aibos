@@ -128,13 +128,13 @@ export default function ForecastPage() {
     >
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
+        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
           Financial Intelligence
         </p>
-        <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
+        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
           Forecast Engine
         </h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
+        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
           AI-powered revenue prediction · 95% confidence interval
         </p>
       </div>
@@ -159,9 +159,9 @@ export default function ForecastPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 20, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)' }}>
           <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.8, repeat: Infinity }}
             style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--good)' }} />
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--good)', fontWeight: 600 }}>Live model</span>
+          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--good)', fontWeight: 600 }}>Live model</span>
         </div>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)' }}>
+        <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)' }}>
           Historical + {projections.length}-month AI prediction · 95% confidence interval
         </span>
       </div>
@@ -177,10 +177,10 @@ export default function ForecastPage() {
               <path d="M3 17l5-5 4 4 8-9" stroke="var(--text-4)" strokeWidth="1.6"
                 strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 4" fill="none" />
             </svg>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-2)', margin: 0 }}>
+            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-2)', margin: 0 }}>
               No historical data yet
             </p>
-            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0 }}>
+            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0 }}>
               Upload a financial file on the dashboard to generate a forecast.
             </p>
           </div>
@@ -200,8 +200,8 @@ export default function ForecastPage() {
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false}
+              <XAxis dataKey="month" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false}
                 tickFormatter={(v) => formatAxis(n(v))} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
               <Area type="monotone" dataKey="upper" stroke="none" fill="rgba(167,139,250,0.07)" dot={false} legendType="none" name="Upper" connectNulls />
@@ -219,7 +219,7 @@ export default function ForecastPage() {
                     : <line x1="0" y1="2" x2="24" y2="2" stroke={item.color} strokeWidth="2.2" />
                   }
                 </svg>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)' }}>{item.label}</span>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)' }}>{item.label}</span>
               </div>
             ))}
           </div>

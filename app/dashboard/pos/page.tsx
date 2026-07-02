@@ -22,9 +22,9 @@ export default function POSPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
-        <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>POS Intelligence</h1>
-        <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
+        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
+        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>POS Intelligence</h1>
+        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
           {[posBusinessName, posPeriod].filter(Boolean).join(' · ')}
         </p>
       </div>
@@ -62,9 +62,9 @@ export default function POSPage() {
                 <div key={c.category} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: CAT_COLORS[i % CAT_COLORS.length], flexShrink: 0 }} />
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-2)', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.category}</span>
+                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-2)', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.category}</span>
                   </div>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.68rem', fontWeight: 700, color: CAT_COLORS[i % CAT_COLORS.length] }}>{c.pct_of_total.toFixed(1)}%</span>
+                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700, color: CAT_COLORS[i % CAT_COLORS.length] }}>{c.pct_of_total.toFixed(1)}%</span>
                 </div>
               ))}
             </div>
@@ -74,8 +74,8 @@ export default function POSPage() {
         <SectionCard title="Units Sold by Category" delay={0.14}>
           <ResponsiveContainer width="100%" height={170}>
             <BarChart data={barData} layout="vertical" barCategoryGap="22%">
-              <XAxis type="number" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" width={75} tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <XAxis type="number" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 9, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" width={75} tick={{ fontFamily: 'Geist, sans-serif', fontSize: 9, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="units" radius={[0, 5, 5, 0]}>
                 {barData.map((_, i) => <Cell key={i} fill={CAT_COLORS[i % CAT_COLORS.length]} fillOpacity={0.75} />)}
@@ -95,7 +95,7 @@ export default function POSPage() {
                 <motion.tr key={item.sku || i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 + i * 0.04 }}>
                   <td style={{ color: 'var(--text-4)' }}>#{i + 1}</td>
                   <td style={{ color: 'var(--blue)', fontWeight: 600 }}>{item.sku}</td>
-                  <td style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, color: 'var(--text-1)' }}>{item.name}</td>
+                  <td style={{ fontFamily: 'Geist, sans-serif', fontWeight: 600, color: 'var(--text-1)' }}>{item.name}</td>
                   <td><span className="badge" style={{ color: 'var(--text-3)', background: 'var(--bg-badge)', borderColor: 'var(--border)' }}>{item.category}</span></td>
                   <td>{item.units_sold.toLocaleString()}</td>
                   <td style={{ fontWeight: 700, color: 'var(--e3)' }}>{fmt(item.revenue, false, sym)}</td>

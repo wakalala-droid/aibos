@@ -48,7 +48,7 @@ export default function AskAnything() {
           style={{ padding: 'clamp(18px, 2.4vw, 26px)' }}
         >
           {/* manifest chip */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-3)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18, fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)' }}>
             <span style={{ width: 7, height: 7, borderRadius: 50, background: 'var(--good)' }} aria-hidden />
             Reading sales_may.xlsx · 14 products · 1,204 rows
           </div>
@@ -62,7 +62,7 @@ export default function AskAnything() {
 
           {/* answer */}
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-            <span aria-hidden style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 9, background: 'linear-gradient(135deg, var(--cyan), #a78bfa)', display: 'grid', placeItems: 'center', color: '#04222c', fontWeight: 900, fontFamily: 'Inter, sans-serif', fontSize: '0.8rem' }}>AI</span>
+            <span aria-hidden style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 9, background: 'linear-gradient(135deg, var(--cyan), #a78bfa)', display: 'grid', placeItems: 'center', color: '#04222c', fontWeight: 900, fontFamily: 'Geist, sans-serif', fontSize: '0.8rem' }}>AI</span>
             <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.62, color: 'var(--text-2)' }}>
               {ANSWER_LINES.map((line, i) => (
                 <motion.span
@@ -81,7 +81,7 @@ export default function AskAnything() {
             </p>
           </div>
 
-          <p style={{ margin: '18px 0 0', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text-4)', textAlign: 'right' }}>
+          <p style={{ margin: '18px 0 0', fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', textAlign: 'right' }}>
             Illustrative. AI-BOS answers only from your own uploaded data.
           </p>
         </motion.div>

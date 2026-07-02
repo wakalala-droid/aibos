@@ -6,7 +6,7 @@
  * confirms. Nothing is saved until confirmation (SAFEGUARD §0.4). Manual entry
  * (pick the type directly) is always available — AI is an accelerant, not a gate.
  *
- * Design OS: Inter/JetBrains-Mono via tokens, spacing scale, radius 6/10, 44px tap
+ * Design OS: Geist/JetBrains-Mono via tokens, spacing scale, radius 6/10, 44px tap
  * targets, semantic colors, every state (idle/loading/proposal/saving/success/error).
  */
 import { useEffect, useRef, useState } from 'react';
@@ -49,11 +49,11 @@ const NO_AMOUNT: EventType[] = ['InventoryReceipt', 'InventoryAdjustment']; // a
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '10px 12px', minHeight: 44,
   background: 'var(--bg-input)', border: '1px solid var(--border-md)',
-  borderRadius: 6, color: 'var(--text-1)', fontFamily: 'Inter, sans-serif',
+  borderRadius: 6, color: 'var(--text-1)', fontFamily: 'Geist, sans-serif',
   fontSize: '0.875rem', outline: 'none',
 };
 const labelStyle: React.CSSProperties = {
-  fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 600,
+  fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600,
   color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em',
   marginBottom: 6, display: 'block',
 };
@@ -332,7 +332,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
           className="touch-target"
           style={{
             padding: '10px 18px', minHeight: 44, borderRadius: 10, border: 'none',
-            background: 'var(--cyan)', color: '#04121a', fontFamily: 'Inter, sans-serif',
+            background: 'var(--cyan)', color: '#04121a', fontFamily: 'Geist, sans-serif',
             fontSize: '0.875rem', fontWeight: 700, cursor: busy ? 'default' : 'pointer',
             opacity: busy ? 0.7 : 1, whiteSpace: 'nowrap',
           }}
@@ -346,7 +346,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
         disabled={busy}
         style={{
           marginTop: 8, background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--text-3)', fontFamily: 'JetBrains Mono, monospace',
+          color: 'var(--text-3)', fontFamily: 'Geist, sans-serif',
           fontSize: '0.7rem', textDecoration: 'underline', padding: '4px 0',
         }}
       >
@@ -357,13 +357,13 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
       <AnimatePresence>
         {error && (
           <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.8rem', fontFamily: 'Inter, sans-serif' }}>
+            style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.8rem', fontFamily: 'Geist, sans-serif' }}>
             {error}
           </motion.div>
         )}
         {success && (
           <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--green-dim)', border: '1px solid var(--green)', color: 'var(--green)', fontSize: '0.8rem', fontFamily: 'Inter, sans-serif' }}>
+            style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--green-dim)', border: '1px solid var(--green)', color: 'var(--green)', fontSize: '0.8rem', fontFamily: 'Geist, sans-serif' }}>
             {success}
           </motion.div>
         )}
@@ -378,7 +378,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
           >
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 8, flexWrap: 'wrap' }}>
-                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-1)' }}>
+                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-1)' }}>
                   Review &amp; confirm
                 </span>
                 {confidence != null && (
@@ -413,7 +413,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                     type="number" inputMode="decimal" value={amount}
                     onChange={e => setAmount(e.target.value)}
                     placeholder="0.00"
-                    style={{ ...inputStyle, fontFamily: 'JetBrains Mono, monospace' }}
+                    style={{ ...inputStyle, fontFamily: 'Geist, sans-serif' }}
                   />
                 </div>
 
@@ -436,7 +436,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                         value={fields[fld.key] ?? ''}
                         onChange={e => setFields(p => ({ ...p, [fld.key]: e.target.value }))}
                         placeholder={fld.placeholder}
-                        style={fld.kind === 'number' ? { ...inputStyle, fontFamily: 'JetBrains Mono, monospace' } : inputStyle}
+                        style={fld.kind === 'number' ? { ...inputStyle, fontFamily: 'Geist, sans-serif' } : inputStyle}
                       />
                     )}
                   </div>
@@ -446,7 +446,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                 <div>
                   <label style={labelStyle}>Date</label>
                   <input type="date" value={occurred} max={todayISO()} onChange={e => setOccurred(e.target.value)}
-                    style={{ ...inputStyle, fontFamily: 'JetBrains Mono, monospace' }} />
+                    style={{ ...inputStyle, fontFamily: 'Geist, sans-serif' }} />
                 </div>
               </div>
 
@@ -455,7 +455,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                   type="button" onClick={handleSave} disabled={busy} className="touch-target"
                   style={{
                     padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none',
-                    background: 'var(--green)', color: '#04140d', fontFamily: 'Inter, sans-serif',
+                    background: 'var(--green)', color: '#04140d', fontFamily: 'Geist, sans-serif',
                     fontSize: '0.875rem', fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1,
                   }}
                 >
@@ -466,7 +466,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                   style={{
                     padding: '10px 20px', minHeight: 44, borderRadius: 10,
                     border: '1px solid var(--border-md)', background: 'transparent',
-                    color: 'var(--text-2)', fontFamily: 'Inter, sans-serif', fontSize: '0.875rem', fontWeight: 600,
+                    color: 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontSize: '0.875rem', fontWeight: 600,
                     cursor: 'pointer',
                   }}
                 >

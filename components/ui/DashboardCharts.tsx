@@ -24,8 +24,8 @@ export function ForecastChart({ data, sym = 'K', height = 240 }: { data: Forecas
             <linearGradient id="mForeG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--purple)" stopOpacity={0.22} /><stop offset="100%" stopColor="var(--purple)" stopOpacity={0} /></linearGradient>
           </defs>
           <CartesianGrid stroke="var(--border)" vertical={false} />
-          <XAxis dataKey="month" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
+          <XAxis dataKey="month" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
           <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
           <Area type="monotone" dataKey="upper" stroke="none" fill="rgba(167,139,250,0.07)" dot={false} name="Upper" connectNulls />
           <Area type="monotone" dataKey="lower" stroke="none" fill="var(--bg-page)" dot={false} name="Lower" connectNulls />
@@ -37,7 +37,7 @@ export function ForecastChart({ data, sym = 'K', height = 240 }: { data: Forecas
         {[{ c: 'var(--cyan)', l: 'Historical', d: false }, { c: 'var(--purple)', l: 'Forecast', d: true }].map((it) => (
           <div key={it.l} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <svg width="24" height="4">{it.d ? <line x1="0" y1="2" x2="24" y2="2" stroke={it.c} strokeWidth="2" strokeDasharray="5 3" /> : <line x1="0" y1="2" x2="24" y2="2" stroke={it.c} strokeWidth="2.2" />}</svg>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)' }}>{it.l}</span>
+            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)' }}>{it.l}</span>
           </div>
         ))}
       </div>
@@ -53,8 +53,8 @@ export function CashProjectionChart({ data, sym = 'K', height = 210 }: { data: C
       <AreaChart data={data}>
         <defs><linearGradient id="mCashGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--cyan)" stopOpacity={0.22} /><stop offset="100%" stopColor="var(--cyan)" stopOpacity={0} /></linearGradient></defs>
         <CartesianGrid stroke="var(--border)" vertical={false} />
-        <XAxis dataKey="label" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-        <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
+        <XAxis dataKey="label" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
         <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
         <Area type="monotone" dataKey="cash" stroke="var(--cyan)" strokeWidth={2} fill="url(#mCashGrad)" dot={false} name="Cash Position" />
         <ReferenceLine y={0} stroke="var(--crit)" strokeDasharray="4 4" strokeWidth={1} />
@@ -71,10 +71,10 @@ export function RunwayBar({ runway, target = 18 }: { runway: number; target?: nu
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '18px 20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <div>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-4)', margin: 0 }}>{runway}mo remaining · {runway < target ? `⚠ below ${target}mo target` : `✓ above ${target}mo target`}</p>
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', margin: 0 }}>{runway}mo remaining · {runway < target ? `⚠ below ${target}mo target` : `✓ above ${target}mo target`}</p>
         </div>
-        <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.4rem', fontWeight: 800, color }}>{runway}mo <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', fontWeight: 400 }}>/ {target}mo</span></span>
+        <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.4rem', fontWeight: 800, color }}>{runway}mo <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', fontWeight: 400 }}>/ {target}mo</span></span>
       </div>
       <div style={{ position: 'relative', height: 8, borderRadius: 8, background: 'var(--border)', overflow: 'hidden', marginBottom: 10 }}>
         <motion.div style={{ height: '100%', background: color, borderRadius: 8 }} initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 1.2, ease: 'easeOut' }} />
@@ -82,7 +82,7 @@ export function RunwayBar({ runway, target = 18 }: { runway: number; target?: nu
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {[0, 6, 12, 18, 24].map((mo) => (
-          <span key={mo} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: mo === 12 ? 'var(--warn)' : 'var(--text-4)' }}>{mo}mo{mo === 12 ? ' ⚑' : ''}</span>
+          <span key={mo} style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: mo === 12 ? 'var(--warn)' : 'var(--text-4)' }}>{mo}mo{mo === 12 ? ' ⚑' : ''}</span>
         ))}
       </div>
     </div>
@@ -97,11 +97,11 @@ export function AnomalyZChart({ data, height = 200 }: { data: ZRow[]; height?: n
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} barCategoryGap="22%" barGap={4}>
           <CartesianGrid stroke="var(--border)" vertical={false} />
-          <XAxis dataKey="month" tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="month" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
           <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
-          <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: 'Critical (2.0)', fill: 'var(--crit)', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, position: 'insideTopRight' }} />
-          <ReferenceLine y={1.5} stroke="var(--warn)" strokeDasharray="4 3" strokeWidth={1} label={{ value: 'Warning (1.5)', fill: 'var(--warn)', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, position: 'insideTopRight' }} />
+          <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: 'Critical (2.0)', fill: 'var(--crit)', fontFamily: 'Geist, sans-serif', fontSize: 9, position: 'insideTopRight' }} />
+          <ReferenceLine y={1.5} stroke="var(--warn)" strokeDasharray="4 3" strokeWidth={1} label={{ value: 'Warning (1.5)', fill: 'var(--warn)', fontFamily: 'Geist, sans-serif', fontSize: 9, position: 'insideTopRight' }} />
           <Bar dataKey="revZ" name="Revenue Z" radius={[3, 3, 0, 0]}>
             {data.map((e, i) => <Cell key={i} fill={e.revZ > 2 ? 'var(--crit)' : e.revZ > 1.5 ? 'var(--warn)' : 'var(--cyan)'} fillOpacity={0.8} />)}
           </Bar>
@@ -114,7 +114,7 @@ export function AnomalyZChart({ data, height = 200 }: { data: ZRow[]; height?: n
         {[['var(--cyan)', 'Revenue Z-score'], ['var(--e2)', 'Cost Z-score']].map(([c, l]) => (
           <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <div style={{ width: 10, height: 10, borderRadius: 3, background: c as string, opacity: 0.8 }} />
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)' }}>{l}</span>
+            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)' }}>{l}</span>
           </div>
         ))}
       </div>
@@ -140,9 +140,9 @@ export function SegmentDonut({ segments }: { segments: SegRow[] }) {
           <div key={s.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 9 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.colour }} />
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--text-2)' }}>{s.name}</span>
+              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-2)' }}>{s.name}</span>
             </div>
-            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 700, color: s.colour }}>{s.value}</span>
+            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', fontWeight: 700, color: s.colour }}>{s.value}</span>
           </div>
         ))}
       </div>

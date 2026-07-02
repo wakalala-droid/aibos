@@ -33,10 +33,10 @@ export default function EngineScoreCard({
           <span className="bento-tex" aria-hidden="true" />
 
           <p className="kpi-label" style={{ color: colour }}>{label}</p>
-          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: 'var(--text-4)', margin: '2px 0 10px' }}>
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: '2px 0 10px' }}>
             {sub}
           </p>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '2.4rem', fontWeight: 800, color: locked ? 'var(--text-4)' : col, letterSpacing: '-0.04em', margin: '0 0 10px' }}>
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '2.4rem', fontWeight: 800, color: locked ? 'var(--text-4)' : col, letterSpacing: '-0.04em', margin: '0 0 10px' }}>
             {locked ? '—' : score}
           </p>
           <div className="progress-track">
