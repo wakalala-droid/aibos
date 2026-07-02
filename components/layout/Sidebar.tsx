@@ -50,6 +50,7 @@ const NAV: NavEntry[] = [
   { href: '/dashboard/timeline',   label: 'Timeline',         icon: IC.timeline   },
   { href: '/dashboard/import',     label: 'Import',           icon: IC.import     },
   { href: '/dashboard/advisor',    label: 'Advisor',          icon: IC.advisor    },
+  { href: '/dashboard/inventory',  label: 'Inventory',        icon: IC.inventory  },
   { href: '/dashboard/cash',       label: 'Cash Intel',       icon: IC.cash       },
   { href: '/dashboard/variance',   label: 'Variance',         icon: IC.variance   },
   { href: '/dashboard/forecast',   label: 'Forecast',         icon: IC.forecast   },
