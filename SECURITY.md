@@ -33,13 +33,29 @@ no longer emits `access-control-allow-origin: *`.
   self-selection goes through the service-role route `/api/checkout/select-free`.
   Admins change tiers through the service-role admin API.
 
-**Remaining follow-up — per-feature entitlement enforcement.** The backend now
-knows *who* is calling but does not yet reject an authenticated *Free* user who
-calls a Pro/Growth analysis endpoint directly; the tier check is still the client
-gate for feature visibility. A follow-up should look up `profiles.tier` in the
-backend and return 402/403 for features above the caller's tier. This is now a
-metering concern, not an auth hole — the self-escalation and cross-tenant bugs
-above are closed.
+## Per-feature entitlement is enforced server-side
+
+`aibos-api/entitlements.py` mirrors `lib/tiers.ts` (`_ACCESS`) and is the
+authoritative gate. `require_feature(user_id, feature)` looks up `profiles.tier`
+via the service-role client (cached ~60s; invalidated on a payment grant) and
+raises **402** when the caller's tier doesn't include the feature. Enforced:
+
+- `/chat` → `ai_chat` (Pro+). A Free account calling chat directly gets 402.
+- `/upload` → when the file is detected as **Engine 2** (customer) or **Engine 3**
+  (POS/operations) data, the tier is checked before any analysis is run or
+  returned. Free accounts get 402 with an upgrade message; the whole
+  Customer/Operations intelligence surface is Pro+.
+
+The tier lookup **fails open on infrastructure error** (Supabase unreachable →
+last-known/Free) so a brief outage never locks out a paying customer; a
+definitive "free" answer still gates.
+
+**Intentionally not gated:** the Engine-1 sub-features (forecast / anomaly /
+variance / breakeven) are a *listed Free inclusion* — "…— preview" — and the
+`FeatureGate` teasers are built from that real data (conversion_psychology.md
+LOCKED-BUT-VISIBLE). Serving Engine-1 data to Free is by design, not a leak; the
+frontend gate controls how much of the full feature is revealed. `full_history`
+(Free = last 30 days) remains a display-window concern handled client-side.
 
 ## Admin access control
 

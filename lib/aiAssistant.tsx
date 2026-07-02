@@ -231,6 +231,17 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         const snippet = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
         throw new Error(res.ok ? `Non-JSON response. ${snippet}` : `Server error ${res.status}. ${snippet || 'The AI service may be offline.'}`);
       }
+      // 402 = tier gate. The AI CFO chat is Pro+ — show a clean upgrade nudge,
+      // not an error, and stop (this isn't a service failure).
+      if (res.status === 402) {
+        setOnline(true);
+        const msg = typeof data.detail === 'string'
+          ? data.detail
+          : 'The AI CFO chat is a Pro feature.';
+        pushAssistant(`${msg}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`);
+        setLoading(false);
+        return;
+      }
       if (!res.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `HTTP ${res.status}`);
       setOnline(true);
       pushAssistant((data.reply as string) ?? (data.response as string) ?? 'No response received.');
