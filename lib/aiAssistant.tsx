@@ -18,6 +18,7 @@ import React, {
 import { useStore } from '@/lib/store';
 import { fmt } from '@/lib/utils';
 import { logUsage } from '@/lib/usage';
+import { createClient } from '@/lib/supabase';
 import {
   localAnswer, getComponentDoc, renderExplanation, type LiveMetrics,
 } from '@/lib/aiKnowledge';
@@ -67,6 +68,17 @@ const API =
   typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:8000'
     : '/api/proxy';
+
+/** Attach the Supabase JWT so the backend can verify the user (/chat is auth'd). */
+async function authHeaders(): Promise<Record<string, string>> {
+  try {
+    const { data } = await createClient().auth.getSession();
+    const token = data.session?.access_token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+}
 
 const nowTime = () =>
   new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -210,8 +222,8 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     try {
       const res = await fetch(`${API}/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, user_id: 'default-user', context: buildContext(s, lv) }),
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+        body: JSON.stringify({ message: text, context: buildContext(s, lv) }),
       });
       const body = await res.text();
       let data: Record<string, unknown> = {};

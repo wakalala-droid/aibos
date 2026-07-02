@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
+import { authHeaders } from '@/lib/api';
 import SectionCard from './SectionCard';
 
 interface ComputeResult {
@@ -47,7 +48,7 @@ export default function CustomMetricsCard() {
 
       const c = await fetch(`/api/proxy/compute-metrics?cabinet_id=${encodeURIComponent(cabinetId)}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({ metrics: active.map((p) => ({ name: p.name, formula: p.formula, inputs: p.inputs })) }),
       });
       if (!c.ok) return;

@@ -1,24 +1,45 @@
 # AI-BOS — Security notes
 
-## Tier gating is currently a client-side UX gate
+## Backend authentication & tenant isolation
 
-`lib/tiers.ts` (`canAccess`) and `components/ui/FeatureGate.tsx` decide what to
-show based on the user's `tier`. As of this change the tier is **sourced from
-Supabase** (`profiles.tier`, hydrated by `lib/profile.tsx`), so it reflects
-reality across devices instead of living only in the browser.
+Every data-bearing endpoint on the FastAPI backend (`aibos-api`) now requires a
+verified Supabase JWT (`Depends(require_user)`): `/upload`, `/upload/switch-sheet`,
+`/propose`, `/compute-metrics`, `/cabinet`, `/cabinet/{id}` (GET + DELETE),
+`/data-studio/*`, `/chat`, `/payments/*`, and the whole Evolution spine. The
+`user_id` comes only from the token, never the request body.
 
-However, the gate itself still runs in the browser. A determined user could call
-the analysis/`/chat` backend endpoints directly and bypass the visual lock.
-**Server-side enforcement of paid API calls is a deliberate follow-up**, not done
-here:
+The in-memory file cabinet is **tenant-scoped**: every entry is stamped with its
+owner's `user_id` and reads/writes go through `_owned_cabinet()`, which returns
+404 for a missing *or* foreign id (existence is never leaked). `GET /cabinet`
+lists only the caller's own files. This closes the previous cross-tenant IDOR
+where any caller could list/read/delete another business's uploads.
 
-- The FastAPI backend (`aibos-api`) does not yet verify the caller's tier before
-  serving forecast / anomaly / variance / breakeven / AI-chat responses.
-- A follow-up should pass the Supabase JWT to the backend (or proxy), look up the
-  user's `profiles.tier`, and return 402/403 for features above their tier.
+CORS is locked to an env allowlist (`ALLOWED_ORIGINS`), not `*`, and credentials
+are disabled (auth is a Bearer token, not a cookie). The Next.js `/api/proxy`
+no longer emits `access-control-allow-origin: *`.
 
-Until then, the current client gate is retained (it is the UX boundary and the
-upsell surface) and must not be regressed.
+## Tier is server-authoritative and cannot be self-set
+
+`lib/tiers.ts` (`canAccess`) and `components/ui/FeatureGate.tsx` gate the UI on
+`profiles.tier`, hydrated by `lib/profile.tsx`. The tier value itself is now
+**write-protected**:
+
+- The `profiles` guard trigger (migration `0010_pin_tier.sql`) pins `tier` and
+  its provenance columns to their previous values for any ordinary authenticated
+  self-update — exactly as `role` is pinned. A user can no longer run
+  `supabase.from('profiles').update({ tier: 'growth' })` from the browser.
+- Paid tiers are granted **only** by the backend, via the service-role client,
+  after a payment is confirmed (`_grant_tier` in `aibos-api/main.py`). Free-plan
+  self-selection goes through the service-role route `/api/checkout/select-free`.
+  Admins change tiers through the service-role admin API.
+
+**Remaining follow-up — per-feature entitlement enforcement.** The backend now
+knows *who* is calling but does not yet reject an authenticated *Free* user who
+calls a Pro/Growth analysis endpoint directly; the tier check is still the client
+gate for feature visibility. A follow-up should look up `profiles.tier` in the
+backend and return 402/403 for features above the caller's tier. This is now a
+metering concern, not an auth hole — the self-escalation and cross-tenant bugs
+above are closed.
 
 ## Admin access control
 
@@ -35,11 +56,11 @@ upsell surface) and must not be regressed.
 - Row Level Security is enabled on `profiles`, `usage_events`, and `admin_audit`
   (see `supabase/migrations/0001_admin_profiles_usage.sql`). Every admin mutation
   is recorded in `admin_audit`.
-- **Self-role escalation is blocked.** RLS lets a user update their own profile
-  row, so a `profiles_guard_role` trigger pins `role` to its previous value for
-  ordinary self-updates — only the service-role admin API (or an existing admin)
-  can change a `role`. `tier` is deliberately left self-settable (the checkout
-  flow writes it and tier-gating is the client UX gate described above).
+- **Self role/tier escalation is blocked.** RLS lets a user update their own
+  profile row, so the `profiles_guard_role` trigger pins `role` **and** `tier`
+  (plus tier provenance columns) to their previous values for ordinary
+  self-updates — only the service-role admin/payment paths (or an existing admin)
+  can change a `role` or `tier`. See migration `0010_pin_tier.sql`.
 
 ## Secrets
 

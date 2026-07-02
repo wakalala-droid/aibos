@@ -9,7 +9,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { setCurrencyGlobal } from "./currency";
 import type { Tier } from "./tiers";
-import { getTwin, getTwinFinancials, type Twin, type BusinessEvent } from "./api";
+import { getTwin, getTwinFinancials, authHeaders, type Twin, type BusinessEvent } from "./api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -676,7 +676,7 @@ const _store = create<FinancialState & FinancialActions>()(
             `/api/proxy/upload/switch-sheet?cabinet_id=${encodeURIComponent(
               cabinetId
             )}&sheet_name=${encodeURIComponent(sheetName)}`,
-            { method: "POST" }
+            { method: "POST", headers: await authHeaders() }
           );
           if (!res.ok) {
             const err = (await res.json().catch(() => ({}))) as { detail?: string };
@@ -698,7 +698,8 @@ const _store = create<FinancialState & FinancialActions>()(
         const cached = get().cabinetData[id];
         if (cached) {
           get().setUploadResult({ ...cached, cabinet_id: id });
-          fetch(`/api/proxy/cabinet/${id}`)
+          authHeaders()
+            .then((h) => fetch(`/api/proxy/cabinet/${id}`, { headers: h }))
             .then((r) => (r.ok ? r.json() : null))
             .then((d) => {
               if (d) get().setUploadResult({ ...(d as Record<string, unknown>), cabinet_id: id });
@@ -709,7 +710,7 @@ const _store = create<FinancialState & FinancialActions>()(
 
         set({ isUploading: true, uploadError: null });
         try {
-          const res = await fetch(`/api/proxy/cabinet/${id}`);
+          const res = await fetch(`/api/proxy/cabinet/${id}`, { headers: await authHeaders() });
           if (!res.ok) {
             throw new Error(
               "This file isn't on the server anymore (the analysis service restarted). Re-upload it to refresh the cabinet."

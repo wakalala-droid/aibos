@@ -121,9 +121,12 @@ export async function uploadFile(
   const form = new FormData();
   form.append('file', file);
 
+  // Backend requires a verified Supabase JWT (tenant-scoped uploads). Don't set
+  // Content-Type — FormData sets its own multipart boundary.
   const res = await fetch(`${PROXY}/upload?${params}`, {
-    method: 'POST',
-    body:   form,
+    method:  'POST',
+    headers: await authHeaders(),
+    body:    form,
   });
 
   if (!res.ok) {
@@ -146,7 +149,7 @@ export async function sendChatMessage(payload: {
 }): Promise<{ ok: boolean; answer: string }> {
   const res = await fetch(`${PROXY}/chat`, {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
     body:    JSON.stringify(payload),
   });
   return res.json();
@@ -157,7 +160,7 @@ export async function sendChatMessage(payload: {
 export async function downloadExcel(payload: Record<string, unknown>): Promise<void> {
   const res = await fetch(`${PROXY}/export/excel`, {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
     body:    JSON.stringify(payload),
   });
   if (!res.ok) throw new Error('Excel export failed');
@@ -207,7 +210,7 @@ export interface InitiatePaymentResult {
 export async function initiatePayment(payload: InitiatePaymentPayload): Promise<InitiatePaymentResult> {
   const res = await fetch(`${PROXY}/payments/initiate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
     body: JSON.stringify({ currency: 'ZMW', ...payload }),
   });
   const raw = await res.text();
@@ -219,7 +222,9 @@ export async function initiatePayment(payload: InitiatePaymentPayload): Promise<
 
 /** Poll a collection's status until it resolves. */
 export async function checkPaymentStatus(reference: string): Promise<{ reference: string; status: PaymentStatus; plan: string; billing: string }> {
-  const res = await fetch(`${PROXY}/payments/status/${encodeURIComponent(reference)}`);
+  const res = await fetch(`${PROXY}/payments/status/${encodeURIComponent(reference)}`, {
+    headers: await authHeaders(),
+  });
   const data = (await res.json().catch(() => ({ status: 'pending' }))) as { reference?: string; status?: PaymentStatus; plan?: string; billing?: string };
   return { reference, status: (data.status ?? 'pending'), plan: data.plan ?? '', billing: data.billing ?? 'monthly' };
 }
@@ -233,7 +238,7 @@ export async function checkPaymentStatus(reference: string): Promise<{ reference
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /** Attach the current Supabase access token so the backend can verify the user. */
-async function authHeaders(): Promise<Record<string, string>> {
+export async function authHeaders(): Promise<Record<string, string>> {
   try {
     const { data } = await createClient().auth.getSession();
     const token = data.session?.access_token;

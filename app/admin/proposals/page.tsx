@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
 import { useStore } from '@/lib/store';
+import { authHeaders } from '@/lib/api';
 
 interface Proposal {
   id: string;
@@ -77,7 +78,7 @@ export default function AdminProposalsPage() {
     if (!cabinetId) { setNote('Upload a file first — there is no current file to scan.'); return; }
     setBusy(true); setNote('');
     try {
-      const r = await fetch(`/api/proxy/propose?cabinet_id=${encodeURIComponent(cabinetId)}`, { method: 'POST' });
+      const r = await fetch(`/api/proxy/propose?cabinet_id=${encodeURIComponent(cabinetId)}`, { method: 'POST', headers: await authHeaders() });
       const j = await r.json();
       if (!r.ok) throw new Error(j.detail || j.error || `Scan failed (${r.status})`);
       const proposals = (j.proposals as Record<string, unknown>[]) ?? [];

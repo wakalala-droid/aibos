@@ -7,6 +7,7 @@ import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFinancialStore } from "@/lib/store";
 import { logUsage, type UsageEngine } from "@/lib/usage";
+import { authHeaders } from "@/lib/api";
 
 const ACCEPTED = ".csv,.xlsx,.xlsm,.xls";
 
@@ -37,6 +38,7 @@ export default function FileUpload() {
       try {
         const res = await fetch("/api/proxy/upload", {
           method: "POST",
+          headers: await authHeaders(),   // backend requires a verified JWT
           body: form,
         });
 

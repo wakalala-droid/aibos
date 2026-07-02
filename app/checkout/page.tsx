@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { TIERS, usdApprox, type Tier } from '@/lib/tiers';
 import { initiatePayment, checkPaymentStatus } from '@/lib/api';
-import { createClient } from '@/lib/supabase';
 
 // Merchant mobile-money accounts payments are sent to.
 const MERCHANT = {
@@ -26,28 +25,22 @@ function CheckoutInner() {
   const billing = params.get('billing') === 'annual' ? 'annual' : 'monthly';
   const setTier = useStore((s) => s.setTier);
 
-  // Tier is server-authoritative: cache it locally AND persist to the user's
-  // Supabase row so the unlock survives reloads and follows them across devices.
-  const persistTier = useCallback(
-    async (t: Tier, source: 'payment' | 'self') => {
-      setTier(t);
-      try {
-        const supabase = createClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) {
-          await supabase
-            .from('profiles')
-            .update({ tier: t, tier_source: source, tier_granted_at: new Date().toISOString() })
-            .eq('id', user.id);
-        }
-      } catch {
-        /* non-fatal — the local cache is already set */
-      }
-    },
-    [setTier]
-  );
+  // Tier is SERVER-authoritative and the client can no longer write it directly
+  // (the profiles guard trigger pins tier for self-updates — migration 0010).
+  //   • Paid unlocks are granted by the backend when the payment is confirmed
+  //     (aibos-api `_grant_tier`); here we just update the local UX cache and let
+  //     lib/profile.tsx re-hydrate the real value from Supabase.
+  //   • Free is set through the service-role route /api/checkout/select-free.
+  const cacheTier = useCallback((t: Tier) => setTier(t), [setTier]);
+
+  const selectFree = useCallback(async () => {
+    try {
+      await fetch('/api/checkout/select-free', { method: 'POST' });
+    } catch {
+      /* non-fatal — profile will still reflect the server value on next load */
+    }
+    setTier('free');
+  }, [setTier]);
 
   const [network, setNetwork] = useState<Network>('mtn');
   const [phone, setPhone] = useState('');
@@ -68,7 +61,9 @@ function CheckoutInner() {
         const r = await checkPaymentStatus(reference);
         if (!active) return;
         if (r.status === 'successful') {
-          if (isTier(planParam) && planParam !== 'free') void persistTier(planParam, 'payment');
+          // The backend already granted the tier server-side on confirmation;
+          // reflect it locally for instant UX (authoritative value re-hydrates).
+          if (isTier(planParam) && planParam !== 'free') cacheTier(planParam);
           setStatus('done');
           return;
         }
@@ -87,7 +82,7 @@ function CheckoutInner() {
     };
     pollRef.current = setTimeout(tick, 2500);
     return () => { active = false; if (pollRef.current) clearTimeout(pollRef.current); };
-  }, [status, reference, planParam, persistTier]);
+  }, [status, reference, planParam, cacheTier]);
 
   const startPayment = async () => {
     setError('');
@@ -120,7 +115,7 @@ function CheckoutInner() {
             : 'Head back to pricing to pick Pro or Growth.'}
         </p>
         {planParam === 'free' && (
-          <button type="button" onClick={() => void persistTier('free', 'self')} style={btnPrimary}>Confirm Free plan</button>
+          <button type="button" onClick={() => void selectFree()} style={btnPrimary}>Confirm Free plan</button>
         )}
         <div style={{ marginTop: 16 }}>
           <Link href="/pricing" style={linkMuted}>← Back to pricing</Link>

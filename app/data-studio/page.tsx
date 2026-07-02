@@ -9,6 +9,7 @@ import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFinancialStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/currency";
+import { authHeaders } from "@/lib/api";
 import SectionCard from "@/components/ui/SectionCard";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -162,7 +163,7 @@ export default function DataStudio() {
 
       const res = await fetch("/api/proxy/data-studio/compute", {
         method:  "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", ...(await authHeaders()) },
         body:    JSON.stringify(payload),
       });
 

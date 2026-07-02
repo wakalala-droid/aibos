@@ -65,11 +65,13 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
   try {
     const res = await fetch(upstream, init);
     const text = await res.text();
+    // No CORS header: this proxy is called same-origin from our own app. A
+    // wildcard `access-control-allow-origin` here would let any website read
+    // these responses through a victim's browser — remove it entirely.
     return new NextResponse(text, {
       status: res.status,
       headers: {
         "content-type": res.headers.get("content-type") ?? "application/json",
-        "access-control-allow-origin": "*",
       },
     });
   } catch (err: unknown) {
@@ -102,12 +104,6 @@ export async function PATCH(req: NextRequest) {
   return proxy(req, "PATCH");
 }
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      "access-control-allow-origin": "*",
-      "access-control-allow-methods": "GET,POST,PUT,DELETE,PATCH,OPTIONS",
-      "access-control-allow-headers": "Content-Type,Authorization",
-    },
-  });
+  // Same-origin calls don't preflight; return a bare 204 with no permissive CORS.
+  return new NextResponse(null, { status: 204 });
 }
