@@ -8,7 +8,6 @@
  */
 import { useCallback, useRef, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
-import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import {
   excelPreview, excelCommit,
@@ -186,12 +185,12 @@ export default function ImportPage() {
         <SectionCard title="Import complete" subtitle="Your dashboards have been updated">
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: result.error_count ? 16 : 0 }}>
             <div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.6rem', fontWeight: 700, color: 'var(--green)' }}>{fmt(result.saved_count)}</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.6rem', fontWeight: 700, color: 'var(--green)' }}>{result.saved_count.toLocaleString()}</div>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>imported</div>
             </div>
             {result.error_count > 0 && (
               <div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.6rem', fontWeight: 700, color: 'var(--amber)' }}>{fmt(result.error_count)}</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.6rem', fontWeight: 700, color: 'var(--amber)' }}>{result.error_count.toLocaleString()}</div>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>skipped</div>
               </div>
             )}

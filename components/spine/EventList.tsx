@@ -68,7 +68,7 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
               fontFamily: 'JetBrains Mono, monospace', fontSize: '0.9rem', fontWeight: 600,
               color: moneyColor, whiteSpace: 'nowrap',
             }}>
-              {amt ? `${sign < 0 ? '−' : sign > 0 ? '+' : ''}${sym}${fmt(amt)}` : '—'}
+              {amt ? `${sign < 0 ? '−' : sign > 0 ? '+' : ''}${fmt(Math.abs(amt), false, sym)}` : '—'}
             </div>
 
             {/* Status */}
