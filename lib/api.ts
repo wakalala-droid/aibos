@@ -372,6 +372,10 @@ export interface ExcelPreview {
   sheets: string[];
   active_sheet: string;
   suggestion: Record<string, string>;
+  /** Default event type inferred from the amount column header (Revenue→Sale). */
+  suggested_type?: EventType;
+  /** True when the sheet has both income- and expense-like columns (a P&L summary). */
+  summary_like?: boolean;
   event_types: EventType[];
 }
 

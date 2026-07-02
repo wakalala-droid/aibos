@@ -29,6 +29,18 @@ const TYPES: EventType[] = [
 ];
 const TEMPLATE_KEY = 'aibos-excel-mapping-v1';
 
+// Mirrors the backend (ingestion.py) so the default type stays consistent with
+// the chosen Amount column: a "Revenue" column logs Sales, "Expenses" logs costs.
+const INCOME_WORDS = ['revenue', 'sales', 'income', 'turnover', 'takings', 'receipt'];
+const EXPENSE_WORDS = ['expense', 'cost', 'spend', 'outflow', 'purchase', 'payment'];
+function inferTypeFromColumn(col?: string): EventType | null {
+  if (!col) return null;
+  const c = col.toLowerCase();
+  if (INCOME_WORDS.some(w => c.includes(w))) return 'Sale';
+  if (EXPENSE_WORDS.some(w => c.includes(w))) return 'Expense';
+  return null;
+}
+
 const sel: React.CSSProperties = {
   width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
@@ -45,6 +57,8 @@ export default function ImportPage() {
   const [preview, setPreview] = useState<ExcelPreview | null>(null);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [defaultType, setDefaultType] = useState<EventType>('Expense');
+  // Once the user picks a type by hand, stop auto-deriving it from the amount column.
+  const [typeTouched, setTypeTouched] = useState(false);
   const [result, setResult] = useState<BulkResult | null>(null);
 
   const onPick = useCallback(async (file: File) => {
@@ -59,6 +73,10 @@ export default function ImportPage() {
         if (saved && Object.values(saved).every(c => pv.columns.includes(c as string))) map = saved;
       } catch { /* ignore */ }
       setMapping(map);
+      // Default the event type to match the amount column (backend also suggests
+      // this): a Revenue amount defaults to Sale, an Expenses amount to Expense.
+      setDefaultType(inferTypeFromColumn(map.amount) ?? pv.suggested_type ?? 'Expense');
+      setTypeTouched(false);
       setPhase('map');
     } catch (e) {
       setError((e as Error).message || 'Could not read that file.');
@@ -91,6 +109,7 @@ export default function ImportPage() {
 
   function reset() {
     setPreview(null); setResult(null); setMapping({}); setPhase('idle'); setError(null);
+    setTypeTouched(false);
     if (fileRef.current) fileRef.current.value = '';
   }
 
@@ -126,11 +145,18 @@ export default function ImportPage() {
       {phase !== 'done' && preview && phase !== 'idle' && phase !== 'parsing' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <SectionCard title="Map your columns" subtitle={`${preview.row_count} rows · sheet "${preview.active_sheet}"`}>
+            {preview.summary_like && (
+              <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--amber-dim, rgba(251,191,36,0.12))', border: '1px solid var(--amber)', color: 'var(--text-2)', fontSize: '0.78rem', fontFamily: 'Inter, sans-serif', lineHeight: 1.5 }}>
+                This looks like a monthly <strong>summary</strong> — it has both income and expense columns.
+                Each import maps <strong>one</strong> Amount column: pick <strong>Revenue</strong> to log Sales, or
+                <strong> Expenses</strong> to log costs, then import again for the other. The default type below follows your Amount choice.
+              </div>
+            )}
             <div style={{ marginBottom: 16 }}>
               <label style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
                 When a row has no type column, treat rows as
               </label>
-              <select value={defaultType} onChange={e => setDefaultType(e.target.value as EventType)} style={{ ...sel, maxWidth: 240 }}>
+              <select value={defaultType} onChange={e => { setDefaultType(e.target.value as EventType); setTypeTouched(true); }} style={{ ...sel, maxWidth: 240 }}>
                 {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
@@ -140,7 +166,20 @@ export default function ImportPage() {
                   <label style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5, display: 'block' }}>
                     {f.label} <span style={{ color: 'var(--text-4)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· {f.hint}</span>
                   </label>
-                  <select value={mapping[f.key] ?? ''} onChange={e => setMapping(m => ({ ...m, [f.key]: e.target.value }))} style={sel}>
+                  <select
+                    value={mapping[f.key] ?? ''}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setMapping(m => ({ ...m, [f.key]: val }));
+                      // Keep the default type aligned with the Amount column unless
+                      // the user has already chosen a type by hand.
+                      if (f.key === 'amount' && !typeTouched) {
+                        const t = inferTypeFromColumn(val);
+                        if (t) setDefaultType(t);
+                      }
+                    }}
+                    style={sel}
+                  >
                     <option value="">— none —</option>
                     {preview.columns.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
