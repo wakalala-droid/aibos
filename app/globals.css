@@ -24,6 +24,12 @@
 /* ── DARK MODE (default — matches E1 exactly) ───────────────── */
 :root,
 [data-theme="dark"] {
+  /* Tell the browser to render native controls (the <select> option popup,
+     scrollbars, date pickers) in a DARK scheme. Without this the OS paints the
+     option list with the default light theme — a white popup + gray highlight
+     bar that clashes with every dark surface in the app. */
+  color-scheme: dark;
+
   /* Page */
   --bg-page:        #0a0e1a;
   --bg-card:        #0d1117;
@@ -120,6 +126,9 @@
 
 /* ── LIGHT PREMIUM MODE ─────────────────────────────────────── */
 [data-theme="light"] {
+  /* Native controls follow the light scheme in this theme (see the dark block). */
+  color-scheme: light;
+
   /* Warm, premium off-white — never pure clinical white (visual_language_system.md). */
   --bg-page:        #f4f3ef;
   --bg-card:        #ffffff;
@@ -772,6 +781,16 @@ select:focus-visible,
 .section-card:focus-visible,
 .nav-item:focus-visible {
   outline-offset: -2px;
+}
+
+/* Native <select> option popups. color-scheme (set per theme on :root) makes
+   Chromium paint these correctly; these explicit colours are the cross-browser
+   guarantee (Firefox / older Windows honour option background+color). Keeps the
+   dropdown list on the app's own surfaces instead of a stray white box. */
+select option,
+select optgroup {
+  background: var(--bg-card);
+  color: var(--text-1);
 }
 
 /* Visually-hidden helper for screen-reader-only labels and skip links. */
