@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Overridable build dir so `next build` can run while a dev server holds
+  // .next (e.g. NEXT_DIST_DIR=.next-build npm run build). Defaults unchanged.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+
   // Release gate: the build must fail on real type/lint errors. The earlier
   // "temporary unblock" is removed now that dashboard typing is reconciled
   // (tsc --noEmit is clean). Do not re-disable these without fixing the cause.

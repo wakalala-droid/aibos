@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Hero from '@/components/marketing/Hero';
 import AskAnything from '@/components/marketing/AskAnything';
+import ChandaStory from '@/components/marketing/ChandaStory';
 import StrategicIntelligence from '@/components/marketing/StrategicIntelligence';
 import Reveal from '@/components/marketing/Reveal';
 import ShowcaseBand from '@/components/marketing/ShowcaseBand';
@@ -38,6 +39,9 @@ export default function MarketingHome() {
           </ul>
         </Reveal>
       </div>
+
+      {/* The Chanda story — hero-character narrative with painterly scenes */}
+      <ChandaStory />
 
       {/* Strategic Intelligence — rising-graph divider + real Strategic Brief */}
       <StrategicIntelligence />

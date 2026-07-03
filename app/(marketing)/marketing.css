@@ -406,6 +406,60 @@
 .mkt-reveal-css { opacity: 0; transform: translateY(14px); animation: mkt-rise 0.7s ease forwards; }
 @keyframes mkt-rise { to { opacity: 1; transform: none; } }
 
+/* ── Chanda story: painterly scene panels + ambient scene motion ──
+   The scenes are layered SVG paintings (story-scenes.tsx). Their ambient
+   motion (twinkle, dust, data-light, steam, cloud drift) is part of the
+   documented marketing-motion exception above — the reduced-motion rule at
+   the bottom collapses all of it to a still painting. */
+[data-marketing] .story-scene {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  background: #0a0e1f;
+}
+[data-marketing] .story-scene svg { display: block; width: 100%; height: auto; }
+
+[data-marketing] .story-time {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Geist', sans-serif;
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-4);
+  margin: 0 0 16px;
+}
+[data-marketing] .story-time .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); flex-shrink: 0; }
+
+/* stars / distant lights */
+@keyframes sc-twinkle { 0%, 100% { opacity: 0.12; } 50% { opacity: 0.8; } }
+.sc-star { animation: sc-twinkle 4.6s ease-in-out infinite; }
+
+/* dust motes + cyan data-light drift slowly upward and fade */
+@keyframes sc-rise {
+  0%   { transform: translateY(0); opacity: 0; }
+  14%  { opacity: 0.7; }
+  78%  { opacity: 0.45; }
+  100% { transform: translateY(-90px); opacity: 0; }
+}
+.sc-dust { animation: sc-rise 12s linear infinite; opacity: 0; }
+.sc-data { animation: sc-rise 9s linear infinite; opacity: 0; }
+
+/* very slow cloud drift */
+@keyframes sc-drift { from { transform: translateX(-18px); } to { transform: translateX(26px); } }
+.sc-cloud { animation: sc-drift 36s ease-in-out infinite alternate; }
+
+/* lamp / headlight / screen glow breathes gently */
+@keyframes sc-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.78; } }
+.sc-beam { animation: sc-glow 7s ease-in-out infinite; }
+
+/* coffee steam */
+@keyframes sc-steam {
+  0%   { transform: translateY(0); opacity: 0; }
+  25%  { opacity: 0.55; }
+  100% { transform: translateY(-30px); opacity: 0; }
+}
+.sc-steam { animation: sc-steam 6.5s ease-out infinite; opacity: 0; }
+
 /* ── Footer ─────────────────────────────────────────────────── */
 .mkt-footer { background: #0a0e1a; color: #9fabbd; }
 

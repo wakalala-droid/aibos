@@ -53,6 +53,50 @@ export function expectedOf(receipts: BusinessEvent[]): BusinessEvent[] {
     .sort((a, b) => new Date(a.occurred_at).getTime() - new Date(b.occurred_at).getTime());
 }
 
+/** The single most useful thing the owner can do right now, or null. */
+function oneThing(inp: BriefInputs, money: (n: number) => string): string | null {
+  const low = inp.products.filter((p) => Number(p.reorder_level) > 0 && Number(p.on_hand ?? 0) <= Number(p.reorder_level));
+  if (low.length > 0) {
+    return `reorder ${low[0].name}${low[0].supplier ? ` from ${low[0].supplier}` : ''} before it runs out`;
+  }
+  if (inp.twin && Number(inp.twin.receivables) > 0) {
+    return `collect part of the ${money(Number(inp.twin.receivables))} customers owe you`;
+  }
+  if (inp.salesToday.length === 0 && inp.salesYesterday.length === 0) {
+    return 'record today\'s sales as they happen — everything else flows from that';
+  }
+  return null;
+}
+
+/**
+ * Compact, non-duplicative lines for the Simple home "Today's focus" card —
+ * only what the money/today/stock cards DON'T already show: how yesterday
+ * went, what's arriving, and the one thing to do. Plain text, no markdown.
+ */
+export function dailyFocus(inp: BriefInputs): string[] {
+  const money = (n: number) => fmt(n, true, inp.sym);
+  const lines: string[] = [];
+
+  if (inp.salesYesterday.length > 0) {
+    lines.push(`Yesterday: ${inp.salesYesterday.length} sale${inp.salesYesterday.length === 1 ? '' : 's'}, ${money(sum(inp.salesYesterday))}.`);
+  }
+
+  const startTomorrow = new Date(); startTomorrow.setHours(24, 0, 0, 0);
+  const dueToday = inp.expectedDeliveries.filter((e) => new Date(e.occurred_at) < startTomorrow);
+  if (dueToday.length > 0) {
+    const first = dueToday[0];
+    const from = first.payload?.supplier ? ` from ${String(first.payload.supplier)}` : '';
+    lines.push(`Arriving today: ${String(first.payload?.item ?? 'a delivery')}${from}${dueToday.length > 1 ? ` (+${dueToday.length - 1} more)` : ''} — confirm it when it lands.`);
+  } else if (inp.expectedDeliveries.length > 0) {
+    const next = inp.expectedDeliveries[0];
+    lines.push(`Next delivery: ${dayLabel(new Date(next.occurred_at))}${next.payload?.supplier ? ` from ${String(next.payload.supplier)}` : ''}.`);
+  }
+
+  const action = oneThing(inp, money);
+  if (action) lines.push(`One thing today: ${action}.`);
+  return lines;
+}
+
 export function composeMorningBrief(inp: BriefInputs): string {
   const money = (n: number) => fmt(n, true, inp.sym);
   const lines: string[] = [];
@@ -106,14 +150,7 @@ export function composeMorningBrief(inp: BriefInputs): string {
 
   // One thing today — a single, concrete next action (never a list; decision
   // simplification per ux_intelligence.md).
-  let action: string | null = null;
-  if (low.length > 0) {
-    action = `reorder ${low[0].name}${low[0].supplier ? ` from ${low[0].supplier}` : ''} before it runs out`;
-  } else if (inp.twin && Number(inp.twin.receivables) > 0) {
-    action = `collect part of the ${money(Number(inp.twin.receivables))} customers owe you`;
-  } else if (inp.salesToday.length === 0 && inp.salesYesterday.length === 0) {
-    action = 'record today\'s sales as they happen — everything else flows from that';
-  }
+  const action = oneThing(inp, money);
   if (action) lines.push(`🎯 One thing today: ${action}.`);
 
   if (lines.length === 1) {

@@ -386,7 +386,7 @@ function capitalise(s: string): string {
 export const DEFAULT_PROMPTS = [
   'Morning brief',
   'How much cash do I have?',
+  'What should I reorder?',
   "What's my current inventory?",
   'How much did I make today?',
-  'What should I focus on first?',
 ];

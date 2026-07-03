@@ -94,8 +94,8 @@ export const TIERS: Record<Tier, TierMeta> = {
       'Morning Brief — your day, ready before you ask',
       'Record sales & expenses straight from the chat',
       'Expected deliveries — know what’s arriving and when',
-      'Low-stock reorder alerts in your brief',
-      'Automation proposals — rolling out',
+      'One-tap reorder drafts when stock runs low',
+      'Low-stock alerts in your brief',
     ],
   },
   growth: {

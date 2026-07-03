@@ -20,6 +20,9 @@ import { useAiAssistant } from '@/lib/aiAssistant';
 import { industryOf } from '@/lib/industries';
 import { TOUR_RESTART_EVENT } from '@/components/onboarding/DashboardTour';
 import { fmt } from '@/lib/utils';
+import { canAccess } from '@/lib/tiers';
+import { bucketSales, expectedOf, dailyFocus } from '@/lib/brief';
+import { reorderProposals, draftReorder, type ReorderProposal } from '@/lib/automation';
 import { listEvents, listProducts, type BusinessEvent, type Product } from '@/lib/api';
 
 const ASKED_KEY = 'aibos-simple-asked-v1';
@@ -67,25 +70,27 @@ export default function SimpleHome() {
   const ind = industryOf(profile?.business_type, profile?.industry);
   const money = useCallback((n: number) => fmt(n, true, sym), [sym]);
 
-  // Live detail the twin doesn't carry: item-level stock + today's sales.
+  // Live detail the twin doesn't carry: item-level stock, recent sales, and
+  // deliveries the owner is expecting (pending receipts dated today+).
   const [products, setProducts] = useState<Product[] | null>(null);
   const [todaySales, setTodaySales] = useState<BusinessEvent[] | null>(null);
+  const [yesterdaySales, setYesterdaySales] = useState<BusinessEvent[]>([]);
+  const [expected, setExpected] = useState<BusinessEvent[]>([]);
   const [asked, setAsked] = useState(true); // assume done until localStorage says otherwise
   useEffect(() => {
     let alive = true;
     (async () => {
-      const [p, e] = await Promise.allSettled([
+      const [p, e, r] = await Promise.allSettled([
         listProducts(),
-        listEvents({ event_type: 'Sale', limit: 100 }),
+        listEvents({ event_type: 'Sale', limit: 300 }),
+        listEvents({ event_type: 'InventoryReceipt', status: 'pending', limit: 50 }),
       ]);
       if (!alive) return;
       setProducts(p.status === 'fulfilled' ? p.value : []);
-      if (e.status === 'fulfilled') {
-        const start = new Date(); start.setHours(0, 0, 0, 0);
-        setTodaySales(e.value.filter((ev) => ev.status !== 'void' && new Date(ev.occurred_at) >= start));
-      } else {
-        setTodaySales([]);
-      }
+      const { today, yesterday } = bucketSales(e.status === 'fulfilled' ? e.value : []);
+      setTodaySales(e.status === 'fulfilled' ? today : []);
+      setYesterdaySales(yesterday);
+      setExpected(expectedOf(r.status === 'fulfilled' ? r.value : []));
     })();
     try { setAsked(window.localStorage.getItem(ASKED_KEY) === '1'); } catch { /* private mode */ }
     return () => { alive = false; };
@@ -102,11 +107,40 @@ export default function SimpleHome() {
     setAsked(true);
   }, [sendMessage, setOpen]);
 
+  const tier = useStore((s) => s.tier);
+  const canBrief = canAccess(tier, 'morning_brief');
+  const canAutomate = canAccess(tier, 'automation');
+
   const twinActive = !!twin && (Number(twin.event_count) > 0 || Number(twin.cash) !== 0);
   const eventCount = Number(twin?.event_count) || 0;
   const cash = Number(twin?.cash) || 0;
   const receivables = Number(twin?.receivables) || 0;
   const payables = Number(twin?.payables) || 0;
+
+  // Zero-click focus: the day's story is ready before the owner asks (Pro+).
+  const focus = useMemo(() => {
+    if (!canBrief || !twinActive) return [];
+    return dailyFocus({
+      sym, twin, products: products ?? [],
+      salesToday: todaySales ?? [], salesYesterday: yesterdaySales,
+      expectedDeliveries: expected,
+    });
+  }, [canBrief, twinActive, sym, twin, products, todaySales, yesterdaySales, expected]);
+
+  // Anticipated work: reorders AIBOS has prepared. Computed in memory — nothing
+  // touches the books until the owner taps Draft (propose → confirm, always).
+  const proposals = useMemo(() => reorderProposals(products ?? []), [products]);
+  const [draftState, setDraftState] = useState<Record<string, 'drafting' | 'done' | 'error'>>({});
+  const onDraft = useCallback(async (p: ReorderProposal) => {
+    setDraftState((s) => ({ ...s, [p.productId]: 'drafting' }));
+    try {
+      const ev = await draftReorder(p);
+      setDraftState((s) => ({ ...s, [p.productId]: 'done' }));
+      setExpected((e) => [...e, ev]); // feeds the focus card + deliveries instantly
+    } catch {
+      setDraftState((s) => ({ ...s, [p.productId]: 'error' }));
+    }
+  }, []);
 
   const lowStock = useMemo(
     () => (products ?? []).filter((p) => Number(p.reorder_level) > 0 && Number(p.on_hand ?? 0) <= Number(p.reorder_level)),
@@ -157,6 +191,25 @@ export default function SimpleHome() {
             : `Let's get your ${ind.label} set up — record what happens and I'll do the rest.`}
         </p>
       </motion.div>
+
+      {/* Today's focus — the day's story, ready before the owner asks (Pro+). */}
+      {focus.length > 0 && (
+        <motion.div {...fade(1)} style={{ ...cardStyle, gap: 8, borderColor: 'color-mix(in srgb, var(--cyan) 25%, var(--border))' }}>
+          <span style={labelStyle}>Today&rsquo;s focus</span>
+          {focus.map((line) => (
+            <span
+              key={line}
+              style={{
+                ...subStyle,
+                color: line.startsWith('One thing') ? 'var(--text-1)' : 'var(--text-3)',
+                fontWeight: line.startsWith('One thing') ? 600 : 400,
+              }}
+            >
+              {line}
+            </span>
+          ))}
+        </motion.div>
+      )}
 
       {/* Ask bar */}
       <motion.div {...fade(1)} data-tour="ask-bar">
@@ -269,6 +322,68 @@ export default function SimpleHome() {
           </span>
         </Link>
       </motion.div>
+
+      {/* Anticipated work — reorders AIBOS prepared; one tap turns a proposal
+          into a pending receipt the owner confirms on arrival. */}
+      {proposals.length > 0 && (
+        <motion.div {...fade(3)} style={{ ...cardStyle, gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <span style={labelStyle}>AIBOS prepared this</span>
+            {!canAutomate && (
+              <Link
+                href="/checkout?plan=proplus"
+                style={{
+                  fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700,
+                  color: 'var(--cyan)', textDecoration: 'none', padding: '3px 9px', borderRadius: 999,
+                  border: '1px solid color-mix(in srgb, var(--cyan) 40%, transparent)', background: 'var(--cyan-dim)',
+                }}
+              >
+                Pro+
+              </Link>
+            )}
+          </div>
+          {proposals.slice(0, 4).map((p) => {
+            const st = draftState[p.productId];
+            return (
+              <div key={p.productId} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                  <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)' }}>
+                    Reorder {p.headline}
+                  </div>
+                  <div style={{ ...subStyle, fontSize: '0.74rem', color: 'var(--text-4)' }}>
+                    {p.reason}
+                    {p.estimatedCost !== undefined ? ` · about ${money(p.estimatedCost)}` : ''}
+                    {' · brings you back to 2× reorder level'}
+                  </div>
+                </div>
+                {st === 'done' ? (
+                  <span style={{ ...subStyle, color: 'var(--green)', fontWeight: 600 }}>
+                    Drafted — confirm when it arrives
+                  </span>
+                ) : canAutomate ? (
+                  <button
+                    type="button"
+                    onClick={() => void onDraft(p)}
+                    disabled={st === 'drafting'}
+                    style={{
+                      padding: '8px 14px', borderRadius: 8, border: 'none', cursor: st === 'drafting' ? 'default' : 'pointer',
+                      background: 'var(--cyan)', color: '#fff',
+                      fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700,
+                      opacity: st === 'drafting' ? 0.6 : 1, transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {st === 'drafting' ? 'Drafting…' : st === 'error' ? 'Try again' : 'Draft reorder'}
+                  </button>
+                ) : (
+                  <Link href="/checkout?plan=proplus" style={{ ...subStyle, color: 'var(--cyan)', fontWeight: 600, textDecoration: 'none' }}>
+                    Unlock one-tap reorders →
+                  </Link>
+                )}
+              </div>
+            );
+          })}
+        </motion.div>
+      )}
 
       {/* Getting started — real signals, disappears when complete */}
       {showChecklist && (

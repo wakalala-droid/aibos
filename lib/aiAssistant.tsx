@@ -26,6 +26,7 @@ import {
 } from '@/lib/api';
 import { canAccess } from '@/lib/tiers';
 import { composeMorningBrief, bucketSales, expectedOf } from '@/lib/brief';
+import { reorderProposals } from '@/lib/automation';
 import {
   localAnswer, getComponentDoc, renderExplanation, type LiveMetrics,
 } from '@/lib/aiKnowledge';
@@ -222,13 +223,16 @@ function buildContext(
 // the event spine with a real fetch. Every figure comes from recorded events —
 // never from the model (SAFEGUARD §0.1: no fabricated numbers).
 
-type SpineIntent = 'inventory' | 'deliveries' | 'today' | 'owed' | 'brief';
+type SpineIntent = 'inventory' | 'deliveries' | 'today' | 'owed' | 'brief' | 'reorder';
 
 function matchSpineIntent(raw: string): SpineIntent | null {
   const q = raw.toLowerCase();
   const selfRef = /\b(my|our|i|we)\b/.test(q);
   // The Morning Brief — the owner's whole day in one answer (Pro+).
   if (/\b(morning|daily|today'?s)\s+brief\b|\bmy brief\b|\bhow('?s| is) (my |the )?business( doing| looking)?( today)?\b/.test(q)) return 'brief';
+  // Anticipated work: what needs reordering (checked before the generic
+  // inventory intent so "should I restock?" lands here).
+  if (/\b(reorder|restock)\b|\bwhat should (i|we) (order|buy)\b|\bneed(s)? (to be )?order(ed|ing)?\b/.test(q)) return 'reorder';
   // Pure definitions ("what is inventory?") carry no self-reference and stay
   // with the glossary; anything anchored to *their* stock comes here.
   if (/\b(inventory|stock)\b/.test(q) && (selfRef || /\b(how much|how many|current|left|low|running)\b/.test(q))) return 'inventory';
@@ -286,6 +290,25 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
       p > 0 ? `You owe suppliers **${money(p)}**.` : 'You have no recorded supplier debts.',
       '\nThis comes from the events you\'ve recorded — log credit sales and supplier invoices as they happen and this stays exact.',
     ].join(' ');
+  }
+
+  if (intent === 'reorder') {
+    let products: Product[] = [];
+    try { products = await listProducts(); } catch { products = []; }
+    const props = reorderProposals(products);
+    if (!props.length) {
+      return products.length
+        ? '✅ Nothing needs reordering — every tracked item is above its reorder level.'
+        : "I can't suggest reorders yet — add your products (with reorder levels) on the **Stock** page and I'll watch them for you.";
+    }
+    const lines = [`**${props.length} item${props.length === 1 ? ' needs' : 's need'} reordering:**`];
+    for (const p of props.slice(0, 5)) {
+      lines.push(`• ${p.headline} — ${p.reason}${p.estimatedCost !== undefined ? ` (about ${money(p.estimatedCost)})` : ''}`);
+    }
+    lines.push(canAccess(s.tier, 'automation')
+      ? '\nI\'ve prepared these as one-tap drafts on your **Home** page — tap Draft and confirm when the stock arrives.'
+      : '\nOn **Pro+** I prepare these as one-tap drafts on your Home page. [Upgrade to Pro+](/checkout?plan=proplus)');
+    return lines.join('\n');
   }
 
   if (intent === 'inventory') {
