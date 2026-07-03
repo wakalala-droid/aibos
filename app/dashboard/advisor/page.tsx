@@ -106,7 +106,12 @@ export default function AdvisorPage() {
   }
 
   const isHire = scenario === 'hire';
-  const deltaColor = (n: number) => (n > 0 ? 'var(--green)' : n < 0 ? 'var(--red)' : 'var(--text-2)');
+  // Green = good for the business: up for profit/revenue/margin, DOWN for costs.
+  const deltaColor = (metric: string, n: number) => {
+    if (n === 0) return 'var(--text-2)';
+    const good = metric === 'costs' ? n < 0 : n > 0;
+    return good ? 'var(--green)' : 'var(--red)';
+  };
 
   return (
     <>
@@ -150,7 +155,7 @@ export default function AdvisorPage() {
             ) : (
               <>
                 <label style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)', textTransform: 'uppercase' }}>Change (%)</label>
-                <input type="number" value={value} onChange={e => setValue(Number(e.target.value))} style={inputStyle} />
+                <input type="number" value={value} min={-100} max={500} onChange={e => setValue(Number(e.target.value))} style={inputStyle} />
               </>
             )}
 
@@ -169,7 +174,7 @@ export default function AdvisorPage() {
                       <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-2)' }}>
                         {k === 'margin' ? `${sim.projected[k]}%` : `${sym}${fmt(sim.projected[k])}`}
                       </span>
-                      <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', fontWeight: 600, color: deltaColor(sim.deltas[k]) }}>
+                      <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', fontWeight: 600, color: deltaColor(k, sim.deltas[k]) }}>
                         {sim.deltas[k] > 0 ? '+' : ''}{k === 'margin' ? `${sim.deltas[k]}pp` : `${sym}${fmt(sim.deltas[k])}`}
                       </span>
                     </span>

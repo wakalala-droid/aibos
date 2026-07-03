@@ -46,12 +46,18 @@ function forecastConfidence(monthly: Array<Record<string, unknown>>): number {
   return Math.min(Math.max(pct, 0), 99.9);
 }
 
-// Least-squares linear fit over the revenue series → {slope, intercept}.
+// Least-squares linear fit over the revenue series → {slope, intercept, band}.
 // Used to project the trend forward instead of compounding a single (noisy)
 // last month, so the forecast reflects the whole historical dataset.
-function linearFit(ys: number[]): { slope: number; intercept: number } {
+// `band(x)` is the 95% prediction-interval half-width at future index x,
+// derived from the fit's residual error on the owner's own history — never a
+// hardcoded percentage (SAFEGUARD §0.1: no fabricated precision). Null when
+// there are fewer than 3 points, because no honest band exists yet.
+function trendModel(ys: number[]): {
+  slope: number; intercept: number; band: ((x: number) => number) | null;
+} {
   const len = ys.length;
-  if (len < 2) return { slope: 0, intercept: ys[0] ?? 0 };
+  if (len < 2) return { slope: 0, intercept: ys[0] ?? 0, band: null };
   const meanX = (len - 1) / 2;
   const meanY = ys.reduce((s, v) => s + v, 0) / len;
   let sxx = 0, sxy = 0;
@@ -61,7 +67,19 @@ function linearFit(ys: number[]): { slope: number; intercept: number } {
     sxy += dx * (ys[i] - meanY);
   }
   const slope = sxx ? sxy / sxx : 0;
-  return { slope, intercept: meanY - slope * meanX };
+  const intercept = meanY - slope * meanX;
+  if (len < 3 || sxx === 0) return { slope, intercept, band: null };
+  let sse = 0;
+  for (let i = 0; i < len; i++) {
+    const resid = ys[i] - (intercept + slope * i);
+    sse += resid * resid;
+  }
+  const sigma2 = sse / (len - 2);
+  if (!isFinite(sigma2) || sigma2 < 0) return { slope, intercept, band: null };
+  // 95% prediction interval at x: ±1.96·σ·√(1 + 1/n + (x−x̄)²/Sxx)
+  const band = (x: number) =>
+    1.96 * Math.sqrt(sigma2 * (1 + 1 / len + ((x - meanX) ** 2) / sxx));
+  return { slope, intercept, band };
 }
 
 interface Row { month: string; hist?: number; fcast?: number; lower?: number; upper?: number; }
@@ -94,17 +112,22 @@ export default function ForecastPage() {
   // Projection rows — anchor at the most recent actual and extend by the
   // least-squares trend slope (Holt-style). Uses the whole series for the slope
   // while staying tied to reality, instead of compounding one noisy month.
-  const { slope } = linearFit(revSeries);
+  const { slope, band } = trendModel(revSeries);
   const anchor = lastRev > 0 ? lastRev : Math.max(avgRev, 0);
   const projections: Row[] = [1, 2, 3].map(i => {
     const fcast = Math.max(0, Math.round(anchor + slope * i));
+    const half = band ? band(revSeries.length - 1 + i) : null;
     return {
       month: `Forecast +${i}mo`,
       fcast,
-      lower: Math.round(fcast * 0.92),
-      upper: Math.round(fcast * 1.08),
+      lower: half != null ? Math.max(0, Math.round(fcast - half)) : undefined,
+      upper: half != null ? Math.round(fcast + half) : undefined,
     };
   });
+  const hasBand = band != null;
+  const bandLabel = hasBand
+    ? 'shaded band = 95% prediction interval from your history'
+    : 'no confidence band yet — needs 3+ months of history';
 
   const chart: Row[] = [...historical, ...projections];
   const hasData = safeMonthly.length > 0;
@@ -135,7 +158,7 @@ export default function ForecastPage() {
           Forecast Engine
         </h1>
         <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
-          AI-powered revenue prediction · 95% confidence interval
+          AI-powered revenue prediction · {hasBand ? '95% prediction interval' : 'trend estimate'}
         </p>
       </div>
 
@@ -149,7 +172,7 @@ export default function ForecastPage() {
         <KPICard label="QOQ GROWTH EST." value={`${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%`} sub="vs prior period" growth={growthPct}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkData={revSpark} sparkColor="var(--good)" delay={0.12} />
-        <KPICard label="FORECAST CONFIDENCE" value={`${confidence}%`} sublabel="Model accuracy" sub="95% confidence interval"
+        <KPICard label="FORECAST CONFIDENCE" value={`${confidence}%`} sublabel="Model accuracy" sub="R² of trend fit on your data"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--purple)" strokeWidth="1.5" fill="none"/><path d="M9 12l2 2 4-4" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(167,139,250,0.15)" sparkColor="var(--purple)" delay={0.18} />
       </div>
@@ -162,13 +185,13 @@ export default function ForecastPage() {
           <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--good)', fontWeight: 600 }}>Live model</span>
         </div>
         <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)' }}>
-          Historical + {projections.length}-month AI prediction · 95% confidence interval
+          Historical + {projections.length}-month AI prediction · {bandLabel}
         </span>
       </div>
 
       {/* Chart */}
       {!hasData ? (
-        <SectionCard title="AI Revenue Forecast" subtitle="Historical revenue + AI prediction · shaded band = 95% confidence" delay={0.1} style={{ marginBottom: 20 }}>
+        <SectionCard title="AI Revenue Forecast" subtitle={`Historical revenue + AI prediction · ${bandLabel}`} delay={0.1} style={{ marginBottom: 20 }}>
           <div style={{
             height: 260, display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center',
@@ -186,7 +209,7 @@ export default function ForecastPage() {
           </div>
         </SectionCard>
       ) : (
-        <SectionCard title="AI Revenue Forecast" subtitle="Historical revenue + AI prediction · shaded band = 95% confidence" delay={0.1} style={{ marginBottom: 20 }}>
+        <SectionCard title="AI Revenue Forecast" subtitle={`Historical revenue + AI prediction · ${bandLabel}`} delay={0.1} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={chart}>
               <defs>
@@ -231,7 +254,7 @@ export default function ForecastPage() {
       <SectionCard title="Forecast Detail" subtitle="Month-by-month predictions with confidence range" delay={0.18}>
         <table className="data-table">
           <thead>
-            <tr><th>Period</th><th>Forecast Revenue</th><th>Lower (95%)</th><th>Upper (95%)</th><th>vs Last Month</th></tr>
+            <tr><th>Period</th><th>Forecast Revenue</th><th>Lower (95% PI)</th><th>Upper (95% PI)</th><th>vs Last Month</th></tr>
           </thead>
           <tbody>
             {projections.map((row, i) => {
