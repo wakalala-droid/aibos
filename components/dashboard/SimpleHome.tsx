@@ -23,6 +23,7 @@ import { fmt } from '@/lib/utils';
 import { canAccess } from '@/lib/tiers';
 import { bucketSales, expectedOf, dailyFocus } from '@/lib/brief';
 import { reorderProposals, draftReorder, type ReorderProposal } from '@/lib/automation';
+import { OutboxChip } from '@/components/pwa/OfflineSync';
 import { listEvents, listProducts, type BusinessEvent, type Product } from '@/lib/api';
 
 const ASKED_KEY = 'aibos-simple-asked-v1';
@@ -190,6 +191,7 @@ export default function SimpleHome() {
             ? `Here's where your ${ind.label} stands. Ask me anything — I'm keeping the books.`
             : `Let's get your ${ind.label} set up — record what happens and I'll do the rest.`}
         </p>
+        <OutboxChip style={{ marginTop: 10 }} />
       </motion.div>
 
       {/* Today's focus — the day's story, ready before the owner asks (Pro+). */}

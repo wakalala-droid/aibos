@@ -13,9 +13,10 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import {
-  classifyActivity, createEvent, listEvents, ingestQr, ingestReceipt,
+  classifyActivity, listEvents, ingestQr, ingestReceipt,
   type EventType, type EventProposal, type EventSource,
 } from '@/lib/api';
+import { createEventOrQueue } from '@/lib/outbox';
 import QrScanner from './QrScanner';
 
 const TYPES: EventType[] = [
@@ -227,13 +228,20 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     }
     setPhase('saving');
     try {
-      await createEvent({
+      const result = await createEventOrQueue({
         event_type: etype,
         payload,
         source: origin,            // true provenance (manual | voice | qr | receipt)
         confidence: 1.0,           // human-reviewed in this form → save as confirmed
         occurred_at: occurred !== todayISO() ? occurred : undefined,
       });
+      if (result.queued) {
+        // Network down — the outbox holds it and posts when signal returns.
+        // The habit must survive the connection (Proposal risk: connectivity).
+        setSuccess(`${etype} saved on your device — it will post automatically when you're back online.`);
+        setText(''); setAmount(''); setFields({}); setPhase('idle');
+        return;
+      }
       setSuccess(`${etype} recorded.`);
       setText(''); setAmount(''); setFields({}); setPhase('idle');
       // Refresh the twin (lights up dashboards) and recent events.

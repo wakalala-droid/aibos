@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-BOS — offline</title>
+<style>
+  /* Static fallback served by the service worker when a page can't be fetched.
+     Self-contained on purpose: no external fonts or scripts can be assumed. */
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #0a0e1a; color: #e5e7eb;
+    font-family: 'Geist', -apple-system, 'Segoe UI', Roboto, sans-serif;
+    text-align: center; padding: 24px;
+  }
+  .card { max-width: 380px; }
+  img { width: 72px; height: 72px; border-radius: 16px; margin-bottom: 24px; }
+  h1 { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 12px; }
+  p { font-size: 0.9rem; line-height: 1.55; color: #9ca3af; margin: 0 0 20px; }
+  button {
+    font-family: inherit; font-size: 0.85rem; font-weight: 700; color: #fff;
+    background: #0284c7; border: none; border-radius: 10px; padding: 12px 22px;
+    cursor: pointer; min-height: 44px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <img src="/icons/icon-192.png" alt="AI-BOS">
+    <h1>You&rsquo;re offline</h1>
+    <p>No connection right now — that&rsquo;s okay. Anything you saved while offline is kept on your device and will sync the moment signal returns.</p>
+    <button onclick="location.reload()">Try again</button>
+  </div>
+</body>
+</html>

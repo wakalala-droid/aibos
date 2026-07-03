@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
 import RecordActivity from '@/components/spine/RecordActivity';
 import EventList from '@/components/spine/EventList';
+import { OutboxChip } from '@/components/pwa/OfflineSync';
 import GrowthJourney from '@/components/spine/GrowthJourney';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
@@ -43,6 +44,7 @@ export default function RecordPage() {
         <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', marginTop: 4 }}>
           Tell AIBOS what happened — it does the bookkeeping.
         </p>
+        <OutboxChip style={{ marginTop: 8 }} />
       </div>
 
       {needsSetup && (

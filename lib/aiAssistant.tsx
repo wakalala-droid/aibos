@@ -29,6 +29,7 @@ import { composeMorningBrief, bucketSales, expectedOf } from '@/lib/brief';
 import { reorderProposals } from '@/lib/automation';
 import { industryOf } from '@/lib/industries';
 import { matchBenchmark, referenceContext } from '@/lib/industryIntel';
+import { isNetworkError } from '@/lib/outbox';
 import {
   localAnswer, getComponentDoc, renderExplanation, type LiveMetrics,
 } from '@/lib/aiKnowledge';
@@ -506,7 +507,11 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         pushAssistant(`Here's what I'll record:\n\n${summary}\n\nSay **confirm** to post it to your books, or **cancel** to discard it.`);
         setSuggestions(['Confirm', 'Cancel']);
       } catch (err) {
-        pushAssistant(`I couldn't draft that (${(err as Error).message}). The **Record** page will walk you through it instead.`);
+        if (isNetworkError(err)) {
+          pushAssistant("You're offline right now, so I can't classify that from here. The **Record** page still works — anything you save there is kept on your device and posts automatically when signal returns.");
+        } else {
+          pushAssistant(`I couldn't draft that (${(err as Error).message}). The **Record** page will walk you through it instead.`);
+        }
       } finally {
         setLoading(false);
       }
