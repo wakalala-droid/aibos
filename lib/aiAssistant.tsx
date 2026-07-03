@@ -27,6 +27,8 @@ import {
 import { canAccess } from '@/lib/tiers';
 import { composeMorningBrief, bucketSales, expectedOf } from '@/lib/brief';
 import { reorderProposals } from '@/lib/automation';
+import { industryOf } from '@/lib/industries';
+import { matchBenchmark, referenceContext } from '@/lib/industryIntel';
 import {
   localAnswer, getComponentDoc, renderExplanation, type LiveMetrics,
 } from '@/lib/aiKnowledge';
@@ -160,6 +162,17 @@ function buildContext(
       industry: biz.industry || undefined,
       location: biz.location || undefined,
     };
+    // Published reference ranges for this vertical (industryIntel.ts) — the
+    // model may cite these as INDUSTRY REFERENCES, never as the user's data.
+    const ind = industryOf(biz.type, biz.industry);
+    const refs = referenceContext(ind.key);
+    if (refs) {
+      ctx.industry_reference = {
+        industry: ind.label,
+        note: 'Published industry reference ranges (mostly US/global studies; hotels: Southern Africa 2025). Cite as references only — never as the user\'s own figures.',
+        ranges: refs,
+      };
+    }
   }
   // Digital Twin — live business state folded from recorded events.
   if (lv.hasTwin && s.twin) {
@@ -510,6 +523,34 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         if (answer) { pushAssistant(answer); return; }
       } catch { /* fall through to the normal flow */ } finally {
         setLoading(false);
+      }
+    }
+
+    // 1b) Benchmark questions — "is my margin good?", "what's a good food
+    //     cost?" — answered from the industry intelligence pack, with the
+    //     owner's REAL figure alongside the published reference range. Runs
+    //     before the glossary so "what's a good food cost" doesn't get a
+    //     generic "costs" definition instead.
+    {
+      const p = profileRef.current;
+      const ind = industryOf(p?.business_type, p?.industry);
+      const bm = matchBenchmark(text, ind.key);
+      if (bm) {
+        const lines = [`**${bm.label} — ${ind.label} reference:** ${bm.range}.`, '', bm.explain];
+        if (bm.metric === 'margin' && lv.margin !== undefined) {
+          let verdict = '';
+          if (bm.loPct !== undefined && bm.hiPct !== undefined) {
+            verdict = lv.margin > bm.hiPct
+              ? ' — above the reference range. Strong.'
+              : lv.margin < bm.loPct
+                ? ' — below the reference range; your biggest cost lines are the place to look.'
+                : ' — inside the reference range.';
+          }
+          lines.push('', `Your own net margin is **${lv.margin.toFixed(1)}%** (from your recorded data)${verdict}`);
+        }
+        lines.push('', '_Reference ranges come from published industry studies — orientation, not targets. Your own three-month trend beats any industry average._');
+        pushAssistant(lines.join('\n'));
+        return;
       }
     }
 

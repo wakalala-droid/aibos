@@ -33,9 +33,9 @@ const PROFILES: Record<string, IndustryProfile> = {
     saleExample: 'sold 12 plates of nshima with chicken, K840',
     prompts: [
       'How much did I make today?',
+      "What's a good food cost?",
       "What's my current inventory?",
       'How much cash do I have?',
-      'What should I focus on first?',
     ],
   },
   hospitality: {
@@ -46,9 +46,9 @@ const PROFILES: Record<string, IndustryProfile> = {
     saleExample: '3 rooms booked tonight at K650 each',
     prompts: [
       'How much did I make today?',
+      "What's a good occupancy rate?",
       'How much cash do I have?',
       'Who owes me money?',
-      'What should I focus on first?',
     ],
   },
   retail: {
@@ -73,7 +73,7 @@ const PROFILES: Record<string, IndustryProfile> = {
     prompts: [
       "What's my current inventory?",
       'How much did I make today?',
-      'Who are my best customers?',
+      "What's a good conversion rate?",
       'How much cash do I have?',
     ],
   },
@@ -85,9 +85,9 @@ const PROFILES: Record<string, IndustryProfile> = {
     saleExample: 'delivered 20 tonnes of aggregate to ZamBuild, K48,000',
     prompts: [
       'How much cash do I have?',
+      'What should cost per tonne be?',
       'What do I owe suppliers?',
       'How much did I make today?',
-      'What should I focus on first?',
     ],
   },
   farm: {
