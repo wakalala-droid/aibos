@@ -90,6 +90,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // Tenant-safety: if the persisted store belonged to a different account
+    // (shared browser, or a stale cache from before logout cleared it), wipe it
+    // before showing anything so this user never sees another's cabinet/tier.
+    useStore.getState().bindUser(user.id);
+
     // Resolve the row server-side: RLS on the existing `profiles` table blocks
     // the browser's self-select (role comes back null), so reading directly here
     // would never see role/tier. `/api/profile` provisions + reads with the

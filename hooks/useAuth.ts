@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Session, User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase';
+import { useStore } from '@/lib/store';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -89,6 +90,9 @@ export function useAuth(): UseAuthReturn {
             break;
 
           case 'SIGNED_OUT':
+            // Wipe this browser's cached tenant data so the next account on the
+            // same device never inherits the previous account's cabinet/tier.
+            useStore.getState().clearTenant();
             router.push('/login');
             break;
 

@@ -226,6 +226,11 @@ export interface FinancialState {
   // Persisted analysis payload per cabinet id, so files reload after a page
   // refresh even when the backend's in-memory store has been wiped by a restart.
   cabinetData: Record<string, Record<string, unknown>>;
+  // The Supabase user id this persisted cache belongs to. Tenant-safety guard:
+  // the persisted store lives in the browser's localStorage, so on a shared
+  // device a second account must NEVER inherit the first account's cabinet/tier.
+  // `bindUser` wipes everything when this doesn't match the signed-in user.
+  ownerId: string | null;
 
   sidebarCollapsed: boolean;
   mobileNavOpen: boolean;
@@ -293,6 +298,11 @@ interface FinancialActions {
   setUiMode: (m: 'simple' | 'technical') => void;
   setTier: (t: Tier) => void;
   addLocation: (name: string) => void;
+  /** Claim the store for a signed-in user; wipes all data if it belonged to
+   *  someone else (tenant-safety on shared browsers). No-op for the same user. */
+  bindUser: (userId: string | null) => void;
+  /** Wipe all tenant data (used on logout). Keeps only harmless UI prefs. */
+  clearTenant: () => void;
   switchSheet: (sheetName: string) => Promise<void>;
   loadFromCabinet: (id: string) => Promise<void>;
   removeFromCabinet: (id: string) => void;
@@ -328,6 +338,7 @@ const INITIAL: FinancialState = {
   isSwitchingSheet: false,
   cabinet: [],
   cabinetData: {},
+  ownerId: null,
 
   sidebarCollapsed: false,
   mobileNavOpen: false,
@@ -767,12 +778,34 @@ const _store = create<FinancialState & FinancialActions>()(
       setRecentEvents: (events) => set({ recentEvents: events }),
 
       reset: () => set({ ...INITIAL, cabinet: get().cabinet, cabinetData: get().cabinetData }),
+
+      // ── Tenant-safety on shared browsers ──────────────────────────────────
+      // The persisted store lives in localStorage, keyed by browser not by user.
+      // Without these, account B on the same device would see account A's cached
+      // cabinet/files/tier. bindUser wipes the cache whenever the owner changes.
+      bindUser: (userId) => {
+        if (get().ownerId === userId) return;   // same owner — keep the cache
+        set({
+          ...INITIAL,
+          ownerId: userId,
+          // Preserve only non-tenant UI prefs.
+          sidebarCollapsed: get().sidebarCollapsed,
+          uiMode: get().uiMode,
+        });
+      },
+      clearTenant: () =>
+        set({
+          ...INITIAL,
+          sidebarCollapsed: get().sidebarCollapsed,
+          uiMode: get().uiMode,
+        }),
     }),
     {
       name: "aibos-store-v4",
       partialize: (s) => ({
         cabinet: s.cabinet,
         cabinetData: s.cabinetData,
+        ownerId: s.ownerId,
         currencySymbol: s.currencySymbol,
         sidebarCollapsed: s.sidebarCollapsed,
         uiMode: s.uiMode,
