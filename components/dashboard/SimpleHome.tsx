@@ -22,7 +22,10 @@ import { TOUR_RESTART_EVENT } from '@/components/onboarding/DashboardTour';
 import { fmt } from '@/lib/utils';
 import { canAccess } from '@/lib/tiers';
 import { bucketSales, expectedOf, dailyFocus } from '@/lib/brief';
-import { reorderProposals, draftReorder, type ReorderProposal } from '@/lib/automation';
+import {
+  reorderProposals, draftReorder, followUpProposals, dismissedFollowUps, dismissFollowUp,
+  type ReorderProposal,
+} from '@/lib/automation';
 import { OutboxChip } from '@/components/pwa/OfflineSync';
 import { listEvents, listProducts, type BusinessEvent, type Product } from '@/lib/api';
 
@@ -118,6 +121,16 @@ export default function SimpleHome() {
   const receivables = Number(twin?.receivables) || 0;
   const payables = Number(twin?.payables) || 0;
 
+  // Drifting customers worth a check-in (Engine 2 × automation). Dismissals
+  // live on-device and expire after a week.
+  const rfm = useStore((s) => s.rfm);
+  const [fuDismissed, setFuDismissed] = useState<Set<string>>(new Set());
+  useEffect(() => { setFuDismissed(dismissedFollowUps()); }, []);
+  const followUps = useMemo(
+    () => followUpProposals(rfm, sym, profile?.business_name).filter((f) => !fuDismissed.has(f.customerId)),
+    [rfm, sym, profile?.business_name, fuDismissed],
+  );
+
   // Zero-click focus: the day's story is ready before the owner asks (Pro+).
   const focus = useMemo(() => {
     if (!canBrief || !twinActive) return [];
@@ -125,13 +138,18 @@ export default function SimpleHome() {
       sym, twin, products: products ?? [],
       salesToday: todaySales ?? [], salesYesterday: yesterdaySales,
       expectedDeliveries: expected,
+      topFollowUp: followUps[0]?.headline ?? null,
     });
-  }, [canBrief, twinActive, sym, twin, products, todaySales, yesterdaySales, expected]);
+  }, [canBrief, twinActive, sym, twin, products, todaySales, yesterdaySales, expected, followUps]);
 
   // Anticipated work: reorders AIBOS has prepared. Computed in memory — nothing
   // touches the books until the owner taps Draft (propose → confirm, always).
   const proposals = useMemo(() => reorderProposals(products ?? []), [products]);
   const [draftState, setDraftState] = useState<Record<string, 'drafting' | 'done' | 'error'>>({});
+  const onFollowUpDone = useCallback((customerId: string) => {
+    dismissFollowUp(customerId);
+    setFuDismissed((prev) => new Set([...prev, customerId]));
+  }, []);
   const onDraft = useCallback(async (p: ReorderProposal) => {
     setDraftState((s) => ({ ...s, [p.productId]: 'drafting' }));
     try {
@@ -327,7 +345,7 @@ export default function SimpleHome() {
 
       {/* Anticipated work — reorders AIBOS prepared; one tap turns a proposal
           into a pending receipt the owner confirms on arrival. */}
-      {proposals.length > 0 && (
+      {(proposals.length > 0 || followUps.length > 0) && (
         <motion.div {...fade(3)} style={{ ...cardStyle, gap: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
             <span style={labelStyle}>AIBOS prepared this</span>
@@ -384,6 +402,53 @@ export default function SimpleHome() {
               </div>
             );
           })}
+
+          {/* Drifting customers — AIBOS drafted the check-in; the owner sends
+              it from their OWN WhatsApp. AIBOS never messages anyone itself. */}
+          {followUps.map((f) => (
+            <div key={f.customerId} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)' }}>
+                  Check in with {f.headline}
+                </div>
+                <div style={{ ...subStyle, fontSize: '0.74rem', color: 'var(--text-4)' }}>
+                  {f.reason}
+                </div>
+              </div>
+              {canAutomate ? (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <a
+                    href={f.waLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      padding: '8px 14px', borderRadius: 8, textDecoration: 'none',
+                      background: 'var(--green-dim)', color: 'var(--green)',
+                      border: '1px solid color-mix(in srgb, var(--green) 35%, transparent)',
+                      fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700,
+                    }}
+                  >
+                    Send on WhatsApp
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => onFollowUpDone(f.customerId)}
+                    style={{
+                      padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                      border: '1px solid var(--border-md)', background: 'transparent',
+                      color: 'var(--text-3)', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 600,
+                    }}
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <Link href="/checkout?plan=proplus" style={{ ...subStyle, color: 'var(--cyan)', fontWeight: 600, textDecoration: 'none' }}>
+                  Unlock check-in drafts →
+                </Link>
+              )}
+            </div>
+          ))}
         </motion.div>
       )}
 

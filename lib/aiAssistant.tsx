@@ -26,7 +26,7 @@ import {
 } from '@/lib/api';
 import { canAccess } from '@/lib/tiers';
 import { composeMorningBrief, bucketSales, expectedOf } from '@/lib/brief';
-import { reorderProposals } from '@/lib/automation';
+import { reorderProposals, followUpProposals } from '@/lib/automation';
 import { industryOf } from '@/lib/industries';
 import { matchBenchmark, referenceContext } from '@/lib/industryIntel';
 import { isNetworkError } from '@/lib/outbox';
@@ -237,7 +237,7 @@ function buildContext(
 // the event spine with a real fetch. Every figure comes from recorded events —
 // never from the model (SAFEGUARD §0.1: no fabricated numbers).
 
-type SpineIntent = 'inventory' | 'deliveries' | 'today' | 'owed' | 'brief' | 'reorder';
+type SpineIntent = 'inventory' | 'deliveries' | 'today' | 'owed' | 'brief' | 'reorder' | 'followup';
 
 function matchSpineIntent(raw: string): SpineIntent | null {
   const q = raw.toLowerCase();
@@ -247,6 +247,8 @@ function matchSpineIntent(raw: string): SpineIntent | null {
   // Anticipated work: what needs reordering (checked before the generic
   // inventory intent so "should I restock?" lands here).
   if (/\b(reorder|restock)\b|\bwhat should (i|we) (order|buy)\b|\bneed(s)? (to be )?order(ed|ing)?\b/.test(q)) return 'reorder';
+  // Drifting customers worth a check-in.
+  if (/\bfollow.?up\b|\bcheck in with\b|\bwin back\b|\bat.?risk customers?\b|\bwho('?s| is| are)? (drifting|leaving|at risk)\b|\bcustomers? (i|we) (might|could) lose\b/.test(q)) return 'followup';
   // Pure definitions ("what is inventory?") carry no self-reference and stay
   // with the glossary; anything anchored to *their* stock comes here.
   if (/\b(inventory|stock)\b/.test(q) && (selfRef || /\b(how much|how many|current|left|low|running)\b/.test(q))) return 'inventory';
@@ -292,6 +294,7 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
       salesToday: today,
       salesYesterday: yesterday,
       expectedDeliveries: expectedOf(receipts.status === 'fulfilled' ? receipts.value : []),
+      topFollowUp: followUpProposals(s.rfm, sym, null)[0]?.headline ?? null,
     });
   }
 
@@ -304,6 +307,22 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
       p > 0 ? `You owe suppliers **${money(p)}**.` : 'You have no recorded supplier debts.',
       '\nThis comes from the events you\'ve recorded — log credit sales and supplier invoices as they happen and this stays exact.',
     ].join(' ');
+  }
+
+  if (intent === 'followup') {
+    if (!s.rfm.length) {
+      return "I can't see your customers yet — upload a customer or sales file on the **Customers** page and I'll spot who's drifting and draft the check-ins for you.";
+    }
+    const fus = followUpProposals(s.rfm, sym, null);
+    if (!fus.length) {
+      return '✅ Nobody valuable is drifting right now. I watch churn risk as your customer data updates — when someone worth keeping goes quiet, you\'ll see them here.';
+    }
+    const lines = [`**${fus.length} customer${fus.length === 1 ? '' : 's'} worth a check-in:**`];
+    for (const f of fus) lines.push(`• ${f.headline} — ${f.reason}`);
+    lines.push(canAccess(s.tier, 'automation')
+      ? '\nI\'ve drafted the check-in messages on your **Home** page — one tap opens WhatsApp with the text ready to send.'
+      : '\nOn **Pro+** I draft the WhatsApp check-in for each of them. [Upgrade to Pro+](/checkout?plan=proplus)');
+    return lines.join('\n');
   }
 
   if (intent === 'reorder') {

@@ -16,6 +16,8 @@
 
 import type { Product } from './api';
 import { createEvent, type BusinessEvent } from './api';
+import type { RfmRow } from './store';
+import { fmt } from './utils';
 
 export interface ReorderProposal {
   productId: string;
@@ -64,6 +66,87 @@ export function reorderProposals(products: Product[]): ReorderProposal[] {
     const rb = Number(products.find((p) => p.id === b.productId)?.on_hand ?? 0);
     return ra - rb;
   });
+}
+
+// ── Customer follow-ups (Engine 2 × automation) ──────────────────────────────
+// The same anticipation pattern applied to people instead of stock: when a
+// valuable customer is drifting (high churn risk from the RFM engine), AIBOS
+// prepares the check-in — who, why, and a ready-to-send message. The owner
+// sends it from their own WhatsApp in one tap; AIBOS never messages anyone
+// itself (propose → confirm applies to relationships too).
+
+export interface FollowUpProposal {
+  customerId: string;
+  /** "Mwansa — usually spends K1,200, quiet for 45 days". */
+  headline: string;
+  reason: string;
+  /** Ready-to-edit message the owner sends from their own WhatsApp. */
+  suggestedMessage: string;
+  /** wa.me deep link with the message prefilled (no phone number required). */
+  waLink: string;
+  churnRisk: number;
+}
+
+/**
+ * Top follow-ups: customers with high churn risk, ranked by what they're
+ * worth. Capped at 3 — an owner can genuinely do three check-ins today;
+ * a list of thirty is a report, not a plan (ux_intelligence.md decision
+ * simplification).
+ */
+export function followUpProposals(
+  rfm: RfmRow[],
+  sym: string,
+  businessName?: string | null,
+): FollowUpProposal[] {
+  const biz = businessName || 'us';
+  return rfm
+    .filter((r) => (Number(r.churn_risk) || 0) >= 70 && (Number(r.monetary) || 0) > 0)
+    .sort((a, b) => (Number(b.monetary) || 0) - (Number(a.monetary) || 0))
+    .slice(0, 3)
+    .map((r) => {
+      const name = String(r.customer_id);
+      const spend = fmt(Number(r.monetary) || 0, true, sym);
+      const days = Math.round(Number(r.recency_days) || 0);
+      const msg = `Hi ${name}! It's been a while since your last visit to ${biz} — we'd love to see you again. Is there anything we could do better?`;
+      return {
+        customerId: name,
+        headline: `${name} — usually spends ${spend}, quiet for ${days} day${days === 1 ? '' : 's'}`,
+        reason: `${Math.round(Number(r.churn_risk) || 0)}% risk of not coming back${r.intervention ? ` · ${r.intervention}` : ''}`,
+        suggestedMessage: msg,
+        waLink: `https://wa.me/?text=${encodeURIComponent(msg)}`,
+        churnRisk: Number(r.churn_risk) || 0,
+      };
+    });
+}
+
+// Local dismissals — "done" means done for a week, not forever: if the
+// customer is still at risk next week, the proposal earns its place again.
+const FU_KEY = 'aibos-fu-dismissed-v1';
+const FU_TTL_DAYS = 7;
+
+export function dismissedFollowUps(): Set<string> {
+  if (typeof window === 'undefined') return new Set();
+  try {
+    const map = JSON.parse(window.localStorage.getItem(FU_KEY) || '{}') as Record<string, string>;
+    const now = Date.now();
+    const live = Object.entries(map).filter(
+      ([, iso]) => now - new Date(iso).getTime() < FU_TTL_DAYS * 24 * 60 * 60 * 1000,
+    );
+    if (live.length !== Object.keys(map).length) {
+      window.localStorage.setItem(FU_KEY, JSON.stringify(Object.fromEntries(live)));
+    }
+    return new Set(live.map(([id]) => id));
+  } catch {
+    return new Set();
+  }
+}
+
+export function dismissFollowUp(customerId: string): void {
+  try {
+    const map = JSON.parse(window.localStorage.getItem(FU_KEY) || '{}') as Record<string, string>;
+    map[customerId] = new Date().toISOString();
+    window.localStorage.setItem(FU_KEY, JSON.stringify(map));
+  } catch { /* private mode — dismissal just won't persist */ }
 }
 
 /**
