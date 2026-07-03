@@ -2,6 +2,7 @@
 import { useStore } from '@/lib/store';
 import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
+import SimpleSummary from '@/components/dashboard/SimpleSummary';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
@@ -70,6 +71,8 @@ export default function CashPage() {
         <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Cash Intelligence</h1>
         <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Runway · burn rate · cash position · forward projections</p>
       </div>
+
+      <SimpleSummary page="cash" />
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>

@@ -4,6 +4,7 @@ import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import LockOverlay from '@/components/ui/LockOverlay';
+import SimpleSummary from '@/components/dashboard/SimpleSummary';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import ChartTooltip from '@/components/ui/ChartTooltip';
@@ -49,6 +50,8 @@ export default function CustomersPage() {
         <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Customer Intelligence</h1>
         <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>RFM segmentation · CLV · Retention · Churn risk</p>
       </div>
+
+      <SimpleSummary page="customers" />
 
       {/* KPI cards - E1 style */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>

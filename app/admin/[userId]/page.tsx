@@ -105,6 +105,7 @@ export default function AdminAccountDetailPage() {
         <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
           <Fact label="Plan" value={<span style={{ textTransform: 'uppercase' }}>{tier === 'proplus' ? 'Pro+' : tier}</span>} />
           <Fact label="Tier source" value={p.tier_source} />
+          <Fact label="Referred by" value={p.referred_by} />
           <Fact label="Granted by" value={p.tier_granted_by} />
           <Fact label="Business type" value={p.business_type} />
           <Fact label="Industry" value={p.industry} />

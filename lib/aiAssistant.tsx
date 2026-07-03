@@ -30,6 +30,7 @@ import { reorderProposals, followUpProposals } from '@/lib/automation';
 import { industryOf } from '@/lib/industries';
 import { matchBenchmark, referenceContext } from '@/lib/industryIntel';
 import { isNetworkError } from '@/lib/outbox';
+import { parseScenario, runScenario } from '@/lib/scenario';
 import {
   localAnswer, getComponentDoc, renderExplanation, type LiveMetrics,
 } from '@/lib/aiKnowledge';
@@ -574,6 +575,17 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         }
         lines.push('', '_Reference ranges come from published industry studies — orientation, not targets. Your own three-month trend beats any industry average._');
         pushAssistant(lines.join('\n'));
+        return;
+      }
+    }
+
+    // 1c) Scenario questions — "what if costs go up 20%?" — deterministic
+    //     arithmetic on the owner's real monthly averages, assumptions stated
+    //     out loud, ranged where the truth depends on cost behaviour.
+    {
+      const sc = parseScenario(text);
+      if (sc) {
+        pushAssistant(runScenario(sc, s.monthly, sym));
         return;
       }
     }

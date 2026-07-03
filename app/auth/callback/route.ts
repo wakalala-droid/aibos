@@ -19,6 +19,10 @@ export async function GET(request: NextRequest) {
   const redirectTo  = searchParams.get('redirectTo') ?? '/dashboard';
   const error       = searchParams.get('error');
   const errorDesc   = searchParams.get('error_description');
+  // Referral code (first 8 chars of the referrer's user id, set by the login
+  // page). Sanitised hard: it lands in a DB column.
+  const refRaw      = searchParams.get('ref');
+  const referredBy  = refRaw && /^[a-zA-Z0-9-]{4,16}$/.test(refRaw) ? refRaw : null;
 
   // ── OAuth error from Google/Supabase ──────────────────────────────────────
   if (error) {
@@ -86,6 +90,9 @@ export async function GET(request: NextRequest) {
         tier:              'free',
         tier_source:       'self',
         subscription_tier: 'free',
+        // ignoreDuplicates ⇒ referred_by is stamped on FIRST provision only —
+        // an existing account can never be claimed retroactively (anti-gaming).
+        referred_by:       referredBy,
       }, { onConflict: 'id', ignoreDuplicates: true });
     }
   } catch (profileError) {

@@ -102,11 +102,17 @@ function LoginForm() {
     setErrorMsg(null);
 
     const redirectTo = searchParams.get('redirectTo') ?? '/dashboard';
+    // Referral code rides the whole OAuth round-trip so the auth callback can
+    // stamp referred_by on FIRST profile provision only (referral loop).
+    const ref = searchParams.get('ref');
+    const callbackUrl =
+      `${window.location.origin}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}` +
+      (ref ? `&ref=${encodeURIComponent(ref)}` : '');
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`,
+        redirectTo: callbackUrl,
         queryParams: { access_type: 'offline', prompt: 'select_account' },
         scopes: 'email profile',
       },

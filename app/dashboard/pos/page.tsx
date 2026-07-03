@@ -4,6 +4,7 @@ import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import LockOverlay from '@/components/ui/LockOverlay';
+import SimpleSummary from '@/components/dashboard/SimpleSummary';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
@@ -28,6 +29,8 @@ export default function POSPage() {
           {[posBusinessName, posPeriod].filter(Boolean).join(' · ')}
         </p>
       </div>
+
+      <SimpleSummary page="ops" />
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>

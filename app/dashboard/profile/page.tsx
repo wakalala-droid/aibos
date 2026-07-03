@@ -338,6 +338,57 @@ export default function BusinessProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* Referral loop — owners recommending AIBOS to owners is the growth
+            engine that costs nothing and carries trust no ad can buy. */}
+        {user?.id && <InviteCard userId={user.id} />}
+      </div>
+    </div>
+  );
+}
+
+function InviteCard({ userId }: { userId: string }) {
+  const [copied, setCopied] = useState(false);
+  const code = userId.replace(/-/g, '').slice(0, 8);
+  const link = typeof window !== 'undefined' ? `${window.location.origin}/login?ref=${code}` : `/login?ref=${code}`;
+  const waText = `I run my business on AI-BOS — it keeps the books, watches my stock and answers questions about my numbers. Try it free: ${link}`;
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard blocked — the link is visible to copy by hand */ }
+  }
+
+  return (
+    <div className="section-card">
+      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
+        Invite a business owner
+      </p>
+      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 14px' }}>
+        Know someone running a shop, lodge, restaurant or site? When someone you invite subscribes to any paid plan,
+        you both get a month of Pro+ free — applied by our team for now.
+      </p>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <code style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-1)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', padding: '9px 12px', borderRadius: 8, wordBreak: 'break-all' }}>
+          {link}
+        </code>
+        <button
+          type="button"
+          onClick={() => void copy()}
+          style={{ padding: '9px 14px', borderRadius: 8, cursor: 'pointer', border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: copied ? 'var(--green)' : 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700 }}
+        >
+          {copied ? 'Copied' : 'Copy link'}
+        </button>
+        <a
+          href={`https://wa.me/?text=${encodeURIComponent(waText)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ padding: '9px 14px', borderRadius: 8, textDecoration: 'none', background: 'var(--green-dim)', color: 'var(--green)', border: '1px solid color-mix(in srgb, var(--green) 35%, transparent)', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700 }}
+        >
+          Share on WhatsApp
+        </a>
       </div>
     </div>
   );
