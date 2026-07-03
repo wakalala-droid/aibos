@@ -384,9 +384,9 @@ function capitalise(s: string): string {
 
 /** Suggested questions surfaced when the panel first opens (empty state). */
 export const DEFAULT_PROMPTS = [
+  'Morning brief',
   'How much cash do I have?',
   "What's my current inventory?",
   'How much did I make today?',
-  'What is my health score?',
   'What should I focus on first?',
 ];

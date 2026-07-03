@@ -8,13 +8,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import type { AccountOverview } from '@/lib/admin';
-import type { Tier } from '@/lib/tiers';
+import { TIERS, type Tier } from '@/lib/tiers';
 
 // ── Small presentational helpers ─────────────────────────────────────────────
 
 function tierStyle(tier: Tier): React.CSSProperties {
   if (tier === 'growth')
     return { color: 'var(--e3)', background: 'color-mix(in srgb, var(--e3) 14%, transparent)', borderColor: 'color-mix(in srgb, var(--e3) 35%, transparent)' };
+  if (tier === 'proplus')
+    return { color: 'var(--e2)', background: 'color-mix(in srgb, var(--e2) 14%, transparent)', borderColor: 'color-mix(in srgb, var(--e2) 35%, transparent)' };
   if (tier === 'pro')
     return { color: 'var(--cyan)', background: 'var(--cyan-dim)', borderColor: 'color-mix(in srgb, var(--cyan) 35%, transparent)' };
   return { color: 'var(--text-3)', background: 'var(--bg-badge)', borderColor: 'var(--border)' };
@@ -23,7 +25,7 @@ function tierStyle(tier: Tier): React.CSSProperties {
 function TierBadge({ tier }: { tier: Tier }) {
   return (
     <span className="badge" style={{ ...tierStyle(tier), textTransform: 'uppercase' }}>
-      {tier}
+      {TIERS[tier]?.name ?? tier}
     </span>
   );
 }
@@ -156,6 +158,9 @@ export default function AdminAccountsPage() {
         >
           {busy ? 'Working…' : acc.tier === 'growth' ? 'Full access ✓' : 'Grant full access (demo)'}
         </button>
+        <button type="button" onClick={() => setTier(acc, 'proplus')} disabled={busy || acc.tier === 'proplus'} style={{ ...btn('ghost'), opacity: busy || acc.tier === 'proplus' ? 0.5 : 1 }}>
+          Pro+
+        </button>
         <button type="button" onClick={() => setTier(acc, 'pro')} disabled={busy || acc.tier === 'pro'} style={{ ...btn('ghost'), opacity: busy || acc.tier === 'pro' ? 0.5 : 1 }}>
           Pro
         </button>
@@ -191,6 +196,7 @@ export default function AdminAccountsPage() {
         <option value="all">All tiers</option>
         <option value="free">Free</option>
         <option value="pro">Pro</option>
+        <option value="proplus">Pro+</option>
         <option value="growth">Growth</option>
       </select>
       <select aria-label="Sort accounts" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} style={{ minHeight: 42, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.82rem' }}>

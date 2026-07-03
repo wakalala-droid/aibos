@@ -8,7 +8,7 @@ import { TIERS } from '@/lib/tiers';
 // + the SAFEGUARD no-fabrication ethos). Every figure is shown as an estimate or
 // a clearly-labelled example the visitor can check against their own numbers.
 
-const PRO = TIERS.pro.priceMonthly; // K450/mo
+const PRO = TIERS.pro.priceMonthly; // single source of truth — lib/tiers.ts
 
 function fmt(n: number) {
   return n.toLocaleString('en-ZM', { maximumFractionDigits: 0 });

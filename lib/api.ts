@@ -191,7 +191,7 @@ export type PaymentStatus = 'pending' | 'successful' | 'failed';
 
 export interface InitiatePaymentPayload {
   network: PaymentNetwork;
-  plan: 'pro' | 'growth';
+  plan: 'pro' | 'proplus' | 'growth';
   billing: 'monthly' | 'annual';
   payer_phone: string;
   user_id?: string;

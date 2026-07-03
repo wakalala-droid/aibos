@@ -194,6 +194,18 @@ export default function SimpleHome() {
           </button>
         </form>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+          <button
+            type="button"
+            onClick={() => ask('Morning brief')}
+            style={{
+              padding: '7px 12px', borderRadius: 999, cursor: 'pointer',
+              border: '1px solid color-mix(in srgb, var(--cyan) 40%, transparent)',
+              background: 'var(--cyan-dim)', color: 'var(--cyan)',
+              fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', fontWeight: 700,
+            }}
+          >
+            Morning Brief
+          </button>
           {ind.prompts.slice(0, 3).map((p) => (
             <button
               key={p}

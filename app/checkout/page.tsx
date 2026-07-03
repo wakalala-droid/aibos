@@ -16,7 +16,7 @@ const MERCHANT = {
 type Network = keyof typeof MERCHANT;
 
 function isTier(v: string | null): v is Tier {
-  return v === 'free' || v === 'pro' || v === 'growth';
+  return v === 'free' || v === 'pro' || v === 'proplus' || v === 'growth';
 }
 
 function CheckoutInner() {
@@ -90,7 +90,7 @@ function CheckoutInner() {
     try {
       const r = await initiatePayment({
         network,
-        plan: planParam as 'pro' | 'growth',
+        plan: planParam as 'pro' | 'proplus' | 'growth',
         billing,
         payer_phone: phone,
       });

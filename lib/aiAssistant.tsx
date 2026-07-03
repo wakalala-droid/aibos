@@ -20,7 +20,12 @@ import { useProfile } from '@/lib/profile';
 import { fmt } from '@/lib/utils';
 import { logUsage } from '@/lib/usage';
 import { createClient } from '@/lib/supabase';
-import { listProducts, listEvents, type Product } from '@/lib/api';
+import {
+  listProducts, listEvents, classifyActivity, createEvent, confirmEvent, voidEvent,
+  type Product,
+} from '@/lib/api';
+import { canAccess } from '@/lib/tiers';
+import { composeMorningBrief, bucketSales, expectedOf } from '@/lib/brief';
 import {
   localAnswer, getComponentDoc, renderExplanation, type LiveMetrics,
 } from '@/lib/aiKnowledge';
@@ -217,11 +222,13 @@ function buildContext(
 // the event spine with a real fetch. Every figure comes from recorded events —
 // never from the model (SAFEGUARD §0.1: no fabricated numbers).
 
-type SpineIntent = 'inventory' | 'deliveries' | 'today' | 'owed';
+type SpineIntent = 'inventory' | 'deliveries' | 'today' | 'owed' | 'brief';
 
 function matchSpineIntent(raw: string): SpineIntent | null {
   const q = raw.toLowerCase();
   const selfRef = /\b(my|our|i|we)\b/.test(q);
+  // The Morning Brief — the owner's whole day in one answer (Pro+).
+  if (/\b(morning|daily|today'?s)\s+brief\b|\bmy brief\b|\bhow('?s| is) (my |the )?business( doing| looking)?( today)?\b/.test(q)) return 'brief';
   // Pure definitions ("what is inventory?") carry no self-reference and stay
   // with the glossary; anything anchored to *their* stock comes here.
   if (/\b(inventory|stock)\b/.test(q) && (selfRef || /\b(how much|how many|current|left|low|running)\b/.test(q))) return 'inventory';
@@ -231,9 +238,44 @@ function matchSpineIntent(raw: string): SpineIntent | null {
   return null;
 }
 
+// ── Chat actions (Pro+) ───────────────────────────────────────────────────────
+// "sold 3 bags of mealie meal for K450" typed in the chat becomes a PENDING
+// spine event the owner confirms with one word. Propose → confirm, always —
+// the assistant never posts to the books without an explicit yes.
+
+const CHAT_CONFIRM = /^(confirm|yes|yebo|yep|ok(ay)?|post it|do it)\b/i;
+const CHAT_CANCEL = /^(cancel|no|discard|void|scrap|don'?t)\b/i;
+
+function looksLikeTransaction(raw: string): boolean {
+  const q = raw.trim().toLowerCase();
+  if (/^(record|log)\b/.test(q)) return true;
+  // Transaction verbs need a number to be actionable ("sold out" is not a sale).
+  return /^(sold|paid|bought|spent|received|expecting|banked|invoiced|collected)\b/.test(q) && /\d/.test(q);
+}
+
 async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMetrics): Promise<string | null> {
   const sym = s.currencySymbol || 'K';
   const money = (n: number) => fmt(n, true, sym);
+
+  if (intent === 'brief') {
+    if (!canAccess(s.tier, 'morning_brief')) {
+      return 'The **Morning Brief** — your cash, sales, stock and expected deliveries summarised every morning, with one clear thing to do next — is a **Pro+** feature.\n\n[Upgrade to Pro+](/checkout?plan=proplus) and your day starts ready before you ask.';
+    }
+    const [p, sales, receipts] = await Promise.allSettled([
+      listProducts(),
+      listEvents({ event_type: 'Sale', limit: 300 }),
+      listEvents({ event_type: 'InventoryReceipt', status: 'pending', limit: 50 }),
+    ]);
+    const { today, yesterday } = bucketSales(sales.status === 'fulfilled' ? sales.value : []);
+    return composeMorningBrief({
+      sym,
+      twin: s.twin,
+      products: p.status === 'fulfilled' ? p.value : [],
+      salesToday: today,
+      salesYesterday: yesterday,
+      expectedDeliveries: expectedOf(receipts.status === 'fulfilled' ? receipts.value : []),
+    });
+  }
 
   if (intent === 'owed') {
     if (!lv.hasTwin) return null; // no recorded events → let the honest no-data path handle it
@@ -272,22 +314,42 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
   }
 
   if (intent === 'deliveries') {
-    let receipts: Awaited<ReturnType<typeof listEvents>> = [];
-    try { receipts = await listEvents({ event_type: 'InventoryReceipt', limit: 5 }); } catch { receipts = []; }
+    const [pending, recent] = await Promise.allSettled([
+      listEvents({ event_type: 'InventoryReceipt', status: 'pending', limit: 50 }),
+      listEvents({ event_type: 'InventoryReceipt', limit: 5 }),
+    ]);
+    const expected = expectedOf(pending.status === 'fulfilled' ? pending.value : []);
     const suppliers = Number(s.twin?.suppliers) || 0;
     const lines: string[] = [];
-    lines.push("I can't see scheduled deliveries yet — AIBOS tracks what *has* arrived, not what's on the way (purchase orders are on the roadmap).");
-    const last = receipts.find((e) => e.status !== 'void');
+
+    if (expected.length > 0) {
+      const startTomorrow = new Date(); startTomorrow.setHours(24, 0, 0, 0);
+      const dueToday = expected.filter((e) => new Date(e.occurred_at) < startTomorrow);
+      if (dueToday.length > 0) {
+        lines.push(`🚚 **Yes — ${dueToday.length === 1 ? 'one delivery is' : `${dueToday.length} deliveries are`} expected today:**`);
+        for (const e of dueToday.slice(0, 5)) {
+          const from = e.payload?.supplier ? ` from ${String(e.payload.supplier)}` : '';
+          const amt = Number(e.payload?.amount) || 0;
+          lines.push(`• ${String(e.payload?.item ?? 'Stock')}${from}${amt > 0 ? ` — ${money(amt)}` : ''}`);
+        }
+        lines.push('\nWhen it arrives, confirm it on **Activity** (or just tell me) and your stock and payables update instantly.');
+      } else {
+        const next = expected[0];
+        const when = new Date(next.occurred_at).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' });
+        lines.push(`Nothing due today. Your next expected delivery is **${when}**${next.payload?.supplier ? ` from ${String(next.payload.supplier)}` : ''}.`);
+      }
+      return lines.join('\n');
+    }
+
+    lines.push('No deliveries are expected today — nothing is tracked as on the way.');
+    const last = (recent.status === 'fulfilled' ? recent.value : []).find((e) => e.status === 'confirmed');
     if (last) {
       const when = new Date(last.occurred_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
       const from = last.payload?.supplier ? ` from ${String(last.payload.supplier)}` : '';
-      const amt = Number(last.payload?.amount) || 0;
-      lines.push(`\nWhat I do know: your last recorded stock delivery was **${when}**${from}${amt > 0 ? ` (${money(amt)})` : ''}.`);
-    } else {
-      lines.push('\nNo stock deliveries have been recorded yet.');
+      lines.push(`Your last stock delivery arrived **${when}**${from}.`);
     }
     if (suppliers > 0) lines.push(`You have **${suppliers} supplier${suppliers === 1 ? '' : 's'}** on file.`);
-    lines.push('\nWhen stock arrives, just tell me on **Record** — “received 50kg sugar from Kasama Traders, K900” — and I\'ll update your stock and what you owe automatically.');
+    lines.push('\nExpecting stock? Tell me — “expecting 50kg sugar from Kasama Traders, K900” — and I\'ll track it until it arrives.');
     return lines.join('\n');
   }
 
@@ -323,6 +385,9 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
   const profileRef = useRef(profile);
   useEffect(() => { profileRef.current = profile; }, [profile]);
 
+  // A chat-drafted spine event awaiting the owner's "confirm"/"cancel".
+  const pendingChatEventRef = useRef<{ id: string; summary: string } | null>(null);
+
   const setOpen = useCallback((v: boolean) => setOpenState(v), []);
   const toggle = useCallback(() => setOpenState((v) => !v), []);
   const clearConversation = useCallback(() => { setMessages([]); setSuggestions([]); }, []);
@@ -340,6 +405,77 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
 
     const s = useStore.getState();
     const lv = buildLiveMetrics(s);
+    const sym = s.currencySymbol || 'K';
+
+    // 0) A drafted event is waiting on the owner's word — one word settles it.
+    const draft = pendingChatEventRef.current;
+    if (draft && CHAT_CONFIRM.test(text)) {
+      pendingChatEventRef.current = null;
+      setLoading(true);
+      try {
+        await confirmEvent(draft.id);
+        await useStore.getState().refreshTwin();
+        const cashNow = useStore.getState().twin?.cash;
+        pushAssistant(`✅ Recorded — ${draft.summary}.${typeof cashNow === 'number' ? ` Cash is now **${fmt(Number(cashNow), true, sym)}**.` : ''}`);
+      } catch (err) {
+        pushAssistant(`I couldn't post it: ${(err as Error).message}. It's saved as pending — you can confirm it on the **Activity** page.`);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+    if (draft && CHAT_CANCEL.test(text)) {
+      pendingChatEventRef.current = null;
+      setLoading(true);
+      try {
+        await voidEvent(draft.id);
+        pushAssistant('Discarded — nothing was recorded.');
+      } catch {
+        pushAssistant("I couldn't discard it here — you can void it on the **Activity** page.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+    if (draft) pendingChatEventRef.current = null; // moved on — draft stays pending on Activity
+
+    // 0b) A transaction typed straight into the chat (Pro+): draft it as a
+    //     PENDING event and wait for the owner's confirm. Never auto-post.
+    if (looksLikeTransaction(text)) {
+      if (!canAccess(s.tier, 'chat_actions')) {
+        pushAssistant('Recording straight from the chat is a **Pro+** feature — type it once, say “confirm”, done.\n\nFor now the **Record** page does the same job, or [upgrade to Pro+](/checkout?plan=proplus) and never leave this window.');
+        setSuggestions(['How do I record a sale?']);
+        return;
+      }
+      setLoading(true);
+      try {
+        const cleaned = text.replace(/^(record|log)\b[:,]?\s*/i, '');
+        const proposal = await classifyActivity(cleaned);
+        if (!proposal?.event_type) {
+          pushAssistant("I couldn't work out what kind of activity that is. Try phrasing it like “sold 3 bags of mealie meal for K450” — or use the **Record** page, which previews everything first.");
+          return;
+        }
+        const ev = await createEvent({
+          event_type: proposal.event_type,
+          payload: proposal.payload,
+          source: 'manual',
+          confidence: proposal.confidence,
+          status: 'pending',
+          note: 'drafted via chat',
+        });
+        const amt = Number(proposal.payload?.amount) || 0;
+        const who = proposal.payload?.customer ?? proposal.payload?.supplier ?? proposal.payload?.item ?? proposal.payload?.category;
+        const summary = `**${proposal.event_type}**${who ? ` · ${String(who)}` : ''}${amt > 0 ? ` — ${fmt(amt, true, sym)}` : ''}`;
+        pendingChatEventRef.current = { id: ev.id, summary };
+        pushAssistant(`Here's what I'll record:\n\n${summary}\n\nSay **confirm** to post it to your books, or **cancel** to discard it.`);
+        setSuggestions(['Confirm', 'Cancel']);
+      } catch (err) {
+        pushAssistant(`I couldn't draft that (${(err as Error).message}). The **Record** page will walk you through it instead.`);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     // 1) Spine intents — live business-state questions answered from recorded
     //    events with a real fetch (stock levels, deliveries, today's takings).

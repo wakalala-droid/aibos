@@ -1,6 +1,6 @@
 /**
  * POST /api/admin/set-tier — promote/demote any account's tier.
- * Body: { targetUserId: string, tier: 'free'|'pro'|'growth', source?: string }
+ * Body: { targetUserId: string, tier: 'free'|'pro'|'proplus'|'growth', source?: string }
  *
  * Admin-verified; writes `profiles` (tier, tier_source, tier_granted_by/at) and
  * an `admin_audit` row, both via the service-role client.
@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-server';
 import { createServiceClient } from '@/lib/supabase-admin';
 
-const TIERS = ['free', 'pro', 'growth'] as const;
+const TIERS = ['free', 'pro', 'proplus', 'growth'] as const;
 const SOURCES = ['self', 'payment', 'admin_demo'] as const;
 
 export async function POST(req: NextRequest) {

@@ -47,9 +47,9 @@ export default function PricingTiers() {
     }
     const checkout = `/checkout?plan=${tier}&billing=${billing}`;
     if (isAuthenticated) {
-      return { label: `Choose ${TIERS[tier].name}`, href: checkout, primary: tier === 'pro' };
+      return { label: `Choose ${TIERS[tier].name}`, href: checkout, primary: tier === 'proplus' };
     }
-    return { label: `Start with ${TIERS[tier].name}`, href: `/login?redirectTo=${encodeURIComponent(checkout)}`, primary: tier === 'pro' };
+    return { label: `Start with ${TIERS[tier].name}`, href: `/login?redirectTo=${encodeURIComponent(checkout)}`, primary: tier === 'proplus' };
   }
 
   return (
@@ -84,7 +84,8 @@ export default function PricingTiers() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(255px, 1fr))', gap: 18 }}>
         {TIER_ORDER.map((tier, i) => {
           const meta = TIERS[tier];
-          const popular = tier === 'pro';
+          // Pro+ is the flagship — "AIBOS runs your day" is the story we lead with.
+          const popular = tier === 'proplus';
           const { big, small } = priceLabel(tier, billing);
           const action = cta(tier);
 
