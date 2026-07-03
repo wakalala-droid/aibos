@@ -46,6 +46,16 @@ export interface LiveMetrics {
   benchmarksWarn?: number;
   topSeller?: string;
   productsCount?: number;
+  // Digital Twin — live business state folded from recorded events (the spine).
+  // Present whenever the user has recorded activity, even with no file uploaded.
+  hasTwin: boolean;
+  eventCount?: number;
+  cash?: Money;
+  inventoryValue?: Money;
+  receivables?: Money;
+  payables?: Money;
+  suppliersCount?: number;
+  employeesCount?: number;
 }
 
 // ── Component / metric documentation ────────────────────────────────────────
@@ -236,6 +246,10 @@ const METRIC_RESOLVERS = {
   retention: (lv: LiveMetrics) => (lv.retentionRate !== undefined ? `Yours is ${pct(lv.retentionRate)}.` : null),
   churn: (lv: LiveMetrics) => (lv.highChurn !== undefined ? `You have ${lv.highChurn} customer${lv.highChurn === 1 ? '' : 's'} at high churn risk.` : null),
   attach: (lv: LiveMetrics) => (lv.drinkAttach !== undefined ? `Your drink attach is ${pct(lv.drinkAttach)}.` : null),
+  cash: (lv: LiveMetrics) => (lv.cash ? `Your cash right now is ${lv.cash.fmt}.` : null),
+  inventoryValue: (lv: LiveMetrics) => (lv.inventoryValue ? `Your stock on hand is worth ${lv.inventoryValue.fmt}.` : null),
+  receivables: (lv: LiveMetrics) => (lv.receivables ? `Customers currently owe you ${lv.receivables.fmt}.` : null),
+  payables: (lv: LiveMetrics) => (lv.payables ? `You currently owe suppliers ${lv.payables.fmt}.` : null),
 } satisfies Record<string, (lv: LiveMetrics) => string | null>;
 
 const GLOSSARY: GlossaryEntry[] = [
@@ -273,6 +287,15 @@ const GLOSSARY: GlossaryEntry[] = [
     def: 'A forecast projects where your numbers are heading based on recent trends, so you can plan cash, stock and staffing before the future arrives.' },
   { keys: ['champion', 'champions'], term: 'Champions',
     def: 'Champions are your best customers — recent, frequent and high-spending. They typically drive a large share of profit and are the group most worth protecting.' },
+  // Digital Twin terms — answered from recorded events, no file needed.
+  { keys: ['cash on hand', 'cash balance', 'cash position', 'money in the till', 'bank balance', 'cash'], term: 'Cash', metric: 'cash',
+    def: 'Cash is the money your business is holding right now. Every event you record — a sale, an expense, a supplier payment — moves it up or down from your opening balance.' },
+  { keys: ['stock value', 'inventory value', 'stock on hand', 'inventory', 'stock'], term: 'Stock on hand', metric: 'inventoryValue',
+    def: 'Stock on hand is the value of the goods you currently hold to sell. It grows when you receive stock and shrinks as you sell, so it tells you how much money is sitting on your shelves.' },
+  { keys: ['owes me', 'owe me', 'receivables', 'receivable', 'debtors', 'customers owe'], term: 'Receivables', metric: 'receivables',
+    def: 'Receivables is money customers owe you — sales you have made but not yet been paid for. The faster you collect it, the healthier your cash.' },
+  { keys: ['i owe', 'we owe', 'payables', 'payable', 'creditors'], term: 'Payables', metric: 'payables',
+    def: 'Payables is money you owe suppliers — goods or services you have received but not yet paid for. Tracking it stops due dates from surprising your cash.' },
 ];
 
 // ── Local answer engine ─────────────────────────────────────────────────────
@@ -306,12 +329,17 @@ export function localAnswer(rawQuery: string, lv: LiveMetrics): string | null {
     return "Hello! I'm your AI-BOS assistant. I can explain anything on your dashboard, define any term, and pull up your live numbers. Long-press any card to have me break it down — or just ask.";
   }
   if (has(q, 'what can you do', 'how do you work', 'who are you', 'what are you', 'how can you help', 'help me')) {
-    return "I'm built into your AI-BOS dashboard. I can:\n\n• **Explain any component** — long-press a card and I'll tell you what it is and why it matters.\n• **Define any term** — ask “what is net margin?” or “explain RFM”.\n• **Read your live numbers** — once you've uploaded data, ask “what's my total revenue?” and I'll pull the real figure.\n• **Reason across your data** — deeper “why” and “what should I do” questions go to the full AI CFO.";
+    return "I'm built into your AI-BOS dashboard. I can:\n\n• **Answer business questions** — “how much cash do I have?”, “what's my current inventory?”, “how much did I make today?”.\n• **Explain any component** — long-press a card and I'll tell you what it is and why it matters.\n• **Define any term** — ask “what is net margin?” or “explain RFM”.\n• **Reason across your data** — deeper “why” and “what should I do” questions go to the full AI CFO.";
   }
 
   // How to upload / add data — always useful, answered locally.
   if (has(q, 'upload', 'import', 'add data', 'add my data', 'load data', 'load my data', 'attach a file', 'attach data', 'bring in data', 'how do i add my', 'where do i put my')) {
     return UPLOAD_HOWTO;
+  }
+
+  // How to record activity — the everyday path, answered locally.
+  if (has(q, 'how do i record', 'how to record', 'record a sale', 'record a purchase', 'record an expense', 'record activity', 'log a sale', 'log an expense')) {
+    return RECORD_HOWTO;
   }
 
   // Open-ended reasoning belongs to the API, even if it mentions a known term.
@@ -344,8 +372,11 @@ export function localAnswer(rawQuery: string, lv: LiveMetrics): string | null {
   return null;
 }
 
+const RECORD_HOWTO =
+  "Recording is how AIBOS learns your business — one line at a time:\n\n1. Open the **Record** page.\n2. Type (or speak) what happened in plain words — “sold 3 bags of mealie meal for K450”, “paid K200 for transport”, “received 50kg sugar from Kasama Traders, K900”.\n3. Check the preview and confirm.\n\nThat's it. Each event updates your cash, stock, and money owed automatically — and the more you record, the smarter my answers get.";
+
 const UPLOAD_HOWTO =
-  "To bring in your data: open the **Overview** page → **Upload & Analyse**, and drop a CSV or Excel file. For financials, include month, revenue and cost columns. You can also upload a POS export or a customer/sales file. As soon as it's in, I can analyse your real numbers — until then I won't make any up.";
+  "Two ways to bring in your data:\n\n• **Record it** — open **Record**, type what happened (“sold 3 bags of mealie meal for K450”), confirm, done. AIBOS keeps the books from there.\n• **Upload a file** — on the **Overview** page, drop a CSV or Excel file (financials with month, revenue and cost columns, a POS export, or a customer file).\n\nAs soon as either is in, I can answer with your real numbers — until then I won't make any up.";
 
 function capitalise(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -353,9 +384,9 @@ function capitalise(s: string): string {
 
 /** Suggested questions surfaced when the panel first opens (empty state). */
 export const DEFAULT_PROMPTS = [
+  'How much cash do I have?',
+  "What's my current inventory?",
+  'How much did I make today?',
   'What is my health score?',
-  'Explain net margin',
-  "What's my total revenue?",
-  'Who are my best customers?',
   'What should I focus on first?',
 ];

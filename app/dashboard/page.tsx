@@ -6,6 +6,7 @@ import SectionCard from '@/components/ui/SectionCard';
 import InsightCard from '@/components/ui/InsightCard';
 import FileUpload from '@/components/upload/FileUpload';
 import AICFOChat from '@/components/chat/AICFOChat';
+import SimpleHome from '@/components/dashboard/SimpleHome';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
@@ -97,7 +98,15 @@ function ComingSoon({ colour, text }: { colour: string; text: string }) {
   );
 }
 
-export default function OverviewPage() {
+// Simple mode gets its own front door; the full Overview stays the Pro surface.
+// Two components (not an early return) so each keeps a stable hook order when
+// the user flips the toggle at runtime.
+export default function DashboardHome() {
+  const uiMode = useStore((s) => s.uiMode);
+  return uiMode === 'simple' ? <SimpleHome /> : <OverviewPage />;
+}
+
+function OverviewPage() {
   const {
     kpi, health, monthly, alerts,
     intelligenceScores, crossInsights, unifiedBrief,

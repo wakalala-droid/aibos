@@ -16,9 +16,11 @@ import React, {
   createContext, useContext, useState, useRef, useEffect, useCallback,
 } from 'react';
 import { useStore } from '@/lib/store';
+import { useProfile } from '@/lib/profile';
 import { fmt } from '@/lib/utils';
 import { logUsage } from '@/lib/usage';
 import { createClient } from '@/lib/supabase';
+import { listProducts, listEvents, type Product } from '@/lib/api';
 import {
   localAnswer, getComponentDoc, renderExplanation, type LiveMetrics,
 } from '@/lib/aiKnowledge';
@@ -94,9 +96,19 @@ function buildLiveMetrics(s: StoreState): LiveMetrics {
   const hasCustomer = s.hasEngine2Data || safeRfm.length > 0;
   const hasOps = s.hasEngine3Data || !!s.posGrandTotals;
   const money = (raw: number) => ({ raw, fmt: fmt(raw, true, sym) });
+  const twin = s.twin;
+  const twinActive = !!twin && (Number(twin.event_count) > 0 || Number(twin.cash) !== 0);
   return {
     currency: sym,
     hasFinancial, hasCustomer, hasOps,
+    hasTwin: twinActive,
+    eventCount: twin ? Number(twin.event_count) || 0 : undefined,
+    cash: twinActive ? money(Number(twin!.cash) || 0) : undefined,
+    inventoryValue: twinActive && Number(twin!.inventory_value) > 0 ? money(Number(twin!.inventory_value)) : undefined,
+    receivables: twinActive && Number(twin!.receivables) > 0 ? money(Number(twin!.receivables)) : undefined,
+    payables: twinActive && Number(twin!.payables) > 0 ? money(Number(twin!.payables)) : undefined,
+    suppliersCount: twinActive ? Number(twin!.suppliers) || 0 : undefined,
+    employeesCount: twinActive ? Number(twin!.employees) || 0 : undefined,
     revenue: hasFinancial ? money(s.kpi?.totalRevenue ?? 0) : undefined,
     costs: hasFinancial ? money(s.kpi?.totalCosts ?? 0) : undefined,
     profit: hasFinancial ? money(s.kpi?.totalProfit ?? 0) : undefined,
@@ -121,15 +133,43 @@ function buildLiveMetrics(s: StoreState): LiveMetrics {
 }
 
 // Full master context sent to the Grok backend on API fall-through.
-function buildContext(s: StoreState, lv: LiveMetrics): Record<string, unknown> {
+function buildContext(
+  s: StoreState, lv: LiveMetrics,
+  biz?: { name?: string | null; type?: string | null; industry?: string | null; location?: string | null },
+): Record<string, unknown> {
   const sym = s.currencySymbol || 'K';
   const ctx: Record<string, unknown> = {
     currency_symbol: sym,
     cabinet_id: s.cabinetId ?? undefined,
-    has_data: lv.hasFinancial || lv.hasCustomer || lv.hasOps,
+    has_data: lv.hasFinancial || lv.hasCustomer || lv.hasOps || lv.hasTwin,
     // Anti-fabrication contract for the model (trust is the product).
     guardrails: 'Only state numbers that appear in this context. If a figure is not provided, say you do not have it and that no data has been uploaded for it. Never estimate, assume, round-trip, or invent figures.',
   };
+  // Who this business is — lets the model answer in the vertical's language
+  // (a lodge's guests, a mine's offtakers) without inventing any numbers.
+  if (biz && (biz.name || biz.type || biz.industry)) {
+    ctx.business_profile = {
+      name: biz.name || undefined,
+      business_type: biz.type || undefined,
+      industry: biz.industry || undefined,
+      location: biz.location || undefined,
+    };
+  }
+  // Digital Twin — live business state folded from recorded events.
+  if (lv.hasTwin && s.twin) {
+    ctx.business_state = {
+      source: 'digital_twin — folded from events the user recorded',
+      cash: s.twin.cash,
+      receivables: s.twin.receivables,
+      payables: s.twin.payables,
+      inventory_value: s.twin.inventory_value,
+      suppliers: s.twin.suppliers,
+      employees: s.twin.employees,
+      customers: s.twin.customers,
+      event_count: s.twin.event_count,
+      health: s.twin.health_label,
+    };
+  }
   if (lv.hasFinancial) {
     ctx.pnl = {
       total_revenue: s.kpi?.totalRevenue ?? 0, total_costs: s.kpi?.totalCosts ?? 0,
@@ -171,6 +211,98 @@ function buildContext(s: StoreState, lv: LiveMetrics): Record<string, unknown> {
   return ctx;
 }
 
+// ── Spine intents ─────────────────────────────────────────────────────────────
+// Live business-state questions ("what's my current inventory?", "are my
+// suppliers delivering today?", "how much did I make today?") are answered from
+// the event spine with a real fetch. Every figure comes from recorded events —
+// never from the model (SAFEGUARD §0.1: no fabricated numbers).
+
+type SpineIntent = 'inventory' | 'deliveries' | 'today' | 'owed';
+
+function matchSpineIntent(raw: string): SpineIntent | null {
+  const q = raw.toLowerCase();
+  const selfRef = /\b(my|our|i|we)\b/.test(q);
+  // Pure definitions ("what is inventory?") carry no self-reference and stay
+  // with the glossary; anything anchored to *their* stock comes here.
+  if (/\b(inventory|stock)\b/.test(q) && (selfRef || /\b(how much|how many|current|left|low|running)\b/.test(q))) return 'inventory';
+  if (/\bdeliver(y|ies|ing|ed)?\b/.test(q) || (/\bsuppliers?\b/.test(q) && selfRef)) return 'deliveries';
+  if (/\b(today|this morning|tonight|so far)\b/.test(q) && /\b(sale|sales|sold|sell|made|make|revenue|earn|earned|takings?|business|doing)\b/.test(q)) return 'today';
+  if (/\bowes? (me|us)\b|\bowing (me|us)\b|\bwho (do i|do we) owe\b|\bwhat (do i|do we) owe\b/.test(q)) return 'owed';
+  return null;
+}
+
+async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMetrics): Promise<string | null> {
+  const sym = s.currencySymbol || 'K';
+  const money = (n: number) => fmt(n, true, sym);
+
+  if (intent === 'owed') {
+    if (!lv.hasTwin) return null; // no recorded events → let the honest no-data path handle it
+    const r = Number(s.twin?.receivables) || 0;
+    const p = Number(s.twin?.payables) || 0;
+    return [
+      r > 0 ? `Customers owe you **${money(r)}**.` : 'No customer currently owes you anything on record.',
+      p > 0 ? `You owe suppliers **${money(p)}**.` : 'You have no recorded supplier debts.',
+      '\nThis comes from the events you\'ve recorded — log credit sales and supplier invoices as they happen and this stays exact.',
+    ].join(' ');
+  }
+
+  if (intent === 'inventory') {
+    let products: Product[] = [];
+    try { products = await listProducts(); } catch { products = []; }
+    const invValue = Number(s.twin?.inventory_value) || 0;
+    if (!products.length) {
+      if (invValue > 0) {
+        return `Your stock on hand is worth **${money(invValue)}**, based on your recorded events.\n\nAdd your products on the **Stock** page and I'll track item-by-item levels — what's running low, what's overstocked, what to reorder.`;
+      }
+      return "You haven't added any stock yet, so there's nothing to count — and I won't guess.\n\nOpen **Stock** to add your products, or record a delivery on **Record** (e.g. “received 50 bags of sugar at K85 each”). From then on I can tell you exactly what's on hand and what's running low.";
+    }
+    const low = products.filter((p) => Number(p.reorder_level) > 0 && Number(p.on_hand ?? 0) <= Number(p.reorder_level));
+    const lines: string[] = [];
+    lines.push(`You have **${products.length} product${products.length === 1 ? '' : 's'}** in your catalog${invValue > 0 ? `, and your stock on hand is worth **${money(invValue)}**` : ''}.`);
+    if (low.length) {
+      lines.push(`\n⚠️ **${low.length} ${low.length === 1 ? 'item is' : 'items are'} at or below reorder level:**`);
+      for (const p of low.slice(0, 6)) {
+        lines.push(`• ${p.name} — ${Number(p.on_hand ?? 0)} ${p.unit || 'units'} left (reorder at ${Number(p.reorder_level)})`);
+      }
+      if (low.length > 6) lines.push(`…and ${low.length - 6} more on the **Stock** page.`);
+    } else {
+      lines.push('\n✅ Nothing is below its reorder level right now.');
+    }
+    return lines.join('\n');
+  }
+
+  if (intent === 'deliveries') {
+    let receipts: Awaited<ReturnType<typeof listEvents>> = [];
+    try { receipts = await listEvents({ event_type: 'InventoryReceipt', limit: 5 }); } catch { receipts = []; }
+    const suppliers = Number(s.twin?.suppliers) || 0;
+    const lines: string[] = [];
+    lines.push("I can't see scheduled deliveries yet — AIBOS tracks what *has* arrived, not what's on the way (purchase orders are on the roadmap).");
+    const last = receipts.find((e) => e.status !== 'void');
+    if (last) {
+      const when = new Date(last.occurred_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+      const from = last.payload?.supplier ? ` from ${String(last.payload.supplier)}` : '';
+      const amt = Number(last.payload?.amount) || 0;
+      lines.push(`\nWhat I do know: your last recorded stock delivery was **${when}**${from}${amt > 0 ? ` (${money(amt)})` : ''}.`);
+    } else {
+      lines.push('\nNo stock deliveries have been recorded yet.');
+    }
+    if (suppliers > 0) lines.push(`You have **${suppliers} supplier${suppliers === 1 ? '' : 's'}** on file.`);
+    lines.push('\nWhen stock arrives, just tell me on **Record** — “received 50kg sugar from Kasama Traders, K900” — and I\'ll update your stock and what you owe automatically.');
+    return lines.join('\n');
+  }
+
+  // intent === 'today' — sum today's confirmed sales from the spine.
+  let sales: Awaited<ReturnType<typeof listEvents>> = [];
+  try { sales = await listEvents({ event_type: 'Sale', limit: 200 }); } catch { return null; }
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const todays = sales.filter((e) => e.status !== 'void' && new Date(e.occurred_at) >= today);
+  if (!todays.length) {
+    return "No sales recorded yet today. If you've made sales, tell me on **Record** — “sold 3 crates of drinks for K360” — and I'll keep today's total live for you.";
+  }
+  const total = todays.reduce((sum, e) => sum + (Number(e.payload?.amount) || 0), 0);
+  return `So far today you've recorded **${todays.length} sale${todays.length === 1 ? '' : 's'}** totalling **${money(total)}**.${lv.cash ? `\n\nYour cash right now is **${lv.cash.fmt}**.` : ''}`;
+}
+
 const HOLD_MS = 480;
 const MOVE_CANCEL = 12;
 
@@ -184,6 +316,12 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
 
   const loadingRef = useRef(false);
   useEffect(() => { loadingRef.current = loading; }, [loading]);
+
+  // Business identity for the model context — read through a ref so sendMessage
+  // stays referentially stable (this provider never re-renders per keystroke).
+  const { profile } = useProfile();
+  const profileRef = useRef(profile);
+  useEffect(() => { profileRef.current = profile; }, [profile]);
 
   const setOpen = useCallback((v: boolean) => setOpenState(v), []);
   const toggle = useCallback(() => setOpenState((v) => !v), []);
@@ -203,16 +341,29 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     const s = useStore.getState();
     const lv = buildLiveMetrics(s);
 
-    // 1) Local answer — definitions, explanations, direct metric lookups.
+    // 1) Spine intents — live business-state questions answered from recorded
+    //    events with a real fetch (stock levels, deliveries, today's takings).
+    const intent = matchSpineIntent(text);
+    if (intent) {
+      setLoading(true);
+      try {
+        const answer = await answerSpineIntent(intent, s, lv);
+        if (answer) { pushAssistant(answer); return; }
+      } catch { /* fall through to the normal flow */ } finally {
+        setLoading(false);
+      }
+    }
+
+    // 2) Local answer — definitions, explanations, direct metric lookups.
     const local = localAnswer(text, lv);
     if (local) { pushAssistant(local); return; }
 
-    // 2) No data uploaded yet → DO NOT call the model. With an empty context it
-    //    will happily invent the user's figures, which is exactly the trust
-    //    failure we must never ship. Answer honestly instead.
-    if (!lv.hasFinancial && !lv.hasCustomer && !lv.hasOps) {
-      pushAssistant("I don't have any of your data loaded yet, so I can't give you real figures — and I won't make them up.\n\nUpload a CSV or Excel file (financial, customer or POS) on the **Overview** page and I'll analyse your actual numbers. Until then I can still explain any metric or term — try \"Explain net margin\" or \"What is RFM?\".");
-      setSuggestions(['Explain net margin', 'What is a health score?', 'How do I upload data?']);
+    // 3) No data yet (no upload AND no recorded events) → DO NOT call the
+    //    model. With an empty context it will happily invent the user's
+    //    figures, which is exactly the trust failure we must never ship.
+    if (!lv.hasFinancial && !lv.hasCustomer && !lv.hasOps && !lv.hasTwin) {
+      pushAssistant("I don't have any of your business data yet, so I can't give you real figures — and I won't make them up.\n\nThe quickest start: open **Record** and tell me what happened today (“sold 3 crates of drinks for K360”). Or upload a CSV/Excel file on the **Overview** page. Until then I can still explain any metric or term — try \"Explain net margin\".");
+      setSuggestions(['How do I record a sale?', 'Explain net margin', 'How do I upload data?']);
       return;
     }
 
@@ -223,7 +374,15 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       const res = await fetch(`${API}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-        body: JSON.stringify({ message: text, context: buildContext(s, lv) }),
+        body: JSON.stringify({
+          message: text,
+          context: buildContext(s, lv, {
+            name: profileRef.current?.business_name,
+            type: profileRef.current?.business_type,
+            industry: profileRef.current?.industry,
+            location: profileRef.current?.location,
+          }),
+        }),
       });
       const body = await res.text();
       let data: Record<string, unknown> = {};

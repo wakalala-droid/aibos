@@ -229,6 +229,9 @@ export interface FinancialState {
 
   sidebarCollapsed: boolean;
   mobileNavOpen: boolean;
+  // Simple mode shows the owner-language surface (Home, Record, Stock, Money);
+  // technical mode shows every engine tab. Persisted — it's a standing choice.
+  uiMode: 'simple' | 'technical';
 
   // Billing / subscription
   tier: Tier;
@@ -287,6 +290,7 @@ interface FinancialActions {
   toggleSidebar: () => void;
   setMobileNav: (v: boolean) => void;
   toggleMobileNav: () => void;
+  setUiMode: (m: 'simple' | 'technical') => void;
   setTier: (t: Tier) => void;
   addLocation: (name: string) => void;
   switchSheet: (sheetName: string) => Promise<void>;
@@ -327,6 +331,7 @@ const INITIAL: FinancialState = {
 
   sidebarCollapsed: false,
   mobileNavOpen: false,
+  uiMode: 'simple' as const,
 
   tier: "free",
   locations: [],
@@ -658,6 +663,8 @@ const _store = create<FinancialState & FinancialActions>()(
       setMobileNav: (v) => set({ mobileNavOpen: v }),
       toggleMobileNav: () => set((s) => ({ mobileNavOpen: !s.mobileNavOpen })),
 
+      setUiMode: (m) => set({ uiMode: m }),
+
       setTier: (t) => set({ tier: t }),
       addLocation: (name) =>
         set((s) => (s.locations.includes(name) ? {} : { locations: [...s.locations, name] })),
@@ -768,6 +775,7 @@ const _store = create<FinancialState & FinancialActions>()(
         cabinetData: s.cabinetData,
         currencySymbol: s.currencySymbol,
         sidebarCollapsed: s.sidebarCollapsed,
+        uiMode: s.uiMode,
         tier: s.tier,
         locations: s.locations,
       }),

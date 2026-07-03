@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme';
 import { useProfile } from '@/lib/profile';
+import { useAiAssistant } from '@/lib/aiAssistant';
 import { TIERS } from '@/lib/tiers';
 
 // ── SVG icon primitives (matching E1 sidebar icon style) ──────────────────
@@ -36,6 +37,7 @@ const IC: Record<string, JSX.Element> = {
   lock:       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>,
   admin:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   pricing:    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg>,
+  sliders:    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M1 14h6M9 8h6M17 16h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   sun:        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.6"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   moon:       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>,
 };
@@ -72,15 +74,29 @@ const NAV: NavEntry[] = [
   { href: '/dashboard/ops-brief',  label: 'Ops Brief',        icon: IC.opsbrief,    engine: 'ops' },
 ];
 
+// Simple mode — the owner-language surface. Five doors, no jargon, no engine
+// tabs (ux_intelligence.md DECISION SIMPLIFICATION: remove decisions that don't
+// need to exist). Every technical page stays one toggle away.
+const SIMPLE_NAV: NavItem[] = [
+  { href: '/dashboard',           label: 'Home',     icon: IC.overview  },
+  { href: '/dashboard/record',    label: 'Record',   icon: IC.record    },
+  { href: '/dashboard/inventory', label: 'Stock',    icon: IC.inventory },
+  { href: '/dashboard/cash',      label: 'Money',    icon: IC.cash      },
+  { href: '/dashboard/timeline',  label: 'Activity', icon: IC.timeline  },
+];
+
 export default function Sidebar() {
   const pathname = usePathname();
   const {
     sidebarCollapsed, toggleSidebar, hasEngine2Data, hasEngine3Data, uploadedFile,
-    mobileNavOpen, setMobileNav, tier,
+    mobileNavOpen, setMobileNav, tier, uiMode, setUiMode,
   } = useStore();
   const { toggle, isDark } = useTheme();
   const { isAdmin } = useProfile();
+  const { setOpen: setAssistantOpen } = useAiAssistant();
   const col = sidebarCollapsed;
+  const simple = uiMode === 'simple';
+  const entries: NavEntry[] = simple ? SIMPLE_NAV : NAV;
 
   const isLocked = (eng?: 'ci' | 'ops') =>
     eng === 'ci' ? !hasEngine2Data : eng === 'ops' ? !hasEngine3Data : false;
@@ -149,7 +165,7 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav aria-label="Dashboard sections" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '8px 0' }}>
-        {NAV.map((entry, i) => {
+        {entries.map((entry, i) => {
           if ('type' in entry) {
             return (
               <AnimatePresence key={`sec-${i}`}>
@@ -172,7 +188,11 @@ export default function Sidebar() {
           const accent = getAccent(item.engine);
 
           return (
-            <div key={item.href} title={locked ? 'Upload data to unlock' : undefined}>
+            <div
+              key={item.href}
+              title={locked ? 'Upload data to unlock' : undefined}
+              data-tour={item.href === '/dashboard/record' ? 'nav-record' : undefined}
+            >
               <Link
                 href={locked ? '#' : item.href}
                 aria-current={active ? 'page' : undefined}
@@ -218,6 +238,33 @@ export default function Sidebar() {
             </div>
           );
         })}
+
+        {/* Ask AIBOS — simple mode's front door to the assistant. */}
+        {simple && (
+          <button
+            type="button"
+            data-tour="ask-aibos"
+            onClick={() => { setAssistantOpen(true); setMobileNav(false); }}
+            aria-label="Ask AIBOS anything about your business"
+            title={col ? 'Ask AIBOS' : undefined}
+            style={{ background: 'transparent', border: 'none', padding: 0, width: '100%', cursor: 'pointer', textAlign: 'left' }}
+          >
+            <div className="nav-item">
+              <span style={{ color: 'var(--cyan)', flexShrink: 0, display: 'flex' }}>{IC.advisor}</span>
+              <AnimatePresence>
+                {!col && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.15 }}
+                    className="nav-label" style={{ color: 'var(--text-2)', flex: 1 }}
+                  >
+                    Ask AIBOS
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
+          </button>
+        )}
 
         {/* Admin — only rendered for admins (cosmetic; server gate is the real one) */}
         {isAdmin && (
@@ -318,6 +365,58 @@ export default function Sidebar() {
         >
           {isDark ? IC.sun : IC.moon}
         </button>
+
+        {/* Simple ⇄ Pro mode switch — every technical tab is one flick away. */}
+        {col ? (
+          <button
+            type="button"
+            onClick={() => setUiMode(simple ? 'technical' : 'simple')}
+            aria-label={simple ? 'Switch to Pro mode — show all intelligence tabs' : 'Switch to Simple mode'}
+            title={simple ? 'Switch to Pro mode' : 'Switch to Simple mode'}
+            style={{
+              width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border-md)',
+              background: 'var(--bg-badge)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: simple ? 'var(--text-3)' : 'var(--cyan)', flexShrink: 0,
+              transition: 'all 0.15s ease',
+            }}
+          >
+            {IC.sliders}
+          </button>
+        ) : (
+          <div
+            role="group"
+            aria-label="Interface mode"
+            data-tour="mode-toggle"
+            style={{
+              display: 'flex', height: 32, borderRadius: 8, overflow: 'hidden',
+              border: '1px solid var(--border-md)', background: 'var(--bg-badge)', flexShrink: 0,
+            }}
+          >
+            {(['simple', 'technical'] as const).map((m) => {
+              const on = uiMode === m;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setUiMode(m)}
+                  aria-pressed={on}
+                  aria-label={m === 'simple' ? 'Simple mode — the essentials in plain language' : 'Pro mode — all intelligence tabs'}
+                  style={{
+                    padding: '0 10px', border: 'none', cursor: 'pointer',
+                    fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', fontWeight: 700,
+                    letterSpacing: '0.02em',
+                    background: on ? 'var(--cyan)' : 'transparent',
+                    color: on ? '#fff' : 'var(--text-4)',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {m === 'simple' ? 'Simple' : 'Pro'}
+                </button>
+              );
+            })}
+          </div>
+        )}
         <AnimatePresence>
           {!col && uploadedFile && (
             <motion.span
