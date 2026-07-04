@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useFinancialStore } from "@/lib/store";
 import { logUsage, type UsageEngine } from "@/lib/usage";
 import { authHeaders } from "@/lib/api";
+import CurrencySelector from "@/components/ui/CurrencySelector";
 
 const ACCEPTED = ".csv,.xlsx,.xlsm,.xls";
 
@@ -20,11 +21,9 @@ export default function FileUpload() {
   const activeSheet = store.activeSheet ?? null;
   const isSwitchingSheet = store.isSwitchingSheet ?? false;
   const cabinet = store.cabinet ?? [];
-  const currency = (store as { currencySymbol?: string }).currencySymbol ?? "K";
 
   const [dragging, setDragging] = useState(false);
   const [showCabinet, setShowCabinet] = useState(false);
-  const [localSym, setLocalSym] = useState(currency);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const doUpload = useCallback(
@@ -67,13 +66,8 @@ export default function FileUpload() {
           );
         }
 
-        // Apply currency from input if not returned by API
-        if (!data.currency && !data.currencySymbol && localSym) {
-          data.currency = localSym;
-        }
-        store.setCurrency(
-          (data.currencySymbol as string) || (data.currency as string) || localSym || "K"
-        );
+        // Currency is decided inside setUploadResult: the file's detected
+        // currency applies unless the user pinned one in the universal selector.
         store.setUploadResult({ ...data, filename: file.name });
         const engine = typeof data.engine === "string" ? data.engine : undefined;
         logUsage("upload", {
@@ -88,7 +82,7 @@ export default function FileUpload() {
         store.setUploading(false);
       }
     },
-    [store, localSym]
+    [store]
   );
 
   const onDrop = useCallback(
@@ -109,33 +103,15 @@ export default function FileUpload() {
 
   return (
     <div className="space-y-4">
-      {/* Currency */}
+      {/* Currency — the same universal format selector as the dashboard header */}
       <div className="flex items-center gap-2">
-        <label
-          htmlFor="currency-symbol"
+        <span
           className="text-[12px]"
           style={{ color: "var(--text-3)", fontFamily: "Geist, sans-serif" }}
         >
-          Currency symbol:
-        </label>
-        <input
-          id="currency-symbol"
-          type="text"
-          value={localSym}
-          maxLength={3}
-          aria-label="Currency symbol"
-          onChange={(e) => {
-            setLocalSym(e.target.value);
-            if (e.target.value) store.setCurrency(e.target.value);
-          }}
-          className="w-12 px-2 py-1 text-sm text-center rounded-lg border outline-none"
-          style={{
-            background: "var(--bg-card)",
-            borderColor: "var(--border)",
-            color: "var(--cyan)",
-            fontFamily: "Geist, sans-serif",
-          }}
-        />
+          Currency:
+        </span>
+        <CurrencySelector align="left" />
       </div>
 
       {/* Drop zone — a real button so it is keyboard-operable: Enter/Space opens

@@ -7,7 +7,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { setCurrencyGlobal } from "./currency";
+import { setCurrencyGlobal, symbolForToken } from "./currency";
 import type { Tier } from "./tiers";
 import { getTwin, getTwinFinancials, authHeaders, type Twin, type BusinessEvent } from "./api";
 
@@ -243,6 +243,11 @@ export interface FinancialState {
   locations: string[];
 
   currencySymbol: string;
+  /** 'manual' = picked in the universal selector (wins over uploads);
+   *  'auto'   = follow whatever the uploaded file declares. */
+  currencySource: "auto" | "manual";
+  /** Last currency detected from an upload — shown on the selector's Auto row. */
+  detectedCurrencySymbol: string | null;
   hasEngine2Data: boolean;
   hasEngine3Data: boolean;
   posBusinessName: string;
@@ -291,7 +296,7 @@ interface FinancialActions {
   setUploadResult: (result: Record<string, unknown>) => void;
   setUploading: (v: boolean) => void;
   setUploadError: (err: string | null) => void;
-  setCurrency: (sym: string) => void;
+  setCurrency: (sym: string, source?: "auto" | "manual") => void;
   toggleSidebar: () => void;
   setMobileNav: (v: boolean) => void;
   toggleMobileNav: () => void;
@@ -348,6 +353,8 @@ const INITIAL: FinancialState = {
   locations: [],
 
   currencySymbol: "K",
+  currencySource: "auto",
+  detectedCurrencySymbol: null,
   hasEngine2Data: false,
   hasEngine3Data: false,
   posBusinessName: "",
@@ -526,12 +533,20 @@ const _store = create<FinancialState & FinancialActions>()(
       setUploadResult: (result) => {
         const prev = get();
 
-        const sym =
+        // Currency — remember what the file declares, but a manual pick from
+        // the universal selector always wins until the user switches back to
+        // Auto. ISO codes from the backend ("ZMW") resolve to display symbols.
+        const detectedRaw =
           typeof result.currencySymbol === "string" && result.currencySymbol
             ? result.currencySymbol
             : typeof result.currency === "string" && result.currency
             ? result.currency
-            : prev.currencySymbol || "K";
+            : null;
+        const detected = detectedRaw ? symbolForToken(detectedRaw) : null;
+        const sym =
+          prev.currencySource === "manual"
+            ? prev.currencySymbol || "K"
+            : detected || prev.currencySymbol || "K";
         setCurrencyGlobal(sym);
 
         const cabId = typeof result.cabinet_id === "string" ? result.cabinet_id : null;
@@ -586,6 +601,7 @@ const _store = create<FinancialState & FinancialActions>()(
           sheets: sheetsArr,
           activeSheet: typeof result.active_sheet === "string" ? result.active_sheet : null,
           currencySymbol: sym,
+          detectedCurrencySymbol: detected ?? prev.detectedCurrencySymbol,
           uploadError: null,
         };
 
@@ -680,9 +696,10 @@ const _store = create<FinancialState & FinancialActions>()(
       addLocation: (name) =>
         set((s) => (s.locations.includes(name) ? {} : { locations: [...s.locations, name] })),
 
-      setCurrency: (sym) => {
-        setCurrencyGlobal(sym);
-        set({ currencySymbol: sym });
+      setCurrency: (sym, source = "manual") => {
+        const clean = symbolForToken(sym) || "K";
+        setCurrencyGlobal(clean);
+        set({ currencySymbol: clean, currencySource: source });
       },
 
       switchSheet: async (sheetName) => {
@@ -785,6 +802,7 @@ const _store = create<FinancialState & FinancialActions>()(
       // cabinet/files/tier. bindUser wipes the cache whenever the owner changes.
       bindUser: (userId) => {
         if (get().ownerId === userId) return;   // same owner — keep the cache
+        setCurrencyGlobal(INITIAL.currencySymbol);
         set({
           ...INITIAL,
           ownerId: userId,
@@ -793,12 +811,14 @@ const _store = create<FinancialState & FinancialActions>()(
           uiMode: get().uiMode,
         });
       },
-      clearTenant: () =>
+      clearTenant: () => {
+        setCurrencyGlobal(INITIAL.currencySymbol);
         set({
           ...INITIAL,
           sidebarCollapsed: get().sidebarCollapsed,
           uiMode: get().uiMode,
-        }),
+        });
+      },
     }),
     {
       name: "aibos-store-v4",
@@ -807,11 +827,18 @@ const _store = create<FinancialState & FinancialActions>()(
         cabinetData: s.cabinetData,
         ownerId: s.ownerId,
         currencySymbol: s.currencySymbol,
+        currencySource: s.currencySource,
+        detectedCurrencySymbol: s.detectedCurrencySymbol,
         sidebarCollapsed: s.sidebarCollapsed,
         uiMode: s.uiMode,
         tier: s.tier,
         locations: s.locations,
       }),
+      // Sync the module-level formatter (lib/currency fmt) with the persisted
+      // choice on load — otherwise non-hook call sites show "K" after refresh.
+      onRehydrateStorage: () => (state) => {
+        if (state?.currencySymbol) setCurrencyGlobal(state.currencySymbol);
+      },
     }
   )
 );

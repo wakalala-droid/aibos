@@ -10,6 +10,8 @@ import { createClient } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { TIERS } from '@/lib/tiers';
+import { useStore } from '@/lib/store';
+import { CURRENCIES } from '@/lib/currency';
 
 const BUSINESS_TYPES = [
   'Restaurant',
@@ -19,8 +21,6 @@ const BUSINESS_TYPES = [
   'Hospitality',
   'Other',
 ] as const;
-
-const CURRENCIES = ['ZMW', 'USD', 'EUR', 'GBP'] as const;
 
 interface FormState {
   business_name: string;
@@ -79,6 +79,7 @@ const inputStyle: React.CSSProperties = {
 export default function BusinessProfilePage() {
   const { user } = useAuth();
   const { profile, loading, refresh } = useProfile();
+  const setCurrency = useStore((s) => s.setCurrency);
 
   const [form, setForm] = useState<FormState>(EMPTY);
   const [save, setSave] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -138,6 +139,7 @@ export default function BusinessProfilePage() {
     if (!canSave || !user) return;
     setSave('saving');
     setErrorMsg('');
+    const currencyChanged = (profile?.currency ?? 'ZMW') !== form.currency;
     try {
       await persist({
         business_name: form.business_name.trim(),
@@ -149,6 +151,9 @@ export default function BusinessProfilePage() {
         whatsapp: form.whatsapp.trim() || null,
         contact_email: form.contact_email.trim() || null,
       });
+      // A deliberate currency edit here is a manual pick — mirror it across the
+      // app immediately (the store maps the ISO code to its display symbol).
+      if (currencyChanged && form.currency) setCurrency(form.currency, 'manual');
       setSave('saved');
     } catch (err) {
       setSave('error');
@@ -275,7 +280,7 @@ export default function BusinessProfilePage() {
             <div>
               <label htmlFor="bp-currency" style={labelStyle}>Currency</label>
               <select id="bp-currency" value={form.currency} onChange={(e) => set('currency', e.target.value)} style={inputStyle}>
-                {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{`${c.code} — ${c.name} (${c.symbol})`}</option>)}
               </select>
             </div>
 

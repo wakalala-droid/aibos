@@ -13,16 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { useStore } from '@/lib/store';
 import { updateProfile, seedTwin } from '@/lib/api';
-
-const CURRENCIES = [
-  { code: 'ZMW', symbol: 'K', label: 'Zambian Kwacha (K)' },
-  { code: 'USD', symbol: '$', label: 'US Dollar ($)' },
-  { code: 'ZAR', symbol: 'R', label: 'South African Rand (R)' },
-  { code: 'KES', symbol: 'KSh', label: 'Kenyan Shilling (KSh)' },
-  { code: 'NGN', symbol: '₦', label: 'Nigerian Naira (₦)' },
-  { code: 'GBP', symbol: '£', label: 'British Pound (£)' },
-  { code: 'EUR', symbol: '€', label: 'Euro (€)' },
-];
+import { CURRENCIES } from '@/lib/currency';
 const INDUSTRIES = ['Retail', 'Restaurant / Food', 'Services', 'Wholesale', 'Hospitality', 'Manufacturing', 'Agriculture', 'Mining', 'Transport', 'Other'];
 const TAX = [
   { v: 'unregistered', l: 'Not registered yet' },
@@ -100,7 +91,9 @@ export default function OnboardingPage() {
       });
       const cash = parseFloat(form.initial_cash);
       await seedTwin(isNaN(cash) ? 0 : cash, form.currency).catch(() => {});
-      setCurrency(sym);
+      // 'auto': this seeds the starting symbol but keeps uploads authoritative —
+      // only the universal selector (header) pins a manual override.
+      setCurrency(sym, 'auto');
       router.push('/dashboard/record');
     } catch (e) {
       setError((e as Error).message || 'Could not complete setup.');
@@ -156,7 +149,7 @@ export default function OnboardingPage() {
                   <div style={fieldGap}>
                     <label style={labelStyle}>Currency</label>
                     <select value={form.currency} onChange={e => set('currency', e.target.value)} style={inputStyle}>
-                      {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+                      {CURRENCIES.map(c => <option key={c.code} value={c.code}>{`${c.name} (${c.symbol})`}</option>)}
                     </select>
                   </div>
                   <div style={fieldGap}>

@@ -3,6 +3,51 @@
 //   fmt(kpi.totalRevenue, true, sym)
 //   fmt(row.revenue, false, sym)
 
+// ── Universal currency catalog ────────────────────────────────────────────────
+// Single source of truth for the currency-format selector, onboarding, and the
+// business profile. Display formatting only — AI-BOS never converts amounts.
+
+export interface CurrencyDef {
+  code: string;   // ISO 4217
+  symbol: string; // display symbol used across every page
+  name: string;
+}
+
+export const CURRENCIES: CurrencyDef[] = [
+  { code: "ZMW", symbol: "K",   name: "Zambian Kwacha" },
+  { code: "USD", symbol: "$",   name: "US Dollar" },
+  { code: "EUR", symbol: "€",   name: "Euro" },
+  { code: "GBP", symbol: "£",   name: "British Pound" },
+  { code: "ZAR", symbol: "R",   name: "South African Rand" },
+  { code: "NGN", symbol: "₦",   name: "Nigerian Naira" },
+  { code: "KES", symbol: "KSh", name: "Kenyan Shilling" },
+  { code: "TZS", symbol: "TSh", name: "Tanzanian Shilling" },
+  { code: "UGX", symbol: "USh", name: "Ugandan Shilling" },
+  { code: "MWK", symbol: "MK",  name: "Malawian Kwacha" },
+  { code: "BWP", symbol: "P",   name: "Botswana Pula" },
+  { code: "GHS", symbol: "GH₵", name: "Ghanaian Cedi" },
+  { code: "CNY", symbol: "¥",   name: "Chinese Yuan" },
+  { code: "INR", symbol: "₹",   name: "Indian Rupee" },
+];
+
+/** Resolve a symbol or ISO code ("ZMW", "K", "$") to a catalog entry. */
+export function currencyForToken(token: string | null | undefined): CurrencyDef | null {
+  if (!token) return null;
+  const t = token.trim();
+  if (!t) return null;
+  return (
+    CURRENCIES.find((c) => c.code.toLowerCase() === t.toLowerCase()) ??
+    CURRENCIES.find((c) => c.symbol === t) ??
+    null
+  );
+}
+
+/** Display symbol for a symbol-or-code token; unknown tokens pass through. */
+export function symbolForToken(token: string | null | undefined): string {
+  const hit = currencyForToken(token);
+  return hit ? hit.symbol : (token ?? "").trim();
+}
+
 let _sym = "K";
 
 export function setCurrencyGlobal(sym: string): void {

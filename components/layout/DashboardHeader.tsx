@@ -13,6 +13,7 @@ import { useStore } from '@/lib/store';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { TIERS } from '@/lib/tiers';
+import CurrencySelector from '@/components/ui/CurrencySelector';
 
 // Searchable destinations (kept in sync with the sidebar nav).
 const DESTINATIONS: { href: string; label: string; group: string }[] = [
@@ -147,6 +148,13 @@ export default function DashboardHeader() {
           <path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
         </svg>
       </IconButton>
+
+      {/* Universal currency format. It manages its own popover; the capture
+          handler closes this header's popovers when the user reaches for it
+          (it sits inside wrapRef, so the outside-click close doesn't fire). */}
+      <div onMouseDownCapture={() => setOpen(null)} style={{ display: 'contents' }}>
+        <CurrencySelector />
+      </div>
 
       {/* Notifications */}
       <IconButton label={`Notifications, ${unread} alert${unread === 1 ? '' : 's'}`} active={open === 'bell'} dot={unread > 0} onClick={() => setOpen(open === 'bell' ? null : 'bell')}>
