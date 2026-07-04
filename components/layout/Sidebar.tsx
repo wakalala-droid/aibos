@@ -16,6 +16,7 @@ const IC: Record<string, JSX.Element> = {
   record:     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
   timeline:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 3v18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".5"/><circle cx="6" cy="7" r="2" stroke="currentColor" strokeWidth="1.6" fill="none"/><circle cx="6" cy="15" r="2" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M11 7h9M11 15h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   import:     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v12M7 10l5 5 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+  schedule:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M8 3v4M16 3v4M3 10h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M8 15h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   advisor:    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2a7 7 0 00-4 12.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3A7 7 0 0012 2z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="M9 21h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   inventory:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/><path d="M3 7v10l9 4 9-4V7M12 11v10" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>,
   cash:       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 8h20v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8z" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M2 8l2-4h16l2 4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><circle cx="12" cy="14" r="2" stroke="currentColor" strokeWidth="1.4" fill="none"/></svg>,
@@ -50,6 +51,7 @@ const NAV: NavEntry[] = [
   { href: '/dashboard',            label: 'Overview',         icon: IC.overview   },
   { href: '/dashboard/record',     label: 'Record',           icon: IC.record     },
   { href: '/dashboard/timeline',   label: 'Timeline',         icon: IC.timeline   },
+  { href: '/dashboard/schedule',   label: 'Schedule',         icon: IC.schedule   },
   { href: '/dashboard/import',     label: 'Import',           icon: IC.import     },
   { href: '/dashboard/advisor',    label: 'Advisor',          icon: IC.advisor    },
   { href: '/dashboard/inventory',  label: 'Inventory',        icon: IC.inventory  },
@@ -74,12 +76,13 @@ const NAV: NavEntry[] = [
   { href: '/dashboard/ops-brief',  label: 'Ops Brief',        icon: IC.opsbrief,    engine: 'ops' },
 ];
 
-// Simple mode — the owner-language surface. Five doors, no jargon, no engine
+// Simple mode — the owner-language surface. Six doors, no jargon, no engine
 // tabs (ux_intelligence.md DECISION SIMPLIFICATION: remove decisions that don't
 // need to exist). Every technical page stays one toggle away.
 const SIMPLE_NAV: NavItem[] = [
   { href: '/dashboard',           label: 'Home',     icon: IC.overview  },
   { href: '/dashboard/record',    label: 'Record',   icon: IC.record    },
+  { href: '/dashboard/schedule',  label: 'Schedule', icon: IC.schedule  },
   { href: '/dashboard/inventory', label: 'Stock',    icon: IC.inventory },
   { href: '/dashboard/cash',      label: 'Money',    icon: IC.cash      },
   { href: '/dashboard/timeline',  label: 'Activity', icon: IC.timeline  },

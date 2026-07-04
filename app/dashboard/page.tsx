@@ -12,6 +12,7 @@ import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
 import BriefSubscribe from '@/components/ui/BriefSubscribe';
 import DataManifestCard from '@/components/ui/DataManifestCard';
+import UpcomingStrip from '@/components/schedule/UpcomingStrip';
 import CustomMetricsCard from '@/components/ui/CustomMetricsCard';
 import BorderGlow from '@/components/ui/BorderGlow';
 import { cometProps } from '@/lib/cometStyle';
@@ -289,6 +290,9 @@ function OverviewPage() {
 
       {/* ── Contextual upgrade trigger (only at moments of demonstrated value) ── */}
       <UpgradeTrigger />
+
+      {/* ── Coming up — next commitments from the Scheduler (Pro layer) ──── */}
+      <UpcomingStrip />
 
       {/* ── Engine score strip ──────────────────────────────────────────── */}
       <div className="grid-engines" style={{ marginBottom: 24 }}>

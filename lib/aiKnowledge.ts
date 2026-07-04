@@ -224,6 +224,31 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     what: 'A transparent breakdown of how AI-BOS interpreted each column of your upload — what it thinks each one means and how confident it is.',
     why: "Trust comes from showing the work. Before you rely on a single number, this card lets you confirm AI-BOS read your file the way you intended.",
   },
+
+  // ── Scheduler ───────────────────────────────────────────────────────────────
+  'schedule.agenda': {
+    id: 'schedule.agenda',
+    title: 'Your Schedule',
+    what: 'Every commitment with a date on it — meetings, customer pick-ups, deliveries, ZRA and NAPSA deadlines, payments due — grouped into Overdue, Today, Tomorrow and beyond.',
+    why: 'Missed pick-ups cost sales and missed statutory deadlines cost penalties. One glance here tells you what the day demands before it demands it.',
+    how: 'Add items with Quick add, tap Done as they happen. When a pick-up or payment with an amount is done, AI-BOS offers to record it straight into your books so the schedule and the numbers stay one story. Recurring items (Pro) roll to their next date automatically.',
+    followups: ['What is overdue right now?', 'How do recurring items work?'],
+  },
+  'schedule.quickadd': {
+    id: 'schedule.quickadd',
+    title: 'Quick Add',
+    what: 'The fastest way to put a commitment on the books: pick a kind, a title and a date — three taps.',
+    why: 'A schedule only works if adding to it is easier than forgetting. Everything beyond what/when is optional and tucked behind More options.',
+    how: 'The amount field is worth filling for pick-ups and payments — it powers the one-tap "record it in your books" step when you mark the item done. Repeats (daily to monthly) are a Pro feature, enforced by the server.',
+    followups: ['What does the amount field do?', 'What repeats can I set?'],
+  },
+  'dash.upcoming': {
+    id: 'dash.upcoming',
+    title: 'Coming Up',
+    what: 'The next three items from your Schedule, plus a warning when anything is overdue.',
+    why: 'You should not have to open the Scheduler to know the day has a deadline in it — the Overview taps you on the shoulder.',
+    followups: ['Open my schedule', 'What is overdue?'],
+  },
 };
 
 // ── Glossary (definitional matching) ────────────────────────────────────────

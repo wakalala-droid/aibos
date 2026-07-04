@@ -475,6 +475,81 @@ export async function deleteProduct(id: string): Promise<void> {
   await spineFetch(`/products/${id}`, { method: 'DELETE' });
 }
 
+// ── Scheduler (meetings, pick-ups, deadlines) ───────────────────────────────────
+
+export type ScheduleKind =
+  | 'meeting' | 'pickup' | 'delivery' | 'deadline' | 'payment_due' | 'reminder' | 'other';
+export type ScheduleStatus = 'scheduled' | 'done' | 'missed' | 'cancelled';
+
+/** RRULE-lite — expanded server-side; `until` is an ISO date (inclusive). */
+export interface Recurrence {
+  freq: 'daily' | 'weekly' | 'monthly';
+  interval?: number;
+  until?: string;
+}
+
+export interface ScheduleItem {
+  id: string;
+  kind: ScheduleKind;
+  title: string;
+  notes?: string | null;
+  location?: string | null;
+  with_whom?: string | null;
+  amount?: number | null;
+  starts_at: string;
+  ends_at?: string | null;
+  all_day: boolean;
+  recurrence?: Recurrence | null;
+  remind_minutes_before?: number | null;
+  status: ScheduleStatus;
+  linked_event_id?: string | null;
+  /** Expanded by the backend: next occurrences (ISO, up to 3) within the horizon. */
+  next_occurrences?: string[];
+}
+
+export type ScheduleItemInput =
+  Partial<Omit<ScheduleItem, 'id' | 'status' | 'next_occurrences'>> &
+  { title: string; starts_at: string };
+
+export async function listSchedule(horizonDays = 60): Promise<ScheduleItem[]> {
+  const data = await spineFetch(`/schedule?horizon_days=${horizonDays}`);
+  return (data.items as ScheduleItem[]) ?? [];
+}
+
+export async function createScheduleItem(input: ScheduleItemInput): Promise<ScheduleItem> {
+  const data = await spineFetch('/schedule', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  });
+  return data.item as ScheduleItem;
+}
+
+export async function updateScheduleItem(
+  id: string,
+  patch: Partial<ScheduleItemInput> & { linked_event_id?: string },
+): Promise<ScheduleItem> {
+  const data = await spineFetch(`/schedule/${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch),
+  });
+  return data.item as ScheduleItem;
+}
+
+/** Resolve an item. Recurring items roll forward to their next occurrence;
+ *  `linkedEventId` is the record bridge back to the spine. */
+export async function setScheduleStatus(
+  id: string, status: ScheduleStatus, linkedEventId?: string,
+): Promise<ScheduleItem> {
+  const data = await spineFetch(`/schedule/${id}/status`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status, linked_event_id: linkedEventId ?? null }),
+  });
+  return data.item as ScheduleItem;
+}
+
+export async function deleteScheduleItem(id: string): Promise<void> {
+  await spineFetch(`/schedule/${id}`, { method: 'DELETE' });
+}
+
 // ── Future hooks: recommendations + simulation (Initiatives 10, 12) ────────────
 
 export interface Recommendation {

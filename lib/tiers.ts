@@ -19,6 +19,7 @@ export type Feature =
   | 'full_history'
   | 'engine2'
   | 'engine3'
+  | 'schedule'         // recurrence + reminders on the Scheduler (core CRUD is free, like recording)
   // Pro+ — "AIBOS runs your day": the assistant acts, not just answers.
   | 'morning_brief'    // in-app daily digest composed from the twin
   | 'chat_actions'     // record sales/expenses straight from the chat
@@ -63,6 +64,7 @@ export const TIERS: Record<Tier, TierMeta> = {
       'Last 30 days of data',
       'Full P&L and cashflow',
       'Forecast, anomaly, variance & breakeven — preview',
+      'Schedule — meetings, pick-ups & deadlines',
       'Export your data anytime',
     ],
   },
@@ -78,6 +80,7 @@ export const TIERS: Record<Tier, TierMeta> = {
       'Full Engine 1 — forecast, anomaly, variance, breakeven',
       'Complete history, no 30-day limit',
       'AI CFO chat — unlimited',
+      'Recurring schedule & reminders — NAPSA, ZRA, rent',
       'Daily or weekly AI brief to email',
       'Customer & Operations intelligence (Engines 2 & 3)',
     ],
@@ -123,6 +126,7 @@ export const TIER_ORDER: Tier[] = ['free', 'pro', 'proplus', 'growth'];
 const PRO: Feature[] = [
   'forecast', 'anomaly', 'variance', 'breakeven',
   'ai_chat', 'scheduled_brief', 'full_history', 'engine2', 'engine3',
+  'schedule',
 ];
 const PROPLUS: Feature[] = [
   ...PRO,
