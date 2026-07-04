@@ -2,14 +2,13 @@
 /**
  * AI-BOS — "Coming up" strip on the Overview.
  * The next three commitments + an overdue warning, one glance, one tap to the
- * Scheduler. Part of the Pro layer (lib/tiers.ts `schedule`): the anticipatory
- * surface, not the core CRUD. Renders nothing when gated or empty — an empty
- * strip is visual noise (Design Constitution §5).
+ * Scheduler. Free for every tier — daily calendar opens are the cheapest
+ * retention loop, so the habit surface is never gated (the Pro layer is
+ * recurrence + reminders, not visibility). Renders nothing when empty — an
+ * empty strip is visual noise (Design Constitution §5).
  */
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useStore } from '@/lib/store';
-import { canAccess } from '@/lib/tiers';
 import { listSchedule, type ScheduleItem, type ScheduleKind } from '@/lib/api';
 
 const KIND_COLOUR: Record<ScheduleKind, string> = {
@@ -28,18 +27,13 @@ const fmtWhen = (d: Date) => {
 };
 
 export default function UpcomingStrip() {
-  const tier = useStore(s => s.tier);
-  const gated = !canAccess(tier, 'schedule');
   const [items, setItems] = useState<ScheduleItem[]>([]);
 
   useEffect(() => {
-    if (gated) return;
     let alive = true;
     listSchedule(14).then(list => { if (alive) setItems(list); }).catch(() => { /* strip is best-effort */ });
     return () => { alive = false; };
-  }, [gated]);
-
-  if (gated) return null;
+  }, []);
 
   const now = Date.now();
   const scheduled = items

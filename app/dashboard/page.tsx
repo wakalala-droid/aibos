@@ -291,7 +291,7 @@ function OverviewPage() {
       {/* ── Contextual upgrade trigger (only at moments of demonstrated value) ── */}
       <UpgradeTrigger />
 
-      {/* ── Coming up — next commitments from the Scheduler (Pro layer) ──── */}
+      {/* ── Coming up — next commitments from the Scheduler (all tiers) ──── */}
       <UpcomingStrip />
 
       {/* ── Engine score strip ──────────────────────────────────────────── */}

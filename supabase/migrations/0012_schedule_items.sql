@@ -7,8 +7,11 @@
 -- the matching event, linked via linked_event_id (the record bridge).
 --
 -- Recurrence is a rule on the row (freq/interval/until jsonb) expanded at read
--- time in the backend — no materialised occurrence rows. Completing a recurring
--- item rolls starts_at forward to the next occurrence and appends to history.
+-- time in the backend. Completing a recurring item materialises the finished
+-- occurrence as its own child row (parent_id → the recurring template) and
+-- rolls the template's starts_at forward — so past occurrences stay queryable
+-- ("which NAPSA payments did I miss last quarter?" is a plain filter) and each
+-- occurrence carries its own linked_event_id.
 --
 -- Like products (0009), this is user master data: RLS self-scoped CRUD; the
 -- backend also writes via service role. IDEMPOTENT & NON-DESTRUCTIVE. Reuses
@@ -36,7 +39,7 @@ create table if not exists public.schedule_items (
   remind_minutes_before integer,
 
   status                text not null default 'scheduled',     -- scheduled|done|missed|cancelled
-  history               jsonb not null default '[]'::jsonb,    -- completed/missed occurrences of recurring items
+  parent_id             uuid references public.schedule_items(id) on delete set null,  -- recurring template this occurrence came from
   linked_event_id       uuid references public.business_events(id) on delete set null,
 
   created_at            timestamptz not null default now(),
@@ -56,9 +59,16 @@ begin
   end if;
 end $$;
 
+-- An earlier draft of this migration lacked parent_id — upgrade in place if so.
+alter table public.schedule_items
+  add column if not exists parent_id uuid references public.schedule_items(id) on delete set null;
+
 -- Range queries are always (tenant, time) — one composite index covers them.
 create index if not exists schedule_items_user_starts_idx
   on public.schedule_items(user_id, starts_at);
+-- Per-template occurrence history ("all my NAPSA completions").
+create index if not exists schedule_items_parent_idx
+  on public.schedule_items(parent_id) where parent_id is not null;
 
 drop trigger if exists schedule_items_set_updated_at on public.schedule_items;
 create trigger schedule_items_set_updated_at

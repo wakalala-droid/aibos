@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
 import EventList from '@/components/spine/EventList';
+import StartFresh from '@/components/spine/StartFresh';
 import { ALL_TYPES } from '@/components/spine/eventMeta';
 import { useStore } from '@/lib/store';
 import {
@@ -119,6 +120,8 @@ export default function TimelinePage() {
           />
         )}
       </SectionCard>
+
+      <StartFresh onDone={load} />
     </>
   );
 }

@@ -368,6 +368,32 @@ export async function voidEvent(id: string, reason?: string): Promise<BusinessEv
   return data.event as BusinessEvent;
 }
 
+export interface ResetOptions {
+  source?: EventSource;          // e.g. 'excel' — flush only that producer's events
+  wipe_memory?: boolean;         // forget learned import mappings / aliases
+  wipe_products?: boolean;
+  wipe_schedule?: boolean;
+  reset_opening_cash?: boolean;
+}
+
+export interface ResetResult {
+  deleted_events: number;
+  deleted_memory: number;
+  deleted_products: number;
+  deleted_schedule: number;
+  twin: Twin;
+}
+
+/** Start afresh: permanently delete recorded data (hard delete — requires typed RESET). */
+export async function resetTimeline(opts: ResetOptions = {}): Promise<ResetResult> {
+  const data = await spineFetch('/events/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ confirm: 'RESET', ...opts }),
+  });
+  return data as unknown as ResetResult;
+}
+
 // ── Ingestion: Excel → events + QR (Initiatives 2, 7) ──────────────────────────
 
 export interface ExcelPreview {
@@ -502,13 +528,15 @@ export interface ScheduleItem {
   recurrence?: Recurrence | null;
   remind_minutes_before?: number | null;
   status: ScheduleStatus;
+  /** Set on materialised occurrences of a recurring item — points at the template. */
+  parent_id?: string | null;
   linked_event_id?: string | null;
-  /** Expanded by the backend: next occurrences (ISO, up to 3) within the horizon. */
+  /** Expanded by the backend: every occurrence (ISO) within the requested horizon. */
   next_occurrences?: string[];
 }
 
 export type ScheduleItemInput =
-  Partial<Omit<ScheduleItem, 'id' | 'status' | 'next_occurrences'>> &
+  Partial<Omit<ScheduleItem, 'id' | 'status' | 'parent_id' | 'next_occurrences'>> &
   { title: string; starts_at: string };
 
 export async function listSchedule(horizonDays = 60): Promise<ScheduleItem[]> {
@@ -533,8 +561,9 @@ export async function updateScheduleItem(
   return data.item as ScheduleItem;
 }
 
-/** Resolve an item. Recurring items roll forward to their next occurrence;
- *  `linkedEventId` is the record bridge back to the spine. */
+/** Resolve an item. Recurring items materialise the finished occurrence as its
+ *  own row and roll the template forward — the RESOLVED row is returned, so
+ *  record-bridge callers must link events to the returned id, not the input id. */
 export async function setScheduleStatus(
   id: string, status: ScheduleStatus, linkedEventId?: string,
 ): Promise<ScheduleItem> {

@@ -112,7 +112,8 @@ export default function SchedulePage() {
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
-    try { setItems(await listSchedule(60)); }
+    // Full-year horizon so the month grid stays truthful when browsing ahead.
+    try { setItems(await listSchedule(366)); }
     catch (e) { setError((e as Error).message); }
     finally { setLoading(false); }
   }, []);
@@ -163,10 +164,11 @@ export default function SchedulePage() {
   async function markDone(it: ScheduleItem) {
     setError(null);
     try {
-      await setScheduleStatus(it.id, 'done');
-      // The record bridge: money-shaped commitments offer one-tap bookkeeping.
-      if (BRIDGE_TYPES[it.kind] && (it.amount ?? 0) > 0) {
-        setBridge(it); setBridgeType(BRIDGE_TYPES[it.kind]!);
+      // For recurring items the backend returns the materialised occurrence,
+      // not the template — the record bridge must link the event to THAT row.
+      const resolved = await setScheduleStatus(it.id, 'done');
+      if (BRIDGE_TYPES[resolved.kind] && (resolved.amount ?? 0) > 0) {
+        setBridge(resolved); setBridgeType(BRIDGE_TYPES[resolved.kind]!);
       }
       await load();
     } catch (e) { setError((e as Error).message); }
