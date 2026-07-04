@@ -9,7 +9,9 @@ export const metadata: Metadata = {
   description: 'Financial · Customer · Operations intelligence for Zambian SMEs',
   manifest: '/manifest.webmanifest',
   icons: {
-    icon: '/icons/icon-192.png',
+    // Tab favicon: the bare mark on transparency — no badge shape. Apple/PWA
+    // icons keep the opaque tile (iOS and maskable icons require full bleed).
+    icon: '/brand/aibos-mark-white-glyph.png',
     apple: '/icons/icon-192.png',
   },
   appleWebApp: {
