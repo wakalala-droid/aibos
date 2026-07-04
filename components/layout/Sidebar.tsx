@@ -135,7 +135,7 @@ export default function Sidebar() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <Image
-            src={isDark ? '/brand/aibos-mark-circle-dark.png' : '/brand/aibos-mark.png'}
+            src={isDark ? '/brand/aibos-mark-white-glyph.png' : '/brand/aibos-mark.png'}
             alt="AI-BOS"
             width={30}
             height={30}

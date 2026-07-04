@@ -27,9 +27,32 @@ import {
   type ReorderProposal,
 } from '@/lib/automation';
 import { OutboxChip } from '@/components/pwa/OfflineSync';
+import BorderGlow from '@/components/ui/BorderGlow';
 import { listEvents, listProducts, type BusinessEvent, type Product } from '@/lib/api';
 
 const ASKED_KEY = 'aibos-simple-asked-v1';
+
+// React Bits cursor edge-glow + mesh gradient, tuned identically to KPICard /
+// SectionCard — Simple mode shares the dashboard's one visual language.
+const CURSOR_GLOW = '190 95 62';
+const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
+
+function Glow({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <BorderGlow
+      glowColor={CURSOR_GLOW}
+      backgroundColor="var(--bg-card)"
+      borderRadius={14}
+      glowRadius={48}
+      glowIntensity={1.2}
+      coneSpread={12}
+      colors={MESH}
+      style={{ height: '100%', ...style }}
+    >
+      {children}
+    </BorderGlow>
+  );
+}
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -38,10 +61,9 @@ function greeting(): string {
   return 'Good evening';
 }
 
+// Inner-panel layout only — the BorderGlow wrapper plus the section-card /
+// kpi-card `glow-inner` classes draw the chrome (border, sheen, bento texture).
 const cardStyle: React.CSSProperties = {
-  background: 'var(--bg-card)',
-  border: '1px solid var(--border)',
-  borderRadius: 10,
   padding: 16,
   display: 'flex',
   flexDirection: 'column',
@@ -214,20 +236,25 @@ export default function SimpleHome() {
 
       {/* Today's focus — the day's story, ready before the owner asks (Pro+). */}
       {focus.length > 0 && (
-        <motion.div {...fade(1)} style={{ ...cardStyle, gap: 8, borderColor: 'color-mix(in srgb, var(--cyan) 25%, var(--border))' }}>
-          <span style={labelStyle}>Today&rsquo;s focus</span>
-          {focus.map((line) => (
-            <span
-              key={line}
-              style={{
-                ...subStyle,
-                color: line.startsWith('One thing') ? 'var(--text-1)' : 'var(--text-3)',
-                fontWeight: line.startsWith('One thing') ? 600 : 400,
-              }}
-            >
-              {line}
-            </span>
-          ))}
+        <motion.div {...fade(1)}>
+          <Glow style={{ borderColor: 'color-mix(in srgb, var(--cyan) 25%, var(--border))' }}>
+            <div className="section-card glow-inner" style={{ ...cardStyle, gap: 8 }}>
+              <span className="bento-tex" aria-hidden="true" />
+              <span style={labelStyle}>Today&rsquo;s focus</span>
+              {focus.map((line) => (
+                <span
+                  key={line}
+                  style={{
+                    ...subStyle,
+                    color: line.startsWith('One thing') ? 'var(--text-1)' : 'var(--text-3)',
+                    fontWeight: line.startsWith('One thing') ? 600 : 400,
+                  }}
+                >
+                  {line}
+                </span>
+              ))}
+            </div>
+          </Glow>
         </motion.div>
       )}
 
@@ -302,7 +329,9 @@ export default function SimpleHome() {
         data-tour="today-cards"
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16 }}
       >
-        <Link href="/dashboard/cash" style={cardStyle} data-ai-explain="simple-cash" aria-label="Money right now — open Money page">
+        <Glow>
+        <Link href="/dashboard/cash" className="kpi-card glow-inner" style={cardStyle} data-ai-explain="simple-cash" aria-label="Money right now — open Money page">
+          <span className="bento-tex" aria-hidden="true" />
           <span style={labelStyle}>Money right now</span>
           <span style={valueStyle}>{twin ? money(cash) : '—'}</span>
           <span style={subStyle}>
@@ -313,8 +342,11 @@ export default function SimpleHome() {
               : 'Record your first sale and I\'ll track this live.'}
           </span>
         </Link>
+        </Glow>
 
-        <Link href="/dashboard/timeline" style={cardStyle} data-ai-explain="simple-today" aria-label="Today's sales — open Activity page">
+        <Glow>
+        <Link href="/dashboard/timeline" className="kpi-card glow-inner" style={cardStyle} data-ai-explain="simple-today" aria-label="Today's sales — open Activity page">
+          <span className="bento-tex" aria-hidden="true" />
           <span style={labelStyle}>Today</span>
           <span style={valueStyle}>{todaySales === null ? '…' : money(todayTotal)}</span>
           <span style={subStyle}>
@@ -325,8 +357,11 @@ export default function SimpleHome() {
                 : 'No sales recorded yet today.'}
           </span>
         </Link>
+        </Glow>
 
-        <Link href="/dashboard/inventory" style={cardStyle} data-ai-explain="simple-stock" aria-label="Stock status — open Stock page">
+        <Glow>
+        <Link href="/dashboard/inventory" className="kpi-card glow-inner" style={cardStyle} data-ai-explain="simple-stock" aria-label="Stock status — open Stock page">
+          <span className="bento-tex" aria-hidden="true" />
           <span style={labelStyle}>{ind.stockWord}</span>
           <span style={{ ...valueStyle, color: lowStock.length > 0 ? 'var(--amber)' : 'var(--text-1)' }}>
             {products === null ? '…' : products.length === 0 ? '—' : lowStock.length > 0 ? `${lowStock.length} low` : 'All good'}
@@ -341,12 +376,16 @@ export default function SimpleHome() {
                   : `${products.length} items tracked, none below reorder level.`}
           </span>
         </Link>
+        </Glow>
       </motion.div>
 
       {/* Anticipated work — reorders AIBOS prepared; one tap turns a proposal
           into a pending receipt the owner confirms on arrival. */}
       {(proposals.length > 0 || followUps.length > 0) && (
-        <motion.div {...fade(3)} style={{ ...cardStyle, gap: 14 }}>
+        <motion.div {...fade(3)}>
+        <Glow>
+        <div className="section-card glow-inner" style={{ ...cardStyle, gap: 14 }}>
+          <span className="bento-tex" aria-hidden="true" />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
             <span style={labelStyle}>AIBOS prepared this</span>
             {!canAutomate && (
@@ -449,12 +488,17 @@ export default function SimpleHome() {
               )}
             </div>
           ))}
+        </div>
+        </Glow>
         </motion.div>
       )}
 
       {/* Getting started — real signals, disappears when complete */}
       {showChecklist && (
-        <motion.div {...fade(3)} style={{ ...cardStyle, gap: 10 }}>
+        <motion.div {...fade(3)}>
+        <Glow>
+        <div className="section-card glow-inner" style={{ ...cardStyle, gap: 10 }}>
+          <span className="bento-tex" aria-hidden="true" />
           <span style={labelStyle}>Getting started</span>
           {steps.map((s) => (
             <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -487,12 +531,17 @@ export default function SimpleHome() {
               )}
             </div>
           ))}
+        </div>
+        </Glow>
         </motion.div>
       )}
 
       {/* Automation receipts — what AIBOS is doing without being asked */}
       {handled.length > 0 && (
-        <motion.div {...fade(4)} style={{ ...cardStyle, gap: 8 }}>
+        <motion.div {...fade(4)}>
+        <Glow>
+        <div className="section-card glow-inner" style={{ ...cardStyle, gap: 8 }}>
+          <span className="bento-tex" aria-hidden="true" />
           <span style={labelStyle}>AIBOS is handling this for you</span>
           {handled.map((line) => (
             <div key={line} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
@@ -504,6 +553,8 @@ export default function SimpleHome() {
               <span style={subStyle}>{line}</span>
             </div>
           ))}
+        </div>
+        </Glow>
         </motion.div>
       )}
 
