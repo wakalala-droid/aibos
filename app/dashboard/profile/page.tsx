@@ -9,9 +9,10 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
-import { TIERS } from '@/lib/tiers';
+import { TIERS, canAccess, type Tier } from '@/lib/tiers';
 import { useStore } from '@/lib/store';
 import { CURRENCIES } from '@/lib/currency';
+import { briefDeliveryConfig } from '@/lib/api';
 
 const BUSINESS_TYPES = [
   'Restaurant',
@@ -346,7 +347,152 @@ export default function BusinessProfilePage() {
 
         {/* Referral loop — owners recommending AIBOS to owners is the growth
             engine that costs nothing and carries trust no ad can buy. */}
+        {/* Morning Brief delivery — the day's numbers arrive before the day
+            starts. Preferences save now; sending activates with the keys. */}
+        <BriefDeliveryCard
+          tier={(profile?.tier as Tier) ?? 'free'}
+          emailEnabled={Boolean(profile?.brief_email_enabled)}
+          whatsappNumber={(profile?.whatsapp_number as string | null) ?? ''}
+          onSaved={refresh}
+        />
+
         {user?.id && <InviteCard userId={user.id} />}
+      </div>
+    </div>
+  );
+}
+
+function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
+  tier: Tier;
+  emailEnabled: boolean;
+  whatsappNumber: string;
+  onSaved: () => void | Promise<void>;
+}) {
+  const [emailOn, setEmailOn] = useState(emailEnabled);
+  const [waNumber, setWaNumber] = useState(whatsappNumber);
+  const [channels, setChannels] = useState<{ email: boolean; whatsapp: boolean } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => { setEmailOn(emailEnabled); }, [emailEnabled]);
+  useEffect(() => { setWaNumber(whatsappNumber); }, [whatsappNumber]);
+  useEffect(() => {
+    let alive = true;
+    briefDeliveryConfig().then((c) => { if (alive) setChannels(c); });
+    return () => { alive = false; };
+  }, []);
+
+  const canEmail = canAccess(tier, 'scheduled_brief');
+  const canWa = canAccess(tier, 'morning_brief');
+
+  async function save() {
+    setSaving(true); setError(null); setSaved(false);
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brief_email_enabled: emailOn,
+          whatsapp_number: waNumber.trim().replace(/[^\d+]/g, '') || null,
+        }),
+      });
+      if (!res.ok) throw new Error('Could not save — try again.');
+      await onSaved();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const pill = (label: string) => (
+    <Link
+      href="/checkout?plan=proplus"
+      style={{
+        fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700,
+        color: 'var(--cyan)', textDecoration: 'none', padding: '3px 9px', borderRadius: 999,
+        border: '1px solid color-mix(in srgb, var(--cyan) 40%, transparent)', background: 'var(--cyan-dim)',
+      }}
+    >
+      {label}
+    </Link>
+  );
+
+  return (
+    <div className="section-card">
+      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
+        Morning Brief, delivered
+      </p>
+      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 16px' }}>
+        Your cash, sales, stock and one thing to do — in your inbox or on WhatsApp every morning at 06:30,
+        before the day starts. Composed from your real numbers only.
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: canEmail ? 'pointer' : 'default', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', color: 'var(--text-1)' }}>
+            <input
+              type="checkbox"
+              checked={emailOn}
+              disabled={!canEmail}
+              onChange={(e) => setEmailOn(e.target.checked)}
+              style={{ width: 18, height: 18, accentColor: 'var(--cyan)' }}
+            />
+            Email me the brief (to your account email)
+          </label>
+          {!canEmail && pill('Pro')}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <input
+            type="tel"
+            inputMode="tel"
+            value={waNumber}
+            disabled={!canWa}
+            onChange={(e) => setWaNumber(e.target.value)}
+            placeholder="WhatsApp number, e.g. +260 977 123 456"
+            aria-label="WhatsApp number for the Morning Brief"
+            style={{
+              flex: '1 1 240px', minHeight: 44, padding: '10px 14px', borderRadius: 10,
+              border: '1px solid var(--border-md)', background: 'var(--bg-input)',
+              color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.84rem',
+              opacity: canWa ? 1 : 0.55,
+            }}
+          />
+          {!canWa && pill('Pro+')}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => void save()}
+            disabled={saving || (!canEmail && !canWa)}
+            style={{
+              padding: '10px 18px', borderRadius: 10, border: 'none',
+              cursor: saving ? 'default' : 'pointer', background: 'var(--cyan)', color: '#fff',
+              fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', fontWeight: 700,
+              opacity: saving ? 0.6 : 1,
+            }}
+          >
+            {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save delivery settings'}
+          </button>
+          {error && (
+            <span role="alert" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--crit)' }}>{error}</span>
+          )}
+        </div>
+
+        {channels && (!channels.email || !channels.whatsapp) && (
+          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-4)', margin: 0, lineHeight: 1.5 }}>
+            {!channels.email && !channels.whatsapp
+              ? 'Delivery is being switched on — your preference is saved and takes effect the moment it goes live.'
+              : !channels.email
+                ? 'Email delivery is being switched on — WhatsApp is live.'
+                : 'WhatsApp delivery is being switched on — email is live.'}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -95,6 +95,7 @@ export const TIERS: Record<Tier, TierMeta> = {
     inclusions: [
       'Everything in Pro',
       'Morning Brief — your day, ready before you ask',
+      'Brief delivered to WhatsApp every morning',
       'Record sales & expenses straight from the chat',
       'Expected deliveries — know what’s arriving and when',
       'One-tap reorder drafts when stock runs low',

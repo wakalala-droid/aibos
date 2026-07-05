@@ -30,6 +30,10 @@ const EDITABLE = [
   'whatsapp',
   'contact_email',
   'logo_url',
+  // Morning Brief delivery (migration 0013): tier is enforced server-side at
+  // dispatch (aibos-api), so storing the preference itself is safe for anyone.
+  'brief_email_enabled',
+  'whatsapp_number',
   // Onboarding fields (migration 0007 · Evolution Initiative 1).
   'tax_status',
   'employees',

@@ -206,6 +206,17 @@ export interface InitiatePaymentResult {
   plan: string;
 }
 
+/** Which Morning-Brief delivery channels the backend has keys for. */
+export async function briefDeliveryConfig(): Promise<{ email: boolean; whatsapp: boolean }> {
+  try {
+    const res = await fetch(`${PROXY}/notify/config`);
+    const d = (await res.json()) as { email?: boolean; whatsapp?: boolean };
+    return { email: !!d.email, whatsapp: !!d.whatsapp };
+  } catch {
+    return { email: false, whatsapp: false };
+  }
+}
+
 /** Kick off a mobile-money collection. Returns a reference to poll. */
 export async function initiatePayment(payload: InitiatePaymentPayload): Promise<InitiatePaymentResult> {
   const res = await fetch(`${PROXY}/payments/initiate`, {

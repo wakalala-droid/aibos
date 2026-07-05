@@ -49,6 +49,9 @@ export interface Profile {
   tier_granted_at: string | null;
   created_at: string | null;
   last_active_at: string | null;
+  /** Morning Brief delivery preferences (migration 0013). */
+  brief_email_enabled?: boolean | null;
+  whatsapp_number?: string | null;
 }
 
 interface ProfileContextValue {
