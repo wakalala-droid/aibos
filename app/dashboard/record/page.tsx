@@ -78,7 +78,7 @@ export default function RecordPage() {
 
         {/* Live twin snapshot + growth journey */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <SectionCard title="Live snapshot" subtitle={`${twin?.event_count ?? 0} events recorded`}>
+        <SectionCard title="Live snapshot" subtitle={`${twin?.event_count ?? 0} ${(twin?.event_count ?? 0) === 1 ? 'event' : 'events'} recorded`}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {snapshot.map(s => (
               <div key={s.label} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
@@ -86,7 +86,7 @@ export default function RecordPage() {
                   {s.label}
                 </span>
                 <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.1rem', fontWeight: 600, color: s.color }}>
-                  {sym}{fmt(s.value)}
+                  {fmt(s.value, false, sym)}
                 </span>
               </div>
             ))}

@@ -269,7 +269,7 @@ export default function SchedulePage() {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: finished ? 'line-through' : 'none' }}>
           {it.title}
-          {(it.amount ?? 0) > 0 && <span style={{ color: 'var(--text-3)', fontWeight: 500 }}> · {sym}{fmt(it.amount!)}</span>}
+          {(it.amount ?? 0) > 0 && <span style={{ color: 'var(--text-3)', fontWeight: 500 }}> · {fmt(it.amount!, false, sym)}</span>}
         </div>
         <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)' }}>
           {fmtDay(when)}{it.all_day ? '' : ` · ${fmtTime(when)}`}
@@ -335,7 +335,7 @@ export default function SchedulePage() {
           {bridge && (
             <div style={{ marginBottom: 14, padding: '12px 14px', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--green) 40%, transparent)', background: 'color-mix(in srgb, var(--green) 8%, transparent)' }}>
               <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-1)', marginBottom: 8 }}>
-                Record “{bridge.title}” — {sym}{fmt(bridge.amount ?? 0)} in your books?
+                Record “{bridge.title}” — {fmt(bridge.amount ?? 0, false, sym)} in your books?
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 <select value={bridgeType} onChange={e => setBridgeType(e.target.value as EventType)} style={{ ...input, width: 'auto', minHeight: 36 }} aria-label="Event type">

@@ -95,9 +95,9 @@ export default function InventoryPage() {
                         {p.category ? <span style={{ color: 'var(--text-4)' }}> · {p.category}</span> : null}
                         {isLow(p) && <span className="badge" style={{ marginLeft: 8, background: 'rgba(251,191,36,0.12)', color: 'var(--amber)' }}>Low</span>}
                       </td>
-                      <td style={{ color: isLow(p) ? 'var(--amber)' : 'var(--text-2)' }}>{fmt(p.on_hand ?? p.opening_stock)} {p.unit}</td>
-                      <td>{sym}{fmt(p.buy_price)}</td>
-                      <td>{sym}{fmt(p.sell_price)}</td>
+                      <td style={{ color: isLow(p) ? 'var(--amber)' : 'var(--text-2)' }}>{(p.on_hand ?? p.opening_stock ?? 0).toLocaleString()} {p.unit}</td>
+                      <td>{fmt(p.buy_price, false, sym)}</td>
+                      <td>{fmt(p.sell_price, false, sym)}</td>
                       <td style={{ whiteSpace: 'nowrap' }}>
                         <button type="button" onClick={() => edit(p)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', marginRight: 10 }}>Edit</button>
                         <button type="button" onClick={() => remove(p.id)} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'Geist, sans-serif', fontSize: '0.7rem' }}>Delete</button>
