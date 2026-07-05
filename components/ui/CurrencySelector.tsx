@@ -6,12 +6,17 @@
 // Precedence rule (owned by lib/store.ts): a manual pick here wins over
 // upload-detected currency until the user switches back to Auto.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { CURRENCIES, currencyForToken } from '@/lib/currency';
 
 const geist = { fontFamily: 'Geist, sans-serif' } as const;
+
+// Runs before paint in the browser (so the portalled menu never flashes at a
+// stale position) but degrades to useEffect during SSR to avoid the warning.
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 function Check() {
   return (
@@ -40,8 +45,11 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
 
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState('');
+  // Portalled menu position (viewport coords), so no ancestor `overflow` clips it.
+  const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const active = currencyForToken(sym);
@@ -56,11 +64,40 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
     if (refocus) triggerRef.current?.focus();
   }, []);
 
+  // The menu is portalled to <body>, so it lives outside wrapRef. Position it
+  // against the trigger in viewport coords and keep it pinned on scroll/resize.
+  const place = useCallback(() => {
+    const t = triggerRef.current;
+    if (!t) return;
+    const r = t.getBoundingClientRect();
+    const width = Math.min(320, window.innerWidth - 16);
+    // align='left' pins the menu's left edge to the trigger; 'right' pins its
+    // right edge. Then clamp into the viewport so it never spills off-screen.
+    let left = align === 'left' ? r.left : r.right - width;
+    left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
+    setPos({ top: r.bottom + 8, left, width });
+  }, [align]);
+
+  useIsoLayoutEffect(() => {
+    if (!open) return;
+    place();
+    const onReflow = () => place();
+    window.addEventListener('scroll', onReflow, true);
+    window.addEventListener('resize', onReflow);
+    return () => {
+      window.removeEventListener('scroll', onReflow, true);
+      window.removeEventListener('resize', onReflow);
+    };
+  }, [open, place]);
+
   // Outside click + Escape — self-contained so the control works in any host.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) close();
+      const target = e.target as Node;
+      if (wrapRef.current?.contains(target)) return;
+      if (popupRef.current?.contains(target)) return;
+      close();
     };
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(true); };
     document.addEventListener('mousedown', onDown);
@@ -139,14 +176,20 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
         <Chevron open={open} />
       </button>
 
+      {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {open && (
           <motion.div
+            ref={popupRef}
             key="currency"
             initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
             className="dash-pop"
-            style={{ width: 'min(320px, 92vw)', ...(align === 'left' ? { left: 0, right: 'auto' } : null) }}
+            style={{
+              position: 'fixed', right: 'auto',
+              top: pos?.top ?? 0, left: pos?.left ?? 0, width: pos?.width ?? 320,
+              visibility: pos ? 'visible' : 'hidden',
+            }}
           >
             <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border)' }}>
               <p style={{ ...geist, fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 2px' }}>
@@ -246,7 +289,8 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
             </form>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body)}
     </div>
   );
 }
