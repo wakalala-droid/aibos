@@ -314,6 +314,9 @@ interface FinancialActions {
   refreshTwin: () => Promise<void>;
   setRecentEvents: (events: BusinessEvent[]) => void;
   reset: () => void;
+  /** Start-fresh (timeline wipe): clear business data but KEEP identity, tier,
+   *  locations, currency choice and UI prefs. Not for logout — use clearTenant. */
+  clearBusinessData: () => void;
 }
 
 // ── INITIAL state ───────────────────────────────────────────────────────────
@@ -795,6 +798,24 @@ const _store = create<FinancialState & FinancialActions>()(
       setRecentEvents: (events) => set({ recentEvents: events }),
 
       reset: () => set({ ...INITIAL, cabinet: get().cabinet, cabinetData: get().cabinetData }),
+
+      // The user wiped their BUSINESS DATA, not their account: tier comes from
+      // profiles (server-authoritative) and must survive, or the wipe reads as
+      // a subscription downgrade. Same-user identity + prefs survive too.
+      clearBusinessData: () =>
+        set({
+          ...INITIAL,
+          ownerId: get().ownerId,
+          tier: get().tier,
+          locations: get().locations,
+          currencySymbol: get().currencySymbol,
+          currencySource: get().currencySource,
+          detectedCurrencySymbol: get().detectedCurrencySymbol,
+          sidebarCollapsed: get().sidebarCollapsed,
+          uiMode: get().uiMode,
+          cabinet: get().cabinet,
+          cabinetData: get().cabinetData,
+        }),
 
       // ── Tenant-safety on shared browsers ──────────────────────────────────
       // The persisted store lives in localStorage, keyed by browser not by user.

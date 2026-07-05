@@ -23,7 +23,7 @@ const hint: React.CSSProperties = {
 
 export default function StartFresh({ onDone }: { onDone?: () => void }) {
   const refreshTwin = useStore(s => s.refreshTwin);
-  const storeReset = useStore(s => s.reset);
+  const clearBusinessData = useStore(s => s.clearBusinessData);
 
   const [open, setOpen] = useState(false);
   const [scope, setScope] = useState<Scope>('all');
@@ -49,7 +49,7 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
         wipe_schedule: wipeSchedule,
         reset_opening_cash: resetOpeningCash,
       });
-      if (scope === 'all') storeReset(); // dashboards were lit from the old data — clear the session
+      if (scope === 'all') clearBusinessData(); // clear derived data; tier/identity/prefs survive
       await refreshTwin();
       onDone?.();
       const extras = [
