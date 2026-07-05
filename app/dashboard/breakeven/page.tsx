@@ -28,6 +28,9 @@ export default function BreakevenPage() {
   const avgMonthlyRevenue = totalRevenue / months;
   const avgMonthlyCosts   = totalCosts   / months;
 
+  // ── No data uploaded: don't fabricate a 28% margin or K0 KPIs ─────────────
+  const hasData = monthly.length > 0 && (totalRevenue > 0 || totalCosts > 0);
+
   // Use breakeven data if available, otherwise derive from monthly
   const fixedCostPct     = 0.40;
   const fixedCosts       = breakeven?.fixedCosts       ?? (avgMonthlyCosts * fixedCostPct);
@@ -72,6 +75,23 @@ export default function BreakevenPage() {
         <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Fixed costs · variable costs · contribution margin · breakeven point</p>
       </div>
 
+      {!hasData ? (
+        <SectionCard title="Breakeven Analysis" subtitle="Fixed vs variable costs · contribution margin · breakeven point" delay={0.1}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center', padding: '40px 16px' }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3 12h18M12 3v18" stroke="var(--text-4)" strokeWidth="1.5" strokeLinecap="round" opacity=".4" />
+              <path d="M5 19L19 5" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4" />
+            </svg>
+            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>
+              No revenue or cost data yet
+            </p>
+            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-4)', margin: 0, lineHeight: 1.6, maxWidth: 420 }}>
+              Upload a financial file with <strong>Month</strong>, <strong>Revenue</strong> and <strong>Costs</strong> columns on the dashboard, and AI-BOS will compute your fixed/variable split, contribution margin and the exact revenue you need to break even.
+            </p>
+          </div>
+        </SectionCard>
+      ) : (
+      <>
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="BREAKEVEN REVENUE" value={fmt(bepRevenue, false, sym)} sub="monthly target"
@@ -138,6 +158,8 @@ export default function BreakevenPage() {
           ))}
         </div>
       </SectionCard>
+      </>
+      )}
     </>
     </FeatureGate>
   );
