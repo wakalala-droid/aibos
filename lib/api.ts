@@ -590,6 +590,164 @@ export async function deleteScheduleItem(id: string): Promise<void> {
   await spineFetch(`/schedule/${id}`, { method: 'DELETE' });
 }
 
+// ── Employees & Payroll (Zambian statutory engine) ──────────────────────────────
+
+export type EmploymentType = 'permanent' | 'contract';
+export type EmployeeStatus = 'active' | 'left';
+
+export interface Employee {
+  id: string;
+  name: string;
+  position?: string | null;
+  employment_type: EmploymentType;
+  status: EmployeeStatus;
+  start_date?: string | null;
+  end_date?: string | null;
+  basic_pay: number;
+  currency: string;
+  pay_day: number;
+  napsa_number?: string | null;
+  tpin?: string | null;
+  gratuity_eligible: boolean;
+  gratuity_rate: number;
+  contract_end?: string | null;
+  loan_balance: number;
+  loan_monthly: number;
+  notes?: string | null;
+}
+
+export type EmployeeInput =
+  Partial<Omit<Employee, 'id' | 'status'>> & { name: string };
+
+/** One person's line inside a pay run — the full statutory breakdown. */
+export interface Payslip {
+  id?: string;
+  run_id?: string;
+  employee_id?: string | null;
+  period: string;
+  employee_name?: string | null;
+  gross: number;
+  napsa_employee: number;
+  napsa_employer: number;
+  nhima_employee: number;
+  taxable: number;
+  paye: number;
+  loan_deduction: number;
+  other_deductions: number;
+  net: number;
+  gratuity_accrued: number;
+  breakdown?: Record<string, unknown>;
+  linked_event_id?: string | null;
+}
+
+export interface PayrollTotals {
+  gross: number;
+  napsa_employee: number;
+  napsa_employer: number;
+  nhima_employee: number;
+  paye: number;
+  loan_deduction: number;
+  net: number;
+  gratuity_accrued: number;
+  headcount: number;
+}
+
+/** A statutory remittance (PAYE→ZRA, NAPSA, NHIMA) drafted as a pending TaxPayment. */
+export interface RemittanceDraft {
+  tax_type: 'PAYE' | 'NAPSA' | 'NHIMA';
+  authority: string;
+  amount: number;
+  period: string;
+  currency?: string;
+  due_date: string;
+  event_id?: string | null;         // set once drafted (absent in preview)
+}
+
+export interface PayrollRun {
+  id: string;
+  period: string;
+  pay_date?: string | null;
+  currency: string;
+  totals: PayrollTotals;
+  status: 'completed' | 'void';
+  payslips?: Payslip[];
+  remittances?: RemittanceDraft[];
+}
+
+export interface PayrollPreview {
+  period: string;
+  payslips: Payslip[];
+  totals: PayrollTotals;
+  remittances: RemittanceDraft[];
+  rates: PayrollRates | null;
+}
+
+export interface PayrollRates {
+  effective_from: string;
+  currency: string;
+  paye_bands: Array<{ up_to: number | null; rate: number }>;
+  napsa_rate: number;
+  napsa_ceiling: number;
+  nhima_rate: number;
+  source: string;
+}
+
+export async function listEmployees(): Promise<Employee[]> {
+  const data = await spineFetch('/employees');
+  return (data.employees as Employee[]) ?? [];
+}
+
+export async function createEmployee(input: EmployeeInput): Promise<Employee> {
+  const data = await spineFetch('/employees', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  });
+  return data.employee as Employee;
+}
+
+export async function updateEmployee(id: string, patch: Partial<EmployeeInput>): Promise<Employee> {
+  const data = await spineFetch(`/employees/${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch),
+  });
+  return data.employee as Employee;
+}
+
+export async function deleteEmployee(id: string): Promise<void> {
+  await spineFetch(`/employees/${id}`, { method: 'DELETE' });
+}
+
+export async function getPayrollRates(): Promise<PayrollRates | null> {
+  const data = await spineFetch('/payroll/rates');
+  return (data.rates as PayrollRates) ?? null;
+}
+
+export async function listPayrollRuns(): Promise<PayrollRun[]> {
+  const data = await spineFetch('/payroll/runs');
+  return (data.runs as PayrollRun[]) ?? [];
+}
+
+export async function getPayrollRun(id: string): Promise<PayrollRun> {
+  const data = await spineFetch(`/payroll/runs/${id}`);
+  return data.run as PayrollRun;
+}
+
+/** Compute a period without persisting — the on-screen table (free). */
+export async function previewPayroll(period: string, payDate?: string): Promise<PayrollPreview> {
+  const data = await spineFetch('/payroll/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ period, pay_date: payDate ?? null, preview: true }),
+  });
+  return data.preview as PayrollPreview;
+}
+
+/** Commit a pay period — posts a Salary event per employee (Pro). */
+export async function runPayroll(period: string, payDate?: string): Promise<PayrollRun> {
+  const data = await spineFetch('/payroll/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ period, pay_date: payDate ?? null, preview: false }),
+  });
+  return data.run as PayrollRun;
+}
+
 // ── Future hooks: recommendations + simulation (Initiatives 10, 12) ────────────
 
 export interface Recommendation {

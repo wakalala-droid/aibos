@@ -20,6 +20,8 @@ export type Feature =
   | 'engine2'
   | 'engine3'
   | 'schedule'         // recurrence + reminders on the Scheduler (core CRUD is free, like recording)
+  | 'payroll'          // run a pay period: PAYE/NAPSA/net-pay engine + posting Salary events (register is free)
+  | 'hospitality'      // PROVISIONAL: short-let PMS vertical (properties/units/bookings). Whole module gated — moves to its own add-on SKU later
   // Pro+ — "AIBOS runs your day": the assistant acts, not just answers.
   | 'morning_brief'    // in-app daily digest composed from the twin
   | 'chat_actions'     // record sales/expenses straight from the chat
@@ -81,6 +83,7 @@ export const TIERS: Record<Tier, TierMeta> = {
       'Complete history, no 30-day limit',
       'AI CFO chat — unlimited',
       'Recurring schedule & reminders — NAPSA, ZRA, rent',
+      'Payroll — PAYE, NAPSA & net pay computed for you',
       'Daily or weekly AI brief to email',
       'Customer & Operations intelligence (Engines 2 & 3)',
     ],
@@ -127,7 +130,10 @@ export const TIER_ORDER: Tier[] = ['free', 'pro', 'proplus', 'growth'];
 const PRO: Feature[] = [
   'forecast', 'anomaly', 'variance', 'breakeven',
   'ai_chat', 'scheduled_brief', 'full_history', 'engine2', 'engine3',
-  'schedule',
+  'schedule', 'payroll',
+  // PROVISIONAL — parked in Pro so the v1 client can use it; moves to its own
+  // add-on SKU later (keep in lock-step with entitlements.py _PRO).
+  'hospitality',
 ];
 const PROPLUS: Feature[] = [
   ...PRO,

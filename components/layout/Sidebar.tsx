@@ -8,7 +8,7 @@ import { useStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme';
 import { useProfile } from '@/lib/profile';
 import { useAiAssistant } from '@/lib/aiAssistant';
-import { TIERS } from '@/lib/tiers';
+import { TIERS, canAccess, type Tier } from '@/lib/tiers';
 
 // ── SVG icon primitives (matching E1 sidebar icon style) ──────────────────
 const IC: Record<string, JSX.Element> = {
@@ -18,6 +18,7 @@ const IC: Record<string, JSX.Element> = {
   import:     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v12M7 10l5 5 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   schedule:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M8 3v4M16 3v4M3 10h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M8 15h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   advisor:    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2a7 7 0 00-4 12.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3A7 7 0 0012 2z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="M9 21h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+  people:     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M3 20v-1.5a4.5 4.5 0 014.5-4.5h3A4.5 4.5 0 0115 18.5V20" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none"/><path d="M16.5 5.2a3 3 0 010 5.6M18 20v-1.6a4 4 0 00-2.6-3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/></svg>,
   inventory:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/><path d="M3 7v10l9 4 9-4V7M12 11v10" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>,
   cash:       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 8h20v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8z" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M2 8l2-4h16l2 4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><circle cx="12" cy="14" r="2" stroke="currentColor" strokeWidth="1.4" fill="none"/></svg>,
   variance:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 18l5-5 4 3 5-7 4 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/><path d="M3 20h18" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity=".4"/></svg>,
@@ -37,6 +38,7 @@ const IC: Record<string, JSX.Element> = {
   opsbrief:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h4M9 3h10a2 2 0 012 2v14a2 2 0 01-2 2H9M9 3v18" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/><path d="M13 8h4M13 12h4M13 16h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   lock:       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>,
   admin:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  rooms:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 18v-6a2 2 0 012-2h14a2 2 0 012 2v6" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round"/><path d="M3 14h18M2 18h20M6 10V8a2 2 0 012-2h8a2 2 0 012 2v2" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>,
   pricing:    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg>,
   sliders:    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M1 14h6M9 8h6M17 16h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   sun:        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.6"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
@@ -52,6 +54,7 @@ const NAV: NavEntry[] = [
   { href: '/dashboard/record',     label: 'Record',           icon: IC.record     },
   { href: '/dashboard/timeline',   label: 'Timeline',         icon: IC.timeline   },
   { href: '/dashboard/schedule',   label: 'Schedule',         icon: IC.schedule   },
+  { href: '/dashboard/employees',  label: 'Employees',        icon: IC.people     },
   { href: '/dashboard/import',     label: 'Import',           icon: IC.import     },
   { href: '/dashboard/advisor',    label: 'Advisor',          icon: IC.advisor    },
   { href: '/dashboard/inventory',  label: 'Inventory',        icon: IC.inventory  },
@@ -83,10 +86,17 @@ const SIMPLE_NAV: NavItem[] = [
   { href: '/dashboard',           label: 'Home',     icon: IC.overview  },
   { href: '/dashboard/record',    label: 'Record',   icon: IC.record    },
   { href: '/dashboard/schedule',  label: 'Schedule', icon: IC.schedule  },
+  { href: '/dashboard/employees', label: 'Staff',    icon: IC.people    },
   { href: '/dashboard/inventory', label: 'Stock',    icon: IC.inventory },
   { href: '/dashboard/cash',      label: 'Money',    icon: IC.cash      },
   { href: '/dashboard/timeline',  label: 'Activity', icon: IC.timeline  },
 ];
+
+// Hospitality — a paid vertical, only shown when the tier entitles it (moves to
+// its own add-on SKU later). One hub door: the booking calendar is the hero, and
+// everything it records already flows into Cash/Timeline via the spine.
+const HOSPITALITY_ITEM: NavItem = { href: '/dashboard/hospitality', label: 'Rooms & Stays', icon: IC.rooms };
+const HOSPITALITY_SECTION: NavSection = { type: 'section', label: 'Hospitality', colour: 'var(--amber)', engine: 'ops' };
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -99,7 +109,25 @@ export default function Sidebar() {
   const { setOpen: setAssistantOpen } = useAiAssistant();
   const col = sidebarCollapsed;
   const simple = uiMode === 'simple';
-  const entries: NavEntry[] = simple ? SIMPLE_NAV : NAV;
+
+  // Splice the Hospitality vertical into the nav only when the plan entitles it.
+  // Simple mode gets a plain door alongside the other essentials; Pro mode gets
+  // its own labelled section so it reads as a distinct operation.
+  const entitledHospitality = canAccess(tier as Tier, 'hospitality');
+  const entries: NavEntry[] = (() => {
+    const base = simple ? [...SIMPLE_NAV] : [...NAV];
+    if (!entitledHospitality) return base;
+    if (simple) {
+      const at = base.findIndex(e => 'href' in e && e.href === '/dashboard/schedule');
+      base.splice(at >= 0 ? at + 1 : base.length, 0, HOSPITALITY_ITEM);
+      return base;
+    }
+    // Pro: place the section just before Customer Intelligence.
+    const at = base.findIndex(e => 'type' in e);
+    const block: NavEntry[] = [HOSPITALITY_SECTION, HOSPITALITY_ITEM];
+    base.splice(at >= 0 ? at : base.length, 0, ...block);
+    return base;
+  })();
 
   const isLocked = (eng?: 'ci' | 'ops') =>
     eng === 'ci' ? !hasEngine2Data : eng === 'ops' ? !hasEngine3Data : false;

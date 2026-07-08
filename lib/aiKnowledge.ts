@@ -242,6 +242,23 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     how: 'The amount field is worth filling for pick-ups and payments — it powers the one-tap "record it in your books" step when you mark the item done. Repeats (daily to monthly) are a Pro feature, enforced by the server.',
     followups: ['What does the amount field do?', 'What repeats can I set?'],
   },
+  // ── Employees & Payroll ──────────────────────────────────────────────────────
+  'employees.register': {
+    id: 'employees.register',
+    title: 'Your People',
+    what: 'The register of everyone the company pays — their role, monthly pay, pay day, staff loan balance and, for fixed-term staff, gratuity terms.',
+    why: 'Payroll can only be as right as the register behind it. Keeping people here means PAYE, NAPSA and net pay are worked out from real details, not guessed each month.',
+    how: 'Add a person with just a name and monthly pay to start; open "Loan, gratuity & IDs" for staff loans (deducted automatically each run), gratuity accrual on contracts, and their NAPSA number / TPIN. The register is free — running payroll is the Pro step.',
+    followups: ['How is a staff loan deducted?', 'Who accrues gratuity?'],
+  },
+  'payroll.run': {
+    id: 'payroll.run',
+    title: 'Run Payroll',
+    what: 'Pick a month and AI-BOS computes each active employee’s payslip — gross, NAPSA, NHIMA, PAYE and net pay — using current Zambian statutory rates it keeps up to date for you.',
+    why: 'Payroll is monthly, error-prone hard maths with real penalties for getting NAPSA or PAYE wrong. Doing it for you — and posting each salary into your books — keeps the numbers and the law in one place.',
+    how: 'Preview is free and shows the full table with totals. Running it (Pro) posts one confirmed Salary event per employee — at their NET pay — into your P&L and cashflow, decrements staff loans, and records the run. It also auto-drafts the PAYE (to ZRA), NAPSA and NHIMA remittances as pending payments due the 10th of next month; you confirm each when you actually pay, so the withheld money is never counted twice. Each month can only be run once, so nothing is paid twice.',
+    followups: ['What rates is AI-BOS using?', 'How does NAPSA get calculated?', 'Where do the salaries and remittances show in my books?'],
+  },
   'dash.upcoming': {
     id: 'dash.upcoming',
     title: 'Coming Up',
