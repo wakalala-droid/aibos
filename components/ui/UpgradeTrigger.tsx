@@ -78,10 +78,10 @@ export default function UpgradeTrigger() {
       }}
     >
       <div style={{ flex: 1, minWidth: 200 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>
+        <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>
           {active.headline}
         </p>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>
+        <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>
           {active.detail}
         </p>
       </div>
@@ -89,7 +89,7 @@ export default function UpgradeTrigger() {
         <Link
           href={active.href}
           style={{
-            fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 700,
+            fontSize: 'var(--fs-data)', fontWeight: 700,
             color: '#fff', background: active.colour, padding: '9px 16px',
             borderRadius: 10, textDecoration: 'none', whiteSpace: 'nowrap',
           }}

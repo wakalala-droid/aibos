@@ -151,13 +151,13 @@ export default function ForecastPage() {
     >
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
           Financial Intelligence
         </p>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
           Forecast Engine
         </h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>
           AI-powered revenue prediction · {hasBand ? '95% prediction interval' : 'trend estimate'}
         </p>
       </div>
@@ -182,9 +182,9 @@ export default function ForecastPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 20, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)' }}>
           <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.8, repeat: Infinity }}
             style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--good)' }} />
-          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--good)', fontWeight: 600 }}>Live model</span>
+          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--good)', fontWeight: 600 }}>Live model</span>
         </div>
-        <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)' }}>
+        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
           Historical + {projections.length}-month AI prediction · {bandLabel}
         </span>
       </div>
@@ -200,10 +200,10 @@ export default function ForecastPage() {
               <path d="M3 17l5-5 4 4 8-9" stroke="var(--text-4)" strokeWidth="1.6"
                 strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 4" fill="none" />
             </svg>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-2)', margin: 0 }}>
+            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-2)', margin: 0 }}>
               No historical data yet
             </p>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0 }}>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
               Upload a financial file on the dashboard to generate a forecast.
             </p>
           </div>
@@ -223,8 +223,8 @@ export default function ForecastPage() {
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false}
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false}
                 tickFormatter={(v) => formatAxis(n(v))} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
               <Area type="monotone" dataKey="upper" stroke="none" fill="rgba(167,139,250,0.07)" dot={false} legendType="none" name="Upper" connectNulls />
@@ -242,7 +242,7 @@ export default function ForecastPage() {
                     : <line x1="0" y1="2" x2="24" y2="2" stroke={item.color} strokeWidth="2.2" />
                   }
                 </svg>
-                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)' }}>{item.label}</span>
+                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>{item.label}</span>
               </div>
             ))}
           </div>
@@ -261,7 +261,7 @@ export default function ForecastPage() {
               const fv = row.fcast ?? 0;
               const vs = lastRev > 0 ? ((fv - lastRev) / lastRev * 100) : 0;
               return (
-                <motion.tr key={`p${i}`} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 + i * 0.06 }}>
+                <tr key={`p${i}`}>
                   <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.month}</td>
                   <td style={{ color: 'var(--purple)', fontWeight: 700 }}>{fmt(fv, false, sym)}</td>
                   <td style={{ color: 'var(--text-3)' }}>{row.lower != null ? fmt(row.lower, false, sym) : '—'}</td>
@@ -269,7 +269,7 @@ export default function ForecastPage() {
                   <td style={{ color: vs >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 600 }}>
                     {vs >= 0 ? '+' : ''}{vs.toFixed(1)}%
                   </td>
-                </motion.tr>
+                </tr>
               );
             })}
           </tbody>

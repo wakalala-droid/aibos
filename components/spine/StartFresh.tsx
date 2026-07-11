@@ -15,10 +15,10 @@ type Scope = 'all' | 'excel';
 
 const label: React.CSSProperties = {
   display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-2)',
+  fontSize: 'var(--fs-data)', color: 'var(--text-2)',
 };
 const hint: React.CSSProperties = {
-  fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', marginTop: 2,
+  fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 2,
 };
 
 export default function StartFresh({ onDone }: { onDone?: () => void }) {
@@ -76,19 +76,19 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
       style={{ marginTop: 24 }}
       action={!open ? (
         <button type="button" className="touch-target" onClick={() => { setOpen(true); setDone(null); }}
-          style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--red)', background: 'transparent', color: 'var(--red)', fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}>
+          style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--red)', background: 'transparent', color: 'var(--red)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
           Start fresh…
         </button>
       ) : undefined}
     >
       {done && (
-        <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid var(--green)', color: 'var(--green)', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem' }}>
+        <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid var(--green)', color: 'var(--green)', fontSize: 'var(--fs-data)' }}>
           {done}
         </div>
       )}
 
       {!open && !done && (
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-3)', margin: 0 }}>
+        <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0 }}>
           Imported the wrong file, or mapped columns incorrectly? Flush the bad data and
           start again. For a single wrong entry, void it on the timeline instead.
         </p>
@@ -148,28 +148,28 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
 
           {/* Typed confirmation */}
           <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--red)', margin: '0 0 8px' }}>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--red)', margin: '0 0 8px' }}>
               This cannot be undone. Type <strong>RESET</strong> to confirm.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               <input
                 type="text" value={confirmText} onChange={e => setConfirmText(e.target.value)}
                 placeholder="RESET" autoComplete="off" spellCheck={false} aria-label="Type RESET to confirm"
-                style={{ width: 120, padding: '8px 12px', borderRadius: 6, border: `1px solid ${armed ? 'var(--red)' : 'var(--border-md)'}`, background: 'transparent', color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.08em', outline: 'none' }}
+                style={{ width: 120, padding: '8px 12px', borderRadius: 6, border: `1px solid ${armed ? 'var(--red)' : 'var(--border-md)'}`, background: 'transparent', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 600, letterSpacing: '0.08em', outline: 'none' }}
               />
               <button type="button" className="touch-target" onClick={handleReset} disabled={!armed || busy}
-                style={{ padding: '8px 16px', minHeight: 36, borderRadius: 6, border: '1px solid var(--red)', background: armed ? 'var(--red)' : 'var(--red-dim)', color: armed ? '#fff' : 'var(--red)', fontFamily: 'Geist, sans-serif', fontSize: '0.75rem', fontWeight: 700, cursor: armed && !busy ? 'pointer' : 'not-allowed', opacity: busy ? 0.6 : 1 }}>
+                style={{ padding: '8px 16px', minHeight: 36, borderRadius: 6, border: '1px solid var(--red)', background: armed ? 'var(--red)' : 'var(--red-dim)', color: armed ? '#fff' : 'var(--red)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: armed && !busy ? 'pointer' : 'not-allowed', opacity: busy ? 0.6 : 1 }}>
                 {busy ? 'Deleting…' : scope === 'all' ? 'Delete everything & start fresh' : 'Delete file imports'}
               </button>
               <button type="button" className="touch-target" onClick={() => { setOpen(false); setConfirmText(''); setError(null); }}
-                style={{ padding: '8px 14px', minHeight: 36, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontFamily: 'Geist, sans-serif', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                style={{ padding: '8px 14px', minHeight: 36, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
                 Cancel
               </button>
             </div>
           </div>
 
           {error && (
-            <div style={{ padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem' }}>
+            <div style={{ padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>
               {error}
             </div>
           )}

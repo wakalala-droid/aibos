@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="page-container">
         <div className="section-card" style={{ marginTop: 24 }} aria-busy="true">
-          <p style={{ fontFamily: 'Geist, sans-serif', color: 'var(--text-3)', margin: 0 }}>
+          <p style={{ color: 'var(--text-3)', margin: 0 }}>
             Checking access…
           </p>
         </div>

@@ -38,10 +38,10 @@ export default function MarketingFooter() {
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, marginLeft: -10 }}>
               <Image src="/brand/aibos-mark-white.png" alt="AI-BOS — Artificial Intelligence Business Operating System" width={210} height={154} style={{ width: 210, height: 'auto', objectFit: 'contain' }} />
             </div>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.05rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+            <p style={{ fontSize: '1.05rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
               The brain behind every business.
             </p>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', color: '#9fabbd', margin: 0, lineHeight: 1.55, maxWidth: 320 }}>
+            <p style={{ fontSize: 'var(--fs-body)', color: '#9fabbd', margin: 0, lineHeight: 1.55, maxWidth: 320 }}>
               The AI business operating system for African SMEs. Priced in Kwacha,
               built for how you actually run.
             </p>
@@ -50,13 +50,13 @@ export default function MarketingFooter() {
           {/* Link columns */}
           {COLS.map((col) => (
             <nav key={col.title} aria-label={col.title}>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#707d8e', margin: '0 0 14px' }}>
+              <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#707d8e', margin: '0 0 14px' }}>
                 {col.title}
               </p>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    <Link href={l.href} style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.88rem', color: '#9fabbd', textDecoration: 'none' }}>
+                    <Link href={l.href} style={{ fontSize: 'var(--fs-body)', color: '#9fabbd', textDecoration: 'none' }}>
                       {l.label}
                     </Link>
                   </li>
@@ -73,10 +73,10 @@ export default function MarketingFooter() {
             display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between',
           }}
         >
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: '#707d8e', margin: 0 }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: '#707d8e', margin: 0 }}>
             © {new Date().getFullYear()} AI-BOS · Lusaka, Zambia
           </p>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: '#707d8e', margin: 0 }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: '#707d8e', margin: 0 }}>
             Your data stays yours · Export anytime
           </p>
         </div>

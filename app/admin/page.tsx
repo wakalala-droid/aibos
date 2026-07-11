@@ -52,8 +52,7 @@ const btn = (variant: 'primary' | 'ghost'): React.CSSProperties => ({
   minHeight: 36,
   padding: '7px 12px',
   borderRadius: 8,
-  fontFamily: 'Geist, sans-serif',
-  fontSize: '0.74rem',
+  fontSize: 'var(--fs-data)',
   fontWeight: 700,
   cursor: 'pointer',
   whiteSpace: 'nowrap',
@@ -174,10 +173,10 @@ export default function AdminAccountsPage() {
   // ── States ─────────────────────────────────────────────────────────────────
   const header = (
     <header style={{ marginBottom: 18 }}>
-      <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+      <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
         Accounts
       </h1>
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', color: 'var(--text-3)', margin: 0 }}>
+      <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
         {loading ? 'Loading accounts…' : `${accounts.length} account${accounts.length === 1 ? '' : 's'}. Grant full access instantly to demo the product live.`}
       </p>
     </header>
@@ -190,16 +189,16 @@ export default function AdminAccountsPage() {
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search name or email…"
         aria-label="Search accounts by name or email"
-        style={{ flex: '1 1 220px', minHeight: 42, padding: '9px 14px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.84rem', outline: 'none' }}
+        style={{ flex: '1 1 220px', minHeight: 42, padding: '9px 14px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none' }}
       />
-      <select aria-label="Filter by tier" value={tierFilter} onChange={(e) => setTierFilter(e.target.value as 'all' | Tier)} style={{ minHeight: 42, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.82rem' }}>
+      <select aria-label="Filter by tier" value={tierFilter} onChange={(e) => setTierFilter(e.target.value as 'all' | Tier)} style={{ minHeight: 42, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
         <option value="all">All tiers</option>
         <option value="free">Free</option>
         <option value="pro">Pro</option>
         <option value="proplus">Pro+</option>
         <option value="growth">Growth</option>
       </select>
-      <select aria-label="Sort accounts" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} style={{ minHeight: 42, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.82rem' }}>
+      <select aria-label="Sort accounts" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} style={{ minHeight: 42, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
         <option value="active">Sort: last active</option>
         <option value="signup">Sort: signup date</option>
       </select>
@@ -209,7 +208,7 @@ export default function AdminAccountsPage() {
   const toastEl = (
     <div aria-live="polite" style={{ minHeight: 0 }}>
       {toast && (
-        <div role="status" style={{ marginBottom: 14, padding: '10px 14px', borderRadius: 10, fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', background: toast.kind === 'ok' ? 'color-mix(in srgb, var(--good) 12%, transparent)' : 'color-mix(in srgb, var(--crit) 12%, transparent)', border: `1px solid ${toast.kind === 'ok' ? 'color-mix(in srgb, var(--good) 35%, transparent)' : 'color-mix(in srgb, var(--crit) 35%, transparent)'}`, color: toast.kind === 'ok' ? 'var(--good)' : 'var(--crit)' }}>
+        <div role="status" style={{ marginBottom: 14, padding: '10px 14px', borderRadius: 10, fontSize: 'var(--fs-data)', background: toast.kind === 'ok' ? 'color-mix(in srgb, var(--good) 12%, transparent)' : 'color-mix(in srgb, var(--crit) 12%, transparent)', border: `1px solid ${toast.kind === 'ok' ? 'color-mix(in srgb, var(--good) 35%, transparent)' : 'color-mix(in srgb, var(--crit) 35%, transparent)'}`, color: toast.kind === 'ok' ? 'var(--good)' : 'var(--crit)' }}>
           {toast.msg}
         </div>
       )}
@@ -228,21 +227,21 @@ export default function AdminAccountsPage() {
   } else if (error) {
     body = (
       <div className="section-card" role="alert" style={{ textAlign: 'center' }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', color: 'var(--crit)', margin: '0 0 12px' }}>{error}</p>
+        <p style={{ color: 'var(--crit)', margin: '0 0 12px' }}>{error}</p>
         <button type="button" onClick={() => void load()} style={btn('ghost')}>Try again</button>
       </div>
     );
   } else if (accounts.length === 0) {
     body = (
       <div className="section-card" style={{ textAlign: 'center', padding: '40px 20px' }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', color: 'var(--text-2)', margin: '0 0 4px', fontWeight: 600 }}>No accounts yet</p>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-3)', margin: 0 }}>Accounts appear here after their first sign-in.</p>
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: '0 0 4px', fontWeight: 600 }}>No accounts yet</p>
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>Accounts appear here after their first sign-in.</p>
       </div>
     );
   } else if (rows.length === 0) {
     body = (
       <div className="section-card" style={{ textAlign: 'center', padding: '32px 20px' }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.84rem', color: 'var(--text-3)', margin: 0 }}>No accounts match your filters.</p>
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>No accounts match your filters.</p>
       </div>
     );
   } else if (narrow) {
@@ -253,17 +252,17 @@ export default function AdminAccountsPage() {
           <div key={a.id} className="section-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
               <div style={{ minWidth: 0 }}>
-                <Link href={`/admin/${a.id}`} style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <Link href={`/admin/${a.id}`} style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {a.business_name || '—'}
                 </Link>
-                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)' }}>{a.email}</span>
+                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{a.email}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
                 <TierBadge tier={a.tier} />
                 <SourceTag source={a.tier_source} />
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)', marginBottom: 12 }}>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginBottom: 12 }}>
               <span>Joined {fmtDate(a.created_at)}</span>
               <span>Active {fmtDate(a.last_event_at)}</span>
               <span>{a.uploads} uploads</span>
@@ -295,10 +294,10 @@ export default function AdminAccountsPage() {
             {rows.map((a) => (
               <tr key={a.id}>
                 <td style={{ maxWidth: 240 }}>
-                  <Link href={`/admin/${a.id}`} style={{ color: 'var(--text-1)', fontWeight: 700, textDecoration: 'none', display: 'block', fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <Link href={`/admin/${a.id}`} style={{ color: 'var(--text-1)', fontWeight: 700, textDecoration: 'none', display: 'block', fontSize: 'var(--fs-data)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {a.business_name || '—'}
                   </Link>
-                  <span style={{ color: 'var(--text-3)', fontSize: '0.66rem' }}>{a.email}</span>
+                  <span style={{ color: 'var(--text-3)', fontSize: 'var(--fs-label)' }}>{a.email}</span>
                 </td>
                 <td><TierBadge tier={a.tier} /></td>
                 <td><SourceTag source={a.tier_source} /></td>
@@ -319,9 +318,9 @@ export default function AdminAccountsPage() {
     <div style={{ padding: '8px 0 48px' }}>
       {header}
       <nav aria-label="Admin sections" style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <Link href="/admin" aria-current="page" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Accounts</Link>
-        <Link href="/admin/usage" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Usage</Link>
-        <Link href="/admin/proposals" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Proposals</Link>
+        <Link href="/admin" aria-current="page" style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Accounts</Link>
+        <Link href="/admin/usage" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Usage</Link>
+        <Link href="/admin/proposals" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Proposals</Link>
       </nav>
       {controls}
       {toastEl}

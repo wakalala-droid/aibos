@@ -19,9 +19,9 @@ const EMPTY: ProductInput = { name: '', category: '', unit: 'unit', buy_price: 0
 const input: React.CSSProperties = {
   width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', outline: 'none',
+  fontSize: 'var(--fs-body)', outline: 'none',
 };
-const lbl: React.CSSProperties = { fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
+const lbl: React.CSSProperties = { fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
 
 export default function InventoryPage() {
   const sym = useStore(s => s.currencySymbol) || 'K';
@@ -70,19 +70,19 @@ export default function InventoryPage() {
   return (
     <>
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Inventory</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', marginTop: 4 }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Inventory</h1>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
           Your product catalog — prices, stock and reorder levels.
         </p>
       </div>
 
       <div className="grid-main">
         <SectionCard title="Products" subtitle={loading ? 'Loading…' : `${items.length} product${items.length === 1 ? '' : 's'}`}>
-          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.8rem' }}>{error}</div>}
+          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 48 }} />)}</div>
           ) : items.length === 0 ? (
-            <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--text-3)', fontSize: '0.85rem' }}>No products yet — add your first one.</div>
+            <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>No products yet — add your first one.</div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table className="data-table">
@@ -99,8 +99,8 @@ export default function InventoryPage() {
                       <td>{fmt(p.buy_price, false, sym)}</td>
                       <td>{fmt(p.sell_price, false, sym)}</td>
                       <td style={{ whiteSpace: 'nowrap' }}>
-                        <button type="button" onClick={() => edit(p)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', marginRight: 10 }}>Edit</button>
-                        <button type="button" onClick={() => remove(p.id)} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'Geist, sans-serif', fontSize: '0.7rem' }}>Delete</button>
+                        <button type="button" onClick={() => edit(p)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', fontSize: 'var(--fs-label)', marginRight: 10 }}>Edit</button>
+                        <button type="button" onClick={() => remove(p.id)} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontSize: 'var(--fs-label)' }}>Delete</button>
                       </td>
                     </tr>
                   ))}
@@ -116,18 +116,18 @@ export default function InventoryPage() {
             <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Name *</label><input value={form.name} onChange={e => set('name', e.target.value)} style={input} /></div>
             <div><label style={lbl}>Category</label><input value={form.category} onChange={e => set('category', e.target.value)} style={input} /></div>
             <div><label style={lbl}>Unit</label><input value={form.unit} onChange={e => set('unit', e.target.value)} placeholder="unit / kg / box" style={input} /></div>
-            <div><label style={lbl}>Buy price ({sym})</label><input type="number" value={form.buy_price} onChange={e => set('buy_price', e.target.value)} style={{ ...input, fontFamily: 'Geist, sans-serif' }} /></div>
-            <div><label style={lbl}>Sell price ({sym})</label><input type="number" value={form.sell_price} onChange={e => set('sell_price', e.target.value)} style={{ ...input, fontFamily: 'Geist, sans-serif' }} /></div>
-            <div><label style={lbl}>Opening stock</label><input type="number" value={form.opening_stock} onChange={e => set('opening_stock', e.target.value)} style={{ ...input, fontFamily: 'Geist, sans-serif' }} /></div>
-            <div><label style={lbl}>Reorder level</label><input type="number" value={form.reorder_level} onChange={e => set('reorder_level', e.target.value)} style={{ ...input, fontFamily: 'Geist, sans-serif' }} /></div>
+            <div><label style={lbl}>Buy price ({sym})</label><input type="number" value={form.buy_price} onChange={e => set('buy_price', e.target.value)} style={{ ...input }} /></div>
+            <div><label style={lbl}>Sell price ({sym})</label><input type="number" value={form.sell_price} onChange={e => set('sell_price', e.target.value)} style={{ ...input }} /></div>
+            <div><label style={lbl}>Opening stock</label><input type="number" value={form.opening_stock} onChange={e => set('opening_stock', e.target.value)} style={{ ...input }} /></div>
+            <div><label style={lbl}>Reorder level</label><input type="number" value={form.reorder_level} onChange={e => set('reorder_level', e.target.value)} style={{ ...input }} /></div>
             <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Supplier</label><input value={form.supplier} onChange={e => set('supplier', e.target.value)} style={input} /></div>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
             <button type="button" onClick={save} disabled={saving} className="touch-target"
-              style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
+              style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
               {saving ? 'Saving…' : editId ? 'Update' : 'Add product'}
             </button>
-            {editId && <button type="button" onClick={cancel} className="touch-target" style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>}
+            {editId && <button type="button" onClick={cancel} className="touch-target" style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>}
           </div>
         </SectionCard>
       </div>

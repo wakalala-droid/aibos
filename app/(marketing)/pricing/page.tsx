@@ -82,10 +82,10 @@ export default function PricingPage() {
           <Reveal>
             <div className="mkt-card" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, justifyContent: 'space-between' }}>
               <div style={{ flex: '1 1 280px' }}>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--e-cust)', margin: '0 0 10px' }}>
+                <p style={{ fontSize: 'var(--fs-label)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--e-cust)', margin: '0 0 10px' }}>
                   Locked-but-visible
                 </p>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-1)', margin: 0, lineHeight: 1.5 }}>
+                <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-1)', margin: 0, lineHeight: 1.5 }}>
                   Your top 5% of customers drive{' '}
                   <span style={{ position: 'relative', filter: 'blur(6px)', userSelect: 'none' }} aria-hidden>≈38%</span>{' '}
                   of revenue.
@@ -134,14 +134,14 @@ export default function PricingPage() {
             {TIMELINE.map((t, i) => (
               <Reveal key={t.when} delay={i * 0.1}>
                 <div className="mkt-card" style={{ height: '100%' }}>
-                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 600, color: 'var(--cyan)' }}>{t.when}</span>
+                  <span style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)' }}>{t.when}</span>
                   <p className="mkt-body" style={{ marginTop: 12, color: 'var(--text-2)' }}>{t.what}</p>
                 </div>
               </Reveal>
             ))}
           </div>
           <Reveal>
-            <p style={{ marginTop: 18, fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-4)' }}>
+            <p style={{ marginTop: 18, fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
               Effort from you: just your data. No IT project, no consultant, no migration.
             </p>
           </Reveal>
@@ -160,8 +160,8 @@ export default function PricingPage() {
             {TRUST.map(([t, d], i) => (
               <Reveal key={t} delay={i * 0.05}>
                 <div className="mkt-card" style={{ height: '100%' }}>
-                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px' }}>{t}</p>
-                  <p className="mkt-body" style={{ fontSize: '0.84rem' }}>{d}</p>
+                  <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px' }}>{t}</p>
+                  <p className="mkt-body" style={{ fontSize: 'var(--fs-body)' }}>{d}</p>
                 </div>
               </Reveal>
             ))}

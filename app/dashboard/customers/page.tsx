@@ -1,13 +1,28 @@
 'use client';
+import { useMemo, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import LockOverlay from '@/components/ui/LockOverlay';
+import PageHeader from '@/components/ui/PageHeader';
 import SimpleSummary from '@/components/dashboard/SimpleSummary';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import ChartTooltip from '@/components/ui/ChartTooltip';
+
+// Sortable columns of the RFM table → the row field each one orders by.
+const RFM_COLUMNS = [
+  { label: 'Customer',   key: 'customer_id'  },
+  { label: 'Segment',    key: 'segment'      },
+  { label: 'Recency',    key: 'recency_days' },
+  { label: 'Frequency',  key: 'frequency'    },
+  { label: 'Monetary',   key: 'monetary'     },
+  { label: 'RFM Score',  key: 'rfm_score'    },
+  { label: 'CLV',        key: 'clv'          },
+  { label: 'Churn Risk', key: 'churn_risk'   },
+] as const;
+type RfmSortKey = (typeof RFM_COLUMNS)[number]['key'];
 
 const SEG_COLORS: Record<string, string> = {
   Champion: '#34d399', Loyal: '#60a5fa', Promising: '#a78bfa',
@@ -27,8 +42,8 @@ function RetentionRing({ rate }: { rate: number }) {
           style={{ transform: 'rotate(-90deg)', transformOrigin: '55px 55px' }} />
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'var(--e2)' }}>{rate.toFixed(0)}%</span>
-        <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', letterSpacing: '0.08em' }}>RETENTION</span>
+        <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--e2)' }}>{rate.toFixed(0)}%</span>
+        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', letterSpacing: '0.08em' }}>RETENTION</span>
       </div>
     </div>
   );
@@ -43,13 +58,34 @@ export default function CustomersPage() {
   const highChurn = rfm.filter(r => r.churn_risk >= 70).length;
   const pieSeg = segments.map(s => ({ name: s.segment, value: s.count, colour: SEG_COLORS[s.segment] ?? 'var(--text-4)' }));
 
+  // Default sort: highest churn risk first — the question this table exists to
+  // answer ("who am I about to lose?") is answered before any interaction.
+  const [sortKey, setSortKey] = useState<RfmSortKey>('churn_risk');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const sortedRfm = useMemo(() => {
+    const rows = [...rfm];
+    rows.sort((a, b) => {
+      const av = a[sortKey] ?? 0, bv = b[sortKey] ?? 0;
+      const cmp = typeof av === 'string' || typeof bv === 'string'
+        ? String(av).localeCompare(String(bv))
+        : Number(av) - Number(bv);
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return rows;
+  }, [rfm, sortKey, sortDir]);
+  const onSort = (key: RfmSortKey) => {
+    if (key === sortKey) setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortKey(key); setSortDir(key === 'customer_id' || key === 'segment' ? 'asc' : 'desc'); }
+  };
+
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Customer Intelligence</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>RFM segmentation · CLV · Retention · Churn risk</p>
-      </div>
+      <PageHeader
+        eyebrow="Engine 2 · Customer"
+        eyebrowColour="var(--e2)"
+        title="Customer Intelligence"
+        subtitle="RFM segmentation · CLV · Retention · Churn risk"
+      />
 
       <SimpleSummary page="customers" />
 
@@ -71,7 +107,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Charts row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 20 }}>
+      <div className="grid-3" style={{ marginBottom: 20 }}>
         {/* Segment pie */}
         <SectionCard title="Segment Distribution" delay={0.1}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -88,9 +124,9 @@ export default function CustomersPage() {
                 <div key={s.segment} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: SEG_COLORS[s.segment] ?? 'var(--text-4)' }} />
-                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-2)' }}>{s.segment}</span>
+                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>{s.segment}</span>
                   </div>
-                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700, color: SEG_COLORS[s.segment] ?? 'var(--text-4)' }}>{s.count}</span>
+                  <span style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: SEG_COLORS[s.segment] ?? 'var(--text-4)' }}>{s.count}</span>
                 </div>
               ))}
             </div>
@@ -103,12 +139,12 @@ export default function CustomersPage() {
             <RetentionRing rate={retRate} />
             <div>
               <div style={{ marginBottom: 12 }}>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Returning</p>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: 'var(--good)', margin: 0 }}>{retention?.returning_customers ?? 0}</p>
+                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Returning</p>
+                <p style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--good)', margin: 0 }}>{retention?.returning_customers ?? 0}</p>
               </div>
               <div>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>First-time</p>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: 'var(--blue)', margin: 0 }}>{total - (retention?.returning_customers ?? 0)}</p>
+                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>First-time</p>
+                <p style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--blue)', margin: 0 }}>{total - (retention?.returning_customers ?? 0)}</p>
               </div>
             </div>
           </div>
@@ -122,14 +158,14 @@ export default function CustomersPage() {
               <div key={tier.tier} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 28, height: 28, borderRadius: 7, background: 'var(--bg-badge)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: c, fontWeight: 700 }}>{tier.tier[0]}</span>
+                    <span style={{ fontSize: 'var(--fs-label)', color: c, fontWeight: 700 }}>{tier.tier[0]}</span>
                   </div>
                   <div>
-                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{tier.tier} Value</p>
-                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0 }}>{tier.count} customers</p>
+                    <p style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{tier.tier} Value</p>
+                    <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>{tier.count} customers</p>
                   </div>
                 </div>
-                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: c }}>{fmt(tier.total_clv, true, sym)}</span>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: c }}>{fmt(tier.total_clv, true, sym)}</span>
               </div>
             );
           })}
@@ -142,14 +178,33 @@ export default function CustomersPage() {
           <table className="data-table">
             <thead>
               <tr>
-                {['Customer','Segment','Recency','Frequency','Monetary','RFM Score','CLV','Churn Risk'].map(h => (
-                  <th key={h}>{h}</th>
-                ))}
+                {RFM_COLUMNS.map(col => {
+                  const active = col.key === sortKey;
+                  return (
+                    <th key={col.key} aria-sort={active ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined}>
+                      <button
+                        type="button"
+                        onClick={() => onSort(col.key)}
+                        style={{
+                          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                          font: 'inherit', color: active ? 'var(--text-1)' : 'inherit',
+                          letterSpacing: 'inherit', textTransform: 'inherit',
+                          display: 'inline-flex', alignItems: 'center', gap: 4,
+                        }}
+                      >
+                        {col.label}
+                        <span aria-hidden="true" style={{ opacity: active ? 1 : 0.35 }}>
+                          {active ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}
+                        </span>
+                      </button>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
-              {rfm.map((row, i) => (
-                <motion.tr key={row.customer_id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.28 + i * 0.05 }}>
+              {sortedRfm.map((row) => (
+                <tr key={row.customer_id}>
                   <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.customer_id}</td>
                   <td>
                     <span className="badge" style={{ color: SEG_COLORS[row.segment] ?? 'var(--text-3)', background: `color-mix(in srgb, ${SEG_COLORS[row.segment] ?? '#fff'} 12%, transparent)`, borderColor: `color-mix(in srgb, ${SEG_COLORS[row.segment] ?? '#fff'} 30%, transparent)` }}>
@@ -166,10 +221,10 @@ export default function CustomersPage() {
                       <div className="progress-track" style={{ width: 50 }}>
                         <div className="progress-fill" style={{ width: `${row.churn_risk}%`, background: row.churn_risk >= 70 ? 'var(--crit)' : row.churn_risk >= 40 ? 'var(--warn)' : 'var(--good)' }} />
                       </div>
-                      <span style={{ color: row.churn_risk >= 70 ? 'var(--crit)' : row.churn_risk >= 40 ? 'var(--warn)' : 'var(--good)', fontSize: '0.68rem' }}>{row.churn_risk.toFixed(0)}%</span>
+                      <span style={{ color: row.churn_risk >= 70 ? 'var(--crit)' : row.churn_risk >= 40 ? 'var(--warn)' : 'var(--good)', fontSize: 'var(--fs-label)' }}>{row.churn_risk.toFixed(0)}%</span>
                     </div>
                   </td>
-                </motion.tr>
+                </tr>
               ))}
             </tbody>
           </table>

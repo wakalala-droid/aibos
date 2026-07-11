@@ -32,9 +32,9 @@ export default function MarketPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Market Intelligence</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Segment revenue breakdown · CLV distribution · AI strategic brief</p>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Market Intelligence</h1>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>Segment revenue breakdown · CLV distribution · AI strategic brief</p>
       </div>
 
       {/* KPI cards */}
@@ -58,8 +58,8 @@ export default function MarketPage() {
         <SectionCard title="Revenue by Segment" delay={0.1}>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={segData} barCategoryGap="32%">
-              <XAxis dataKey="name" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="revenue" radius={[5,5,0,0]}>
                 {segData.map((e, i) => <Cell key={i} fill={e.colour} fillOpacity={0.8} />)}
@@ -71,8 +71,8 @@ export default function MarketPage() {
         <SectionCard title="CLV Distribution" delay={0.14}>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={clvData} barCategoryGap="32%">
-              <XAxis dataKey="name" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="clv" radius={[5,5,0,0]}>
                 {clvData.map((e, i) => <Cell key={i} fill={e.colour} fillOpacity={0.8} />)}
@@ -90,11 +90,11 @@ export default function MarketPage() {
             {segments.map((s, i) => {
               const share = totalRevenue > 0 ? (s.total_revenue / totalRevenue * 100).toFixed(1) : '0.0';
               return (
-                <motion.tr key={s.segment} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.05 }}>
+                <tr key={s.segment}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: SEG_COLORS[s.segment] ?? 'var(--text-4)', flexShrink: 0 }} />
-                      <span style={{ fontFamily: 'Geist, sans-serif', fontWeight: 600, color: 'var(--text-1)' }}>{s.segment}</span>
+                      <span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{s.segment}</span>
                     </div>
                   </td>
                   <td style={{ fontWeight: 700, color: SEG_COLORS[s.segment] ?? 'var(--text-3)' }}>{s.count}</td>
@@ -105,10 +105,10 @@ export default function MarketPage() {
                       <div className="progress-track" style={{ width: 60 }}>
                         <div className="progress-fill" style={{ width: `${share}%`, background: SEG_COLORS[s.segment] ?? 'var(--text-4)' }} />
                       </div>
-                      <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: SEG_COLORS[s.segment] ?? 'var(--text-3)' }}>{share}%</span>
+                      <span style={{ fontSize: 'var(--fs-label)', color: SEG_COLORS[s.segment] ?? 'var(--text-3)' }}>{share}%</span>
                     </div>
                   </td>
-                </motion.tr>
+                </tr>
               );
             })}
           </tbody>
@@ -122,12 +122,12 @@ export default function MarketPage() {
           briefLines.map((line, i) => (
             <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.08 }}
               style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-              <span style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', fontWeight: 700, color: 'var(--e2)' }}>{i + 1}</span>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>{line.replace(/^\d+\.\s*/, '')}</p>
+              <span style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--e2)' }}>{i + 1}</span>
+              <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>{line.replace(/^\d+\.\s*/, '')}</p>
             </motion.div>
           ))
         ) : (
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Upload transaction data to generate AI market intelligence</p>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Upload transaction data to generate AI market intelligence</p>
         )}
         {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Customer Intelligence Locked" description="Upload transaction data to unlock AI-generated market insights" />}
       </SectionCard>

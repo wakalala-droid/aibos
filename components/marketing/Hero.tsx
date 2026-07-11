@@ -45,7 +45,7 @@ export default function Hero() {
             <Link href="/pricing" className="mkt-btn mkt-btn-secondary">See pricing</Link>
           </motion.div>
 
-          <motion.p style={{ marginTop: 20, fontFamily: 'Geist, sans-serif', fontSize: '0.74rem', color: 'var(--text-4)' }} {...rise(0.36)}>
+          <motion.p style={{ marginTop: 20, fontSize: 'var(--fs-data)', color: 'var(--text-4)' }} {...rise(0.36)}>
             No card required · Free forever tier · Your numbers never train anyone’s AI
           </motion.p>
         </div>

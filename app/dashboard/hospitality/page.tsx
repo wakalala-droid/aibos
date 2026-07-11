@@ -46,15 +46,15 @@ const BLOCKING: BookingStatus[] = ['confirmed', 'pending', 'completed'];
 const input: React.CSSProperties = {
   width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', outline: 'none',
+  fontSize: 'var(--fs-body)', outline: 'none',
 };
 const lbl: React.CSSProperties = {
-  fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', fontWeight: 600, color: 'var(--text-3)',
+  fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)',
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
   padding: '9px 16px', minHeight: 38, borderRadius: 8, border: 'none', background: 'var(--cyan)',
-  color: '#fff', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
+  color: '#fff', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
 };
 
 interface Draft { unit_id: string; guest: string; check_in: string; check_out: string; guests: string; amount: string; status: BookingStatus; }
@@ -213,7 +213,7 @@ export default function HospitalityPage() {
   return (
     <>
       {error && (
-        <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.8rem' }}>
+        <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>
           {error}
         </div>
       )}
@@ -247,7 +247,7 @@ export default function HospitalityPage() {
             action={
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <button aria-label="Previous week" onClick={() => setGridStart(addDays(gridStart, -7))} style={navBtn}>‹</button>
-                <button onClick={() => setGridStart(startOfDay(new Date()))} style={{ ...navBtn, width: 'auto', padding: '0 10px', fontSize: '0.7rem', fontWeight: 700 }}>Today</button>
+                <button onClick={() => setGridStart(startOfDay(new Date()))} style={{ ...navBtn, width: 'auto', padding: '0 10px', fontSize: 'var(--fs-label)', fontWeight: 700 }}>Today</button>
                 <button aria-label="Next week" onClick={() => setGridStart(addDays(gridStart, 7))} style={navBtn}>›</button>
                 <button onClick={() => openDraft('')} style={primaryBtn}>+ Booking</button>
               </div>
@@ -262,9 +262,9 @@ export default function HospitalityPage() {
                     const weekend = d.getDay() === 0 || d.getDay() === 6;
                     const isToday = iso(d) === iso(new Date());
                     return (
-                      <div key={i} style={{ textAlign: 'center', fontFamily: 'Geist, sans-serif', fontSize: '0.6rem', fontWeight: 700, color: isToday ? 'var(--cyan)' : weekend ? 'var(--text-3)' : 'var(--text-4)', textTransform: 'uppercase' }}>
+                      <div key={i} style={{ textAlign: 'center', fontSize: 'var(--fs-label)', fontWeight: 700, color: isToday ? 'var(--cyan)' : weekend ? 'var(--text-3)' : 'var(--text-4)', textTransform: 'uppercase' }}>
                         <div>{d.toLocaleDateString([], { weekday: 'narrow' })}</div>
-                        <div style={{ fontSize: '0.72rem', color: isToday ? 'var(--cyan)' : 'var(--text-2)' }}>{d.getDate()}</div>
+                        <div style={{ fontSize: 'var(--fs-label)', color: isToday ? 'var(--cyan)' : 'var(--text-2)' }}>{d.getDate()}</div>
                       </div>
                     );
                   })}
@@ -274,8 +274,8 @@ export default function HospitalityPage() {
                 {units.map(u => (
                   <div key={u.id} style={{ display: 'grid', gridTemplateColumns: `160px repeat(${WINDOW}, 1fr)`, gap: 2, marginBottom: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 8px', minWidth: 0 }}>
-                      <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.unit_name}</span>
-                      <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', color: 'var(--text-4)' }}>{fmt(u.base_nightly_rate, false, symbolForToken(u.currency) || sym)}/night</span>
+                      <span style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.unit_name}</span>
+                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>{fmt(u.base_nightly_rate, false, symbolForToken(u.currency) || sym)}/night</span>
                     </div>
                     {days.map((d, i) => {
                       const bk = occupancyOn(u.id, d);
@@ -294,7 +294,7 @@ export default function HospitalityPage() {
                             display: 'flex', alignItems: 'center', paddingLeft: 4, overflow: 'hidden',
                           }}
                         >
-                          {isStart && bk?.channel_id && <span style={{ fontSize: '0.55rem', color: 'var(--text-2)' }}>OTA</span>}
+                          {isStart && bk?.channel_id && <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>OTA</span>}
                         </button>
                       );
                     })}
@@ -306,12 +306,12 @@ export default function HospitalityPage() {
             {/* Legend + the "it's all connected" note */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
               {(['confirmed', 'pending', 'completed'] as BookingStatus[]).map(s => (
-                <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)' }}>
+                <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
                   <span style={{ width: 10, height: 10, borderRadius: 3, background: `color-mix(in srgb, ${STATUS_COLOUR[s]} 40%, transparent)`, border: `1px solid ${STATUS_COLOUR[s]}` }} />
                   {s}
                 </span>
               ))}
-              <span style={{ marginLeft: 'auto', fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)' }}>
+              <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
                 Confirmed bookings post to your books —{' '}
                 <Link href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Cash Intel</Link>
                 {' · '}
@@ -379,14 +379,14 @@ export default function HospitalityPage() {
 
 const navBtn: React.CSSProperties = {
   width: 30, height: 30, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
-  color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'Geist, sans-serif', fontSize: '1rem', lineHeight: 1,
+  color: 'var(--text-2)', cursor: 'pointer', fontSize: '1rem', lineHeight: 1,
 };
 
 function Field({ label, value, colour }: { label: string; value: string; colour?: string }) {
   return (
     <div>
-      <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.6rem', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-      <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.86rem', fontWeight: 600, color: colour || 'var(--text-1)', marginTop: 2 }}>{value}</div>
+      <div style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+      <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: colour || 'var(--text-1)', marginTop: 2 }}>{value}</div>
     </div>
   );
 }

@@ -104,7 +104,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </button>
 
             <span style={{
-              fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 800,
+              fontSize: 'var(--fs-body)', fontWeight: 800,
               color: 'var(--text-1)', letterSpacing: '-0.02em',
             }}>
               AI-BOS

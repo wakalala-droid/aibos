@@ -15,7 +15,9 @@ import DataManifestCard from '@/components/ui/DataManifestCard';
 import UpcomingStrip from '@/components/schedule/UpcomingStrip';
 import CustomMetricsCard from '@/components/ui/CustomMetricsCard';
 import BorderGlow from '@/components/ui/BorderGlow';
-import { cometProps } from '@/lib/cometStyle';
+import EngineScoreCard from '@/components/ui/EngineScoreCard';
+import PageHeader from '@/components/ui/PageHeader';
+import { bloomProps } from '@/lib/cometStyle';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -27,64 +29,12 @@ import {
 const CURSOR_GLOW = '190 95 62';
 const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
 
-function EngineScoreCard({
-  label, sub, score, colour, href, locked, explainId,
-}: {
-  label: string; sub: string; score: number; colour: string; href: string; locked?: boolean; explainId?: string;
-}) {
-  const col = scoreColor(score);
-  const comet = cometProps(locked ? undefined : score, colour);
-  return (
-    <Link
-      href={locked ? '#' : href}
-      onClick={e => { if (locked) e.preventDefault(); }}
-      style={{ textDecoration: 'none' }}
-    >
-      <BorderGlow glowColor={CURSOR_GLOW} backgroundColor="var(--bg-card)" borderRadius={14} glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH} style={{ height: '100%' }}>
-      <div
-        className={`kpi-card glow-inner ${comet.className}`}
-        data-ai-explain={explainId}
-        data-ai-label={explainId ? label : undefined}
-        data-ai-value={explainId && !locked ? String(score) : undefined}
-        style={{
-          ...comet.style,
-          opacity: locked ? 0.5 : 1,
-          cursor: locked ? 'default' : 'pointer',
-        }}
-      >
-        {/* Bento dot texture — fades in from the bottom on hover */}
-        <span className="bento-tex" aria-hidden="true" />
-        <p className="kpi-label" style={{ color: colour }}>{label}</p>
-        <p style={{
-          fontFamily: 'Geist, sans-serif', fontSize: '0.68rem',
-          color: 'var(--text-4)', margin: '2px 0 10px',
-        }}>
-          {sub}
-        </p>
-        <p style={{
-          fontFamily: 'Geist, sans-serif', fontSize: '2.4rem', fontWeight: 800,
-          color: locked ? 'var(--text-4)' : col,
-          letterSpacing: '-0.04em', margin: '0 0 10px',
-        }}>
-          {locked ? '—' : score}
-        </p>
-        <div className="progress-track">
-          {!locked && (
-            <div className="progress-fill" style={{ width: `${score}%`, background: col }} />
-          )}
-        </div>
-      </div>
-      </BorderGlow>
-    </Link>
-  );
-}
-
 function ComingSoon({ colour, text }: { colour: string; text: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 0 2px' }}>
       <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
-        fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', fontWeight: 700,
+        fontSize: 'var(--fs-label)', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: '0.08em', color: colour,
         background: `color-mix(in srgb, ${colour} 12%, transparent)`,
         border: `1px solid color-mix(in srgb, ${colour} 30%, transparent)`,
@@ -92,7 +42,7 @@ function ComingSoon({ colour, text }: { colour: string; text: string }) {
       }}>
         Coming soon
       </span>
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, margin: 0 }}>
+      <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', lineHeight: 1.5, margin: 0 }}>
         {text}
       </p>
     </div>
@@ -273,20 +223,10 @@ function OverviewPage() {
   return (
     <>
       {/* ── Page header ─────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{
-          fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800,
-          color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em',
-        }}>
-          Overview
-        </h1>
-        <p style={{
-          fontFamily: 'Geist, sans-serif', fontSize: '0.7rem',
-          color: 'var(--text-3)', margin: '4px 0 0',
-        }}>
-          Financial · Customer · Operations — unified Kwacha intelligence
-        </p>
-      </div>
+      <PageHeader
+        title="Overview"
+        subtitle="Financial · Customer · Operations — unified Kwacha intelligence"
+      />
 
       {/* ── Contextual upgrade trigger (only at moments of demonstrated value) ── */}
       <UpgradeTrigger />
@@ -298,31 +238,31 @@ function OverviewPage() {
       <div className="grid-engines" style={{ marginBottom: 24 }}>
         {/* Overall hero */}
         <BorderGlow glowColor={CURSOR_GLOW} backgroundColor="var(--bg-card)" borderRadius={14} glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH} style={{ height: '100%' }}>
-        <div className={`kpi-card glow-inner ${cometProps(scores ? scores.overall_score : undefined, 'var(--cyan)').className}`}
+        <div className="kpi-card glow-inner"
           data-ai-explain="score.overall"
           data-ai-label="Health Score"
           data-ai-value={scores ? String(scores.overall_score) : undefined}
           style={{
-          ...cometProps(scores ? scores.overall_score : undefined, 'var(--cyan)').style,
+          ...bloomProps(scores ? scores.overall_score : undefined, 'var(--cyan)').style,
           minWidth: 130, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: '24px 28px',
         }}>
           {/* Bento dot texture — fades in from the bottom on hover */}
           <span className="bento-tex" aria-hidden="true" />
           <p style={{
-            fontFamily: 'Geist, sans-serif', fontSize: '3.2rem', fontWeight: 900,
+            fontSize: '3.2rem', fontWeight: 900,
             color: scores ? scoreColor(scores.overall_score) : 'var(--text-4)',
             letterSpacing: '-0.05em', margin: 0, lineHeight: 1,
           }}>
             {scores?.overall_score ?? '—'}
           </p>
           <p style={{
-            fontFamily: 'Geist, sans-serif', fontSize: '0.68rem',
+            fontSize: 'var(--fs-label)',
             color: 'var(--cyan)', margin: '6px 0 0', letterSpacing: '0.1em', textTransform: 'uppercase',
           }}>
             {scores?.overall_label ?? 'No data'}
           </p>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', margin: '2px 0 0' }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '2px 0 0' }}>
             HEALTH SCORE
           </p>
         </div>
@@ -401,10 +341,10 @@ function OverviewPage() {
                   </defs>
                   <CartesianGrid stroke="var(--border)" vertical={false}/>
                   <XAxis dataKey="month"
-                    tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-3)' }}
+                    tick={{ fontSize: 12, fill: 'var(--text-3)' }}
                     axisLine={false} tickLine={false}/>
                   <YAxis
-                    tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-3)' }}
+                    tick={{ fontSize: 12, fill: 'var(--text-3)' }}
                     axisLine={false} tickLine={false}
                     tickFormatter={(v) => formatAxis(Number(v))}/>
                   <Tooltip content={<ChartTooltip sym={sym}/>}
@@ -421,7 +361,7 @@ function OverviewPage() {
                 {[['var(--spark-revenue)', 'Revenue'], ['var(--spark-profit)', 'Profit']].map(([c, l]) => (
                   <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <div style={{ width: 12, height: 2, borderRadius: 2, background: c }}/>
-                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)' }}>{l}</span>
+                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{l}</span>
                   </div>
                 ))}
               </div>
@@ -434,27 +374,27 @@ function OverviewPage() {
           <div className="grid-2">
             <SectionCard explainId="card.customer" delay={0.15}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600, color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                   Customer Intelligence
                 </p>
                 {hasEngine2Data && (
-                  <Link href="/dashboard/customers" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
+                  <Link href="/dashboard/customers" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
                     View →
                   </Link>
                 )}
               </div>
               {hasEngine2Data ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                <div className="grid-3" style={{ gap: 10 }}>
                   {[
                     { l: 'Champions', v: String(champions),       c: 'var(--good)' },
                     { l: 'High Churn', v: String(highChurn),      c: 'var(--crit)' },
                     { l: 'Retention', v: `${retRate.toFixed(0)}%`, c: 'var(--e2)'  },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         {item.l}
                       </p>
-                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>
+                      <p style={{ fontSize: '1.4rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>
                         {item.v}
                       </p>
                     </div>
@@ -470,44 +410,44 @@ function OverviewPage() {
 
             <SectionCard explainId="card.operations" delay={0.18}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600, color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                   Operations
                 </p>
                 {hasEngine3Data && (
-                  <Link href="/dashboard/pos" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
+                  <Link href="/dashboard/pos" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
                     View →
                   </Link>
                 )}
               </div>
               {hasEngine3Data ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                <div className="grid-3" style={{ gap: 10 }}>
                   {[
                     { l: 'Net Revenue',   v: fmt(gt?.net_revenue ?? 0, true, sym),  c: 'var(--e3)'   },
                     { l: 'Drink Attach',  v: `${drinkAttach.toFixed(0)}%`,           c: drinkAttach >= 80 ? 'var(--good)' : 'var(--warn)' },
                     { l: 'Benchmarks',    v: `${warnB} warn`,                        c: warnB > 0 ? 'var(--warn)' : 'var(--good)' },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         {item.l}
                       </p>
-                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
+                      <p style={{ fontSize: '1rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
                         {item.v}
                       </p>
                     </div>
                   ))}
                 </div>
               ) : hasItemOps ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                <div className="grid-3" style={{ gap: 10 }}>
                   {[
                     { l: 'Products',    v: String(safeBreakdown.length),                           c: 'var(--e3)' },
                     { l: 'Top Seller',  v: topSeller?.item ?? '—',                                 c: 'var(--good)' },
                     { l: 'Best Margin', v: bestMargin ? `${bestMargin.margin.toFixed(0)}%` : '—',  c: (bestMargin?.margin ?? 0) >= 0 ? 'var(--good)' : 'var(--crit)' },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         {item.l}
                       </p>
-                      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.v}>
+                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.v}>
                         {item.v}
                       </p>
                     </div>
@@ -531,7 +471,7 @@ function OverviewPage() {
             delay={0.22}
             action={
               orderedInsights.length > 0 ? (
-                <Link href="/dashboard/ops-brief" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
+                <Link href="/dashboard/ops-brief" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
                   View all →
                 </Link>
               ) : undefined
@@ -544,10 +484,10 @@ function OverviewPage() {
                   flex: '1 1 0', minWidth: 92, padding: '10px 12px', borderRadius: 10,
                   border: '1px solid var(--border)', opacity: s.active ? 1 : 0.4,
                 }}>
-                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     {s.label}
                   </p>
-                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: s.active ? s.colour : 'var(--text-4)', margin: 0, letterSpacing: '-0.03em' }}>
+                  <p style={{ fontSize: '1.3rem', fontWeight: 800, color: s.active ? s.colour : 'var(--text-4)', margin: 0, letterSpacing: '-0.03em' }}>
                     {s.active && s.score !== undefined ? s.score : '—'}
                   </p>
                 </div>
@@ -573,7 +513,7 @@ function OverviewPage() {
 
             {/* Encourage more engines — informational, never a blocking lock. */}
             {activeEngineCount < 3 && unifiedInsights.length > 0 && (
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: '14px 0 0', lineHeight: 1.5 }}>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '14px 0 0', lineHeight: 1.5 }}>
                 {activeEngineCount === 1
                   ? 'Add customer or POS data to unlock full cross-engine synthesis.'
                   : 'Add the remaining engine to unlock full cross-engine synthesis.'}
@@ -589,7 +529,7 @@ function OverviewPage() {
               subtitle="AI-BOS unified brief · Financial + Customer Intelligence + Operations"
               delay={0.26}
               action={
-                <Link href="/dashboard/ops-brief" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', textDecoration: 'none' }}>
+                <Link href="/dashboard/ops-brief" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
                   Full brief →
                 </Link>
               }
@@ -605,11 +545,11 @@ function OverviewPage() {
                     background: 'var(--cyan-dim)',
                     border: '1px solid rgba(0,212,255,0.25)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', fontWeight: 700, color: 'var(--cyan)',
+                    fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--cyan)',
                   }}>
                     {i + 1}
                   </span>
-                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>
+                  <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>
                     {line.replace(/^\d+\.\s*/, '')}
                   </p>
                 </div>
@@ -637,10 +577,10 @@ function OverviewPage() {
                     padding: '10px 12px', borderRadius: 8,
                     background: 'var(--bg-badge)', border: '1px solid var(--border)',
                   }}>
-                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
+                    <p style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
                       {a.title ?? a.type}
                     </p>
-                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', margin: 0 }}>
+                    <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>
                       {a.description ?? a.month}
                     </p>
                   </div>
@@ -670,8 +610,8 @@ function OverviewPage() {
                 >
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: item.colour, flexShrink: 0 }}/>
                   <div>
-                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{item.label}</p>
-                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', margin: 0 }}>{item.sub}</p>
+                    <p style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{item.label}</p>
+                    <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>{item.sub}</p>
                   </div>
                 </div>
               </Link>

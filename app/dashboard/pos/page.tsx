@@ -6,7 +6,6 @@ import SectionCard from '@/components/ui/SectionCard';
 import LockOverlay from '@/components/ui/LockOverlay';
 import SimpleSummary from '@/components/dashboard/SimpleSummary';
 import ChartTooltip from '@/components/ui/ChartTooltip';
-import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
 
 const CAT_COLORS = ['var(--e3)','var(--blue)','var(--warn)','var(--purple)','var(--e2)','var(--crit)','var(--text-3)'];
@@ -23,9 +22,9 @@ export default function POSPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>POS Intelligence</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>POS Intelligence</h1>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>
           {[posBusinessName, posPeriod].filter(Boolean).join(' · ')}
         </p>
       </div>
@@ -65,9 +64,9 @@ export default function POSPage() {
                 <div key={c.category} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: CAT_COLORS[i % CAT_COLORS.length], flexShrink: 0 }} />
-                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-2)', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.category}</span>
+                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.category}</span>
                   </div>
-                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700, color: CAT_COLORS[i % CAT_COLORS.length] }}>{c.pct_of_total.toFixed(1)}%</span>
+                  <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: CAT_COLORS[i % CAT_COLORS.length] }}>{c.pct_of_total.toFixed(1)}%</span>
                 </div>
               ))}
             </div>
@@ -77,8 +76,8 @@ export default function POSPage() {
         <SectionCard title="Units Sold by Category" delay={0.14}>
           <ResponsiveContainer width="100%" height={170}>
             <BarChart data={barData} layout="vertical" barCategoryGap="22%">
-              <XAxis type="number" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 9, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" width={75} tick={{ fontFamily: 'Geist, sans-serif', fontSize: 9, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" width={75} tick={{ fontSize: 12, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="units" radius={[0, 5, 5, 0]}>
                 {barData.map((_, i) => <Cell key={i} fill={CAT_COLORS[i % CAT_COLORS.length]} fillOpacity={0.75} />)}
@@ -95,15 +94,15 @@ export default function POSPage() {
             <thead><tr><th>#</th><th>SKU</th><th>Name</th><th>Category</th><th>Units</th><th>Revenue</th><th>Velocity</th></tr></thead>
             <tbody>
               {topItems.map((item, i) => (
-                <motion.tr key={item.sku || i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 + i * 0.04 }}>
+                <tr key={item.sku || i}>
                   <td style={{ color: 'var(--text-4)' }}>#{i + 1}</td>
                   <td style={{ color: 'var(--blue)', fontWeight: 600 }}>{item.sku}</td>
-                  <td style={{ fontFamily: 'Geist, sans-serif', fontWeight: 600, color: 'var(--text-1)' }}>{item.name}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>{item.name}</td>
                   <td><span className="badge" style={{ color: 'var(--text-3)', background: 'var(--bg-badge)', borderColor: 'var(--border)' }}>{item.category}</span></td>
                   <td>{item.units_sold.toLocaleString()}</td>
                   <td style={{ fontWeight: 700, color: 'var(--e3)' }}>{fmt(item.revenue, false, sym)}</td>
                   <td style={{ fontSize: '1rem', color: VEL_COLOR[item.velocity_rank] ?? 'var(--text-3)' }}>{item.velocity_rank}</td>
-                </motion.tr>
+                </tr>
               ))}
             </tbody>
           </table>

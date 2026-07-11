@@ -134,8 +134,20 @@
   z-index: 1;
 }
 
-/* The React Bits glow uses additive blends (plus-lighter / soft-light) made for
-   dark UIs — on a light theme they wash out to nothing, so the cursor glow looks
-   broken. Render it with a normal blend there so it stays visible. */
-[data-theme="light"] .border-glow-card > .edge-light { mix-blend-mode: normal; }
-[data-theme="light"] .border-glow-card::after { mix-blend-mode: normal; }
+/* The cursor glow is a dark-mode treatment only (owner decision, 2026-07-11):
+   on the warm-paper light theme the light effects are switched off entirely —
+   cards keep their static border + shadow, nothing glows or tracks the cursor. */
+[data-theme="light"] .border-glow-card::before,
+[data-theme="light"] .border-glow-card::after,
+[data-theme="light"] .border-glow-card > .edge-light {
+  display: none;
+}
+/* …but a dark-skinned island inside a light page (the marketing site's
+   .aibos-window[data-theme="dark"] product demo) keeps its glow. Both rules
+   can match through nested theme scopes; this one is declared last so the
+   nearer dark scope wins. */
+[data-theme="dark"] .border-glow-card::before,
+[data-theme="dark"] .border-glow-card::after,
+[data-theme="dark"] .border-glow-card > .edge-light {
+  display: block;
+}

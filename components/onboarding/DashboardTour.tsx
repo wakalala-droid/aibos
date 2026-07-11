@@ -151,19 +151,19 @@ export default function DashboardTour() {
         }}
       >
         <div style={{
-          fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700,
+          fontSize: 'var(--fs-label)', fontWeight: 700,
           color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6,
         }}>
           {idx + 1} of {stops.length}
         </div>
         <h2 style={{
-          fontFamily: 'Geist, sans-serif', fontSize: '1.02rem', fontWeight: 700,
+          fontSize: '1.02rem', fontWeight: 700,
           color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.01em',
         }}>
           {stop.title}
         </h2>
         <p style={{
-          fontFamily: 'Geist, sans-serif', fontSize: '0.84rem', color: 'var(--text-2)',
+          fontSize: 'var(--fs-body)', color: 'var(--text-2)',
           lineHeight: 1.5, margin: '0 0 16px',
         }}>
           {stop.body}
@@ -182,7 +182,7 @@ export default function DashboardTour() {
             <button type="button" onClick={() => setIdx(idx - 1)} style={{
               padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-md)',
               background: 'transparent', color: 'var(--text-3)', cursor: 'pointer',
-              fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 600,
+              fontSize: 'var(--fs-data)', fontWeight: 600,
             }}>
               Back
             </button>
@@ -191,7 +191,7 @@ export default function DashboardTour() {
             <button type="button" onClick={finish} style={{
               padding: '8px 12px', borderRadius: 8, border: 'none',
               background: 'transparent', color: 'var(--text-4)', cursor: 'pointer',
-              fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 600,
+              fontSize: 'var(--fs-data)', fontWeight: 600,
             }}>
               Skip
             </button>
@@ -202,7 +202,7 @@ export default function DashboardTour() {
             style={{
               padding: '8px 16px', borderRadius: 8, border: 'none',
               background: 'var(--cyan)', color: '#fff', cursor: 'pointer',
-              fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700,
+              fontSize: 'var(--fs-data)', fontWeight: 700,
             }}
           >
             {last ? 'Done' : 'Next'}

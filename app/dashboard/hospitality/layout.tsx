@@ -20,8 +20,8 @@ export default function HospitalityLayout({ children }: { children: React.ReactN
   return (
     <>
       <div style={{ marginBottom: 16 }}>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Hospitality</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', marginTop: 4 }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Hospitality</h1>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
           Every unit&apos;s availability on one calendar — bookings flow straight into your books.
         </p>
       </div>
@@ -35,7 +35,7 @@ export default function HospitalityLayout({ children }: { children: React.ReactN
               aria-current={active ? 'page' : undefined}
               style={{
                 position: 'relative', padding: '10px 14px', textDecoration: 'none', whiteSpace: 'nowrap',
-                fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600,
+                fontSize: 'var(--fs-data)', fontWeight: 600,
                 color: active ? 'var(--text-1)' : 'var(--text-3)',
               }}
             >

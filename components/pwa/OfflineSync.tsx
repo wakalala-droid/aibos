@@ -46,7 +46,7 @@ export function OutboxChip({ style }: { style?: React.CSSProperties }) {
       aria-live="polite"
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
-        fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', fontWeight: 600,
+        fontSize: 'var(--fs-label)', fontWeight: 600,
         color: 'var(--amber)', background: 'rgba(251,191,36,0.12)',
         border: '1px solid rgba(251,191,36,0.3)', padding: '4px 10px', borderRadius: 999,
         ...style,

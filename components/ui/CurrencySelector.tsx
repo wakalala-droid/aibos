@@ -142,11 +142,11 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
     width: 40, flexShrink: 0, textAlign: 'center', padding: '4px 0', borderRadius: 6,
     background: checked ? 'var(--cyan-dim)' : 'var(--bg-badge)',
     border: `1px solid ${checked ? 'color-mix(in srgb, var(--cyan) 35%, transparent)' : 'var(--border)'}`,
-    ...geist, fontSize: '0.74rem', fontWeight: 700,
+    ...geist, fontSize: 'var(--fs-data)', fontWeight: 700,
     color: checked ? 'var(--cyan)' : 'var(--text-2)',
     // Long symbols (KSh, GH₵) still fit the fixed chip.
     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-    ...(text.length > 3 ? { fontSize: '0.62rem' } : null),
+    ...(text.length > 3 ? { fontSize: 'var(--fs-label)' } : null),
   });
 
   return (
@@ -167,9 +167,9 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
           display: 'inline-flex', alignItems: 'center', gap: 6,
         }}
       >
-        <span aria-hidden="true" style={{ ...geist, fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-1)' }}>{sym}</span>
+        <span aria-hidden="true" style={{ ...geist, fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)' }}>{sym}</span>
         {active && (
-          <span aria-hidden="true" style={{ ...geist, fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.06em', color: 'var(--text-4)' }}>
+          <span aria-hidden="true" style={{ ...geist, fontSize: 'var(--fs-label)', fontWeight: 600, letterSpacing: '0.06em', color: 'var(--text-4)' }}>
             {active.code}
           </span>
         )}
@@ -192,10 +192,10 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
             }}
           >
             <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border)' }}>
-              <p style={{ ...geist, fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 2px' }}>
+              <p style={{ ...geist, fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 2px' }}>
                 Currency format
               </p>
-              <p style={{ ...geist, fontSize: '0.7rem', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>
+              <p style={{ ...geist, fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>
                 Changes the symbol on every page — amounts are never converted.
               </p>
             </div>
@@ -213,10 +213,10 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
               >
                 <span aria-hidden="true" style={badge(detected || '·', source === 'auto')}>{detected || '·'}</span>
                 <span style={{ minWidth: 0, flex: 1 }}>
-                  <span style={{ display: 'block', ...geist, fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-1)' }}>
+                  <span style={{ display: 'block', ...geist, fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>
                     Auto — match my uploads
                   </span>
-                  <span style={{ display: 'block', ...geist, fontSize: '0.68rem', color: 'var(--text-4)' }}>
+                  <span style={{ display: 'block', ...geist, fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
                     {detected ? `Detected ${detected} in your last file` : 'Uses the currency found in your file'}
                   </span>
                 </span>
@@ -240,10 +240,10 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
                       style={rowStyle}
                     >
                       <span aria-hidden="true" style={badge(c.symbol, checked)}>{c.symbol}</span>
-                      <span style={{ minWidth: 0, flex: 1, ...geist, fontSize: '0.82rem', fontWeight: 500, color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span style={{ minWidth: 0, flex: 1, ...geist, fontSize: 'var(--fs-body)', fontWeight: 500, color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {c.name}
                       </span>
-                      <span style={{ ...geist, fontSize: '0.66rem', color: 'var(--text-4)', letterSpacing: '0.06em' }}>{c.code}</span>
+                      <span style={{ ...geist, fontSize: 'var(--fs-label)', color: 'var(--text-4)', letterSpacing: '0.06em' }}>{c.code}</span>
                       {checked && <Check />}
                     </button>
                   );
@@ -256,7 +256,7 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
               onSubmit={(e) => { e.preventDefault(); applyCustom(); }}
               style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderTop: '1px solid var(--border)' }}
             >
-              <label htmlFor="currency-custom-symbol" style={{ ...geist, fontSize: '0.72rem', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>
+              <label htmlFor="currency-custom-symbol" style={{ ...geist, fontSize: 'var(--fs-label)', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>
                 Custom symbol
               </label>
               <input
@@ -269,7 +269,7 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
                   width: 64, minHeight: 34, padding: '6px 8px', textAlign: 'center',
                   borderRadius: 8, border: '1px solid var(--border-md)',
                   background: 'var(--bg-input)', color: 'var(--text-1)',
-                  ...geist, fontSize: '0.82rem', outline: 'none',
+                  ...geist, fontSize: 'var(--fs-body)', outline: 'none',
                 }}
               />
               <button
@@ -280,7 +280,7 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
                   border: '1px solid var(--border-md)',
                   background: custom.trim() ? 'var(--cyan)' : 'var(--bg-badge)',
                   color: custom.trim() ? '#000' : 'var(--text-4)',
-                  ...geist, fontSize: '0.76rem', fontWeight: 700,
+                  ...geist, fontSize: 'var(--fs-data)', fontWeight: 700,
                   cursor: custom.trim() ? 'pointer' : 'not-allowed',
                 }}
               >

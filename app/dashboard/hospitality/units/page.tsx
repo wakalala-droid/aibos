@@ -18,20 +18,20 @@ import {
 const input: React.CSSProperties = {
   width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', outline: 'none',
+  fontSize: 'var(--fs-body)', outline: 'none',
 };
 const lbl: React.CSSProperties = {
-  fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', fontWeight: 600, color: 'var(--text-3)',
+  fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)',
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
   padding: '9px 16px', minHeight: 38, borderRadius: 8, border: 'none', background: 'var(--cyan)',
-  color: '#fff', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
+  color: '#fff', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
 };
 const ghostBtn: React.CSSProperties = {
   padding: '8px 14px', minHeight: 36, borderRadius: 8, background: 'transparent',
   border: '1px solid var(--border-md)', color: 'var(--text-3)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', fontWeight: 600, cursor: 'pointer',
+  fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer',
 };
 
 export default function UnitsPage() {
@@ -71,7 +71,7 @@ export default function UnitsPage() {
 
   return (
     <>
-      {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.8rem' }}>{error}</div>}
+      {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
 
       {/* Add property */}
       <SectionCard title="Properties" subtitle="Each property holds one or more lettable units.">
@@ -84,14 +84,14 @@ export default function UnitsPage() {
         </div>
       </SectionCard>
 
-      {loading && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-3)', marginTop: 16 }}>Loading…</p>}
+      {loading && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', marginTop: 16 }}>Loading…</p>}
 
       {properties.map(p => {
         const propUnits = units.filter(u => u.property_id === p.id);
         return (
           <div key={p.id} style={{ marginTop: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <h2 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>{p.name}</h2>
+              <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>{p.name}</h2>
               <button style={ghostBtn} onClick={() => { setAddingTo(addingTo === p.id ? null : p.id); setNewUnit(''); }}>{addingTo === p.id ? 'Close' : '+ Add unit'}</button>
             </div>
 
@@ -106,7 +106,7 @@ export default function UnitsPage() {
             )}
 
             {propUnits.length === 0 && addingTo !== p.id && (
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', color: 'var(--text-4)' }}>No units yet.</p>
+              <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>No units yet.</p>
             )}
 
             <div style={{ display: 'grid', gap: 14 }}>
@@ -172,7 +172,7 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
     <SectionCard
       title={unit.unit_name}
       subtitle={`${fmt(unit.base_nightly_rate, false, sym)}/night · sleeps ${unit.max_guests}`}
-      action={<span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', color: 'var(--text-4)' }}>Pushed to every channel</span>}
+      action={<span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Pushed to every channel</span>}
     >
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12 }}>
         <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Unit name</label><input style={input} value={f.unit_name} onChange={e => set('unit_name', e.target.value)} /></div>
@@ -192,11 +192,11 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
       <div style={{ marginTop: 14 }}>
         <label style={lbl}>Amenities (the canonical list)</label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
-          {amenities.length === 0 && <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.74rem', color: 'var(--text-4)' }}>None yet — add the real ones so no listing can diverge.</span>}
+          {amenities.length === 0 && <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>None yet — add the real ones so no listing can diverge.</span>}
           {amenities.map(a => (
-            <span key={a} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 999, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-2)' }}>
+            <span key={a} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 999, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>
               {a}
-              <button aria-label={`Remove ${a}`} onClick={() => { setAmenities(amenities.filter(x => x !== a)); setSaved(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: '0.8rem', lineHeight: 1 }}>✕</button>
+              <button aria-label={`Remove ${a}`} onClick={() => { setAmenities(amenities.filter(x => x !== a)); setSaved(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 'var(--fs-data)', lineHeight: 1 }}>✕</button>
             </span>
           ))}
         </div>
@@ -209,7 +209,7 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
       <div style={{ display: 'flex', gap: 8, marginTop: 16, alignItems: 'center' }}>
         <button style={{ ...primaryBtn, opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={save}>{busy ? 'Saving…' : 'Save changes'}</button>
         <button style={{ ...ghostBtn, color: 'var(--red)', borderColor: 'color-mix(in srgb, var(--red) 40%, transparent)' }} onClick={remove}>Delete</button>
-        {saved && <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.74rem', color: 'var(--green)' }}>Saved ✓</span>}
+        {saved && <span style={{ fontSize: 'var(--fs-data)', color: 'var(--green)' }}>Saved ✓</span>}
       </div>
     </SectionCard>
   );

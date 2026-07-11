@@ -81,13 +81,13 @@ export default function VariancePage() {
     >
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
           Financial Intelligence
         </p>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
           Variance Analysis
         </h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>
           Month-over-month changes · cost spikes · margin trends
         </p>
       </div>
@@ -137,7 +137,7 @@ export default function VariancePage() {
               {[['var(--cyan)', 'Revenue'], ['var(--e2)', 'Costs']].map(([c, l]) => (
                 <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <div style={{ width: 10, height: 10, borderRadius: 3, background: c as string, opacity: 0.8 }} />
-                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)' }}>{l}</span>
+                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>{l}</span>
                 </div>
               ))}
             </div>
@@ -146,8 +146,8 @@ export default function VariancePage() {
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} barCategoryGap="22%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="Revenue" fill="var(--cyan)"  fillOpacity={0.75} radius={[4,4,0,0]} name="Revenue" />
               <Bar dataKey="Costs"   fill="var(--e2)"    fillOpacity={0.75} radius={[4,4,0,0]} name="Costs"   />
@@ -162,8 +162,8 @@ export default function VariancePage() {
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={chartData.slice(1)} barCategoryGap="28%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={v => `${v.toFixed(0)}%`} />
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={v => `${v.toFixed(0)}%`} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <ReferenceLine y={0} stroke="var(--border-md)" strokeWidth={1} />
               <Bar dataKey="RevChange"  name="Revenue Δ" radius={[3,3,0,0]}>
@@ -194,7 +194,7 @@ export default function VariancePage() {
             </thead>
             <tbody>
               {variances.map((row, i) => (
-                <motion.tr key={row.month} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.28 + i * 0.04 }}>
+                <tr key={row.month}>
                   <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.month}</td>
                   <td>{fmt(row.revenue, false, sym)}</td>
                   <td style={{ color: row.revChange >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 600 }}>
@@ -208,7 +208,7 @@ export default function VariancePage() {
                   <td style={{ color: row.margin >= 20 ? 'var(--good)' : row.margin >= 10 ? 'var(--warn)' : 'var(--crit)' }}>
                     {row.margin.toFixed(1)}%
                   </td>
-                </motion.tr>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -229,8 +229,8 @@ export default function VariancePage() {
                 >
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: sevColor, flexShrink: 0, marginTop: 4 }} />
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 3px' }}>{alert.title}</p>
-                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', margin: 0 }}>{alert.description}</p>
+                    <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 3px' }}>{alert.title}</p>
+                    <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>{alert.description}</p>
                   </div>
                   <span className="badge" style={{ color: sevColor, background: `color-mix(in srgb, ${sevColor} 12%, transparent)`, borderColor: `color-mix(in srgb, ${sevColor} 28%, transparent)`, flexShrink: 0 }}>
                     {(alert.severity ?? 'info').toUpperCase()}

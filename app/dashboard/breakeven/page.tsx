@@ -70,9 +70,9 @@ export default function BreakevenPage() {
     >
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Breakeven Analysis</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Fixed costs · variable costs · contribution margin · breakeven point</p>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Breakeven Analysis</h1>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>Fixed costs · variable costs · contribution margin · breakeven point</p>
       </div>
 
       {!hasData ? (
@@ -82,10 +82,10 @@ export default function BreakevenPage() {
               <path d="M3 12h18M12 3v18" stroke="var(--text-4)" strokeWidth="1.5" strokeLinecap="round" opacity=".4" />
               <path d="M5 19L19 5" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4" />
             </svg>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>
+            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>
               No revenue or cost data yet
             </p>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-4)', margin: 0, lineHeight: 1.6, maxWidth: 420 }}>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0, lineHeight: 1.6, maxWidth: 420 }}>
               Upload a financial file with <strong>Month</strong>, <strong>Revenue</strong> and <strong>Costs</strong> columns on the dashboard, and AI-BOS will compute your fixed/variable split, contribution margin and the exact revenue you need to break even.
             </p>
           </div>
@@ -112,12 +112,12 @@ export default function BreakevenPage() {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         style={{ background: 'var(--bg-card)', border: `1px solid ${statusColor}`, borderRadius: 12, padding: '18px 22px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: 'var(--shadow-card)' }}>
         <div>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Breakeven Status</p>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1rem', fontWeight: 700, color: statusColor, margin: 0 }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Breakeven Status</p>
+          <p style={{ fontSize: '1rem', fontWeight: 700, color: statusColor, margin: 0 }}>
             {status === 'safe' ? `${fmt(gap, false, sym)} above breakeven` : status === 'warning' ? `Only ${fmt(gap, false, sym)} above breakeven — tight margin` : `${fmt(Math.abs(gap), false, sym)} below breakeven — revenue required`}
           </p>
         </div>
-        <span className="badge" style={{ color: statusColor, background: `color-mix(in srgb, ${statusColor} 12%, transparent)`, borderColor: `color-mix(in srgb, ${statusColor} 30%, transparent)`, fontSize: '0.7rem', padding: '4px 12px' }}>
+        <span className="badge" style={{ color: statusColor, background: `color-mix(in srgb, ${statusColor} 12%, transparent)`, borderColor: `color-mix(in srgb, ${statusColor} 30%, transparent)`, fontSize: 'var(--fs-label)', padding: '4px 12px' }}>
           {status.toUpperCase()}
         </span>
       </motion.div>
@@ -128,13 +128,13 @@ export default function BreakevenPage() {
           <ResponsiveContainer width="100%" height={260}>
             <ComposedChart data={chartData}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="FixedCosts"  stackId="a" fill="var(--warn)"    fillOpacity={0.6} name="Fixed Costs"    radius={[0,0,0,0]} />
               <Bar dataKey="VarCosts"    stackId="a" fill="var(--purple)"  fillOpacity={0.6} name="Variable Costs" radius={[4,4,0,0]} />
               <Line type="monotone" dataKey="Revenue"   stroke="var(--good)" strokeWidth={2.2} dot={{ r: 4, fill: 'var(--good)', strokeWidth: 0 }} name="Revenue" />
-              <ReferenceLine y={bepRevenue} stroke="var(--cyan)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: `BEP: ${sym}${(bepRevenue/1000).toFixed(0)}k`, fill: 'var(--cyan)', fontFamily: 'Geist, sans-serif', fontSize: 10, position: 'insideTopRight' }} />
+              <ReferenceLine y={bepRevenue} stroke="var(--cyan)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: `BEP: ${sym}${(bepRevenue/1000).toFixed(0)}k`, fill: 'var(--cyan)', fontSize: 12, position: 'insideTopRight' }} />
             </ComposedChart>
           </ResponsiveContainer>
         </SectionCard>
@@ -148,12 +148,12 @@ export default function BreakevenPage() {
             { label: 'Variable Costs', value: variableCosts, pct: (1 - fixedCostPct) * 100,  color: 'var(--purple)', desc: 'COGS, commissions, packaging — scale with revenue' },
           ].map(item => (
             <div key={item.label} style={{ background: 'var(--bg-badge)', borderRadius: 10, padding: '16px 18px', border: '1px solid var(--border)' }}>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>{item.label}</p>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: item.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{fmt(item.value, false, sym)}</p>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>{item.label}</p>
+              <p style={{ fontSize: '1.5rem', fontWeight: 800, color: item.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{fmt(item.value, false, sym)}</p>
               <div className="progress-track" style={{ marginBottom: 6 }}>
                 <motion.div className="progress-fill" style={{ background: item.color }} initial={{ width: 0 }} animate={{ width: `${item.pct}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
               </div>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0 }}>{item.desc}</p>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>{item.desc}</p>
             </div>
           ))}
         </div>

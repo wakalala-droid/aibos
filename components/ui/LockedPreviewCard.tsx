@@ -90,7 +90,7 @@ export default function LockedPreviewCard({
   if (state === 'error') {
     return (
       <CardFrame colour="var(--crit)" delay={delay}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--crit)', margin: '0 0 8px' }}>
+        <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--crit)', margin: '0 0 8px' }}>
           {title}
         </p>
         <div role="alert" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -98,7 +98,7 @@ export default function LockedPreviewCard({
             <circle cx="12" cy="12" r="9" stroke="var(--crit)" strokeWidth="1.6" />
             <path d="M12 7v6M12 16v.5" stroke="var(--crit)" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-2)', lineHeight: 1.5, margin: 0 }}>
+          <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', lineHeight: 1.5, margin: 0 }}>
             {errorMessage}
           </p>
         </div>
@@ -110,10 +110,10 @@ export default function LockedPreviewCard({
   if (state === 'empty') {
     return (
       <CardFrame colour={colour} delay={delay}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: colour, margin: '0 0 8px' }}>
+        <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: colour, margin: '0 0 8px' }}>
           {title}
         </p>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-3)', lineHeight: 1.55, margin: 0 }}>
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', lineHeight: 1.55, margin: 0 }}>
           {emptyMessage}
         </p>
       </CardFrame>
@@ -127,12 +127,12 @@ export default function LockedPreviewCard({
     <CardFrame colour={colour} delay={delay}>
       {/* Header: capability + plan badge */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: colour, margin: 0 }}>
+        <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: colour, margin: 0 }}>
           {title}
         </p>
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 5,
-          fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', fontWeight: 700,
+          fontSize: 'var(--fs-label)', fontWeight: 700,
           letterSpacing: '0.06em', color: disabled ? 'var(--text-4)' : colour,
           background: disabled ? 'var(--bg-badge)' : `color-mix(in srgb, ${colour} 12%, transparent)`,
           border: `1px solid ${disabled ? 'var(--border)' : `color-mix(in srgb, ${colour} 30%, transparent)`}`,
@@ -144,7 +144,7 @@ export default function LockedPreviewCard({
       </div>
 
       {/* Real headline insight — fully visible, this is the hook. */}
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', lineHeight: 1.4, margin: '0 0 10px', letterSpacing: '-0.01em' }}>
+      <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', lineHeight: 1.4, margin: '0 0 10px', letterSpacing: '-0.01em' }}>
         {headline}
       </p>
 
@@ -160,7 +160,7 @@ export default function LockedPreviewCard({
           marginBottom: 16,
         }}
       >
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>
           {detail}
         </p>
       </div>
@@ -169,7 +169,7 @@ export default function LockedPreviewCard({
       {disabled ? (
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
-          fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600,
+          fontSize: 'var(--fs-data)', fontWeight: 600,
           color: 'var(--text-4)', padding: '9px 16px', borderRadius: 10,
           border: '1px solid var(--border)', background: 'var(--bg-badge)',
         }}>
@@ -180,7 +180,7 @@ export default function LockedPreviewCard({
           href={ctaHref}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600,
+            fontSize: 'var(--fs-data)', fontWeight: 600,
             color: '#fff', background: colour, padding: '9px 16px', borderRadius: 10,
             textDecoration: 'none',
           }}

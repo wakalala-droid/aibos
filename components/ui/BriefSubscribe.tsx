@@ -40,14 +40,14 @@ export default function BriefSubscribe() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }}>
             <path d="M20 6L9 17l-5-5" stroke="var(--good)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: 0, lineHeight: 1.5 }}>
             You’re subscribed. Your {frequency} brief will land in {email}, leading with the one number that matters that day.
           </p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
-            <label htmlFor="brief-email" style={{ display: 'block', fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 }}>
+            <label htmlFor="brief-email" style={{ display: 'block', fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 }}>
               Email <span style={{ color: 'var(--text-4)', fontWeight: 400 }}>(required)</span>
             </label>
             <input
@@ -60,7 +60,7 @@ export default function BriefSubscribe() {
               style={{
                 width: '100%', padding: '10px 12px', borderRadius: 10,
                 border: '1px solid var(--border-md)', background: 'var(--bg-input)',
-                color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.82rem',
+                color: 'var(--text-1)', fontSize: 'var(--fs-body)',
                 outline: 'none',
               }}
             />
@@ -75,7 +75,7 @@ export default function BriefSubscribe() {
                 onClick={() => setFrequency(f)}
                 style={{
                   flex: 1, padding: '8px 12px', borderRadius: 10, cursor: 'pointer',
-                  fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 600,
+                  fontSize: 'var(--fs-data)', fontWeight: 600,
                   textTransform: 'capitalize',
                   border: `1px solid ${frequency === f ? 'var(--cyan)' : 'var(--border-md)'}`,
                   background: frequency === f ? 'color-mix(in srgb, var(--cyan) 10%, transparent)' : 'var(--bg-card)',
@@ -88,7 +88,7 @@ export default function BriefSubscribe() {
           </div>
 
           {status === 'error' && (
-            <p role="alert" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.74rem', color: 'var(--crit)', margin: 0 }}>
+            <p role="alert" style={{ fontSize: 'var(--fs-data)', color: 'var(--crit)', margin: 0 }}>
               {error}
             </p>
           )}
@@ -99,7 +99,7 @@ export default function BriefSubscribe() {
             disabled={!valid || status === 'saving'}
             style={{
               padding: '11px 16px', borderRadius: 10, border: 'none',
-              fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', fontWeight: 700,
+              fontSize: 'var(--fs-body)', fontWeight: 700,
               color: '#fff', background: 'var(--cyan)',
               cursor: !valid || status === 'saving' ? 'not-allowed' : 'pointer',
               opacity: !valid || status === 'saving' ? 0.55 : 1,
@@ -107,7 +107,7 @@ export default function BriefSubscribe() {
           >
             {status === 'saving' ? 'Saving…' : 'Send me the brief'}
           </button>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', margin: 0 }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
             WhatsApp delivery coming soon. Unsubscribe anytime from any brief.
           </p>
         </div>

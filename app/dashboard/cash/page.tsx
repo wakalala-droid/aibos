@@ -67,9 +67,9 @@ export default function CashPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Cash Intelligence</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Runway · burn rate · cash position · forward projections</p>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Cash Intelligence</h1>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>Runway · burn rate · cash position · forward projections</p>
       </div>
 
       <SimpleSummary page="cash" />
@@ -110,13 +110,13 @@ export default function CashPage() {
         style={{ background: 'var(--bg-card)', border: `1px solid var(--border)`, borderRadius: 12, padding: '20px 24px', marginBottom: 20, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <div>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0 }}>
+            <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
               {runway}mo remaining · {runway < runwayTarget ? `⚠ Below ${runwayTarget}mo target` : `✓ Above ${runwayTarget}mo target`}
             </p>
           </div>
-          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: runwayColor }}>
-            {runway}mo <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-4)', fontWeight: 400 }}>/ {runwayTarget}mo</span>
+          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: runwayColor }}>
+            {runway}mo <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontWeight: 400 }}>/ {runwayTarget}mo</span>
           </span>
         </div>
         {/* Runway bar */}
@@ -130,7 +130,7 @@ export default function CashPage() {
         {/* Scale labels */}
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           {[0, 6, 12, 18, 24].map(mo => (
-            <span key={mo} style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: mo === 12 ? 'var(--warn)' : 'var(--text-4)' }}>
+            <span key={mo} style={{ fontSize: 'var(--fs-label)', color: mo === 12 ? 'var(--warn)' : 'var(--text-4)' }}>
               {mo}mo{mo === 12 ? ' ⚑' : ''}
             </span>
           ))}
@@ -149,8 +149,8 @@ export default function CashPage() {
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
               <Area type="monotone" dataKey="cash" stroke="var(--cyan)" strokeWidth={2} fill="url(#cashGrad)" dot={false} name="Cash Position" />
               <ReferenceLine y={0} stroke="var(--crit)" strokeDasharray="4 4" strokeWidth={1} />
@@ -168,7 +168,7 @@ export default function CashPage() {
               {chartData.map((row, i) => {
                 const net = row.inflow - row.outflow;
                 return (
-                  <motion.tr key={i} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.28 + i * 0.04 }}>
+                  <tr key={i}>
                     <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{row.label}</td>
                     <td style={{ color: 'var(--good)' }}>{fmt(row.inflow, false, sym)}</td>
                     <td style={{ color: 'var(--e2)' }}>{fmt(row.outflow, false, sym)}</td>
@@ -176,7 +176,7 @@ export default function CashPage() {
                       {net >= 0 ? '+' : ''}{fmt(net, false, sym)}
                     </td>
                     <td style={{ color: 'var(--cyan)', fontWeight: 600 }}>{fmt(row.cash, false, sym)}</td>
-                  </motion.tr>
+                  </tr>
                 );
               })}
             </tbody>

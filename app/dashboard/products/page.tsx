@@ -30,9 +30,9 @@ export default function ProductsPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Product Intelligence</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>BCG classification · revenue ranking · market basket analysis</p>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Product Intelligence</h1>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>BCG classification · revenue ranking · market basket analysis</p>
       </div>
 
       {/* KPI cards */}
@@ -62,14 +62,14 @@ export default function ProductsPage() {
               boxShadow: 'var(--shadow-card)', position: 'relative', overflow: 'hidden',
             }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: cfg.color, opacity: 0.6 }} />
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1rem', margin: '0 0 3px' }}>{classLabel}</p>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 14px', lineHeight: 1.4 }}>{cfg.desc}</p>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.8rem', fontWeight: 800, color: cfg.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{items.length}</p>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: '0 0 12px' }}>products</p>
+              <p style={{ fontSize: '1rem', margin: '0 0 3px' }}>{classLabel}</p>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 14px', lineHeight: 1.4 }}>{cfg.desc}</p>
+              <p style={{ fontSize: '1.8rem', fontWeight: 800, color: cfg.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{items.length}</p>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 12px' }}>products</p>
               {items.slice(0, 3).map(p => (
                 <div key={p.product} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderTop: '1px solid var(--border)' }}>
-                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-2)', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.product}</span>
-                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: cfg.color, fontWeight: 600 }}>{fmt(p.total_revenue, true, sym)}</span>
+                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.product}</span>
+                  <span style={{ fontSize: 'var(--fs-label)', color: cfg.color, fontWeight: 600 }}>{fmt(p.total_revenue, true, sym)}</span>
                 </div>
               ))}
             </div>
@@ -82,8 +82,8 @@ export default function ProductsPage() {
         <SectionCard title="Top Products by Revenue" subtitle={`${sym} ZMW · BCG-coloured`} delay={0.2} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={barData} barCategoryGap="28%">
-              <XAxis dataKey="name" tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="total_revenue" radius={[5, 5, 0, 0]}>
                 {barData.map((entry, i) => (
@@ -98,7 +98,7 @@ export default function ProductsPage() {
       {/* Basket pairs */}
       <SectionCard title="Market Basket Analysis" subtitle="Products frequently purchased together" delay={0.26} style={{ position: 'relative' }}>
         {basketPairs.length === 0 ? (
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>No basket pairs detected</p>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>No basket pairs detected</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
             {basketPairs.slice(0, 9).map((pair, i) => (
@@ -107,9 +107,9 @@ export default function ProductsPage() {
                 style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: 8, padding: '11px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-1)', fontWeight: 600 }}>{pair.product_a}</span>
-                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)' }}>+</span>
-                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-1)', fontWeight: 600 }}>{pair.product_b}</span>
+                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-1)', fontWeight: 600 }}>{pair.product_a}</span>
+                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>+</span>
+                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-1)', fontWeight: 600 }}>{pair.product_b}</span>
                 </div>
                 <span className="badge" style={{ color: 'var(--e2)', background: 'rgba(249,115,22,0.10)', borderColor: 'rgba(249,115,22,0.22)', fontWeight: 700, whiteSpace: 'nowrap' }}>
                   {pair.times_together}×

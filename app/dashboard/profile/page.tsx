@@ -57,8 +57,7 @@ function fmtDate(v: string | null): string {
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontFamily: 'Geist, sans-serif',
-  fontSize: '0.76rem',
+  fontSize: 'var(--fs-data)',
   fontWeight: 600,
   color: 'var(--text-2)',
   marginBottom: 6,
@@ -72,8 +71,7 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid var(--border-md)',
   background: 'var(--bg-input)',
   color: 'var(--text-1)',
-  fontFamily: 'Geist, sans-serif',
-  fontSize: '0.85rem',
+  fontSize: 'var(--fs-body)',
   outline: 'none',
 };
 
@@ -202,7 +200,7 @@ export default function BusinessProfilePage() {
     return (
       <div style={{ padding: '24px 0' }}>
         <div className="section-card" aria-busy="true" style={{ maxWidth: 760 }}>
-          <p style={{ fontFamily: 'Geist, sans-serif', color: 'var(--text-3)', margin: 0 }}>
+          <p style={{ color: 'var(--text-3)', margin: 0 }}>
             Loading your business profile…
           </p>
         </div>
@@ -216,10 +214,10 @@ export default function BusinessProfilePage() {
   return (
     <div style={{ padding: '8px 0 48px' }}>
       <header style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
           Business profile
         </h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>
           The details here power your dashboard identity — the name and logo shown in the header come from this page.
         </p>
       </header>
@@ -233,7 +231,7 @@ export default function BusinessProfilePage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={form.logo_url} alt="" width={56} height={56} style={{ borderRadius: 12, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border)' }} />
             ) : (
-              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 12, flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Geist, sans-serif', fontSize: '1rem', fontWeight: 800 }}>
+              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 12, flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 800 }}>
                 {initials}
               </span>
             )}
@@ -242,12 +240,12 @@ export default function BusinessProfilePage() {
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={logoBusy}
-                style={{ minHeight: 44, padding: '10px 16px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, cursor: logoBusy ? 'wait' : 'pointer', opacity: logoBusy ? 0.6 : 1 }}
+                style={{ minHeight: 44, padding: '10px 16px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: logoBusy ? 'wait' : 'pointer', opacity: logoBusy ? 0.6 : 1 }}
               >
                 {logoBusy ? 'Uploading…' : form.logo_url ? 'Replace logo' : 'Upload logo'}
               </button>
               <input ref={fileRef} type="file" accept="image/*" onChange={onLogo} aria-label="Upload business logo" style={{ display: 'none' }} />
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: '8px 0 0' }}>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '8px 0 0' }}>
                 PNG or JPG · shown in the header
               </p>
             </div>
@@ -257,7 +255,7 @@ export default function BusinessProfilePage() {
             <div>
               <label htmlFor="bp-name" style={labelStyle}>Business name <span style={{ color: 'var(--crit)' }}>*</span></label>
               <input id="bp-name" value={form.business_name} onChange={(e) => set('business_name', e.target.value)} required aria-required="true" aria-invalid={!nameValid} style={inputStyle} placeholder="e.g. Lusaka Bites" />
-              {!nameValid && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--crit)', margin: '6px 0 0' }}>A business name is required.</p>}
+              {!nameValid && <p style={{ fontSize: 'var(--fs-label)', color: 'var(--crit)', margin: '6px 0 0' }}>A business name is required.</p>}
             </div>
 
             <div>
@@ -298,7 +296,7 @@ export default function BusinessProfilePage() {
             <div>
               <label htmlFor="bp-email" style={labelStyle}>Contact email</label>
               <input id="bp-email" type="email" value={form.contact_email} onChange={(e) => set('contact_email', e.target.value)} aria-invalid={!emailValid} style={inputStyle} placeholder="hello@yourbusiness.com" />
-              {!emailValid && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--crit)', margin: '6px 0 0' }}>Enter a valid email address.</p>}
+              {!emailValid && <p style={{ fontSize: 'var(--fs-label)', color: 'var(--crit)', margin: '6px 0 0' }}>Enter a valid email address.</p>}
             </div>
           </div>
 
@@ -306,13 +304,13 @@ export default function BusinessProfilePage() {
             <button
               type="submit"
               disabled={!canSave}
-              style={{ minHeight: 44, padding: '12px 22px', borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#fff', fontFamily: 'Geist, sans-serif', fontSize: '0.86rem', fontWeight: 700, cursor: canSave ? 'pointer' : 'not-allowed', opacity: canSave ? 1 : 0.55 }}
+              style={{ minHeight: 44, padding: '12px 22px', borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#fff', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canSave ? 'pointer' : 'not-allowed', opacity: canSave ? 1 : 0.55 }}
             >
               {save === 'saving' ? 'Saving…' : 'Save changes'}
             </button>
 
             {/* aria-live save confirmation / error */}
-            <span role="status" aria-live="polite" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: save === 'error' ? 'var(--crit)' : 'var(--good)' }}>
+            <span role="status" aria-live="polite" style={{ fontSize: 'var(--fs-data)', color: save === 'error' ? 'var(--crit)' : 'var(--good)' }}>
               {save === 'saved' && 'Saved.'}
               {save === 'error' && (errorMsg || 'Could not save.')}
             </span>
@@ -321,26 +319,26 @@ export default function BusinessProfilePage() {
 
         {/* Read-only account facts */}
         <div className="section-card">
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>
             Account
           </p>
           <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
             <div>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 4px' }}>Plan</p>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>Plan</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-1)' }}>{TIERS[tier].name}</span>
-                <Link href="/pricing" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.74rem', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)' }}>{TIERS[tier].name}</span>
+                <Link href="/pricing" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
                   {tier === 'growth' ? 'Manage' : 'Upgrade'} →
                 </Link>
               </div>
             </div>
             <div>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 4px' }}>Member since</p>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{fmtDate(profile?.created_at ?? null)}</p>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>Member since</p>
+              <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{fmtDate(profile?.created_at ?? null)}</p>
             </div>
             <div>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 4px' }}>Last active</p>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{fmtDate(profile?.last_active_at ?? null)}</p>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>Last active</p>
+              <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{fmtDate(profile?.last_active_at ?? null)}</p>
             </div>
           </div>
         </div>
@@ -412,7 +410,7 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
     <Link
       href="/checkout?plan=proplus"
       style={{
-        fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700,
+        fontSize: 'var(--fs-label)', fontWeight: 700,
         color: 'var(--cyan)', textDecoration: 'none', padding: '3px 9px', borderRadius: 999,
         border: '1px solid color-mix(in srgb, var(--cyan) 40%, transparent)', background: 'var(--cyan-dim)',
       }}
@@ -423,17 +421,17 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
 
   return (
     <div className="section-card">
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
+      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
         Morning Brief, delivered
       </p>
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 16px' }}>
+      <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 16px' }}>
         Your cash, sales, stock and one thing to do — in your inbox or on WhatsApp every morning at 06:30,
         before the day starts. Composed from your real numbers only.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: canEmail ? 'pointer' : 'default', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', color: 'var(--text-1)' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: canEmail ? 'pointer' : 'default', fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>
             <input
               type="checkbox"
               checked={emailOn}
@@ -458,7 +456,7 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
             style={{
               flex: '1 1 240px', minHeight: 44, padding: '10px 14px', borderRadius: 10,
               border: '1px solid var(--border-md)', background: 'var(--bg-input)',
-              color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.84rem',
+              color: 'var(--text-1)', fontSize: 'var(--fs-body)',
               opacity: canWa ? 1 : 0.55,
             }}
           />
@@ -473,19 +471,19 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
             style={{
               padding: '10px 18px', borderRadius: 10, border: 'none',
               cursor: saving ? 'default' : 'pointer', background: 'var(--cyan)', color: '#fff',
-              fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', fontWeight: 700,
+              fontSize: 'var(--fs-body)', fontWeight: 700,
               opacity: saving ? 0.6 : 1,
             }}
           >
             {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save delivery settings'}
           </button>
           {error && (
-            <span role="alert" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--crit)' }}>{error}</span>
+            <span role="alert" style={{ fontSize: 'var(--fs-data)', color: 'var(--crit)' }}>{error}</span>
           )}
         </div>
 
         {channels && (!channels.email || !channels.whatsapp) && (
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-4)', margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0, lineHeight: 1.5 }}>
             {!channels.email && !channels.whatsapp
               ? 'Delivery is being switched on — your preference is saved and takes effect the moment it goes live.'
               : !channels.email
@@ -514,21 +512,21 @@ function InviteCard({ userId }: { userId: string }) {
 
   return (
     <div className="section-card">
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
+      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
         Invite a business owner
       </p>
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 14px' }}>
+      <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 14px' }}>
         Know someone running a shop, lodge, restaurant or site? When someone you invite subscribes to any paid plan,
         you both get a month of Pro+ free — applied by our team for now.
       </p>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <code style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-1)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', padding: '9px 12px', borderRadius: 8, wordBreak: 'break-all' }}>
+        <code style={{ fontSize: 'var(--fs-data)', color: 'var(--text-1)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', padding: '9px 12px', borderRadius: 8, wordBreak: 'break-all' }}>
           {link}
         </code>
         <button
           type="button"
           onClick={() => void copy()}
-          style={{ padding: '9px 14px', borderRadius: 8, cursor: 'pointer', border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: copied ? 'var(--green)' : 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700 }}
+          style={{ padding: '9px 14px', borderRadius: 8, cursor: 'pointer', border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: copied ? 'var(--green)' : 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 700 }}
         >
           {copied ? 'Copied' : 'Copy link'}
         </button>
@@ -536,7 +534,7 @@ function InviteCard({ userId }: { userId: string }) {
           href={`https://wa.me/?text=${encodeURIComponent(waText)}`}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ padding: '9px 14px', borderRadius: 8, textDecoration: 'none', background: 'var(--green-dim)', color: 'var(--green)', border: '1px solid color-mix(in srgb, var(--green) 35%, transparent)', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700 }}
+          style={{ padding: '9px 14px', borderRadius: 8, textDecoration: 'none', background: 'var(--green-dim)', color: 'var(--green)', border: '1px solid color-mix(in srgb, var(--green) 35%, transparent)', fontSize: 'var(--fs-data)', fontWeight: 700 }}
         >
           Share on WhatsApp
         </a>

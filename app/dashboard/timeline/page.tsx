@@ -21,7 +21,7 @@ const chip = (active: boolean): React.CSSProperties => ({
   border: `1px solid ${active ? 'var(--cyan)' : 'var(--border-md)'}`,
   background: active ? 'rgba(0,212,255,0.08)' : 'transparent',
   color: active ? 'var(--cyan)' : 'var(--text-3)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', fontWeight: 600,
+  fontSize: 'var(--fs-label)', fontWeight: 600,
 });
 
 export default function TimelinePage() {
@@ -67,10 +67,10 @@ export default function TimelinePage() {
   return (
     <>
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>
           Timeline
         </h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', marginTop: 4 }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
           Every recorded business event — one unified record.
         </p>
       </div>
@@ -80,7 +80,7 @@ export default function TimelinePage() {
         subtitle={loading ? 'Loading…' : `${events.length} event${events.length === 1 ? '' : 's'}`}
         action={
           <button type="button" onClick={load} className="touch-target"
-            style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}>
+            style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
             Refresh
           </button>
         }
@@ -101,7 +101,7 @@ export default function TimelinePage() {
         </div>
 
         {error && (
-          <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.8rem' }}>
+          <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>
             {error}
           </div>
         )}

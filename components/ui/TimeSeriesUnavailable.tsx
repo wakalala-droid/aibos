@@ -17,10 +17,10 @@ export default function TimeSeriesUnavailable({
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
           Financial Intelligence
         </p>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
           {title}
         </h1>
       </div>
@@ -32,15 +32,15 @@ export default function TimeSeriesUnavailable({
             <path d="M3 9h18M8 2v4M16 2v4" stroke="var(--warn)" strokeWidth="1.4" strokeLinecap="round" />
             <path d="M8 14h2M13 14h3M8 17h6" stroke="var(--text-4)" strokeWidth="1.4" strokeLinecap="round" />
           </svg>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>
+          <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>
             {feature} needs a time series
           </p>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', color: 'var(--text-2)', margin: 0, lineHeight: 1.6, maxWidth: 460 }}>
+          <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: 0, lineHeight: 1.6, maxWidth: 460 }}>
             This file has <strong>item-level data</strong> (rows are products/categories, not months),
             so there is no time axis to project. AI-BOS won&apos;t invent one — that would be a
             fabricated trend.
           </p>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-3)', margin: 0, lineHeight: 1.6, maxWidth: 460 }}>
+          <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.6, maxWidth: 460 }}>
             To unlock {feature.toLowerCase()}, upload a file with a <strong>Month</strong> or{' '}
             <strong>Date</strong> column (one row per period). Your per-item economics are on the
             dashboard.

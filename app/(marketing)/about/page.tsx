@@ -88,7 +88,7 @@ export default function AboutPage() {
                     background: 'linear-gradient(160deg, var(--bg-badge), var(--bg-card-hover))',
                     border: '1px dashed var(--border-strong)',
                     display: 'grid', placeItems: 'center',
-                    color: 'var(--text-4)', fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', textAlign: 'center', padding: 16,
+                    color: 'var(--text-4)', fontSize: 'var(--fs-label)', textAlign: 'center', padding: 16,
                   }}
                 >
                   Founder photo / “Our Story” video
@@ -97,22 +97,22 @@ export default function AboutPage() {
 
               <div>
                 <p className="mkt-eyebrow">From the founder</p>
-                <blockquote style={{ margin: 0, fontFamily: 'Geist, sans-serif', fontSize: 'clamp(1.1rem, 2vw, 1.4rem)', fontWeight: 600, lineHeight: 1.45, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
+                <blockquote style={{ margin: 0, fontSize: 'clamp(1.1rem, 2vw, 1.4rem)', fontWeight: 600, lineHeight: 1.45, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
                   “{FOUNDER.quote}”
                 </blockquote>
 
                 {FOUNDER.story && (
-                  <p className="mkt-body" style={{ marginTop: 16, fontSize: '0.95rem' }}>{FOUNDER.story}</p>
+                  <p className="mkt-body" style={{ marginTop: 16, fontSize: 'var(--fs-body)' }}>{FOUNDER.story}</p>
                 )}
 
                 {FOUNDER.name ? (
-                  <p style={{ marginTop: 18, fontFamily: 'Geist, sans-serif', fontSize: '0.92rem' }}>
+                  <p style={{ marginTop: 18, fontSize: 'var(--fs-body)' }}>
                     <span style={{ fontWeight: 800, color: 'var(--text-1)' }}>{FOUNDER.name}</span>
                     <span style={{ color: 'var(--text-3)' }}>, {FOUNDER.title}{FOUNDER.location ? `, ${FOUNDER.location}` : ''}</span>
                   </p>
                 ) : (
                   <p className="mkt-body" style={{ marginTop: 16 }}>
-                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                       Placeholder — fill in the FOUNDER object at the top of this file.
                     </span>
                   </p>
@@ -136,11 +136,11 @@ export default function AboutPage() {
             {ARC.map((s, i) => (
               <Reveal key={s.eyebrow} delay={i * 0.05}>
                 <div className="mkt-card">
-                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 10px' }}>
+                  <p style={{ fontSize: 'var(--fs-label)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 10px' }}>
                     {s.eyebrow}
                   </p>
                   <h2 className="mkt-h3" style={{ fontSize: '1.25rem' }}>{s.title}</h2>
-                  <p className="mkt-body" style={{ marginTop: 10, fontSize: '0.95rem' }}>{s.body}</p>
+                  <p className="mkt-body" style={{ marginTop: 10, fontSize: 'var(--fs-body)' }}>{s.body}</p>
                 </div>
               </Reveal>
             ))}

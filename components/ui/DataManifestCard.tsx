@@ -48,7 +48,7 @@ export default function DataManifestCard({
       {/* Shape badge */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
         <span style={{
-          fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700,
+          fontSize: 'var(--fs-label)', fontWeight: 700,
           textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 10px',
           borderRadius: 6, color: isCross ? 'var(--warn)' : 'var(--cyan)',
           background: isCross ? 'color-mix(in srgb, var(--warn) 14%, transparent)' : 'var(--cyan-dim)',
@@ -57,7 +57,7 @@ export default function DataManifestCard({
           {isCross ? 'Item-level data (no time axis)' : 'Time-series data'}
         </span>
         {manifest.grouping_column && (
-          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)' }}>
+          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
             grouped by “{manifest.grouping_column}”
           </span>
         )}
@@ -72,7 +72,7 @@ export default function DataManifestCard({
               borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)',
             }}>
               <span aria-hidden="true" style={{ color: 'var(--warn)', fontWeight: 700, lineHeight: 1.4 }}>!</span>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.74rem', color: 'var(--text-2)', margin: 0, lineHeight: 1.5 }}>{f}</p>
+              <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', margin: 0, lineHeight: 1.5 }}>{f}</p>
             </div>
           ))}
         </div>
@@ -80,7 +80,7 @@ export default function DataManifestCard({
 
       {/* Column → role table */}
       <div style={{ overflowX: 'auto' }}>
-        <table className="data-table" style={{ width: '100%', fontSize: '0.74rem' }}>
+        <table className="data-table" style={{ width: '100%', fontSize: 'var(--fs-data)' }}>
           <thead>
             <tr>
               <th style={{ textAlign: 'left' }}>Column</th>
@@ -94,13 +94,13 @@ export default function DataManifestCard({
                 <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{c.name}</td>
                 <td>
                   <span style={{
-                    fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700,
+                    fontSize: 'var(--fs-label)', fontWeight: 700,
                     color: ROLE_COLOUR[c.role] ?? 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em',
                   }}>
                     {c.role}
                   </span>
                 </td>
-                <td style={{ textAlign: 'right', fontFamily: 'Geist, sans-serif', color: confTone(c.confidence) }}>
+                <td style={{ textAlign: 'right', color: confTone(c.confidence) }}>
                   {Math.round(c.confidence * 100)}%
                 </td>
               </tr>
@@ -113,13 +113,13 @@ export default function DataManifestCard({
       {breakdown.length > 0 && (
         <div style={{ marginTop: 20 }}>
           <p style={{
-            fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700,
+            fontSize: 'var(--fs-label)', fontWeight: 700,
             color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px',
           }}>
             Per-item economics
           </p>
           <div style={{ overflowX: 'auto' }}>
-            <table className="data-table" style={{ width: '100%', fontSize: '0.74rem' }}>
+            <table className="data-table" style={{ width: '100%', fontSize: 'var(--fs-data)' }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left' }}>Item</th>
@@ -135,10 +135,10 @@ export default function DataManifestCard({
                   return (
                     <tr key={b.item}>
                       <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{b.item}</td>
-                      <td style={{ textAlign: 'right', fontFamily: 'Geist, sans-serif', color: 'var(--text-2)' }}>{money(b.revenue, sym)}</td>
-                      <td style={{ textAlign: 'right', fontFamily: 'Geist, sans-serif', color: 'var(--text-2)' }}>{money(b.costs, sym)}</td>
-                      <td style={{ textAlign: 'right', fontFamily: 'Geist, sans-serif', color: tone, fontWeight: 700 }}>{money(b.profit, sym)}</td>
-                      <td style={{ textAlign: 'right', fontFamily: 'Geist, sans-serif', color: tone }}>{b.margin.toFixed(1)}%</td>
+                      <td style={{ textAlign: 'right', color: 'var(--text-2)' }}>{money(b.revenue, sym)}</td>
+                      <td style={{ textAlign: 'right', color: 'var(--text-2)' }}>{money(b.costs, sym)}</td>
+                      <td style={{ textAlign: 'right', color: tone, fontWeight: 700 }}>{money(b.profit, sym)}</td>
+                      <td style={{ textAlign: 'right', color: tone }}>{b.margin.toFixed(1)}%</td>
                     </tr>
                   );
                 })}

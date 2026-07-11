@@ -14,26 +14,26 @@ import {
 const input: React.CSSProperties = {
   width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', outline: 'none',
+  fontSize: 'var(--fs-body)', outline: 'none',
 };
 const lbl: React.CSSProperties = {
-  fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', fontWeight: 600, color: 'var(--text-3)',
+  fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)',
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
   padding: '9px 16px', minHeight: 38, borderRadius: 8, border: 'none', background: 'var(--cyan)',
-  color: '#fff', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
+  color: '#fff', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
 };
 const ghostBtn: React.CSSProperties = {
   padding: '7px 12px', minHeight: 34, borderRadius: 8, background: 'transparent',
   border: '1px solid var(--border-md)', color: 'var(--text-3)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer',
+  fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer',
 };
 
 const emptyForm = { full_name: '', phone: '', email: '', nationality: '', id_document_type: '' as '' | 'passport' | 'national_id' | 'other', id_document_number: '', vip_flag: false, notes: '' };
 
 function Badge({ text, colour }: { text: string; colour: string }) {
-  return <span style={{ padding: '2px 8px', borderRadius: 999, fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', fontWeight: 700, color: colour, background: `color-mix(in srgb, ${colour} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${colour} 40%, transparent)` }}>{text}</span>;
+  return <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 'var(--fs-label)', fontWeight: 700, color: colour, background: `color-mix(in srgb, ${colour} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${colour} 40%, transparent)` }}>{text}</span>;
 }
 
 export default function GuestsPage() {
@@ -80,7 +80,7 @@ export default function GuestsPage() {
 
   return (
     <>
-      {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.8rem' }}>{error}</div>}
+      {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
 
       <SectionCard
         title="Guests"
@@ -114,7 +114,7 @@ export default function GuestsPage() {
               <div><label style={lbl}>ID number (sealed)</label><input style={input} value={form.id_document_number} onChange={e => setForm({ ...form, id_document_number: e.target.value })} placeholder="Encrypted at rest" /></div>
               <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Staff notes (private)</label><input style={input} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Preferences, discretion notes…" /></div>
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-2)', cursor: 'pointer' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 'var(--fs-data)', color: 'var(--text-2)', cursor: 'pointer' }}>
               <input type="checkbox" checked={form.vip_flag} onChange={e => setForm({ ...form, vip_flag: e.target.checked })} /> VIP guest
             </label>
             <div style={{ marginTop: 14 }}>
@@ -124,14 +124,14 @@ export default function GuestsPage() {
         )}
 
         {/* List */}
-        {!loading && guests.length === 0 && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-4)' }}>No guests yet — they’re also created automatically when you name one on a booking.</p>}
+        {!loading && guests.length === 0 && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>No guests yet — they’re also created automatically when you name one on a booking.</p>}
 
         <div style={{ display: 'grid', gap: 8 }}>
           {guests.map(g => (
             <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border)', flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: 160 }}>
-                <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.86rem', fontWeight: 600, color: 'var(--text-1)' }}>{g.full_name}</div>
-                <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)' }}>
+                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{g.full_name}</div>
+                <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
                   {[g.phone, g.email, g.nationality].filter(Boolean).join(' · ') || 'No contact on file'}
                 </div>
               </div>
@@ -140,7 +140,7 @@ export default function GuestsPage() {
                 {g.is_repeat_guest && <Badge text={`Repeat · ${g.stay_count ?? 0}`} colour="var(--green)" />}
                 {g.id_document_on_file && (
                   revealed[g.id]
-                    ? <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-2)' }}>{g.id_document_type}: {revealed[g.id]}</span>
+                    ? <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>{g.id_document_type}: {revealed[g.id]}</span>
                     : <button style={ghostBtn} onClick={() => reveal(g.id)} title="Reveal sealed ID">{g.id_document_masked || 'ID on file'} · reveal</button>
                 )}
               </div>

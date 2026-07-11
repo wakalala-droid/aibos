@@ -19,20 +19,20 @@ import {
 const input: React.CSSProperties = {
   width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', outline: 'none',
+  fontSize: 'var(--fs-data)', outline: 'none',
 };
 const lbl: React.CSSProperties = {
-  fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', fontWeight: 600, color: 'var(--text-3)',
+  fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)',
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
   padding: '8px 14px', minHeight: 36, borderRadius: 8, border: 'none', background: 'var(--cyan)',
-  color: '#fff', fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer',
+  color: '#fff', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
 };
 const ghostBtn: React.CSSProperties = {
   padding: '7px 12px', minHeight: 34, borderRadius: 8, background: 'transparent',
   border: '1px solid var(--border-md)', color: 'var(--text-3)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer',
+  fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer',
 };
 
 const TYPE_LABEL: Record<ChannelType, string> = {
@@ -63,13 +63,13 @@ export default function ChannelsPage() {
   useEffect(() => { load(); }, [load]);
 
   if (!loading && units.length === 0) {
-    return <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-3)' }}>Add a unit first — channels attach to a unit.</p>;
+    return <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>Add a unit first — channels attach to a unit.</p>;
   }
 
   return (
     <>
-      {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.8rem' }}>{error}</div>}
-      {loading && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-3)' }}>Loading…</p>}
+      {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
+      {loading && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>Loading…</p>}
 
       {units.map(u => (
         <div key={u.id} style={{ marginBottom: 18 }}>
@@ -118,7 +118,7 @@ function UnitChannels({ unit, channels, onChange, onError }: { unit: Unit; chann
 
   return (
     <SectionCard title={unit.unit_name} subtitle="Sync availability with each place this unit is listed.">
-      {channels.length === 0 && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', color: 'var(--text-4)', marginBottom: 12 }}>No channels yet.</p>}
+      {channels.length === 0 && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)', marginBottom: 12 }}>No channels yet.</p>}
 
       <div style={{ display: 'grid', gap: 10, marginBottom: 16 }}>
         {channels.map(c => {
@@ -126,16 +126,16 @@ function UnitChannels({ unit, channels, onChange, onError }: { unit: Unit; chann
           return (
             <div key={c.id} style={{ padding: 12, borderRadius: 10, border: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
-                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-1)' }}>{TYPE_LABEL[c.channel_type]}</span>
-                <span style={{ padding: '2px 8px', borderRadius: 999, fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', fontWeight: 700, color: meta.colour, background: `color-mix(in srgb, ${meta.colour} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${meta.colour} 40%, transparent)` }}>{meta.label}</span>
-                {c.last_synced_at && <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)' }}>last: {new Date(c.last_synced_at).toLocaleString()}</span>}
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{TYPE_LABEL[c.channel_type]}</span>
+                <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 'var(--fs-label)', fontWeight: 700, color: meta.colour, background: `color-mix(in srgb, ${meta.colour} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${meta.colour} 40%, transparent)` }}>{meta.label}</span>
+                {c.last_synced_at && <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>last: {new Date(c.last_synced_at).toLocaleString()}</span>}
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
                   <button style={{ ...primaryBtn, opacity: busy === c.id ? 0.6 : 1 }} disabled={busy === c.id} onClick={() => sync(c.id)}>{busy === c.id ? 'Syncing…' : 'Sync now'}</button>
                   <button style={{ ...ghostBtn, color: 'var(--red)', borderColor: 'color-mix(in srgb, var(--red) 40%, transparent)' }} onClick={() => remove(c.id)}>Remove</button>
                 </div>
               </div>
 
-              {c.last_sync_note && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: c.sync_status === 'error' ? 'var(--red)' : 'var(--text-3)', margin: '0 0 10px' }}>{c.last_sync_note}</p>}
+              {c.last_sync_note && <p style={{ fontSize: 'var(--fs-label)', color: c.sync_status === 'error' ? 'var(--red)' : 'var(--text-3)', margin: '0 0 10px' }}>{c.last_sync_note}</p>}
 
               {/* Import URL (pull) */}
               <label style={lbl}>Import URL — paste the OTA’s iCal export link, then Sync</label>

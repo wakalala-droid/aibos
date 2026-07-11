@@ -84,10 +84,10 @@ function nextMonthly(day: number): Date {
 const input: React.CSSProperties = {
   width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', outline: 'none',
+  fontSize: 'var(--fs-body)', outline: 'none',
 };
-const lbl: React.CSSProperties = { fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
-const ghostBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Geist, sans-serif', fontSize: '0.7rem' };
+const lbl: React.CSSProperties = { fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
+const ghostBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-label)' };
 
 export default function SchedulePage() {
   const sym = useStore(s => s.currencySymbol) || 'K';
@@ -267,11 +267,11 @@ export default function SchedulePage() {
     <div key={`${it.id}-${when.getTime()}`} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--border)', opacity: finished ? 0.55 : 1 }}>
       {kindBadge(it.kind)}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: finished ? 'line-through' : 'none' }}>
+        <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: finished ? 'line-through' : 'none' }}>
           {it.title}
           {(it.amount ?? 0) > 0 && <span style={{ color: 'var(--text-3)', fontWeight: 500 }}> · {fmt(it.amount!, false, sym)}</span>}
         </div>
-        <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)' }}>
+        <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
           {fmtDay(when)}{it.all_day ? '' : ` · ${fmtTime(when)}`}
           {it.with_whom ? ` · ${it.with_whom}` : ''}{it.location ? ` · ${it.location}` : ''}
           {it.recurrence && it.next_occurrences && it.next_occurrences.length > 1 && (
@@ -283,7 +283,7 @@ export default function SchedulePage() {
       </div>
       {!finished && (
         <button type="button" onClick={() => markDone(it)} className="touch-target" aria-label={`Mark ${it.title} done`}
-          style={{ minHeight: 34, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--green)', fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+          style={{ minHeight: 34, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--green)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
           Done
         </button>
       )}
@@ -295,7 +295,7 @@ export default function SchedulePage() {
   const group = (label: string, entries: Array<[Date, ScheduleItem]>, warn = false) =>
     entries.length === 0 ? null : (
       <div key={label} style={{ marginBottom: 16 }}>
-        <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: warn ? 'var(--amber)' : 'var(--text-4)', marginBottom: 2 }}>
+        <div style={{ fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: warn ? 'var(--amber)' : 'var(--text-4)', marginBottom: 2 }}>
           {label}
         </div>
         {entries.map(([when, it]) => itemRow(when, it))}
@@ -308,8 +308,8 @@ export default function SchedulePage() {
   return (
     <>
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Schedule</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', marginTop: 4 }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Schedule</h1>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
           Meetings, pick-ups and deadlines — your week, one glance.
         </p>
       </div>
@@ -322,19 +322,19 @@ export default function SchedulePage() {
             <div role="group" aria-label="Schedule view" style={{ display: 'flex', height: 28, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
               {(['agenda', 'month'] as const).map(v => (
                 <button key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v}
-                  style={{ padding: '0 12px', border: 'none', cursor: 'pointer', fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', fontWeight: 700, background: view === v ? 'var(--cyan)' : 'transparent', color: view === v ? '#fff' : 'var(--text-4)' }}>
+                  style={{ padding: '0 12px', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-label)', fontWeight: 700, background: view === v ? 'var(--cyan)' : 'transparent', color: view === v ? '#fff' : 'var(--text-4)' }}>
                   {v === 'agenda' ? 'Agenda' : 'Month'}
                 </button>
               ))}
             </div>
           }
         >
-          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.8rem' }}>{error}</div>}
+          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
 
           {/* Record bridge — the just-completed commitment can land in the books. */}
           {bridge && (
             <div style={{ marginBottom: 14, padding: '12px 14px', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--green) 40%, transparent)', background: 'color-mix(in srgb, var(--green) 8%, transparent)' }}>
-              <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-1)', marginBottom: 8 }}>
+              <div style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', marginBottom: 8 }}>
                 Record “{bridge.title}” — {fmt(bridge.amount ?? 0, false, sym)} in your books?
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -342,10 +342,10 @@ export default function SchedulePage() {
                   {BRIDGE_OPTIONS.map(t => <option key={t} value={t}>{t === 'SupplierPayment' ? 'Supplier payment' : t === 'CustomerPayment' ? 'Customer payment' : t}</option>)}
                 </select>
                 <button type="button" onClick={recordBridge} disabled={bridgeBusy}
-                  style={{ padding: '8px 16px', minHeight: 36, borderRadius: 8, border: 'none', background: 'var(--green)', color: '#04140d', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', opacity: bridgeBusy ? 0.7 : 1 }}>
+                  style={{ padding: '8px 16px', minHeight: 36, borderRadius: 8, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: bridgeBusy ? 0.7 : 1 }}>
                   {bridgeBusy ? 'Recording…' : 'Record it'}
                 </button>
-                <button type="button" onClick={() => setBridge(null)} style={{ ...ghostBtn, color: 'var(--text-3)', fontSize: '0.78rem' }}>Not now</button>
+                <button type="button" onClick={() => setBridge(null)} style={{ ...ghostBtn, color: 'var(--text-3)', fontSize: 'var(--fs-data)' }}>Not now</button>
               </div>
             </div>
           )}
@@ -354,18 +354,18 @@ export default function SchedulePage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 48 }} />)}</div>
           ) : !hasAny ? (
             <div style={{ padding: '20px 8px', textAlign: 'center' }}>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', color: 'var(--text-3)', margin: '0 0 14px' }}>
+              <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 14px' }}>
                 Nothing scheduled yet. Start with the dates every Zambian business keeps:
               </p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
                 {SEEDS.map(s => (
                   <button key={s.title} type="button" onClick={() => addSeed(s)} className="touch-target"
-                    style={{ padding: '8px 14px', minHeight: 38, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', fontWeight: 600, cursor: 'pointer' }}>
+                    style={{ padding: '8px 14px', minHeight: 38, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
                     {s.title} · {s.day}{s.day === 1 ? 'st' : 'th'}
                   </button>
                 ))}
               </div>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', marginTop: 12 }}>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 12 }}>
                 {pro ? 'One tap — each repeats monthly.' : `One tap adds the next due date. On ${needTier} they repeat monthly on their own.`}
               </p>
             </div>
@@ -378,7 +378,7 @@ export default function SchedulePage() {
               {group('Later', groups.later)}
               {groups.finished.length > 0 && (
                 <div style={{ marginBottom: 4 }}>
-                  <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', marginBottom: 2 }}>Recently finished</div>
+                  <div style={{ fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', marginBottom: 2 }}>Recently finished</div>
                   {groups.finished.slice(0, 5).map(([when, it]) => itemRow(when, it, true))}
                 </div>
               )}
@@ -387,14 +387,14 @@ export default function SchedulePage() {
             <>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <button type="button" aria-label="Previous month" onClick={() => { setSelectedDay(null); setMonthCursor(c => new Date(c.getFullYear(), c.getMonth() - 1, 1)); }} style={{ ...ghostBtn, color: 'var(--text-2)', fontSize: '1rem', padding: '4px 10px' }}>‹</button>
-                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-1)' }}>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
                   {monthCursor.toLocaleDateString([], { month: 'long', year: 'numeric' })}
                 </span>
                 <button type="button" aria-label="Next month" onClick={() => { setSelectedDay(null); setMonthCursor(c => new Date(c.getFullYear(), c.getMonth() + 1, 1)); }} style={{ ...ghostBtn, color: 'var(--text-2)', fontSize: '1rem', padding: '4px 10px' }}>›</button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
                 {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
-                  <div key={d} style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-4)', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '2px 0' }}>{d}</div>
+                  <div key={d} style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-4)', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '2px 0' }}>{d}</div>
                 ))}
                 {monthDays.map((cell, i) => cell === null ? <div key={`x${i}`} /> : (
                   <button key={cell.key} type="button" onClick={() => setSelectedDay(cell.key === selectedDay ? null : cell.key)}
@@ -405,7 +405,7 @@ export default function SchedulePage() {
                       background: cell.key === selectedDay ? 'color-mix(in srgb, var(--cyan) 10%, transparent)' : 'transparent',
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '6px 2px',
                     }}>
-                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', fontWeight: cell.key === dayKey(new Date()) ? 800 : 500, color: 'var(--text-2)' }}>{cell.day}</span>
+                    <span style={{ fontSize: 'var(--fs-label)', fontWeight: cell.key === dayKey(new Date()) ? 800 : 500, color: 'var(--text-2)' }}>{cell.day}</span>
                     <span style={{ display: 'flex', gap: 2 }}>
                       {cell.items.slice(0, 3).map((it, j) => (
                         <span key={j} style={{ width: 5, height: 5, borderRadius: 3, background: KIND_META[it.kind].colour }} />
@@ -417,7 +417,7 @@ export default function SchedulePage() {
               {selectedDay && (
                 <div style={{ marginTop: 14, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
                   {selDayItems.length === 0
-                    ? <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-4)' }}>Nothing on this day.</p>
+                    ? <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>Nothing on this day.</p>
                     : selDayItems.map(it => itemRow(new Date(it.next_occurrences?.[0] ?? it.starts_at), it, it.status !== 'scheduled'))}
                 </div>
               )}
@@ -436,7 +436,7 @@ export default function SchedulePage() {
                 <button key={k} type="button" onClick={() => set('kind', k)} aria-pressed={on}
                   style={{
                     padding: '6px 12px', minHeight: 32, borderRadius: 8, cursor: 'pointer',
-                    fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', fontWeight: 700,
+                    fontSize: 'var(--fs-label)', fontWeight: 700,
                     border: `1px solid ${on ? m.colour : 'var(--border-md)'}`,
                     background: on ? `color-mix(in srgb, ${m.colour} 12%, transparent)` : 'transparent',
                     color: on ? m.colour : 'var(--text-3)',
@@ -459,8 +459,8 @@ export default function SchedulePage() {
             </div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 8 }}>
               <input id="sched-allday" type="checkbox" checked={form.allDay} onChange={e => set('allDay', e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--cyan)' }} />
-              <label htmlFor="sched-allday" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', color: 'var(--text-2)', cursor: 'pointer' }}>All day</label>
-              <button type="button" onClick={() => setMoreOpen(o => !o)} style={{ ...ghostBtn, color: 'var(--cyan)', marginLeft: 'auto', fontSize: '0.72rem' }}>
+              <label htmlFor="sched-allday" style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', cursor: 'pointer' }}>All day</label>
+              <button type="button" onClick={() => setMoreOpen(o => !o)} style={{ ...ghostBtn, color: 'var(--cyan)', marginLeft: 'auto', fontSize: 'var(--fs-label)' }}>
                 {moreOpen ? 'Fewer options' : 'More options'}
               </button>
             </div>
@@ -493,10 +493,10 @@ export default function SchedulePage() {
 
           <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
             <button type="button" onClick={save} disabled={saving} className="touch-target"
-              style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
+              style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
               {saving ? 'Saving…' : editId ? 'Update' : 'Add to schedule'}
             </button>
-            {editId && <button type="button" onClick={cancelEdit} className="touch-target" style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>}
+            {editId && <button type="button" onClick={cancelEdit} className="touch-target" style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>}
           </div>
         </SectionCard>
       </div>

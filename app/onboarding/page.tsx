@@ -30,10 +30,10 @@ const STEPS = ['Business', 'Money', 'Operations', 'Review'];
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '12px 14px', minHeight: 48,
   background: 'var(--bg-input)', border: '1px solid var(--border-md)', borderRadius: 8,
-  color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', outline: 'none',
+  color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none',
 };
 const labelStyle: React.CSSProperties = {
-  fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', fontWeight: 600,
+  fontSize: 'var(--fs-label)', fontWeight: 600,
   color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em',
   marginBottom: 8, display: 'block',
 };
@@ -104,10 +104,10 @@ export default function OnboardingPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-page)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '32px 16px' }}>
       <div style={{ width: '100%', maxWidth: 560 }}>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: '0 0 4px' }}>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: '0 0 4px' }}>
           Set up your business
         </h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 24px' }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 24px' }}>
           A few essentials — everything else you can add later.
         </p>
 
@@ -116,7 +116,7 @@ export default function OnboardingPage() {
           {STEPS.map((s, i) => (
             <div key={s} style={{ flex: 1 }}>
               <div style={{ height: 4, borderRadius: 99, background: i <= step ? 'var(--cyan)' : 'var(--border)' }} />
-              <div style={{ marginTop: 6, fontFamily: 'Geist, sans-serif', fontSize: '0.6rem', color: i === step ? 'var(--cyan)' : 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s}</div>
+              <div style={{ marginTop: 6, fontSize: 'var(--fs-label)', color: i === step ? 'var(--cyan)' : 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s}</div>
             </div>
           ))}
         </div>
@@ -154,8 +154,8 @@ export default function OnboardingPage() {
                   </div>
                   <div style={fieldGap}>
                     <label style={labelStyle}>Cash on hand today</label>
-                    <input type="number" inputMode="decimal" value={form.initial_cash} onChange={e => set('initial_cash', e.target.value)} placeholder={`${sym} 0.00`} style={{ ...inputStyle, fontFamily: 'Geist, sans-serif' }} />
-                    <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.74rem', color: 'var(--text-4)', marginTop: 6 }}>
+                    <input type="number" inputMode="decimal" value={form.initial_cash} onChange={e => set('initial_cash', e.target.value)} placeholder={`${sym} 0.00`} style={{ ...inputStyle }} />
+                    <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)', marginTop: 6 }}>
                       Your starting balance — every event you record adjusts it from here.
                     </p>
                   </div>
@@ -172,7 +172,7 @@ export default function OnboardingPage() {
                 <>
                   <div style={fieldGap}>
                     <label style={labelStyle}>Number of employees</label>
-                    <input type="number" inputMode="numeric" value={form.employees} onChange={e => set('employees', e.target.value)} placeholder="e.g. 4" style={{ ...inputStyle, fontFamily: 'Geist, sans-serif' }} />
+                    <input type="number" inputMode="numeric" value={form.employees} onChange={e => set('employees', e.target.value)} placeholder="e.g. 4" style={{ ...inputStyle }} />
                   </div>
                   <div style={fieldGap}>
                     <label style={labelStyle}>Operating hours</label>
@@ -201,8 +201,8 @@ export default function OnboardingPage() {
                     ['Language', LANGUAGES.find(l => l.v === form.language)?.l ?? '—'],
                   ].map(([k, v]) => (
                     <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
-                      <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</span>
-                      <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-1)', textAlign: 'right' }}>{v}</span>
+                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</span>
+                      <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', textAlign: 'right' }}>{v}</span>
                     </div>
                   ))}
                 </div>
@@ -211,7 +211,7 @@ export default function OnboardingPage() {
           </AnimatePresence>
 
           {error && (
-            <div style={{ marginTop: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.82rem' }}>
+            <div style={{ marginTop: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>
               {error}
             </div>
           )}
@@ -221,21 +221,21 @@ export default function OnboardingPage() {
             <button
               type="button" onClick={() => setStep(s => Math.max(0, s - 1))}
               disabled={step === 0 || saving} className="touch-target"
-              style={{ padding: '12px 20px', minHeight: 48, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 600, cursor: step === 0 ? 'default' : 'pointer', opacity: step === 0 ? 0.4 : 1 }}
+              style={{ padding: '12px 20px', minHeight: 48, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: step === 0 ? 'default' : 'pointer', opacity: step === 0 ? 0.4 : 1 }}
             >
               Back
             </button>
             {step < STEPS.length - 1 ? (
               <button
                 type="button" onClick={() => setStep(s => s + 1)} disabled={!canNext} className="touch-target"
-                style={{ padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#04121a', fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 700, cursor: canNext ? 'pointer' : 'default', opacity: canNext ? 1 : 0.5 }}
+                style={{ padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canNext ? 'pointer' : 'default', opacity: canNext ? 1 : 0.5 }}
               >
                 Continue
               </button>
             ) : (
               <button
                 type="button" onClick={finish} disabled={saving} className="touch-target"
-                style={{ padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 700, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1 }}
+                style={{ padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1 }}
               >
                 {saving ? 'Setting up…' : 'Start using AIBOS'}
               </button>
@@ -245,7 +245,7 @@ export default function OnboardingPage() {
 
         <button
           type="button" onClick={() => router.push('/dashboard/record')}
-          style={{ marginTop: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', textDecoration: 'underline', display: 'block', marginInline: 'auto' }}
+          style={{ marginTop: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 'var(--fs-label)', textDecoration: 'underline', display: 'block', marginInline: 'auto' }}
         >
           Skip for now
         </button>

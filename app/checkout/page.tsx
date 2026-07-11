@@ -106,10 +106,10 @@ function CheckoutInner() {
     // Free needs no payment — apply immediately if requested.
     return (
       <div style={{ maxWidth: 520, margin: '0 auto', padding: '48px 16px', textAlign: 'center' }}>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 12px' }}>
+        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 12px' }}>
           {planParam === 'free' ? 'You’re on the Free plan' : 'Choose a plan first'}
         </h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', color: 'var(--text-3)', margin: '0 0 24px', lineHeight: 1.55 }}>
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 24px', lineHeight: 1.55 }}>
           {planParam === 'free'
             ? 'Engine 1, last 30 days, full P&L and cashflow — no payment needed.'
             : 'Head back to pricing to pick Pro or Growth.'}
@@ -137,10 +137,10 @@ function CheckoutInner() {
             <path d="M20 6L9 17l-5-5" stroke="var(--good)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 10px' }}>
+        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 10px' }}>
           Welcome to {meta.name}
         </h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', color: 'var(--text-3)', margin: '0 0 24px', lineHeight: 1.55 }}>
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 24px', lineHeight: 1.55 }}>
           Your plan is active. Forecast, anomaly detection, the AI CFO and your scheduled brief are unlocked.
         </p>
         <Link href="/dashboard" style={btnPrimary}>Go to dashboard →</Link>
@@ -152,37 +152,37 @@ function CheckoutInner() {
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '32px 16px 64px' }}>
       <Link href="/pricing" style={{ ...linkMuted, display: 'inline-block', marginBottom: 16 }}>← Back to pricing</Link>
 
-      <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 20px', letterSpacing: '-0.02em' }}>
+      <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 20px', letterSpacing: '-0.02em' }}>
         Checkout
       </h1>
 
       {/* Order summary — full price up front, no drip pricing. */}
       <div className="section-card" style={{ marginBottom: 16 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px' }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px' }}>
           Order summary
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-1)' }}>
+          <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
             AI-BOS {meta.name}
           </span>
-          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-1)' }}>
+          <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-1)' }}>
             K{amount.toLocaleString()}
           </span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-3)' }}>{meta.tagline}</span>
-          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-3)' }}>
+          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{meta.tagline}</span>
+          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
             {periodLabel} · ≈ ${usdApprox(amount)}
           </span>
         </div>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-4)', margin: '12px 0 0', lineHeight: 1.5 }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '12px 0 0', lineHeight: 1.5 }}>
           Total today: <strong style={{ color: 'var(--text-2)' }}>K{amount.toLocaleString()}</strong>. No setup fees, no add-ons. Cancel anytime.
         </p>
       </div>
 
       {/* Network selection */}
       <fieldset className="section-card" style={{ marginBottom: 16, border: '1px solid var(--border)' }}>
-        <legend style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 6px' }}>
+        <legend style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 6px' }}>
           Pay with mobile money
         </legend>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 8 }}>
@@ -202,10 +202,10 @@ function CheckoutInner() {
                   background: active ? 'color-mix(in srgb, var(--cyan) 8%, transparent)' : 'var(--bg-card)',
                 }}
               >
-                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', fontWeight: 700, color: info.fg, background: info.bg, padding: '4px 8px', borderRadius: 6 }}>
+                <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: info.fg, background: info.bg, padding: '4px 8px', borderRadius: 6 }}>
                   {net === 'mtn' ? 'MTN' : 'Airtel'}
                 </span>
-                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-2)' }}>
+                <span style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-2)' }}>
                   {info.label}
                 </span>
               </button>
@@ -215,18 +215,18 @@ function CheckoutInner() {
 
         {/* Payment instructions for the chosen network */}
         <div style={{ marginTop: 16, padding: '14px 16px', borderRadius: 10, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-2)', margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', margin: 0, lineHeight: 1.5 }}>
             Enter your {m.label} number below and tap <strong>Pay</strong>. You’ll get a prompt
             on your phone to approve <strong>K{amount.toLocaleString()}</strong>.
           </p>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: '8px 0 0' }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '8px 0 0' }}>
             Prefer manual? Dial {m.ussd} and send to {m.number} (AI-BOS · {m.label}).
           </p>
         </div>
 
         {/* Payer's own number — the line that receives the approval prompt */}
         <div style={{ marginTop: 14 }}>
-          <label htmlFor="payer-phone" style={{ display: 'block', fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 }}>
+          <label htmlFor="payer-phone" style={{ display: 'block', fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 }}>
             Your {m.label} number <span style={{ color: 'var(--text-4)', fontWeight: 400 }}>(required)</span>
           </label>
           <input
@@ -239,7 +239,7 @@ function CheckoutInner() {
             style={{
               width: '100%', padding: '11px 14px', borderRadius: 10,
               border: '1px solid var(--border-md)', background: 'var(--bg-input)',
-              color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem',
+              color: 'var(--text-1)', fontSize: 'var(--fs-body)',
               outline: 'none',
             }}
           />
@@ -249,14 +249,14 @@ function CheckoutInner() {
       {status === 'pending' && (
         <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 10, marginBottom: 12, background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)' }}>
           <span aria-hidden="true" style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--cyan)', borderTopColor: 'transparent', display: 'inline-block', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-2)', margin: 0, lineHeight: 1.45 }}>
+          <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', margin: 0, lineHeight: 1.45 }}>
             Check your phone — approve the {m.label} prompt to confirm K{amount.toLocaleString()}.
           </p>
         </div>
       )}
 
       {status === 'failed' && error && (
-        <p role="alert" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', color: 'var(--crit)', margin: '0 0 12px', lineHeight: 1.5 }}>
+        <p role="alert" style={{ fontSize: 'var(--fs-data)', color: 'var(--crit)', margin: '0 0 12px', lineHeight: 1.5 }}>
           {error}
         </p>
       )}
@@ -279,7 +279,7 @@ function CheckoutInner() {
           : `Pay K${amount.toLocaleString()} with ${m.label}`}
       </button>
 
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-4)', textAlign: 'center', margin: '14px 0 0', lineHeight: 1.5 }}>
+      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', margin: '14px 0 0', lineHeight: 1.5 }}>
         You can cancel anytime from settings. Your financial data stays exportable on every plan.
       </p>
     </div>
@@ -288,19 +288,19 @@ function CheckoutInner() {
 
 const btnPrimary: React.CSSProperties = {
   display: 'inline-block', textAlign: 'center',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.88rem', fontWeight: 700,
+  fontSize: 'var(--fs-body)', fontWeight: 700,
   color: '#fff', background: 'var(--cyan)', padding: '13px 22px',
   borderRadius: 10, border: 'none', textDecoration: 'none',
 };
 
 const linkMuted: React.CSSProperties = {
-  fontFamily: 'Geist, sans-serif', fontSize: '0.7rem',
+  fontSize: 'var(--fs-label)',
   color: 'var(--text-3)', textDecoration: 'none',
 };
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div style={{ padding: 48, textAlign: 'center', color: 'var(--text-3)', fontFamily: 'Geist, sans-serif' }}>Loading checkout…</div>}>
+    <Suspense fallback={<div style={{ padding: 48, textAlign: 'center', color: 'var(--text-3)' }}>Loading checkout…</div>}>
       <CheckoutInner />
     </Suspense>
   );

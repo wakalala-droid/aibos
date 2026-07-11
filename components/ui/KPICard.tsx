@@ -3,7 +3,7 @@ import { useId } from 'react';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import BorderGlow from './BorderGlow';
-import { cometProps } from '@/lib/cometStyle';
+import { bloomProps } from '@/lib/cometStyle';
 
 interface KPICardProps {
   label: string;
@@ -16,7 +16,7 @@ interface KPICardProps {
   sparkData?: number[];
   sparkColor?: string;
   delay?: number;
-  /** 0–100 health score; < 60 turns the inner glow into a comet. */
+  /** 0–100 health score; ≤ 60 tints the inner glow amber/red (static). */
   score?: number;
   /** Whether rising is good (revenue) or bad (costs). Controls badge colour. */
   goodWhenUp?: boolean;
@@ -38,13 +38,13 @@ export default function KPICard({
   const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
   // Badge colour reflects good/bad, not just direction: rising costs are red.
   const badgeGood = growth !== undefined && (goodWhenUp ? growth >= 0 : growth <= 0);
-  // The card's own inner glow → comet config (score ≤ 60). Not a separate layer.
-  const comet = cometProps(score, sparkColor);
+  // The card's own inner glow, severity-tinted when the score is in trouble.
+  const bloom = bloomProps(score, sparkColor);
 
   return (
     <motion.div
       style={{ height: '100%' }}
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
     >
@@ -59,8 +59,8 @@ export default function KPICard({
       style={{ height: '100%' }}
     >
       <div
-        className={`kpi-card glow-inner ${comet.className}`}
-        style={comet.style}
+        className="kpi-card glow-inner"
+        style={bloom.style}
         data-ai-explain={explainId}
         data-ai-label={explainId ? label : undefined}
         data-ai-value={explainId ? value : undefined}
@@ -79,7 +79,7 @@ export default function KPICard({
             <div>
               <p className="kpi-label" style={{ margin: 0 }}>{label}</p>
               {sublabel && (
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', margin: 0 }}>
+                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
                   {sublabel}
                 </p>
               )}

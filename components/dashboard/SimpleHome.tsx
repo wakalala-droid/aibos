@@ -73,17 +73,17 @@ const cardStyle: React.CSSProperties = {
 };
 
 const labelStyle: React.CSSProperties = {
-  fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', fontWeight: 600,
+  fontSize: 'var(--fs-label)', fontWeight: 600,
   color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.07em',
 };
 
 const valueStyle: React.CSSProperties = {
-  fontFamily: 'Geist, sans-serif', fontSize: '1.55rem', fontWeight: 700,
+  fontSize: '1.55rem', fontWeight: 700,
   color: 'var(--text-1)', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums',
 };
 
 const subStyle: React.CSSProperties = {
-  fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-3)', lineHeight: 1.45,
+  fontSize: 'var(--fs-data)', color: 'var(--text-3)', lineHeight: 1.45,
 };
 
 export default function SimpleHome() {
@@ -221,12 +221,12 @@ export default function SimpleHome() {
       {/* Greeting */}
       <motion.div {...fade(0)}>
         <h1 style={{
-          fontFamily: 'Geist, sans-serif', fontSize: '1.65rem', fontWeight: 700,
+          fontSize: '1.65rem', fontWeight: 700,
           color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0,
         }}>
           {greeting()}{profile?.business_name ? `, ${profile.business_name}` : ''}.
         </h1>
-        <p style={{ ...subStyle, marginTop: 6, fontSize: '0.86rem' }}>
+        <p style={{ ...subStyle, marginTop: 6, fontSize: 'var(--fs-body)' }}>
           {twinActive
             ? `Here's where your ${ind.label} stands. Ask me anything — I'm keeping the books.`
             : `Let's get your ${ind.label} set up — record what happens and I'll do the rest.`}
@@ -275,7 +275,7 @@ export default function SimpleHome() {
             style={{
               flex: 1, height: 46, padding: '0 16px', borderRadius: 10,
               border: '1px solid var(--border-md)', background: 'var(--bg-card)',
-              color: 'var(--text-1)', fontFamily: 'Geist, sans-serif', fontSize: '0.9rem',
+              color: 'var(--text-1)', fontSize: 'var(--fs-body)',
               outline: 'none', minWidth: 0,
             }}
           />
@@ -286,7 +286,7 @@ export default function SimpleHome() {
               height: 46, padding: '0 18px', borderRadius: 10, border: 'none',
               background: question.trim() ? 'var(--cyan)' : 'var(--bg-badge)',
               color: question.trim() ? '#fff' : 'var(--text-4)',
-              fontFamily: 'Geist, sans-serif', fontSize: '0.86rem', fontWeight: 700,
+              fontSize: 'var(--fs-body)', fontWeight: 700,
               cursor: question.trim() ? 'pointer' : 'default', transition: 'all 0.15s ease',
             }}
           >
@@ -301,7 +301,7 @@ export default function SimpleHome() {
               padding: '7px 12px', borderRadius: 999, cursor: 'pointer',
               border: '1px solid color-mix(in srgb, var(--cyan) 40%, transparent)',
               background: 'var(--cyan-dim)', color: 'var(--cyan)',
-              fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', fontWeight: 700,
+              fontSize: 'var(--fs-data)', fontWeight: 700,
             }}
           >
             Morning Brief
@@ -314,7 +314,7 @@ export default function SimpleHome() {
               style={{
                 padding: '7px 12px', borderRadius: 999, cursor: 'pointer',
                 border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
-                color: 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontSize: '0.76rem',
+                color: 'var(--text-2)', fontSize: 'var(--fs-data)',
               }}
             >
               {p}
@@ -392,7 +392,7 @@ export default function SimpleHome() {
               <Link
                 href="/checkout?plan=proplus"
                 style={{
-                  fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700,
+                  fontSize: 'var(--fs-label)', fontWeight: 700,
                   color: 'var(--cyan)', textDecoration: 'none', padding: '3px 9px', borderRadius: 999,
                   border: '1px solid color-mix(in srgb, var(--cyan) 40%, transparent)', background: 'var(--cyan-dim)',
                 }}
@@ -406,10 +406,10 @@ export default function SimpleHome() {
             return (
               <div key={p.productId} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <div style={{ flex: '1 1 220px', minWidth: 0 }}>
-                  <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)' }}>
+                  <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>
                     Reorder {p.headline}
                   </div>
-                  <div style={{ ...subStyle, fontSize: '0.74rem', color: 'var(--text-4)' }}>
+                  <div style={{ ...subStyle, fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>
                     {p.reason}
                     {p.estimatedCost !== undefined ? ` · about ${money(p.estimatedCost)}` : ''}
                     {' · brings you back to 2× reorder level'}
@@ -427,7 +427,7 @@ export default function SimpleHome() {
                     style={{
                       padding: '8px 14px', borderRadius: 8, border: 'none', cursor: st === 'drafting' ? 'default' : 'pointer',
                       background: 'var(--cyan)', color: '#fff',
-                      fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700,
+                      fontSize: 'var(--fs-data)', fontWeight: 700,
                       opacity: st === 'drafting' ? 0.6 : 1, transition: 'all 0.15s ease',
                     }}
                   >
@@ -447,10 +447,10 @@ export default function SimpleHome() {
           {followUps.map((f) => (
             <div key={f.customerId} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <div style={{ flex: '1 1 220px', minWidth: 0 }}>
-                <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-1)' }}>
+                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>
                   Check in with {f.headline}
                 </div>
-                <div style={{ ...subStyle, fontSize: '0.74rem', color: 'var(--text-4)' }}>
+                <div style={{ ...subStyle, fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>
                   {f.reason}
                 </div>
               </div>
@@ -464,7 +464,7 @@ export default function SimpleHome() {
                       padding: '8px 14px', borderRadius: 8, textDecoration: 'none',
                       background: 'var(--green-dim)', color: 'var(--green)',
                       border: '1px solid color-mix(in srgb, var(--green) 35%, transparent)',
-                      fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700,
+                      fontSize: 'var(--fs-data)', fontWeight: 700,
                     }}
                   >
                     Send on WhatsApp
@@ -475,7 +475,7 @@ export default function SimpleHome() {
                     style={{
                       padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
                       border: '1px solid var(--border-md)', background: 'transparent',
-                      color: 'var(--text-3)', fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 600,
+                      color: 'var(--text-3)', fontSize: 'var(--fs-data)', fontWeight: 600,
                     }}
                   >
                     Done
@@ -565,7 +565,7 @@ export default function SimpleHome() {
           onClick={() => setUiMode('technical')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer', padding: '8px 12px',
-            fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-4)',
+            fontSize: 'var(--fs-data)', color: 'var(--text-4)',
           }}
         >
           Want the full picture? Switch to <span style={{ color: 'var(--cyan)', fontWeight: 700 }}>Pro mode</span> →
@@ -575,7 +575,7 @@ export default function SimpleHome() {
           onClick={() => window.dispatchEvent(new Event(TOUR_RESTART_EVENT))}
           style={{
             background: 'none', border: 'none', cursor: 'pointer', padding: '8px 12px',
-            fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-4)',
+            fontSize: 'var(--fs-data)', color: 'var(--text-4)',
           }}
         >
           Take the tour again

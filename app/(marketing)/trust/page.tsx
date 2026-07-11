@@ -90,8 +90,8 @@ export default function TrustPage() {
             </div>
           </Reveal>
           <Reveal delay={0.1}>
-            <div className="mkt-card" style={{ fontFamily: 'Geist, sans-serif' }}>
-              <p style={{ fontSize: '0.66rem', color: 'var(--text-3)', margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>How AI-BOS read your file</p>
+            <div className="mkt-card">
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>How AI-BOS read your file</p>
               {[
                 ['date', 'read as the time axis', 'var(--good)'],
                 ['revenue', 'read as income (ZMW)', 'var(--good)'],
@@ -99,11 +99,11 @@ export default function TrustPage() {
                 ['forecast', 'unavailable, no time axis found', 'var(--warn)'],
               ].map(([col, note, c]) => (
                 <div key={col} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '9px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ color: 'var(--text-1)', fontSize: '0.82rem' }}>{col}</span>
-                  <span style={{ color: c as string, fontSize: '0.74rem', textAlign: 'right' }}>{note}</span>
+                  <span style={{ color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>{col}</span>
+                  <span style={{ color: c as string, fontSize: 'var(--fs-data)', textAlign: 'right' }}>{note}</span>
                 </div>
               ))}
-              <p style={{ fontSize: '0.62rem', color: 'var(--text-4)', margin: '14px 0 0' }}>Illustrative. Every real upload shows its own manifest.</p>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '14px 0 0' }}>Illustrative. Every real upload shows its own manifest.</p>
             </div>
           </Reveal>
         </div>

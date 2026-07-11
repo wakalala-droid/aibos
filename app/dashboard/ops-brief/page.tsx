@@ -11,8 +11,8 @@ function BriefPoint({ text, index }: { text: string; index: number }) {
   return (
     <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + index * 0.07 }}
       style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: index > 0 ? '1px solid var(--border)' : 'none' }}>
-      <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: 'var(--cyan-dim)', border: '1px solid rgba(0,212,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700, color: 'var(--cyan)' }}>{index + 1}</span>
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>{content}</p>
+      <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: 'var(--cyan-dim)', border: '1px solid rgba(0,212,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--cyan)' }}>{index + 1}</span>
+      <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>{content}</p>
     </motion.div>
   );
 }
@@ -33,23 +33,23 @@ export default function OpsBriefPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Operations Intelligence Brief</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</p>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Operations Intelligence Brief</h1>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</p>
       </div>
 
       {/* Score strip */}
       {scores && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
+        <div className="grid-engines" style={{ marginBottom: 24 }}>
           {/* Overall hero */}
           <div className="kpi-card" style={{ minWidth: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 24px' }}>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '3rem', fontWeight: 900, color: scoreColor(scores.overall_score), letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+            <p style={{ fontSize: '3rem', fontWeight: 900, color: scoreColor(scores.overall_score), letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
               {scores.overall_score}
             </p>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--cyan)', margin: '5px 0 0', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', margin: '5px 0 0', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               {scores.overall_label}
             </p>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', margin: '2px 0 0' }}>OVERALL</p>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '2px 0 0' }}>OVERALL</p>
           </div>
           {[
             { l: 'FINANCIAL',              s: scores.e1_score, c: 'var(--e1)' },
@@ -58,7 +58,7 @@ export default function OpsBriefPage() {
           ].map(item => (
             <div key={item.l} className="kpi-card">
               <p className="kpi-label" style={{ color: item.c }}>{item.l}</p>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '2rem', fontWeight: 800, color: scoreColor(item.s), margin: '8px 0 10px', letterSpacing: '-0.03em' }}>{item.s}</p>
+              <p style={{ fontSize: '2rem', fontWeight: 800, color: scoreColor(item.s), margin: '8px 0 10px', letterSpacing: '-0.03em' }}>{item.s}</p>
               <div className="progress-track">
                 <motion.div className="progress-fill" style={{ background: scoreColor(item.s) }} initial={{ width: 0 }} animate={{ width: `${item.s}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
               </div>
@@ -71,7 +71,7 @@ export default function OpsBriefPage() {
       <SectionCard title="AI Operations Brief" subtitle="Engine 3 · POS analysis · AI-generated" delay={0.1} style={{ marginBottom: 20 }}>
         {opsBriefLines.length > 0
           ? opsBriefLines.map((l, i) => <BriefPoint key={i} text={l} index={i} />)
-          : <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Upload POS data to generate operations intelligence</p>
+          : <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Upload POS data to generate operations intelligence</p>
         }
       </SectionCard>
 

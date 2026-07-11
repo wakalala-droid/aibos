@@ -27,7 +27,7 @@ const SCENARIOS = [
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', outline: 'none',
+  fontSize: 'var(--fs-body)', outline: 'none',
 };
 
 function RecCard({ r }: { r: Recommendation }) {
@@ -35,17 +35,17 @@ function RecCard({ r }: { r: Recommendation }) {
   return (
     <div style={{ padding: '16px 18px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-        <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-1)' }}>{r.title}</span>
+        <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{r.title}</span>
         <span style={{ display: 'flex', gap: 6 }}>
           <span className="badge" style={{ background: p.bg, color: p.fg }}>{p.label}</span>
           <span className="badge" style={{ background: 'var(--bg-badge)', color: 'var(--text-3)' }}>{Math.round(r.confidence * 100)}%</span>
         </span>
       </div>
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', color: 'var(--text-2)', lineHeight: 1.5, margin: '0 0 10px' }}>{r.rationale}</p>
+      <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.5, margin: '0 0 10px' }}>{r.rationale}</p>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         {r.evidence.map((e, i) => (
-          <span key={i} style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', background: 'var(--bg-badge)', padding: '4px 8px', borderRadius: 6 }}>
+          <span key={i} style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', background: 'var(--bg-badge)', padding: '4px 8px', borderRadius: 6 }}>
             {e.label}: <span style={{ color: 'var(--text-1)' }}>{e.value}</span>
           </span>
         ))}
@@ -53,19 +53,19 @@ function RecCard({ r }: { r: Recommendation }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: r.alternatives.length ? 10 : 0 }}>
         <div>
-          <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Expected</div>
-          <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--green)' }}>{r.expected_outcome}</div>
+          <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Expected</div>
+          <div style={{ fontSize: 'var(--fs-data)', color: 'var(--green)' }}>{r.expected_outcome}</div>
         </div>
         <div>
-          <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Downside</div>
-          <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-3)' }}>{r.downside}</div>
+          <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Downside</div>
+          <div style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>{r.downside}</div>
         </div>
       </div>
 
       {r.alternatives.length > 0 && (
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 8 }}>
-          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Alternatives: </span>
-          <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-3)' }}>{r.alternatives.join(' · ')}</span>
+          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Alternatives: </span>
+          <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>{r.alternatives.join(' · ')}</span>
         </div>
       )}
     </div>
@@ -116,8 +116,8 @@ export default function AdvisorPage() {
   return (
     <>
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Advisor</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', marginTop: 4 }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Advisor</h1>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
           Recommendations from your live data — and a sandbox to test decisions.
         </p>
       </div>
@@ -125,12 +125,12 @@ export default function AdvisorPage() {
       <div className="grid-main">
         {/* Recommendations */}
         <SectionCard title="Recommendations" subtitle={loading ? 'Analysing…' : `${recs.length} from your Digital Twin`}
-          action={<button type="button" onClick={load} className="touch-target" style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}>Refresh</button>}>
-          {err && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.8rem' }}>{err}</div>}
+          action={<button type="button" onClick={load} className="touch-target" style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>Refresh</button>}>
+          {err && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{err}</div>}
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1].map(i => <div key={i} className="skeleton" style={{ height: 120 }} />)}</div>
           ) : recs.length === 0 ? (
-            <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-3)', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem' }}>
+            <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>
               No recommendations right now — your numbers look healthy, or there isn&apos;t enough activity yet.
             </div>
           ) : (
@@ -147,48 +147,48 @@ export default function AdvisorPage() {
 
             {isHire ? (
               <>
-                <label style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)', textTransform: 'uppercase' }}>How many</label>
+                <label style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase' }}>How many</label>
                 <input type="number" value={count} min={1} onChange={e => setCount(Number(e.target.value))} style={inputStyle} />
-                <label style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)', textTransform: 'uppercase' }}>Monthly salary ({sym})</label>
+                <label style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase' }}>Monthly salary ({sym})</label>
                 <input type="number" value={salary} min={0} onChange={e => setSalary(Number(e.target.value))} style={inputStyle} />
               </>
             ) : (
               <>
-                <label style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)', textTransform: 'uppercase' }}>Change (%)</label>
+                <label style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase' }}>Change (%)</label>
                 <input type="number" value={value} min={-100} max={500} onChange={e => setValue(Number(e.target.value))} style={inputStyle} />
               </>
             )}
 
             <button type="button" onClick={runSim} disabled={simBusy} className="touch-target"
-              style={{ padding: '10px 18px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#04121a', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', opacity: simBusy ? 0.7 : 1 }}>
+              style={{ padding: '10px 18px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: simBusy ? 0.7 : 1 }}>
               {simBusy ? 'Running…' : 'Simulate'}
             </button>
 
             {sim && sim.ok && (
               <div style={{ marginTop: 4, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-2)', margin: '0 0 12px' }}>{sim.explanation}</p>
+                <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', margin: '0 0 12px' }}>{sim.explanation}</p>
                 {(['profit', 'revenue', 'costs', 'margin'] as const).map(k => (
                   <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase' }}>{k}</span>
+                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase' }}>{k}</span>
                     <span style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
-                      <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-2)' }}>
+                      <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>
                         {k === 'margin' ? `${sim.projected[k]}%` : `${sym}${fmt(sim.projected[k])}`}
                       </span>
-                      <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', fontWeight: 600, color: deltaColor(k, sim.deltas[k]) }}>
+                      <span style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: deltaColor(k, sim.deltas[k]) }}>
                         {sim.deltas[k] > 0 ? '+' : ''}{k === 'margin' ? `${sim.deltas[k]}pp` : `${sym}${fmt(sim.deltas[k])}`}
                       </span>
                     </span>
                   </div>
                 ))}
                 {sim.assumptions.length > 0 && (
-                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-4)', fontStyle: 'italic', margin: '10px 0 0' }}>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontStyle: 'italic', margin: '10px 0 0' }}>
                     {sim.assumptions.join(' ')}
                   </p>
                 )}
               </div>
             )}
             {sim && !sim.ok && (
-              <div style={{ color: 'var(--red)', fontSize: '0.8rem' }}>{sim.error}</div>
+              <div style={{ color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{sim.error}</div>
             )}
           </div>
         </SectionCard>

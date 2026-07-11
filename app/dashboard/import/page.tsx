@@ -44,7 +44,7 @@ function inferTypeFromColumn(col?: string): EventType | null {
 const sel: React.CSSProperties = {
   width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', outline: 'none',
+  fontSize: 'var(--fs-body)', outline: 'none',
 };
 
 export default function ImportPage() {
@@ -116,10 +116,10 @@ export default function ImportPage() {
   return (
     <>
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>
           Import history
         </h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--text-3)', marginTop: 4 }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
           Bring an Excel or CSV of past activity — AIBOS adapts to your columns.
         </p>
       </div>
@@ -131,14 +131,14 @@ export default function ImportPage() {
             ref={fileRef} type="file" accept=".xlsx,.xls,.csv"
             onChange={e => { const f = e.target.files?.[0]; if (f) onPick(f); }}
             disabled={phase === 'parsing'}
-            style={{ display: 'block', width: '100%', padding: '20px', minHeight: 56, border: '1px dashed var(--upload-border)', borderRadius: 10, background: 'var(--upload-bg)', color: 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', cursor: 'pointer' }}
+            style={{ display: 'block', width: '100%', padding: '20px', minHeight: 56, border: '1px dashed var(--upload-border)', borderRadius: 10, background: 'var(--upload-bg)', color: 'var(--text-2)', fontSize: 'var(--fs-body)', cursor: 'pointer' }}
           />
-          {phase === 'parsing' && <p style={{ marginTop: 12, color: 'var(--text-3)', fontSize: '0.82rem' }}>Reading your file…</p>}
+          {phase === 'parsing' && <p style={{ marginTop: 12, color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>Reading your file…</p>}
         </SectionCard>
       )}
 
       {error && (
-        <div style={{ margin: '12px 0', padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: '0.82rem' }}>{error}</div>
+        <div style={{ margin: '12px 0', padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>{error}</div>
       )}
 
       {/* Map + preview */}
@@ -146,14 +146,14 @@ export default function ImportPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <SectionCard title="Map your columns" subtitle={`${preview.row_count} rows · sheet "${preview.active_sheet}"`}>
             {preview.summary_like && (
-              <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--amber-dim, rgba(251,191,36,0.12))', border: '1px solid var(--amber)', color: 'var(--text-2)', fontSize: '0.78rem', fontFamily: 'Geist, sans-serif', lineHeight: 1.5 }}>
+              <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--amber-dim, rgba(251,191,36,0.12))', border: '1px solid var(--amber)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', lineHeight: 1.5 }}>
                 This looks like a monthly <strong>summary</strong> — it has both income and expense columns.
                 Each import maps <strong>one</strong> Amount column: pick <strong>Revenue</strong> to log Sales, or
                 <strong> Expenses</strong> to log costs, then import again for the other. The default type below follows your Amount choice.
               </div>
             )}
             <div style={{ marginBottom: 16 }}>
-              <label style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
+              <label style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
                 When a row has no type column, treat rows as
               </label>
               <select value={defaultType} onChange={e => { setDefaultType(e.target.value as EventType); setTypeTouched(true); }} style={{ ...sel, maxWidth: 240 }}>
@@ -163,7 +163,7 @@ export default function ImportPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
               {FIELDS.map(f => (
                 <div key={f.key}>
-                  <label style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5, display: 'block' }}>
+                  <label style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5, display: 'block' }}>
                     {f.label} <span style={{ color: 'var(--text-4)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· {f.hint}</span>
                   </label>
                   <select
@@ -207,11 +207,11 @@ export default function ImportPage() {
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
               <button type="button" onClick={commit} disabled={phase === 'committing'} className="touch-target"
-                style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontFamily: 'Geist, sans-serif', fontSize: '0.875rem', fontWeight: 700, cursor: 'pointer', opacity: phase === 'committing' ? 0.7 : 1 }}>
+                style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: phase === 'committing' ? 0.7 : 1 }}>
                 {phase === 'committing' ? 'Importing…' : `Import ${preview.row_count} rows`}
               </button>
               <button type="button" onClick={reset} className="touch-target"
-                style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}>
+                style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer' }}>
                 Choose another file
               </button>
             </div>
@@ -224,22 +224,22 @@ export default function ImportPage() {
         <SectionCard title="Import complete" subtitle="Your dashboards have been updated">
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: result.error_count ? 16 : 0 }}>
             <div>
-              <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.6rem', fontWeight: 700, color: 'var(--green)' }}>{result.saved_count.toLocaleString()}</div>
-              <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>imported</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--green)' }}>{result.saved_count.toLocaleString()}</div>
+              <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>imported</div>
             </div>
             {result.error_count > 0 && (
               <div>
-                <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.6rem', fontWeight: 700, color: 'var(--amber)' }}>{result.error_count.toLocaleString()}</div>
-                <div style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>skipped</div>
+                <div style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--amber)' }}>{result.error_count.toLocaleString()}</div>
+                <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>skipped</div>
               </div>
             )}
           </div>
           {result.error_count > 0 && (
             <details style={{ marginBottom: 16 }}>
-              <summary style={{ cursor: 'pointer', fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--text-3)' }}>
+              <summary style={{ cursor: 'pointer', fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>
                 Why were {result.error_count} rows skipped?
               </summary>
-              <ul style={{ margin: '8px 0 0', paddingLeft: 18, color: 'var(--text-3)', fontSize: '0.78rem', fontFamily: 'Geist, sans-serif' }}>
+              <ul style={{ margin: '8px 0 0', paddingLeft: 18, color: 'var(--text-3)', fontSize: 'var(--fs-data)' }}>
                 {result.errors.slice(0, 12).map((e, i) => (
                   <li key={i}>Row {(e.row ?? e.index ?? 0) + 1}: {e.error}</li>
                 ))}
@@ -247,11 +247,11 @@ export default function ImportPage() {
             </details>
           )}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <a href="/dashboard/timeline" style={{ padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, background: 'var(--cyan)', color: '#04121a', fontFamily: 'Geist, sans-serif', fontSize: '0.875rem', fontWeight: 700, textDecoration: 'none' }}>
+            <a href="/dashboard/timeline" style={{ padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-body)', fontWeight: 700, textDecoration: 'none' }}>
               View timeline →
             </a>
             <button type="button" onClick={reset} className="touch-target"
-              style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}>
+              style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer' }}>
               Import another
             </button>
           </div>

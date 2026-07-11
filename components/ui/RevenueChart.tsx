@@ -34,10 +34,10 @@ export default function RevenueChart({
           </defs>
           <CartesianGrid stroke="var(--border)" vertical={false} />
           <XAxis dataKey="month"
-            tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-3)' }}
+            tick={{ fontSize: 12, fill: 'var(--text-3)' }}
             axisLine={false} tickLine={false} />
           <YAxis
-            tick={{ fontFamily: 'Geist, sans-serif', fontSize: 10, fill: 'var(--text-3)' }}
+            tick={{ fontSize: 12, fill: 'var(--text-3)' }}
             axisLine={false} tickLine={false}
             tickFormatter={(v) => formatAxis(Number(v))} />
           <Tooltip content={<ChartTooltip sym={sym} />}
@@ -54,7 +54,7 @@ export default function RevenueChart({
         {[['var(--spark-revenue)', 'Revenue'], ['var(--spark-profit)', 'Profit']].map(([c, l]) => (
           <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <div style={{ width: 12, height: 2, borderRadius: 2, background: c }} />
-            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)' }}>{l}</span>
+            <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{l}</span>
           </div>
         ))}
       </div>

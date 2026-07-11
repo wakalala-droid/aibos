@@ -36,18 +36,18 @@ export default function AdminUsagePage() {
 
   const nav = (
     <nav aria-label="Admin sections" style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-      <Link href="/admin" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Accounts</Link>
-      <Link href="/admin/usage" aria-current="page" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Usage</Link>
-      <Link href="/admin/proposals" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Proposals</Link>
+      <Link href="/admin" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Accounts</Link>
+      <Link href="/admin/usage" aria-current="page" style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Usage</Link>
+      <Link href="/admin/proposals" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Proposals</Link>
     </nav>
   );
 
   const header = (
     <header style={{ marginBottom: 18 }}>
-      <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+      <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
         Usage
       </h1>
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', color: 'var(--text-3)', margin: 0 }}>
+      <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
         Activity across every account over the last 30 days.
       </p>
     </header>
@@ -65,8 +65,8 @@ export default function AdminUsagePage() {
   } else if (error) {
     body = (
       <div className="section-card" role="alert" style={{ textAlign: 'center' }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', color: 'var(--crit)', margin: '0 0 12px' }}>{error}</p>
-        <button type="button" onClick={() => void load()} style={{ minHeight: 40, padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontFamily: 'Geist, sans-serif', fontWeight: 600, cursor: 'pointer' }}>Try again</button>
+        <p style={{ color: 'var(--crit)', margin: '0 0 12px' }}>{error}</p>
+        <button type="button" onClick={() => void load()} style={{ minHeight: 40, padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer' }}>Try again</button>
       </div>
     );
   } else if (data) {
@@ -86,16 +86,16 @@ export default function AdminUsagePage() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.series} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--text-4)' }} tickFormatter={(d: string) => d.slice(5)} minTickGap={24} stroke="var(--border)" />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--text-4)' }} stroke="var(--border)" width={36} />
-                  <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 10, fontFamily: 'Geist, sans-serif', fontSize: '0.75rem' }} labelStyle={{ color: 'var(--text-2)' }} />
+                  <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--text-4)' }} tickFormatter={(d: string) => d.slice(5)} minTickGap={24} stroke="var(--border)" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--text-4)' }} stroke="var(--border)" width={36} />
+                  <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 10, fontSize: 'var(--fs-data)' }} labelStyle={{ color: 'var(--text-2)' }} />
                   <Line type="monotone" dataKey="uploads" name="Uploads" stroke="var(--cyan)" strokeWidth={2} dot={false} />
                   <Line type="monotone" dataKey="chats" name="Chats" stroke="#f97316" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           ) : (
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.84rem', color: 'var(--text-3)', margin: 0, padding: '24px 0', textAlign: 'center' }}>
+            <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, padding: '24px 0', textAlign: 'center' }}>
               No activity recorded in the last 30 days yet.
             </p>
           )}
@@ -103,16 +103,16 @@ export default function AdminUsagePage() {
 
         <SectionCard title="Most active accounts" subtitle="By total events in the last 30 days">
           {data.topAccounts.length === 0 ? (
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.84rem', color: 'var(--text-3)', margin: 0 }}>No activity yet.</p>
+            <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>No activity yet.</p>
           ) : (
             <div style={{ display: 'grid', gap: 8 }}>
               {data.topAccounts.map((t) => (
                 <Link key={t.user_id} href={`/admin/${t.user_id}`} className="dash-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: 8, textDecoration: 'none', border: '1px solid var(--border)' }}>
                   <span style={{ minWidth: 0 }}>
-                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-1)' }}>{t.business_name || '—'}</span>
-                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-3)', marginLeft: 8 }}>{t.email}</span>
+                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{t.business_name || '—'}</span>
+                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginLeft: 8 }}>{t.email}</span>
                   </span>
-                  <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--cyan)', fontWeight: 700, flexShrink: 0 }}>{t.events} events</span>
+                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', fontWeight: 700, flexShrink: 0 }}>{t.events} events</span>
                 </Link>
               ))}
             </div>

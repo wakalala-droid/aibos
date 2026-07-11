@@ -65,7 +65,7 @@ export default function SimpleSummary({ page }: { page: 'cash' | 'customers' | '
         background: 'color-mix(in srgb, var(--cyan) 5%, transparent)',
       }}
     >
-      <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.84rem', lineHeight: 1.55, color: 'var(--text-2)', margin: 0 }}>
+      <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.55, color: 'var(--text-2)', margin: 0 }}>
         {text}
       </p>
     </div>

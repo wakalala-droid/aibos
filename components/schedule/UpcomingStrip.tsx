@@ -53,7 +53,7 @@ export default function UpcomingStrip() {
         border: `1px solid ${overdue ? 'color-mix(in srgb, var(--amber) 45%, transparent)' : 'var(--border)'}`,
         background: 'var(--bg-badge)',
       }}>
-        <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', flexShrink: 0 }}>
+        <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', flexShrink: 0 }}>
           Coming up
         </span>
         {overdue > 0 && (
@@ -64,15 +64,15 @@ export default function UpcomingStrip() {
         {upcoming.map(({ item, when }) => (
           <span key={item.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
             <span style={{ width: 6, height: 6, borderRadius: 3, background: KIND_COLOUR[item.kind], flexShrink: 0 }} />
-            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>
+            <span style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>
               {item.title}
             </span>
-            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', whiteSpace: 'nowrap' }}>
               {item.all_day ? fmtWhen(when).replace(/ \d.*$/, '') : fmtWhen(when)}
             </span>
           </span>
         ))}
-        <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.72rem', color: 'var(--cyan)', marginLeft: 'auto', flexShrink: 0 }}>
+        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', marginLeft: 'auto', flexShrink: 0 }}>
           Open →
         </span>
       </div>

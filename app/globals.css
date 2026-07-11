@@ -36,11 +36,25 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Animatable angle for the KPI card comet (keyframes interpolate it). */
-@property --comet-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 45deg;
+/* ── TYPE SCALE (Design OS visual_language_system.md) ──────────
+   The ONLY font sizes in the product. 12px is the floor — nothing
+   interactive or data-bearing renders smaller (audit F-02).
+     display 32 · h1 28 · h2 22 · h3 18 · body 14 · data 13 · label 12 */
+:root {
+  --fs-display: 2rem;      /* 32px — one per page, max */
+  --fs-h1:      1.75rem;   /* 28px */
+  --fs-h2:      1.375rem;  /* 22px */
+  --fs-h3:      1.125rem;  /* 18px */
+  --fs-body:    0.875rem;  /* 14px */
+  --fs-data:    0.8125rem; /* 13px — table cells, dense data */
+  --fs-label:   0.75rem;   /* 12px — micro labels, eyebrows, badges */
+
+  /* Radius (Design OS: small 6 · medium 10 · large 16; cards keep the
+     established 14px the BorderGlow chrome is tuned to). */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-card: 14px;
+  --radius-lg:   16px;
 }
 
 /* ── DARK MODE (default — matches E1 exactly) ───────────────── */
@@ -87,8 +101,10 @@
   --red:            #ef4444;
   --red-dim:        rgba(239,68,68,0.12);
 
-  /* Engine accents */
-  --e1:             #00d4ff;
+  /* Engine accents. E1 is a distinct blue, NOT the brand cyan — the Overall
+     health hero owns cyan, so the summary reads differently from its inputs
+     (audit F-11: when one hue means five things, it means nothing). */
+  --e1:             #3b82f6;
   --e2:             #f97316;
   --e3:             #10b981;
 
@@ -182,7 +198,7 @@
   --red:            #dc2626;
   --red-dim:        rgba(220,38,38,0.08);
 
-  --e1:             #0284c7;
+  --e1:             #1d4ed8; /* distinct blue — brand cyan stays the summary/nav hue */
   --e2:             #ea580c;
   --e3:             #059669;
 
@@ -299,6 +315,26 @@ body {
 }
 .dash-iconbtn:hover { background: var(--bg-card-hover); color: var(--text-1); border-color: var(--border-strong); }
 .dash-profile:hover { border-color: var(--border-strong); background: var(--bg-card-hover); }
+
+/* Visible search / command bar (audit F-07). Full bar on desktop; collapses to
+   a 38px icon button below lg so the mobile header trio stays compact. */
+.dash-searchbar {
+  display: flex; align-items: center; gap: 8px;
+  height: 38px; padding: 0 12px; border-radius: 10px;
+  border: 1px solid var(--border-md); background: var(--bg-card);
+  color: var(--text-3); cursor: pointer; min-width: 0;
+}
+.dash-searchbar:hover { border-color: var(--border-strong); background: var(--bg-card-hover); color: var(--text-1); }
+.dash-searchbar-hint { font-size: var(--fs-data); color: var(--text-4); white-space: nowrap; }
+.dash-searchbar-kbd {
+  font-size: var(--fs-label); color: var(--text-4);
+  border: 1px solid var(--border-md); border-radius: 5px;
+  padding: 1px 6px; background: var(--bg-badge); font-family: inherit;
+}
+@media (max-width: 1023px) {
+  .dash-searchbar { width: 38px; padding: 0; justify-content: center; }
+  .dash-searchbar-hint, .dash-searchbar-kbd { display: none; }
+}
 .dash-pop {
   position: absolute;
   top: calc(100% + 8px);
@@ -345,7 +381,7 @@ body {
 
 .kpi-card .kpi-label {
   font-family: 'Geist', sans-serif;
-  font-size: 0.7rem;
+  font-size: var(--fs-label);
   font-weight: 500;
   color: var(--text-3);
   text-transform: uppercase;
@@ -358,17 +394,18 @@ body {
 
 .kpi-card .kpi-value {
   font-family: 'Geist', sans-serif;
-  font-size: 2rem;
+  font-size: var(--fs-display);
   font-weight: 800;
   color: var(--text-1);
   letter-spacing: -0.03em;
   line-height: 1.1;
   margin: 8px 0 4px;
+  font-variant-numeric: tabular-nums; /* money never dances as it updates */
 }
 
 .kpi-card .kpi-sub {
   font-family: 'Geist', sans-serif;
-  font-size: 0.7rem;
+  font-size: var(--fs-label);
   color: var(--text-4);
   letter-spacing: 0.02em;
 }
@@ -378,11 +415,15 @@ body {
   align-items: center;
   gap: 3px;
   font-family: 'Geist', sans-serif;
-  font-size: 0.7rem;
+  font-size: var(--fs-label);
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 4px;
+  font-variant-numeric: tabular-nums;
 }
+
+/* Utility: tabular digits wherever numbers align in columns. */
+.tnum { font-variant-numeric: tabular-nums; }
 
 .kpi-card .kpi-badge.up {
   background: rgba(52,211,153,0.15);
@@ -436,8 +477,10 @@ body {
 }
 
 /* KPI card surface + glow live ON the card itself (not a separate overlay):
-   a premium sheen, and a top-right inner glow that — for scores ≤ 60 — leaves,
-   becomes a comet around the border, and returns home. */
+   a premium sheen, and a static top-right inner glow whose colour carries the
+   severity signal (--card-glow, set per card by bloomProps — amber/red when a
+   score is in trouble). The old animated "comet" loop was removed 2026-07-11:
+   motion_governance.md bans auto-playing decorative loops. */
 .kpi-card.glow-inner {
   position: relative;
   isolation: isolate;
@@ -451,42 +494,6 @@ body {
   z-index: -1;
   border-radius: inherit;
   background: radial-gradient(130% 90% at 100% 0%, var(--card-glow, transparent), transparent 60%);
-}
-/* score ≤ 60: the inner glow animates into a comet (anti-phased with the bloom,
-   so the corner goes dark during the trip and the light returns home). */
-.kpi-card.glow-inner.comet::before {
-  animation: kpi-bloom var(--comet-dur, 14s) linear infinite;
-}
-.kpi-card.glow-inner.comet::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  opacity: 0;
-  -webkit-mask-image: conic-gradient(from var(--comet-angle), #000 0deg, transparent 7deg, transparent calc(360deg - var(--comet-tail, 28deg)), #000 360deg);
-  mask-image: conic-gradient(from var(--comet-angle), #000 0deg, transparent 7deg, transparent calc(360deg - var(--comet-tail, 28deg)), #000 360deg);
-  box-shadow:
-    inset 0 0 0 1.5px var(--comet-color),
-    inset 0 0 14px 0 var(--comet-c50),
-    inset 0 0 40px 4px var(--comet-c25);
-  animation: kpi-comet var(--comet-dur, 14s) linear infinite;
-}
-@keyframes kpi-comet {
-  0%, 60% { opacity: 0; --comet-angle: 45deg; }
-  66%     { opacity: 1; --comet-angle: 45deg; }
-  96%     { opacity: 1; --comet-angle: 405deg; }
-  100%    { opacity: 0; --comet-angle: 405deg; }
-}
-@keyframes kpi-bloom {
-  0%, 60% { opacity: 1; }
-  66%     { opacity: 0; }
-  96%     { opacity: 0; }
-  100%    { opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .kpi-card.glow-inner.comet::before { animation: none; opacity: 1; }
-  .kpi-card.glow-inner.comet::after  { animation: none; opacity: 0; }
 }
 
 /* ── BENTO DOT TEXTURE OVERLAY ──────────────────────────────────
@@ -523,13 +530,19 @@ body {
 [data-bento] .section-card:hover .bento-tex {
   opacity: 1;
 }
+/* Light theme: the dot texture stays (warm paper grain) but never lights up —
+   glow/light effects are dark-mode-only (owner decision, 2026-07-11). */
+[data-theme="light"] [data-bento] .kpi-card:hover .bento-tex,
+[data-theme="light"] [data-bento] .section-card:hover .bento-tex {
+  opacity: var(--bento-rest);
+}
 @media (prefers-reduced-motion: reduce) {
   [data-bento] .bento-tex { transition: none; }
 }
 
 .section-title {
   font-family: 'Geist', sans-serif;
-  font-size: 1rem;
+  font-size: var(--fs-h3);
   font-weight: 600;
   color: var(--text-1);
   margin: 0 0 4px;
@@ -537,7 +550,7 @@ body {
 
 .section-sub {
   font-family: 'Geist', sans-serif;
-  font-size: 0.7rem;
+  font-size: var(--fs-label);
   color: var(--text-3);
   letter-spacing: 0.02em;
   margin: 0 0 20px;
@@ -585,7 +598,7 @@ body {
 
 .insight-label {
   font-family: 'Geist', sans-serif;
-  font-size: 0.68rem;
+  font-size: var(--fs-label);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -594,7 +607,7 @@ body {
 
 .insight-text {
   font-family: 'Geist', sans-serif;
-  font-size: 0.82rem;
+  font-size: var(--fs-body);
   color: var(--text-2);
   line-height: 1.55;
   margin: 0 0 8px;
@@ -602,7 +615,7 @@ body {
 
 .insight-action {
   font-family: 'Geist', sans-serif;
-  font-size: 0.68rem;
+  font-size: var(--fs-label);
   color: var(--text-3);
   margin: 0;
 }
@@ -617,7 +630,7 @@ body {
 
 .engine-tag {
   font-family: 'Geist', sans-serif;
-  font-size: 0.68rem;
+  font-size: var(--fs-label);
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
@@ -659,7 +672,7 @@ body {
 
 .nav-item .nav-label {
   font-family: 'Geist', sans-serif;
-  font-size: 0.82rem;
+  font-size: var(--fs-body);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -668,7 +681,7 @@ body {
 .nav-section {
   padding: 14px 20px 4px;
   font-family: 'Geist', sans-serif;
-  font-size: 0.68rem;
+  font-size: var(--fs-label);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -681,7 +694,7 @@ body {
   align-items: center;
   gap: 3px;
   font-family: 'Geist', sans-serif;
-  font-size: 0.68rem;
+  font-size: var(--fs-label);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 4px;
@@ -698,7 +711,7 @@ body {
   text-align: left;
   padding: 8px 12px;
   font-family: 'Geist', sans-serif;
-  font-size: 0.68rem;
+  font-size: var(--fs-label);
   font-weight: 600;
   color: var(--text-3);
   letter-spacing: 0.08em;
@@ -710,9 +723,10 @@ body {
 .data-table td {
   padding: 11px 12px;
   font-family: 'Geist', sans-serif;
-  font-size: 0.72rem;
+  font-size: var(--fs-data);
   color: var(--text-2);
   border-bottom: 1px solid var(--table-border);
+  font-variant-numeric: tabular-nums; /* aligned digit columns */
 }
 
 .data-table tr:hover td {
@@ -835,7 +849,7 @@ select optgroup {
   padding: 10px 16px;
   border-radius: 8px;
   font-family: 'Geist', sans-serif;
-  font-size: 0.82rem;
+  font-size: var(--fs-body);
   transition: top 0.15s ease;
 }
 .skip-link:focus {

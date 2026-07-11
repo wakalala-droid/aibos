@@ -46,26 +46,35 @@ const IC: Record<string, JSX.Element> = {
 };
 
 type NavItem = { href: string; label: string; icon: JSX.Element; engine?: 'ci' | 'ops' };
-type NavSection = { type: 'section'; label: string; colour: string; engine: 'ci' | 'ops' };
+type NavSection = { type: 'section'; label: string; colour: string; engine?: 'ci' | 'ops' };
 type NavEntry = NavItem | NavSection;
 
+// Pro nav — grouped into labelled sections that mirror the owner's mental model
+// (audit F-06: a 25-item flat list forces a re-scan on every navigation; the
+// grouping the CI/Ops sections already proved works is applied everywhere).
+// Plans & Pricing lives in the plan chip at the rail's foot, not in the nav.
 const NAV: NavEntry[] = [
   { href: '/dashboard',            label: 'Overview',         icon: IC.overview   },
+  { href: '/dashboard/advisor',    label: 'Advisor',          icon: IC.advisor    },
+
+  { type: 'section', label: 'Record & Plan', colour: 'var(--cyan)' },
   { href: '/dashboard/record',     label: 'Record',           icon: IC.record     },
   { href: '/dashboard/timeline',   label: 'Timeline',         icon: IC.timeline   },
   { href: '/dashboard/schedule',   label: 'Schedule',         icon: IC.schedule   },
-  { href: '/dashboard/employees',  label: 'Employees',        icon: IC.people     },
   { href: '/dashboard/import',     label: 'Import',           icon: IC.import     },
-  { href: '/dashboard/advisor',    label: 'Advisor',          icon: IC.advisor    },
-  { href: '/dashboard/inventory',  label: 'Inventory',        icon: IC.inventory  },
+  { href: '/data-studio',          label: 'Data Studio',      icon: IC.studio     },
+
+  { type: 'section', label: 'Financial', colour: 'var(--e1)' },
   { href: '/dashboard/cash',       label: 'Cash Intel',       icon: IC.cash       },
   { href: '/dashboard/variance',   label: 'Variance',         icon: IC.variance   },
   { href: '/dashboard/forecast',   label: 'Forecast',         icon: IC.forecast   },
   { href: '/dashboard/anomaly',    label: 'Anomaly Intel',    icon: IC.anomaly    },
   { href: '/dashboard/breakeven',  label: 'Breakeven',        icon: IC.breakeven  },
   { href: '/dashboard/brief',      label: 'Strategic Brief',  icon: IC.brief      },
-  { href: '/data-studio',          label: 'Data Studio',      icon: IC.studio     },
-  { href: '/pricing',              label: 'Plans & Pricing',  icon: IC.pricing    },
+
+  { type: 'section', label: 'People & Stock', colour: 'var(--purple)' },
+  { href: '/dashboard/employees',  label: 'Employees',        icon: IC.people     },
+  { href: '/dashboard/inventory',  label: 'Inventory',        icon: IC.inventory  },
 
   { type: 'section', label: 'Customer Intelligence', colour: 'var(--e2)', engine: 'ci' },
   { href: '/dashboard/customers',  label: 'Customer Intel',   icon: IC.customers,   engine: 'ci' },
@@ -123,7 +132,7 @@ export default function Sidebar() {
       return base;
     }
     // Pro: place the section just before Customer Intelligence.
-    const at = base.findIndex(e => 'type' in e);
+    const at = base.findIndex(e => 'type' in e && e.label === 'Customer Intelligence');
     const block: NavEntry[] = [HOSPITALITY_SECTION, HOSPITALITY_ITEM];
     base.splice(at >= 0 ? at : base.length, 0, ...block);
     return base;
@@ -132,8 +141,10 @@ export default function Sidebar() {
   const isLocked = (eng?: 'ci' | 'ops') =>
     eng === 'ci' ? !hasEngine2Data : eng === 'ops' ? !hasEngine3Data : false;
 
+  // Non-engine items highlight in the brand cyan; engine items in their engine
+  // hue. (--e1 is the Financial blue now, no longer an alias of --cyan.)
   const getAccent = (eng?: 'ci' | 'ops') =>
-    eng === 'ci' ? 'var(--e2)' : eng === 'ops' ? 'var(--e3)' : 'var(--e1)';
+    eng === 'ci' ? 'var(--e2)' : eng === 'ops' ? 'var(--e3)' : 'var(--cyan)';
 
   // Escape closes the mobile drawer (accessibility_system.md KEYBOARD RULE).
   useEffect(() => {
@@ -304,7 +315,7 @@ export default function Sidebar() {
               {!col && (
                 <motion.div
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="nav-section" style={{ color: 'var(--e1)', marginTop: 8 }}
+                  className="nav-section" style={{ color: 'var(--cyan)', marginTop: 8 }}
                 >
                   Admin
                 </motion.div>
@@ -319,14 +330,14 @@ export default function Sidebar() {
               <div
                 className={`nav-item${pathname.startsWith('/admin') ? ' active' : ''}`}
                 style={{
-                  color: pathname.startsWith('/admin') ? 'var(--e1)' : undefined,
-                  ...(pathname.startsWith('/admin') ? { background: 'color-mix(in srgb, var(--e1) 10%, transparent)' } : {}),
+                  color: pathname.startsWith('/admin') ? 'var(--cyan)' : undefined,
+                  ...(pathname.startsWith('/admin') ? { background: 'color-mix(in srgb, var(--cyan) 10%, transparent)' } : {}),
                 }}
               >
                 {pathname.startsWith('/admin') && (
-                  <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 2, borderRadius: 2, background: 'var(--e1)' }} />
+                  <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 2, borderRadius: 2, background: 'var(--cyan)' }} />
                 )}
-                <span style={{ color: pathname.startsWith('/admin') ? 'var(--e1)' : 'var(--text-3)', flexShrink: 0, display: 'flex' }}>
+                <span style={{ color: pathname.startsWith('/admin') ? 'var(--cyan)' : 'var(--text-3)', flexShrink: 0, display: 'flex' }}>
                   {IC.admin}
                 </span>
                 <AnimatePresence>
@@ -335,7 +346,7 @@ export default function Sidebar() {
                       initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.15 }}
                       className="nav-label"
-                      style={{ color: pathname.startsWith('/admin') ? 'var(--e1)' : 'var(--text-2)', flex: 1 }}
+                      style={{ color: pathname.startsWith('/admin') ? 'var(--cyan)' : 'var(--text-2)', flex: 1 }}
                     >
                       Admin
                     </motion.span>
@@ -360,15 +371,15 @@ export default function Sidebar() {
           }}
         >
           <span style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Current plan
             </span>
-            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-1)' }}>
+            <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
               {TIERS[tier].name}
             </span>
           </span>
           {tier !== 'growth' && (
-            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700, color: '#fff', background: 'var(--cyan)', padding: '5px 10px', borderRadius: 8, whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: '#fff', background: 'var(--cyan)', padding: '5px 10px', borderRadius: 8, whiteSpace: 'nowrap' }}>
               Upgrade
             </span>
           )}
@@ -435,7 +446,7 @@ export default function Sidebar() {
                   aria-label={m === 'simple' ? 'Simple mode — the essentials in plain language' : 'Pro mode — all intelligence tabs'}
                   style={{
                     padding: '0 10px', border: 'none', cursor: 'pointer',
-                    fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', fontWeight: 700,
+                    fontSize: 'var(--fs-label)', fontWeight: 700,
                     letterSpacing: '0.02em',
                     background: on ? 'var(--cyan)' : 'transparent',
                     color: on ? '#fff' : 'var(--text-4)',
@@ -452,7 +463,7 @@ export default function Sidebar() {
           {!col && uploadedFile && (
             <motion.span
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
+              style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
             >
               {uploadedFile}
             </motion.span>

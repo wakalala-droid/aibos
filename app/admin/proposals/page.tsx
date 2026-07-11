@@ -155,20 +155,20 @@ export default function AdminProposalsPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 320px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
-              <h3 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>{p.name}</h3>
-              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.source === 'ai' ? 'var(--purple)' : 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: '1px solid var(--border-md)' }}>{p.source}</span>
-              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: STATUS_TONE[p.status] ?? 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: `1px solid color-mix(in srgb, ${STATUS_TONE[p.status] ?? 'var(--text-3)'} 35%, transparent)` }}>{p.status}</span>
-              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: passed ? 'var(--good)' : 'var(--crit)' }}>{passed ? '✓ passed critique' : '✕ failed critique'}</span>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>{p.name}</h3>
+              <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.source === 'ai' ? 'var(--purple)' : 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: '1px solid var(--border-md)' }}>{p.source}</span>
+              <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: STATUS_TONE[p.status] ?? 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: `1px solid color-mix(in srgb, ${STATUS_TONE[p.status] ?? 'var(--text-3)'} 35%, transparent)` }}>{p.status}</span>
+              <span style={{ fontSize: 'var(--fs-label)', color: passed ? 'var(--good)' : 'var(--crit)' }}>{passed ? '✓ passed critique' : '✕ failed critique'}</span>
             </div>
-            {p.purpose && <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.84rem', color: 'var(--text-2)', margin: '0 0 8px', lineHeight: 1.5 }}>{p.purpose}</p>}
+            {p.purpose && <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: '0 0 8px', lineHeight: 1.5 }}>{p.purpose}</p>}
           </div>
           <div style={{ textAlign: 'right' }}>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'var(--cyan)', margin: 0, letterSpacing: '-0.03em' }}>{Math.round(p.confidence * 100)}%</p>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>confidence</p>
+            <p style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--cyan)', margin: 0, letterSpacing: '-0.03em' }}>{Math.round(p.confidence * 100)}%</p>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>confidence</p>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gap: 6, fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-3)', margin: '6px 0 12px', padding: '10px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border-md)' }}>
+        <div style={{ display: 'grid', gap: 6, fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '6px 0 12px', padding: '10px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border-md)' }}>
           <div><span style={{ color: 'var(--text-4)' }}>extends</span> {p.extends_engine ?? '—'} · <span style={{ color: 'var(--text-4)' }}>inputs</span> {p.inputs?.join(', ') || '—'}</div>
           <div><span style={{ color: 'var(--text-4)' }}>formula</span> <code style={{ color: 'var(--text-2)' }}>{p.formula}</code></div>
           <div><span style={{ color: 'var(--text-4)' }}>preview</span> <span style={{ color: 'var(--good)' }}>{previewStr}</span></div>
@@ -193,11 +193,11 @@ export default function AdminProposalsPage() {
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={() => setStatus(p.id, 'monitoring')} disabled={!passed}
               title={passed ? 'Approve into a 15-day monitoring window' : 'Cannot approve — failed the critique gate'}
-              style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700, color: passed ? '#04210f' : 'var(--text-4)', background: passed ? 'var(--good)' : 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 8, padding: '8px 14px', cursor: passed ? 'pointer' : 'not-allowed' }}>
+              style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: passed ? '#04210f' : 'var(--text-4)', background: passed ? 'var(--good)' : 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 8, padding: '8px 14px', cursor: passed ? 'pointer' : 'not-allowed' }}>
               Approve → 15-day monitor
             </button>
             <button onClick={() => deleteProposal(p.id)}
-              style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg-badge)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer' }}>
+              style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg-badge)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer' }}>
               Reject &amp; delete
             </button>
           </div>
@@ -211,14 +211,14 @@ export default function AdminProposalsPage() {
           return (
             <div>
               {p.status === 'monitoring' ? (
-                <div role="status" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--text-3)', margin: '0 0 10px' }}>
+                <div role="status" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 10px' }}>
                   <span style={{ color: 'var(--cyan)' }}>Monitoring · {dl} day{dl === 1 ? '' : 's'} left</span>
                   <span>re-checks {runs}</span>
                   <span style={{ color: fails > 0 ? 'var(--crit)' : 'var(--good)' }}>failures {fails}</span>
                   {fails > 0 && <span style={{ color: 'var(--crit)' }}>— not stable until it holds 0 failures for the full window</span>}
                 </div>
               ) : (
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.64rem', color: 'var(--warn)', margin: '0 0 10px' }}>
+                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--warn)', margin: '0 0 10px' }}>
                   legacy approval — drop it and re-scan to re-validate under the new lifecycle
                 </p>
               )}
@@ -226,12 +226,12 @@ export default function AdminProposalsPage() {
                 {p.status === 'monitoring' && (
                   <button onClick={() => setStatus(p.id, 'stable')} disabled={!eligible}
                     title={eligible ? 'Promote to stable' : `Stable after ${dl} more day(s) with 0 failures (${runs} re-checks so far)`}
-                    style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700, color: eligible ? '#04210f' : 'var(--text-4)', background: eligible ? 'var(--good)' : 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 8, padding: '8px 14px', cursor: eligible ? 'pointer' : 'not-allowed' }}>
+                    style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: eligible ? '#04210f' : 'var(--text-4)', background: eligible ? 'var(--good)' : 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 8, padding: '8px 14px', cursor: eligible ? 'pointer' : 'not-allowed' }}>
                     Promote to stable
                   </button>
                 )}
                 <button onClick={() => deleteProposal(p.id)}
-                  style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg-badge)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer' }}>
+                  style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-2)', background: 'var(--bg-badge)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '8px 14px', cursor: 'pointer' }}>
                   {p.status === 'approved' ? 'Drop legacy' : 'Drop'}
                 </button>
               </div>
@@ -248,9 +248,9 @@ export default function AdminProposalsPage() {
 
   const nav = (
     <nav aria-label="Admin sections" style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-      <Link href="/admin" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Accounts</Link>
-      <Link href="/admin/usage" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Usage</Link>
-      <Link href="/admin/proposals" aria-current="page" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Proposals</Link>
+      <Link href="/admin" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Accounts</Link>
+      <Link href="/admin/usage" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Usage</Link>
+      <Link href="/admin/proposals" aria-current="page" style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Proposals</Link>
     </nav>
   );
 
@@ -259,30 +259,30 @@ export default function AdminProposalsPage() {
       {nav}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
             Function Proposals
           </h1>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>
             AI/rule-proposed metrics · sandbox-validated · you approve before anything ships
           </p>
         </div>
         <button onClick={scan} disabled={busy}
-          style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', fontWeight: 700, color: '#001018', background: 'var(--cyan)', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+          style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: '#001018', background: 'var(--cyan)', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}>
           {busy ? 'Scanning…' : 'Scan current file for functions'}
         </button>
       </div>
 
       {note && (
-        <p role="status" aria-live="polite" style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--text-2)', margin: '0 0 16px', padding: '10px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>{note}</p>
+        <p role="status" aria-live="polite" style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', margin: '0 0 16px', padding: '10px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>{note}</p>
       )}
 
       {loading ? (
-        <SectionCard><p style={{ color: 'var(--text-3)', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem' }}>Loading proposals…</p></SectionCard>
+        <SectionCard><p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>Loading proposals…</p></SectionCard>
       ) : error ? (
-        <SectionCard><p style={{ color: 'var(--crit)', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem' }}>{error}</p></SectionCard>
+        <SectionCard><p style={{ color: 'var(--crit)', fontSize: 'var(--fs-body)' }}>{error}</p></SectionCard>
       ) : items.length === 0 ? (
         <SectionCard title="No proposals yet" subtitle="Upload a file, then “Scan current file for functions”">
-          <p style={{ color: 'var(--text-3)', fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', lineHeight: 1.6, margin: 0 }}>
+          <p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)', lineHeight: 1.6, margin: 0 }}>
             When a file contains columns the engines don’t use (e.g. a promotion multiplier),
             AI-BOS proposes a derived metric here — already run safely on your data — for you to approve.
           </p>
@@ -299,14 +299,14 @@ export default function AdminProposalsPage() {
               return (
                 <button key={t.key} role="tab" aria-selected={on} onClick={() => setTab(t.key)}
                   style={{
-                    fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', fontWeight: on ? 700 : 600,
+                    fontSize: 'var(--fs-body)', fontWeight: on ? 700 : 600,
                     color: on ? 'var(--text-1)' : 'var(--text-3)', background: 'transparent',
                     border: 'none', borderBottom: `2px solid ${on ? 'var(--cyan)' : 'transparent'}`,
                     padding: '10px 14px', marginBottom: -1, cursor: 'pointer',
                   }}>
                   {t.label}
                   <span style={{
-                    marginLeft: 7, fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', fontWeight: 700,
+                    marginLeft: 7, fontSize: 'var(--fs-label)', fontWeight: 700,
                     color: on ? 'var(--cyan)' : 'var(--text-4)', background: 'var(--bg-badge)',
                     border: '1px solid var(--border-md)', borderRadius: 20, padding: '1px 7px',
                   }}>{t.count}</span>
@@ -317,7 +317,7 @@ export default function AdminProposalsPage() {
 
           {tab === 'active' && hasLegacy && (
             <button onClick={sweepLegacy} disabled={busy}
-              style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.76rem', fontWeight: 600, color: 'var(--warn)', background: 'var(--bg-badge)', border: '1px solid color-mix(in srgb, var(--warn) 40%, transparent)', borderRadius: 8, padding: '8px 14px', cursor: busy ? 'wait' : 'pointer', marginBottom: 14 }}>
+              style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--warn)', background: 'var(--bg-badge)', border: '1px solid color-mix(in srgb, var(--warn) 40%, transparent)', borderRadius: 8, padding: '8px 14px', cursor: busy ? 'wait' : 'pointer', marginBottom: 14 }}>
               Clear all legacy approved rows
             </button>
           )}
@@ -327,7 +327,7 @@ export default function AdminProposalsPage() {
             if (list.length === 0) {
               return (
                 <SectionCard>
-                  <p style={{ color: 'var(--text-3)', fontFamily: 'Geist, sans-serif', fontSize: '0.85rem', margin: 0 }}>
+                  <p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)', margin: 0 }}>
                     {tab === 'pending'
                       ? 'Nothing awaiting review. Scan a file to generate proposals.'
                       : 'No approved metrics yet. Approve a pending proposal to start its 15-day monitoring.'}

@@ -77,10 +77,10 @@ export default function AICFOChat() {
     >
       {/* Header */}
       <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-        <h2 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
           AI CFO Assistant
         </h2>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', color: 'var(--text-4)', margin: 0 }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
           Ask anything about your financial data
         </p>
       </div>
@@ -98,11 +98,11 @@ export default function AICFOChat() {
             </svg>
           </div>
           <div>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>AI CFO</p>
+            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>AI CFO</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
               <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2, repeat: Infinity }}
                 style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--good)' }} />
-              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--good)' }}>
+              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--good)' }}>
                 Online · Analysing your data
               </span>
             </div>
@@ -115,7 +115,7 @@ export default function AICFOChat() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {QUICK_PROMPTS.map((prompt) => (
                 <button key={prompt} type="button" onClick={() => submit(prompt)} disabled={loading}
-                  style={{ padding: '6px 12px', borderRadius: 20, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Geist, sans-serif', fontSize: '0.62rem', color: 'var(--text-2)', opacity: loading ? 0.5 : 1, transition: 'all 0.15s ease', whiteSpace: 'nowrap' }}
+                  style={{ padding: '6px 12px', borderRadius: 20, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', cursor: loading ? 'not-allowed' : 'pointer', fontSize: 'var(--fs-label)', color: 'var(--text-2)', opacity: loading ? 0.5 : 1, transition: 'all 0.15s ease', whiteSpace: 'nowrap' }}
                   onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.borderColor = 'var(--cyan)'; e.currentTarget.style.color = 'var(--cyan)'; } }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-md)'; e.currentTarget.style.color = 'var(--text-2)'; }}>
                   {prompt}
@@ -137,10 +137,10 @@ export default function AICFOChat() {
                 borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                 padding: '12px 16px',
               }}>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: msg.role === 'user' ? '#fff' : 'var(--text-2)', lineHeight: 1.55, margin: '0 0 6px', whiteSpace: 'pre-wrap' }}>
+                <p style={{ fontSize: 'var(--fs-body)', color: msg.role === 'user' ? '#fff' : 'var(--text-2)', lineHeight: 1.55, margin: '0 0 6px', whiteSpace: 'pre-wrap' }}>
                   {msg.role === 'assistant' ? plain(msg.content) : msg.content}
                 </p>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.6rem', color: msg.role === 'user' ? 'rgba(255,255,255,0.55)' : 'var(--text-4)', margin: 0, textAlign: msg.role === 'user' ? 'right' : 'left' }}>
+                <p style={{ fontSize: 'var(--fs-label)', color: msg.role === 'user' ? 'rgba(255,255,255,0.55)' : 'var(--text-4)', margin: 0, textAlign: msg.role === 'user' ? 'right' : 'left' }}>
                   {msg.timestamp}
                 </p>
               </div>
@@ -174,7 +174,7 @@ export default function AICFOChat() {
             id="cfo-chat-input" ref={inputRef} value={input}
             onChange={(e) => setInput(e.target.value)} onKeyDown={handleKey}
             placeholder="Ask your AI CFO anything..." aria-label="Message to AI CFO" rows={1} disabled={loading}
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontFamily: 'Geist, sans-serif', fontSize: '0.82rem', color: 'var(--text-1)', lineHeight: 1.5, maxHeight: 120, overflow: 'auto' }}
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontSize: 'var(--fs-body)', color: 'var(--text-1)', lineHeight: 1.5, maxHeight: 120, overflow: 'auto' }}
             onInput={(e) => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 120)}px`; }}
           />
           <button type="button" onClick={() => submit(input)} disabled={!input.trim() || loading} aria-label="Send message"
@@ -182,7 +182,7 @@ export default function AICFOChat() {
             <SendIcon size={14} />
           </button>
         </div>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.6rem', color: 'var(--text-4)', textAlign: 'center', margin: '8px 0 0' }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', margin: '8px 0 0' }}>
           Press Enter to send · Shift+Enter for new line
         </p>
       </div>

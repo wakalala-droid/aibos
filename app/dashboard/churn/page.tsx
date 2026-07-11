@@ -15,7 +15,7 @@ function RiskBar({ risk }: { risk: number }) {
           initial={{ width: 0 }} animate={{ width: `${risk}%` }}
           transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }} />
       </div>
-      <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color, minWidth: 30, textAlign: 'right' }}>
+      <span style={{ fontSize: 'var(--fs-label)', color, minWidth: 30, textAlign: 'right' }}>
         {risk.toFixed(0)}%
       </span>
     </div>
@@ -35,9 +35,9 @@ export default function ChurnPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
-        <h1 style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Churn Risk Analysis</h1>
-        <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.7rem', color: 'var(--text-3)', margin: '4px 0 0' }}>Churn probability · CLV at risk · Interventions ranked by urgency</p>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Churn Risk Analysis</h1>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>Churn probability · CLV at risk · Interventions ranked by urgency</p>
       </div>
 
       {/* KPI cards */}
@@ -59,7 +59,7 @@ export default function ChurnPage() {
       {/* High risk cards */}
       {high.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600, color: 'var(--crit)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>
+          <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--crit)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>
             Urgent Interventions — {high.length} customer{high.length > 1 ? 's' : ''} require immediate action
           </p>
           {high.map((r, i) => (
@@ -72,21 +72,21 @@ export default function ChurnPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-1)' }}>{r.customer_id}</span>
-                    <span className="badge" style={{ color: 'var(--crit)', background: 'rgba(239,68,68,0.10)', borderColor: 'rgba(239,68,68,0.25)', fontSize: '0.66rem' }}>{r.segment}</span>
+                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{r.customer_id}</span>
+                    <span className="badge" style={{ color: 'var(--crit)', background: 'rgba(239,68,68,0.10)', borderColor: 'rgba(239,68,68,0.25)', fontSize: 'var(--fs-label)' }}>{r.segment}</span>
                   </div>
-                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0 }}>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
                     Last active {r.recency_days}d ago · {r.frequency}× purchases
                   </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.66rem', color: 'var(--text-4)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>CLV at risk</p>
-                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.1rem', fontWeight: 800, color: 'var(--crit)', margin: 0 }}>{fmt(r.monetary, false, sym)}</p>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>CLV at risk</p>
+                  <p style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--crit)', margin: 0 }}>{fmt(r.monetary, false, sym)}</p>
                 </div>
               </div>
               <div style={{ marginBottom: 12 }}><RiskBar risk={r.churn_risk} /></div>
               <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.14)' }}>
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.8rem', color: 'var(--crit)', margin: 0 }}>⚡ {r.intervention}</p>
+                <p style={{ fontSize: 'var(--fs-data)', color: 'var(--crit)', margin: 0 }}>⚡ {r.intervention}</p>
               </div>
             </motion.div>
           ))}
@@ -96,7 +96,7 @@ export default function ChurnPage() {
       {/* Medium risk */}
       {med.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', fontWeight: 600, color: 'var(--warn)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>
+          <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--warn)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>
             Follow-up Required — {med.length} customer{med.length > 1 ? 's' : ''} need attention this week
           </p>
           {med.map((r, i) => (
@@ -108,15 +108,15 @@ export default function ChurnPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                    <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-1)' }}>{r.customer_id}</span>
-                    <span className="badge" style={{ color: 'var(--warn)', background: 'rgba(251,191,36,0.10)', borderColor: 'rgba(251,191,36,0.25)', fontSize: '0.66rem' }}>{r.segment}</span>
+                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{r.customer_id}</span>
+                    <span className="badge" style={{ color: 'var(--warn)', background: 'rgba(251,191,36,0.10)', borderColor: 'rgba(251,191,36,0.25)', fontSize: 'var(--fs-label)' }}>{r.segment}</span>
                   </div>
-                  <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.68rem', color: 'var(--text-4)', margin: 0 }}>{r.recency_days}d ago · {r.frequency}× purchases</p>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>{r.recency_days}d ago · {r.frequency}× purchases</p>
                 </div>
-                <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--warn)' }}>{fmt(r.monetary, false, sym)}</span>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--warn)' }}>{fmt(r.monetary, false, sym)}</span>
               </div>
               <div style={{ marginBottom: 10 }}><RiskBar risk={r.churn_risk} /></div>
-              <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', color: 'var(--warn)', margin: 0 }}>→ {r.intervention}</p>
+              <p style={{ fontSize: 'var(--fs-data)', color: 'var(--warn)', margin: 0 }}>→ {r.intervention}</p>
             </motion.div>
           ))}
         </div>
@@ -131,7 +131,7 @@ export default function ChurnPage() {
               {[...rfm].sort((a, b) => b.churn_risk - a.churn_risk).map((row, i) => {
                 const col = row.churn_risk >= 70 ? 'var(--crit)' : row.churn_risk >= 40 ? 'var(--warn)' : 'var(--good)';
                 return (
-                  <motion.tr key={row.customer_id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 + i * 0.04 }}>
+                  <tr key={row.customer_id}>
                     <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.customer_id}</td>
                     <td>{row.segment}</td>
                     <td>{row.recency_days}d</td>
@@ -144,8 +144,8 @@ export default function ChurnPage() {
                       </div>
                     </td>
                     <td style={{ color: 'var(--good)', fontWeight: 600 }}>{fmt(row.clv, false, sym)}</td>
-                    <td style={{ maxWidth: 220, fontFamily: 'Geist, sans-serif', fontSize: '0.75rem', color: 'var(--text-3)' }}>{row.intervention}</td>
-                  </motion.tr>
+                    <td style={{ maxWidth: 220, fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>{row.intervention}</td>
+                  </tr>
                 );
               })}
             </tbody>
