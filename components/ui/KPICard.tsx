@@ -64,6 +64,7 @@ export default function KPICard({
         data-ai-explain={explainId}
         data-ai-label={explainId ? label : undefined}
         data-ai-value={explainId ? value : undefined}
+        title={explainId ? 'Hold (long-press) to have AIBOS explain this metric' : undefined}
       >
         {/* Bento dot texture — faint grid that lights up on hover (dashboard only) */}
         <span className="bento-tex" aria-hidden="true" />
@@ -99,7 +100,8 @@ export default function KPICard({
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
           <p className="kpi-sub">{sub}</p>
           {spark && spark.length > 1 && (
-            <div style={{ width: 90, height: 40, marginBottom: -4 }}>
+            // Decorative trend hint — the value + growth badge carry the data.
+            <div aria-hidden="true" style={{ width: 90, height: 40, marginBottom: -4 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={spark} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
                   <defs>

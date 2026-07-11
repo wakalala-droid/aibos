@@ -7,6 +7,7 @@ import LockOverlay from '@/components/ui/LockOverlay';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import PageHeader from '@/components/ui/PageHeader';
 
 const SEG_COLORS: Record<string, string> = {
   Champion: 'var(--good)', Loyal: 'var(--blue)', Promising: 'var(--purple)',
@@ -31,11 +32,12 @@ export default function MarketPage() {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Market Intelligence</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>Segment revenue breakdown · CLV distribution · AI strategic brief</p>
-      </div>
+      <PageHeader
+        eyebrow="Customer Intelligence"
+        eyebrowColour="var(--e2)"
+        title="Market Intelligence"
+        subtitle="Segment revenue breakdown · CLV distribution · AI strategic brief"
+      />
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>

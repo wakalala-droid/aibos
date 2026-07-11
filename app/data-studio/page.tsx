@@ -11,6 +11,7 @@ import { useFinancialStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/currency";
 import { authHeaders } from "@/lib/api";
 import SectionCard from "@/components/ui/SectionCard";
+import PageHeader from '@/components/ui/PageHeader';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -206,19 +207,14 @@ export default function DataStudio() {
     <div className="page-container">
 
       {/* ── Page header ─────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: "var(--cyan)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>
-          Data Intelligence
-        </p>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-1)", margin: 0, letterSpacing: "-0.03em" }}>
-          Data Studio
-        </h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: "var(--text-3)", margin: "4px 0 0" }}>
-          {hasData
-            ? `${filename ?? "file"}${activeSheet ? ` · ${activeSheet}` : ""} · ${rows.length} periods · Excel-style + AI formulas`
-            : "Excel-style formula engine + plain-English AI formulas"}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Data Intelligence"
+        eyebrowColour="var(--cyan)"
+        title="Data Studio"
+        subtitle={hasData
+          ? `${filename ?? "file"}${activeSheet ? ` · ${activeSheet}` : ""} · ${rows.length} periods · Excel-style + AI formulas`
+          : "Excel-style formula engine + plain-English AI formulas"}
+      />
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>

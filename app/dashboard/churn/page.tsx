@@ -1,10 +1,12 @@
 'use client';
-import { useStore } from '@/lib/store';
+import { useStore, type RfmRow } from '@/lib/store';
 import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import LockOverlay from '@/components/ui/LockOverlay';
+import DataTable, { type DataTableColumn } from '@/components/ui/DataTable';
 import { motion } from 'framer-motion';
+import PageHeader from '@/components/ui/PageHeader';
 
 function RiskBar({ risk }: { risk: number }) {
   const color = risk >= 70 ? 'var(--crit)' : risk >= 40 ? 'var(--warn)' : 'var(--good)';
@@ -22,6 +24,31 @@ function RiskBar({ risk }: { risk: number }) {
   );
 }
 
+// Churn ranking columns — risk score renders the same track+percent treatment
+// the summary cards use, so severity reads identically everywhere.
+const churnColumns = (sym: string): DataTableColumn<RfmRow>[] => [
+  { key: 'customer_id', label: 'Customer', sortValue: r => r.customer_id,
+    render: r => <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>{r.customer_id}</span> },
+  { key: 'segment', label: 'Segment', sortValue: r => r.segment, render: r => r.segment },
+  { key: 'recency_days', label: 'Recency', sortValue: r => r.recency_days, render: r => `${r.recency_days}d` },
+  { key: 'churn_risk', label: 'Churn Score', sortValue: r => r.churn_risk,
+    render: r => {
+      const col = r.churn_risk >= 70 ? 'var(--crit)' : r.churn_risk >= 40 ? 'var(--warn)' : 'var(--good)';
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="progress-track" style={{ width: 56 }}>
+            <div className="progress-fill" style={{ width: `${r.churn_risk}%`, background: col }} />
+          </div>
+          <span style={{ color: col, fontWeight: 600 }}>{r.churn_risk.toFixed(0)}%</span>
+        </div>
+      );
+    } },
+  { key: 'clv', label: 'CLV', sortValue: r => r.clv,
+    render: r => <span style={{ color: 'var(--good)', fontWeight: 600 }}>{fmt(r.clv, false, sym)}</span> },
+  { key: 'intervention', label: 'Action',
+    render: r => <span style={{ maxWidth: 220, display: 'inline-block', fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>{r.intervention}</span> },
+];
+
 export default function ChurnPage() {
   const { rfm, hasEngine2Data, currencySymbol } = useStore();
   const sym = currencySymbol || 'K';
@@ -34,11 +61,12 @@ export default function ChurnPage() {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Customer Intelligence</p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Churn Risk Analysis</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>Churn probability · CLV at risk · Interventions ranked by urgency</p>
-      </div>
+      <PageHeader
+        eyebrow="Customer Intelligence"
+        eyebrowColour="var(--e2)"
+        title="Churn Risk Analysis"
+        subtitle="Churn probability · CLV at risk · Interventions ranked by urgency"
+      />
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
@@ -124,33 +152,19 @@ export default function ChurnPage() {
 
       {/* Full table */}
       <SectionCard title="All Customers — Churn Ranking" subtitle="Sorted by churn probability (highest risk first)" delay={0.3} style={{ position: 'relative' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="data-table">
-            <thead><tr><th>Customer</th><th>Segment</th><th>Recency</th><th>Churn Score</th><th>CLV</th><th>Action</th></tr></thead>
-            <tbody>
-              {[...rfm].sort((a, b) => b.churn_risk - a.churn_risk).map((row, i) => {
-                const col = row.churn_risk >= 70 ? 'var(--crit)' : row.churn_risk >= 40 ? 'var(--warn)' : 'var(--good)';
-                return (
-                  <tr key={row.customer_id}>
-                    <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.customer_id}</td>
-                    <td>{row.segment}</td>
-                    <td>{row.recency_days}d</td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div className="progress-track" style={{ width: 56 }}>
-                          <div className="progress-fill" style={{ width: `${row.churn_risk}%`, background: col }} />
-                        </div>
-                        <span style={{ color: col, fontWeight: 600 }}>{row.churn_risk.toFixed(0)}%</span>
-                      </div>
-                    </td>
-                    <td style={{ color: 'var(--good)', fontWeight: 600 }}>{fmt(row.clv, false, sym)}</td>
-                    <td style={{ maxWidth: 220, fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>{row.intervention}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          ariaLabel="All customers ranked by churn risk"
+          columns={churnColumns(sym)}
+          rows={rfm}
+          rowKey={r => r.customer_id}
+          defaultSort={{ key: 'churn_risk', dir: 'desc' }}
+          filters={[
+            { label: 'High risk',   predicate: (r: RfmRow) => r.churn_risk >= 70 },
+            { label: 'Medium risk', predicate: (r: RfmRow) => r.churn_risk >= 40 && r.churn_risk < 70 },
+            { label: 'Low risk',    predicate: (r: RfmRow) => r.churn_risk < 40 },
+          ]}
+          emptyMessage="Upload customer transaction data to rank churn risk."
+        />
         {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Customer Intelligence Locked" description="Upload transaction data to unlock churn risk analysis" />}
       </SectionCard>
     </>

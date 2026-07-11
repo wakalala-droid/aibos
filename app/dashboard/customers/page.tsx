@@ -1,28 +1,15 @@
 'use client';
-import { useMemo, useState } from 'react';
-import { useStore } from '@/lib/store';
+import { useStore, type RfmRow } from '@/lib/store';
 import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import LockOverlay from '@/components/ui/LockOverlay';
 import PageHeader from '@/components/ui/PageHeader';
+import DataTable, { type DataTableColumn } from '@/components/ui/DataTable';
 import SimpleSummary from '@/components/dashboard/SimpleSummary';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import ChartTooltip from '@/components/ui/ChartTooltip';
-
-// Sortable columns of the RFM table → the row field each one orders by.
-const RFM_COLUMNS = [
-  { label: 'Customer',   key: 'customer_id'  },
-  { label: 'Segment',    key: 'segment'      },
-  { label: 'Recency',    key: 'recency_days' },
-  { label: 'Frequency',  key: 'frequency'    },
-  { label: 'Monetary',   key: 'monetary'     },
-  { label: 'RFM Score',  key: 'rfm_score'    },
-  { label: 'CLV',        key: 'clv'          },
-  { label: 'Churn Risk', key: 'churn_risk'   },
-] as const;
-type RfmSortKey = (typeof RFM_COLUMNS)[number]['key'];
 
 const SEG_COLORS: Record<string, string> = {
   Champion: '#34d399', Loyal: '#60a5fa', Promising: '#a78bfa',
@@ -58,25 +45,39 @@ export default function CustomersPage() {
   const highChurn = rfm.filter(r => r.churn_risk >= 70).length;
   const pieSeg = segments.map(s => ({ name: s.segment, value: s.count, colour: SEG_COLORS[s.segment] ?? 'var(--text-4)' }));
 
-  // Default sort: highest churn risk first — the question this table exists to
-  // answer ("who am I about to lose?") is answered before any interaction.
-  const [sortKey, setSortKey] = useState<RfmSortKey>('churn_risk');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-  const sortedRfm = useMemo(() => {
-    const rows = [...rfm];
-    rows.sort((a, b) => {
-      const av = a[sortKey] ?? 0, bv = b[sortKey] ?? 0;
-      const cmp = typeof av === 'string' || typeof bv === 'string'
-        ? String(av).localeCompare(String(bv))
-        : Number(av) - Number(bv);
-      return sortDir === 'asc' ? cmp : -cmp;
-    });
-    return rows;
-  }, [rfm, sortKey, sortDir]);
-  const onSort = (key: RfmSortKey) => {
-    if (key === sortKey) setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
-    else { setSortKey(key); setSortDir(key === 'customer_id' || key === 'segment' ? 'asc' : 'desc'); }
-  };
+  // RFM table: default sort = highest churn risk first — the question this
+  // table exists to answer ("who am I about to lose?") is answered before any
+  // interaction. Segment chips filter; DataTable paginates past 25 rows.
+  const rfmColumns: DataTableColumn<RfmRow>[] = [
+    { key: 'customer_id', label: 'Customer', sortValue: r => r.customer_id,
+      render: r => <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>{r.customer_id}</span> },
+    { key: 'segment', label: 'Segment', sortValue: r => r.segment,
+      render: r => (
+        <span className="badge" style={{ color: SEG_COLORS[r.segment] ?? 'var(--text-3)', background: `color-mix(in srgb, ${SEG_COLORS[r.segment] ?? '#fff'} 12%, transparent)`, borderColor: `color-mix(in srgb, ${SEG_COLORS[r.segment] ?? '#fff'} 30%, transparent)` }}>
+          {r.segment}
+        </span>
+      ) },
+    { key: 'recency_days', label: 'Recency', sortValue: r => r.recency_days, render: r => `${r.recency_days}d ago` },
+    { key: 'frequency', label: 'Frequency', sortValue: r => r.frequency, render: r => `${r.frequency}×` },
+    { key: 'monetary', label: 'Monetary', sortValue: r => r.monetary, render: r => fmt(r.monetary, false, sym) },
+    { key: 'rfm_score', label: 'RFM Score', sortValue: r => r.rfm_score,
+      render: r => <span style={{ fontWeight: 700, color: 'var(--e2)' }}>{r.rfm_score}</span> },
+    { key: 'clv', label: 'CLV', sortValue: r => r.clv,
+      render: r => <span style={{ color: 'var(--good)', fontWeight: 600 }}>{fmt(r.clv, false, sym)}</span> },
+    { key: 'churn_risk', label: 'Churn Risk', sortValue: r => r.churn_risk,
+      render: r => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="progress-track" style={{ width: 50 }}>
+            <div className="progress-fill" style={{ width: `${r.churn_risk}%`, background: r.churn_risk >= 70 ? 'var(--crit)' : r.churn_risk >= 40 ? 'var(--warn)' : 'var(--good)' }} />
+          </div>
+          <span style={{ color: r.churn_risk >= 70 ? 'var(--crit)' : r.churn_risk >= 40 ? 'var(--warn)' : 'var(--good)', fontSize: 'var(--fs-label)' }}>{r.churn_risk.toFixed(0)}%</span>
+        </div>
+      ) },
+  ];
+  const segmentFilters = segments.map(s => ({
+    label: s.segment,
+    predicate: (r: RfmRow) => r.segment === s.segment,
+  }));
 
   return (
     <>
@@ -111,6 +112,7 @@ export default function CustomersPage() {
         {/* Segment pie */}
         <SectionCard title="Segment Distribution" delay={0.1}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div role="img" aria-label={`Donut chart of customer segments: ${pieSeg.map(sg => `${sg.name} ${sg.value}`).join(', ')}`}>
             <ResponsiveContainer width={120} height={120}>
               <PieChart>
                 <Pie data={pieSeg} cx="50%" cy="50%" innerRadius={34} outerRadius={52} dataKey="value" stroke="none">
@@ -119,6 +121,7 @@ export default function CustomersPage() {
                 <Tooltip content={<ChartTooltip currency={false} />} />
               </PieChart>
             </ResponsiveContainer>
+            </div>
             <div style={{ flex: 1 }}>
               {segments.map(s => (
                 <div key={s.segment} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
@@ -174,61 +177,15 @@ export default function CustomersPage() {
 
       {/* RFM Table */}
       <SectionCard title="RFM Customer Records" subtitle="Recency · Frequency · Monetary · Segment · CLV · Churn" delay={0.22} style={{ position: 'relative' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                {RFM_COLUMNS.map(col => {
-                  const active = col.key === sortKey;
-                  return (
-                    <th key={col.key} aria-sort={active ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined}>
-                      <button
-                        type="button"
-                        onClick={() => onSort(col.key)}
-                        style={{
-                          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                          font: 'inherit', color: active ? 'var(--text-1)' : 'inherit',
-                          letterSpacing: 'inherit', textTransform: 'inherit',
-                          display: 'inline-flex', alignItems: 'center', gap: 4,
-                        }}
-                      >
-                        {col.label}
-                        <span aria-hidden="true" style={{ opacity: active ? 1 : 0.35 }}>
-                          {active ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}
-                        </span>
-                      </button>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedRfm.map((row) => (
-                <tr key={row.customer_id}>
-                  <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.customer_id}</td>
-                  <td>
-                    <span className="badge" style={{ color: SEG_COLORS[row.segment] ?? 'var(--text-3)', background: `color-mix(in srgb, ${SEG_COLORS[row.segment] ?? '#fff'} 12%, transparent)`, borderColor: `color-mix(in srgb, ${SEG_COLORS[row.segment] ?? '#fff'} 30%, transparent)` }}>
-                      {row.segment}
-                    </span>
-                  </td>
-                  <td>{row.recency_days}d ago</td>
-                  <td>{row.frequency}×</td>
-                  <td>{fmt(row.monetary, false, sym)}</td>
-                  <td style={{ fontWeight: 700, color: 'var(--e2)' }}>{row.rfm_score}</td>
-                  <td style={{ color: 'var(--good)', fontWeight: 600 }}>{fmt(row.clv, false, sym)}</td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div className="progress-track" style={{ width: 50 }}>
-                        <div className="progress-fill" style={{ width: `${row.churn_risk}%`, background: row.churn_risk >= 70 ? 'var(--crit)' : row.churn_risk >= 40 ? 'var(--warn)' : 'var(--good)' }} />
-                      </div>
-                      <span style={{ color: row.churn_risk >= 70 ? 'var(--crit)' : row.churn_risk >= 40 ? 'var(--warn)' : 'var(--good)', fontSize: 'var(--fs-label)' }}>{row.churn_risk.toFixed(0)}%</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          ariaLabel="RFM customer records"
+          columns={rfmColumns}
+          rows={rfm}
+          rowKey={r => r.customer_id}
+          defaultSort={{ key: 'churn_risk', dir: 'desc' }}
+          filters={segmentFilters}
+          emptyMessage="Upload customer transaction data to populate RFM records."
+        />
         {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Customer Intelligence Locked" description="Upload transaction data with customer_id, date, amount, product columns" bullets={['RFM segmentation & scoring','Customer Lifetime Value tiers','Churn risk + intervention actions']} />}
       </SectionCard>
     </>

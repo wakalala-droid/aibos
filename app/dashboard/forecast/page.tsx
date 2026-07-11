@@ -8,6 +8,7 @@ import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
+import PageHeader from '@/components/ui/PageHeader';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
@@ -150,17 +151,12 @@ export default function ForecastPage() {
       detail="See the full 3-month projection with confidence bands, trend strength, and the monthly drivers — plus exportable forecast tables."
     >
     <>
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
-          Financial Intelligence
-        </p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
-          Forecast Engine
-        </h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>
-          AI-powered revenue prediction · {hasBand ? '95% prediction interval' : 'trend estimate'}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Financial Intelligence"
+        eyebrowColour="var(--cyan)"
+        title="Forecast Engine"
+        subtitle={<>AI-powered revenue prediction · {hasBand ? '95% prediction interval' : 'trend estimate'}</>}
+      />
 
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="NEXT MONTH FORECAST" value={fmt(firstFcast, false, sym)} sub="vs prior period" growth={growthPct}

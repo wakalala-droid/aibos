@@ -10,6 +10,7 @@ import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import { getRecommendations, simulate, type Recommendation, type SimResult } from '@/lib/api';
+import PageHeader from '@/components/ui/PageHeader';
 
 const PRIORITY = {
   high: { fg: 'var(--red)', bg: 'var(--red-dim)', label: 'High' },
@@ -115,12 +116,10 @@ export default function AdvisorPage() {
 
   return (
     <>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Advisor</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
-          Recommendations from your live data — and a sandbox to test decisions.
-        </p>
-      </div>
+      <PageHeader
+        title="Advisor"
+        subtitle="Recommendations from your live data — and a sandbox to test decisions."
+      />
 
       <div className="grid-main">
         {/* Recommendations */}

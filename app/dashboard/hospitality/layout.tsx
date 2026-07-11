@@ -7,6 +7,7 @@
  */
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import PageHeader from '@/components/ui/PageHeader';
 
 const TABS = [
   { href: '/dashboard/hospitality',          label: 'Calendar' },
@@ -19,12 +20,10 @@ export default function HospitalityLayout({ children }: { children: React.ReactN
   const pathname = usePathname();
   return (
     <>
-      <div style={{ marginBottom: 16 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Hospitality</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
-          Every unit&apos;s availability on one calendar — bookings flow straight into your books.
-        </p>
-      </div>
+      <PageHeader
+        title="Hospitality"
+        subtitle="Every unit&apos;s availability on one calendar — bookings flow straight into your books."
+      />
       <nav aria-label="Hospitality sections" style={{ display: 'flex', gap: 4, marginBottom: 18, borderBottom: '1px solid var(--border)', overflowX: 'auto' }}>
         {TABS.map(t => {
           const active = t.href === '/dashboard/hospitality' ? pathname === t.href : pathname.startsWith(t.href);

@@ -5,6 +5,7 @@ import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import InsightCard from '@/components/ui/InsightCard';
 import { motion } from 'framer-motion';
+import PageHeader from '@/components/ui/PageHeader';
 
 function BriefPoint({ text, index }: { text: string; index: number }) {
   const content = text.replace(/^\d+\.\s*/, '').trim();
@@ -32,11 +33,12 @@ export default function OpsBriefPage() {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Operations Intelligence Brief</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</p>
-      </div>
+      <PageHeader
+        eyebrow="Operations"
+        eyebrowColour="var(--e3)"
+        title="Operations Intelligence Brief"
+        subtitle={<>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</>}
+      />
 
       {/* Score strip */}
       {scores && (

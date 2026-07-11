@@ -7,6 +7,7 @@ import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
+import PageHeader from '@/components/ui/PageHeader';
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine,
@@ -86,17 +87,12 @@ export default function AnomalyPage() {
       detail="See exactly which months broke trend, the z-score for each spike, and the likely root cause behind every flag — across revenue and costs."
     >
     <>
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
-          Financial Intelligence
-        </p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
-          Anomaly Intelligence
-        </h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>
-          Statistical outlier detection · Z-score analysis · variance flags
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Financial Intelligence"
+        eyebrowColour="var(--cyan)"
+        title="Anomaly Intelligence"
+        subtitle="Statistical outlier detection · Z-score analysis · variance flags"
+      />
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>

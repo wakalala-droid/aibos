@@ -11,6 +11,7 @@ import EventList from '@/components/spine/EventList';
 import StartFresh from '@/components/spine/StartFresh';
 import { ALL_TYPES } from '@/components/spine/eventMeta';
 import { useStore } from '@/lib/store';
+import PageHeader from '@/components/ui/PageHeader';
 import {
   listEvents, confirmEvent, voidEvent,
   type BusinessEvent, type EventStatus, type EventType,
@@ -66,14 +67,10 @@ export default function TimelinePage() {
 
   return (
     <>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>
-          Timeline
-        </h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
-          Every recorded business event — one unified record.
-        </p>
-      </div>
+      <PageHeader
+        title="Timeline"
+        subtitle="Every recorded business event — one unified record."
+      />
 
       <SectionCard
         title="Activity"

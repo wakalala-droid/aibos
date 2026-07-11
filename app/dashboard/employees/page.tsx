@@ -15,6 +15,7 @@ import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
 import { useStore } from '@/lib/store';
 import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
+import PageHeader from '@/components/ui/PageHeader';
 import {
   listEmployees, createEmployee, updateEmployee, deleteEmployee,
   previewPayroll, runPayroll, listPayrollRuns, getPayrollRates,
@@ -156,12 +157,10 @@ export default function EmployeesPage() {
 
   return (
     <>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Employees & Payroll</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
-          Your people, their pay — PAYE, NAPSA and net pay worked out for you.
-        </p>
-      </div>
+      <PageHeader
+        title="Employees & Payroll"
+        subtitle="Your people, their pay — PAYE, NAPSA and net pay worked out for you."
+      />
 
       <div className="grid-main">
         {/* ── People (register — free) ─────────────────────────────────────── */}

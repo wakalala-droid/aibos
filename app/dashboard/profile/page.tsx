@@ -13,6 +13,7 @@ import { TIERS, canAccess, type Tier } from '@/lib/tiers';
 import { useStore } from '@/lib/store';
 import { CURRENCIES } from '@/lib/currency';
 import { briefDeliveryConfig } from '@/lib/api';
+import PageHeader from '@/components/ui/PageHeader';
 
 const BUSINESS_TYPES = [
   'Restaurant',
@@ -213,14 +214,10 @@ export default function BusinessProfilePage() {
 
   return (
     <div style={{ padding: '8px 0 48px' }}>
-      <header style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
-          Business profile
-        </h1>
-        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>
-          The details here power your dashboard identity — the name and logo shown in the header come from this page.
-        </p>
-      </header>
+      <PageHeader
+        title="Business profile"
+        subtitle="The details here power your dashboard identity — the name and logo shown in the header come from this page."
+      />
 
       <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr', maxWidth: 980 }}>
         {/* Editable form */}

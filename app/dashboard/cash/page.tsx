@@ -7,6 +7,7 @@ import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
+import PageHeader from '@/components/ui/PageHeader';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine,
@@ -66,11 +67,12 @@ export default function CashPage() {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Cash Intelligence</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>Runway · burn rate · cash position · forward projections</p>
-      </div>
+      <PageHeader
+        eyebrow="Financial Intelligence"
+        eyebrowColour="var(--cyan)"
+        title="Cash Intelligence"
+        subtitle="Runway · burn rate · cash position · forward projections"
+      />
 
       <SimpleSummary page="cash" />
 

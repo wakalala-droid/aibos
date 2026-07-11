@@ -17,6 +17,7 @@ import CustomMetricsCard from '@/components/ui/CustomMetricsCard';
 import BorderGlow from '@/components/ui/BorderGlow';
 import EngineScoreCard from '@/components/ui/EngineScoreCard';
 import PageHeader from '@/components/ui/PageHeader';
+import EmptyState from '@/components/ui/EmptyState';
 import { bloomProps } from '@/lib/cometStyle';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -28,26 +29,6 @@ import {
 // Cursor edge-glow tuning for KPI/score cards (hsl "h s l", React Bits).
 const CURSOR_GLOW = '190 95 62';
 const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
-
-function ComingSoon({ colour, text }: { colour: string; text: string }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 0 2px' }}>
-      <span style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
-        fontSize: 'var(--fs-label)', fontWeight: 700,
-        textTransform: 'uppercase', letterSpacing: '0.08em', color: colour,
-        background: `color-mix(in srgb, ${colour} 12%, transparent)`,
-        border: `1px solid color-mix(in srgb, ${colour} 30%, transparent)`,
-        padding: '3px 8px', borderRadius: 6,
-      }}>
-        Coming soon
-      </span>
-      <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', lineHeight: 1.5, margin: 0 }}>
-        {text}
-      </p>
-    </div>
-  );
-}
 
 // Simple mode gets its own front door; the full Overview stays the Pro surface.
 // Two components (not an early return) so each keeps a stable hook order when
@@ -327,6 +308,7 @@ function OverviewPage() {
               over non-time rows would be misleading (SAFEGUARD: no fabrication). */}
           {chartData.length > 0 && dataShape !== 'cross_sectional' && (
             <SectionCard explainId="chart.revenue" title="Revenue Intelligence" subtitle={`Monthly revenue & profit · ${sym} ZMW`} delay={0.1}>
+              <div role="img" aria-label={`Area chart of monthly revenue and profit for the last ${chartData.length} months`}>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={chartData}>
                   <defs>
@@ -357,6 +339,7 @@ function OverviewPage() {
                     fill="url(#gP)" dot={false} name="Profit"/>
                 </AreaChart>
               </ResponsiveContainer>
+              </div>
               <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
                 {[['var(--spark-revenue)', 'Revenue'], ['var(--spark-profit)', 'Profit']].map(([c, l]) => (
                   <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -401,9 +384,10 @@ function OverviewPage() {
                   ))}
                 </div>
               ) : (
-                <ComingSoon
+                <EmptyState
                   colour="var(--e2)"
                   text="Upload customer or sales data to unlock RFM segments, CLV tiers and churn risk."
+                  action={{ label: 'Import data', href: '/dashboard/import' }}
                 />
               )}
             </SectionCard>
@@ -454,9 +438,10 @@ function OverviewPage() {
                   ))}
                 </div>
               ) : (
-                <ComingSoon
+                <EmptyState
                   colour="var(--e3)"
                   text="Upload a POS export to unlock category mix, item velocity and QSR benchmarks."
+                  action={{ label: 'Import data', href: '/dashboard/import' }}
                 />
               )}
             </SectionCard>
@@ -508,7 +493,7 @@ function OverviewPage() {
                 ))}
               </div>
             ) : (
-              <ComingSoon colour="var(--cyan)" text="Upload financial, customer or POS data to generate unified intelligence." />
+              <EmptyState colour="var(--cyan)" text="Upload financial, customer or POS data to generate unified intelligence." action={{ label: 'Import data', href: '/dashboard/import' }} />
             )}
 
             {/* Encourage more engines — informational, never a blocking lock. */}

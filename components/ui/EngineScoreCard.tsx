@@ -32,6 +32,7 @@ export default function EngineScoreCard({
           data-ai-explain={explainId}
           data-ai-label={explainId ? label : undefined}
           data-ai-value={explainId && !locked ? String(score) : undefined}
+          title={explainId ? 'Hold (long-press) to have AIBOS explain this score' : undefined}
           style={{ ...bloom.style, opacity: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer' }}
         >
           {/* Bento dot texture — faint grid that lights up on hover (dashboard only) */}

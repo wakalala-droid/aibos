@@ -7,6 +7,7 @@ import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
+import PageHeader from '@/components/ui/PageHeader';
 import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine, Legend,
@@ -69,11 +70,12 @@ export default function BreakevenPage() {
       detail="See your fixed vs variable cost split, contribution margin, margin of safety, and the exact revenue you need each month to break even."
     >
     <>
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Breakeven Analysis</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>Fixed costs · variable costs · contribution margin · breakeven point</p>
-      </div>
+      <PageHeader
+        eyebrow="Financial Intelligence"
+        eyebrowColour="var(--cyan)"
+        title="Breakeven Analysis"
+        subtitle="Fixed costs · variable costs · contribution margin · breakeven point"
+      />
 
       {!hasData ? (
         <SectionCard title="Breakeven Analysis" subtitle="Fixed vs variable costs · contribution margin · breakeven point" delay={0.1}>

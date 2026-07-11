@@ -4,6 +4,7 @@ import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import LockOverlay from '@/components/ui/LockOverlay';
 import { motion } from 'framer-motion';
+import PageHeader from '@/components/ui/PageHeader';
 
 const STATUS = {
   good:  { color: 'var(--good)', label: 'On Target',    bg: 'rgba(52,211,153,0.10)',  border: 'rgba(52,211,153,0.25)' },
@@ -73,11 +74,12 @@ export default function BenchmarksPage() {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Operational Benchmarks</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</p>
-      </div>
+      <PageHeader
+        eyebrow="Operations"
+        eyebrowColour="var(--e3)"
+        title="Operational Benchmarks"
+        subtitle={<>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</>}
+      />
 
       {/* KPI summary strip */}
       <div className="grid-3" style={{ marginBottom: 24 }}>

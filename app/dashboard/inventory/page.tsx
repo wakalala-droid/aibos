@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
+import PageHeader from '@/components/ui/PageHeader';
 import {
   listProducts, createProduct, updateProduct, deleteProduct,
   type Product, type ProductInput,
@@ -69,12 +70,10 @@ export default function InventoryPage() {
 
   return (
     <>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Inventory</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
-          Your product catalog — prices, stock and reorder levels.
-        </p>
-      </div>
+      <PageHeader
+        title="Inventory"
+        subtitle="Your product catalog — prices, stock and reorder levels."
+      />
 
       <div className="grid-main">
         <SectionCard title="Products" subtitle={loading ? 'Loading…' : `${items.length} product${items.length === 1 ? '' : 's'}`}>

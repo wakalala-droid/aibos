@@ -4,11 +4,11 @@
 
 interface PageHeaderProps {
   /** Small uppercase category label above the title — a CATEGORY, not the title again. */
-  eyebrow?: string;
+  eyebrow?: React.ReactNode;
   /** Accent for the eyebrow (an engine colour or var(--cyan)). */
   eyebrowColour?: string;
-  title: string;
-  subtitle?: string;
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
 }
 
 export default function PageHeader({ eyebrow, eyebrowColour = 'var(--cyan)', title, subtitle }: PageHeaderProps) {

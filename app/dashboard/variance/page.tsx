@@ -7,6 +7,7 @@ import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
+import PageHeader from '@/components/ui/PageHeader';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine, Cell,
@@ -80,17 +81,12 @@ export default function VariancePage() {
       detail="See month-by-month revenue and cost variance, the months that broke pattern, and which line items drove every swing."
     >
     <>
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
-          Financial Intelligence
-        </p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
-          Variance Analysis
-        </h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>
-          Month-over-month changes · cost spikes · margin trends
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Financial Intelligence"
+        eyebrowColour="var(--cyan)"
+        title="Variance Analysis"
+        subtitle="Month-over-month changes · cost spikes · margin trends"
+      />
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>

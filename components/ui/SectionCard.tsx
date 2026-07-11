@@ -45,6 +45,7 @@ export default function SectionCard({
           className="section-card glow-inner"
           data-ai-explain={explainId}
           data-ai-label={explainId ? title : undefined}
+          title={explainId ? 'Hold (long-press) to have AIBOS explain this panel' : undefined}
         >
           {/* Bento dot texture — faint grid that lights up on hover (dashboard only) */}
           <span className="bento-tex" aria-hidden="true" />

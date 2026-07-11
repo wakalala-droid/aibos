@@ -16,6 +16,7 @@ import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
+import PageHeader from '@/components/ui/PageHeader';
 import {
   listSchedule, createScheduleItem, updateScheduleItem, setScheduleStatus,
   deleteScheduleItem, createEvent, type ScheduleItem, type ScheduleKind,
@@ -307,12 +308,10 @@ export default function SchedulePage() {
 
   return (
     <>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>Schedule</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
-          Meetings, pick-ups and deadlines — your week, one glance.
-        </p>
-      </div>
+      <PageHeader
+        title="Schedule"
+        subtitle="Meetings, pick-ups and deadlines — your week, one glance."
+      />
 
       <div className="grid-main">
         <SectionCard

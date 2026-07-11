@@ -973,6 +973,70 @@ select optgroup {
   }
 }
 
+/* ── SIMPLE-MODE BOTTOM TAB BAR (audit #26) ─────────────────────
+   Thumb-reach navigation on phones. Hidden at lg+ (sidebar rail owns
+   navigation there) and rendered only in Simple mode (component-gated).
+   Active tab uses the doctrine 2px line indicator, never a filled pill. */
+.mobile-tabbar { display: none; }
+@media (max-width: 1023px) {
+  .mobile-tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    display: flex; align-items: stretch;
+    background: var(--bg-sidebar);
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mobile-tab {
+    position: relative; flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; padding: 8px 4px 9px; min-height: 56px;
+    color: var(--text-4); text-decoration: none;
+    font-size: var(--fs-label); font-weight: 600;
+  }
+  .mobile-tab.active { color: var(--cyan); }
+  .mobile-tab.active::after {
+    content: ''; position: absolute; top: 0; left: 25%; right: 25%;
+    height: 2px; border-radius: 2px; background: var(--cyan);
+  }
+
+  /* Clearance: page content and the assistant launcher sit above the bar. */
+  [data-uimode="simple"] .page-container {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+  [data-uimode="simple"] .ai-fab-wrap {
+    bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* ── MOBILE GPU RELIEF (audit #33) ──────────────────────────────
+   backdrop-filter costs real GPU on low-end Android. Below lg the
+   assistant panel drops the glass blur for an opaque card surface. */
+@media (max-width: 1023px) {
+  .ai-panel-glass {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--bg-card) !important;
+  }
+}
+
+/* ── PRINT (audit #38) — briefs & reports on paper ──────────────
+   Chrome (sidebar, header trio, assistant, tab bar, upload) disappears;
+   cards flatten to bordered boxes; ink on white regardless of theme. */
+@media print {
+  .sidebar-nav, .mobile-topbar, .mobile-tabbar, .dash-header,
+  .ai-fab-wrap, .nav-backdrop, .skip-link { display: none !important; }
+  .main-content, .main-content.sidebar-collapsed { margin-left: 0 !important; }
+  body { background: #fff !important; color: #111 !important; }
+  .page-container { max-width: none; padding: 0; }
+  .kpi-card, .section-card, .insight-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    background: #fff !important;
+    break-inside: avoid;
+  }
+  .bento-tex, .edge-light { display: none !important; }
+}
+
 /* Prevent page-level horizontal scroll at every breakpoint
    (responsive_design_system.md OVERFLOW RULE). Use `clip`, not `hidden`:
    `hidden` turns html/body into a scroll container which breaks momentum/

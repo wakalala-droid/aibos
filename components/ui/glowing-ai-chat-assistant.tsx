@@ -159,7 +159,7 @@ export function FloatingAiAssistant() {
   const hasUserMsg = messages.some((m) => m.role === 'user');
 
   return (
-    <div style={{ position: 'fixed', right: 24, bottom: 24, zIndex: 900, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 14, pointerEvents: 'none' }}>
+    <div className="ai-fab-wrap" style={{ position: 'fixed', right: 24, bottom: 24, zIndex: 900, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 14, pointerEvents: 'none' }}>
       {/* ── Panel ──────────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {open && (
@@ -171,6 +171,7 @@ export function FloatingAiAssistant() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.96 }}
             transition={{ duration: 0.26, ease: 'easeOut' }}
+            className="ai-panel-glass"
             style={{
               pointerEvents: 'auto',
               width: 'min(420px, calc(100vw - 32px))',

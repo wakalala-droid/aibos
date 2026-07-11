@@ -1,15 +1,34 @@
 'use client';
-import { useStore } from '@/lib/store';
+import { useStore, type TopItemRow } from '@/lib/store';
 import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import LockOverlay from '@/components/ui/LockOverlay';
+import DataTable, { type DataTableColumn } from '@/components/ui/DataTable';
 import SimpleSummary from '@/components/dashboard/SimpleSummary';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
+import PageHeader from '@/components/ui/PageHeader';
 
 const CAT_COLORS = ['var(--e3)','var(--blue)','var(--warn)','var(--purple)','var(--e2)','var(--crit)','var(--text-3)'];
 const VEL_COLOR: Record<string, string> = { '🔥': 'var(--crit)', '✅': 'var(--good)', '⚠': 'var(--warn)' };
+
+// Top-items columns. Rank (#) follows the current sort — it's the row's place
+// in whatever ordering the user chose, not a frozen revenue rank.
+const itemColumns = (sym: string): DataTableColumn<TopItemRow>[] => [
+  { key: 'rank', label: '#', render: (_item, i) => <span style={{ color: 'var(--text-4)' }}>#{i + 1}</span> },
+  { key: 'sku', label: 'SKU', sortValue: r => r.sku,
+    render: r => <span style={{ color: 'var(--blue)', fontWeight: 600 }}>{r.sku}</span> },
+  { key: 'name', label: 'Name', sortValue: r => r.name,
+    render: r => <span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{r.name}</span> },
+  { key: 'category', label: 'Category', sortValue: r => r.category,
+    render: r => <span className="badge" style={{ color: 'var(--text-3)', background: 'var(--bg-badge)', borderColor: 'var(--border)' }}>{r.category}</span> },
+  { key: 'units_sold', label: 'Units', sortValue: r => r.units_sold, render: r => r.units_sold.toLocaleString() },
+  { key: 'revenue', label: 'Revenue', sortValue: r => r.revenue,
+    render: r => <span style={{ fontWeight: 700, color: 'var(--e3)' }}>{fmt(r.revenue, false, sym)}</span> },
+  { key: 'velocity_rank', label: 'Velocity', sortValue: r => r.velocity_rank,
+    render: r => <span style={{ fontSize: '1rem', color: VEL_COLOR[r.velocity_rank] ?? 'var(--text-3)' }}>{r.velocity_rank}</span> },
+];
 
 export default function POSPage() {
   const { posBusinessName, posPeriod, posGrandTotals, categories, topItems, hasEngine3Data, currencySymbol } = useStore();
@@ -21,13 +40,12 @@ export default function POSPage() {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Operations</p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>POS Intelligence</h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>
-          {[posBusinessName, posPeriod].filter(Boolean).join(' · ')}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Operations"
+        eyebrowColour="var(--e3)"
+        title="POS Intelligence"
+        subtitle={<>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</>}
+      />
 
       <SimpleSummary page="ops" />
 
@@ -48,9 +66,10 @@ export default function POSPage() {
       </div>
 
       {/* Charts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+      <div className="grid-2" style={{ marginBottom: 20 }}>
         <SectionCard title="Revenue Mix by Category" delay={0.1}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div role="img" aria-label={`Donut chart of revenue mix across ${pieData.length} categories`}>
             <ResponsiveContainer width={130} height={130}>
               <PieChart>
                 <Pie data={pieData} cx="50%" cy="50%" innerRadius={34} outerRadius={56} dataKey="value" stroke="none">
@@ -59,6 +78,7 @@ export default function POSPage() {
                 <Tooltip content={<ChartTooltip sym={sym} />} />
               </PieChart>
             </ResponsiveContainer>
+            </div>
             <div style={{ flex: 1 }}>
               {categories.slice(0, 6).map((c, i) => (
                 <div key={c.category} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -74,6 +94,7 @@ export default function POSPage() {
         </SectionCard>
 
         <SectionCard title="Units Sold by Category" delay={0.14}>
+          <div role="img" aria-label={`Bar chart of units sold across ${barData.length} categories`}>
           <ResponsiveContainer width="100%" height={170}>
             <BarChart data={barData} layout="vertical" barCategoryGap="22%">
               <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
@@ -84,29 +105,20 @@ export default function POSPage() {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          </div>
         </SectionCard>
       </div>
 
       {/* Top Items Table */}
       <SectionCard title="Top Items by Revenue" subtitle="Ranked by revenue · velocity indicator" delay={0.2} style={{ position: 'relative' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="data-table">
-            <thead><tr><th>#</th><th>SKU</th><th>Name</th><th>Category</th><th>Units</th><th>Revenue</th><th>Velocity</th></tr></thead>
-            <tbody>
-              {topItems.map((item, i) => (
-                <tr key={item.sku || i}>
-                  <td style={{ color: 'var(--text-4)' }}>#{i + 1}</td>
-                  <td style={{ color: 'var(--blue)', fontWeight: 600 }}>{item.sku}</td>
-                  <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>{item.name}</td>
-                  <td><span className="badge" style={{ color: 'var(--text-3)', background: 'var(--bg-badge)', borderColor: 'var(--border)' }}>{item.category}</span></td>
-                  <td>{item.units_sold.toLocaleString()}</td>
-                  <td style={{ fontWeight: 700, color: 'var(--e3)' }}>{fmt(item.revenue, false, sym)}</td>
-                  <td style={{ fontSize: '1rem', color: VEL_COLOR[item.velocity_rank] ?? 'var(--text-3)' }}>{item.velocity_rank}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          ariaLabel="Top items by revenue"
+          columns={itemColumns(sym)}
+          rows={topItems}
+          rowKey={(item, i) => item.sku || String(i)}
+          defaultSort={{ key: 'revenue', dir: 'desc' }}
+          emptyMessage="Upload a POS export to rank your items."
+        />
         {!hasEngine3Data && <LockOverlay colour="var(--e3)" title="Operations Locked" description="Upload a POS export file (XLS/XLSX) to unlock operations intelligence" bullets={['Category & SKU revenue breakdown','Product velocity ranking','BCG matrix classification']} />}
       </SectionCard>
     </>

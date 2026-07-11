@@ -9,6 +9,7 @@
 import { useCallback, useRef, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
 import { useStore } from '@/lib/store';
+import PageHeader from '@/components/ui/PageHeader';
 import {
   excelPreview, excelCommit,
   type ExcelPreview, type BulkResult, type EventType,
@@ -115,14 +116,10 @@ export default function ImportPage() {
 
   return (
     <>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>
-          Import history
-        </h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
-          Bring an Excel or CSV of past activity — AIBOS adapts to your columns.
-        </p>
-      </div>
+      <PageHeader
+        title="Import history"
+        subtitle="Bring an Excel or CSV of past activity — AIBOS adapts to your columns."
+      />
 
       {/* Upload */}
       {(phase === 'idle' || phase === 'parsing') && (

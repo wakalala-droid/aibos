@@ -14,6 +14,7 @@ import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import { listEvents, type BusinessEvent } from '@/lib/api';
+import PageHeader from '@/components/ui/PageHeader';
 
 export default function RecordPage() {
   const sym = useStore(s => s.currencySymbol) || 'K';
@@ -38,13 +39,11 @@ export default function RecordPage() {
   return (
     <>
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0 }}>
-          Record activity
-        </h1>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 4 }}>
-          Tell AIBOS what happened — it does the bookkeeping.
-        </p>
-        <OutboxChip style={{ marginTop: 8 }} />
+        <PageHeader
+          title="Record activity"
+          subtitle="Tell AIBOS what happened — it does the bookkeeping."
+        />
+        <OutboxChip style={{ marginTop: -16, marginBottom: 8 }} />
       </div>
 
       {needsSetup && (

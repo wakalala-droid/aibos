@@ -92,7 +92,7 @@ export default function DashboardHeader() {
   const safeAlerts = Array.isArray(alerts) ? alerts : [];
   const unread = safeAlerts.length;
 
-  const [open, setOpen] = useState<null | 'search' | 'bell' | 'profile'>(null);
+  const [open, setOpen] = useState<null | 'search' | 'bell' | 'profile' | 'shortcuts'>(null);
   const [query, setQuery] = useState('');
 
   // Alerts the user hasn't seen yet — the dot clears once the tray is opened.
@@ -185,6 +185,29 @@ export default function DashboardHeader() {
     sendMessage(q);
   };
 
+  // One flat option list drives keyboard navigation: page results, data hits,
+  // then the Ask-AIBOS action whenever a query is typed. Arrow keys move the
+  // highlight; Enter activates it (audit #9: palette-grade keyboard support).
+  type PaletteOption = { kind: 'nav'; href: string; label: string; group: string } | { kind: 'ask' };
+  const options: PaletteOption[] = useMemo(() => {
+    const nav = [...results, ...dataHits].map((r) => ({ kind: 'nav' as const, ...r }));
+    return query.trim() ? [...nav, { kind: 'ask' as const }] : nav;
+  }, [results, dataHits, query]);
+  const [activeIdx, setActiveIdx] = useState(0);
+  useEffect(() => { setActiveIdx(0); }, [query, open]);
+  const activate = (opt: PaletteOption | undefined) => {
+    if (!opt) return;
+    if (opt.kind === 'nav') go(opt.href);
+    else askAibos();
+  };
+  const onSearchKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, options.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, 0)); }
+    else if (e.key === 'Home' && options.length) { e.preventDefault(); setActiveIdx(0); }
+    else if (e.key === 'End' && options.length) { e.preventDefault(); setActiveIdx(options.length - 1); }
+    else if (e.key === 'Enter') { e.preventDefault(); activate(options[activeIdx] ?? options[0]); }
+  };
+
   return (
     <div ref={wrapRef} className="dash-header">
       {/* Search — a visible command bar on desktop (audit F-07: for a product
@@ -264,48 +287,62 @@ export default function DashboardHeader() {
                 ref={searchInputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key !== 'Enter') return;
-                  const first = results[0] ?? dataHits[0];
-                  if (first) go(first.href);
-                  else askAibos();
-                }}
+                onKeyDown={onSearchKey}
+                role="combobox"
+                aria-expanded="true"
+                aria-controls="dash-search-listbox"
+                aria-activedescendant={options.length ? `dash-search-opt-${activeIdx}` : undefined}
                 placeholder="Search pages, customers, products — or ask a question…"
                 aria-label="Search pages, customers and products, or ask AIBOS"
                 style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none' }}
               />
             </div>
-            <div role="listbox" aria-label="Search results" style={{ maxHeight: 320, overflowY: 'auto', padding: 6 }}>
-              {[...results, ...dataHits].map((r, i) => (
-                <button
-                  key={`${r.href}-${r.label}-${i}`} type="button" role="option" aria-selected={false}
-                  onClick={() => go(r.href)}
-                  className="dash-row"
-                  style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '9px 10px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer' }}
-                >
-                  <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 500 }}>{r.label}</span>
-                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.group}</span>
-                </button>
-              ))}
-              {/* Anything can be asked — the assistant is the search's fallback
-                  AND a first-class result whenever a query is typed. */}
-              {query.trim() && (
-                <button
-                  type="button" role="option" aria-selected={false}
-                  onClick={askAibos}
-                  className="dash-row"
-                  style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', borderTop: '1px solid var(--border)', marginTop: 4 }}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'var(--cyan)', flexShrink: 0 }}>
-                    <path d="M12 3l1.6 4.6L18 9.2l-4.4 1.6L12 15l-1.6-4.2L6 9.2l4.4-1.6L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-                    <path d="M19 14l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                  </svg>
-                  <span style={{ fontSize: 'var(--fs-body)', color: 'var(--cyan)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    Ask AIBOS: “{query.trim()}”
-                  </span>
-                </button>
-              )}
-              {results.length === 0 && dataHits.length === 0 && !query.trim() && (
+            <div id="dash-search-listbox" role="listbox" aria-label="Search results" style={{ maxHeight: 320, overflowY: 'auto', padding: 6 }}>
+              {options.map((opt, i) => {
+                const active = i === activeIdx;
+                const base: React.CSSProperties = {
+                  width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                  background: active ? 'var(--table-row-hover)' : 'transparent',
+                  outline: active ? '1px solid var(--border-md)' : 'none',
+                };
+                if (opt.kind === 'nav') {
+                  return (
+                    <button
+                      key={`nav-${opt.href}-${opt.label}`} id={`dash-search-opt-${i}`}
+                      type="button" role="option" aria-selected={active}
+                      onClick={() => go(opt.href)}
+                      onMouseEnter={() => setActiveIdx(i)}
+                      className="dash-row"
+                      style={{ ...base, justifyContent: 'space-between' }}
+                    >
+                      <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 500 }}>{opt.label}</span>
+                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{opt.group}</span>
+                    </button>
+                  );
+                }
+                // Anything can be asked — the assistant is the search's fallback
+                // AND a first-class result whenever a query is typed.
+                return (
+                  <button
+                    key="ask" id={`dash-search-opt-${i}`}
+                    type="button" role="option" aria-selected={active}
+                    onClick={askAibos}
+                    onMouseEnter={() => setActiveIdx(i)}
+                    className="dash-row"
+                    style={{ ...base, gap: 10, padding: '10px 10px', borderTop: '1px solid var(--border)', marginTop: 4 }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'var(--cyan)', flexShrink: 0 }}>
+                      <path d="M12 3l1.6 4.6L18 9.2l-4.4 1.6L12 15l-1.6-4.2L6 9.2l4.4-1.6L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                      <path d="M19 14l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                    </svg>
+                    <span style={{ fontSize: 'var(--fs-body)', color: 'var(--cyan)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      Ask AIBOS: “{query.trim()}”
+                    </span>
+                  </button>
+                );
+              })}
+              {options.length === 0 && (
                 <p style={{ padding: '14px 12px', fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0 }}>Type to search your business.</p>
               )}
             </div>
@@ -332,11 +369,21 @@ export default function DashboardHeader() {
               ) : safeAlerts.slice(0, 12).map((a, i) => {
                 const title = String(a.title ?? 'Alert');
                 const desc = String(a.description ?? '');
+                // Severity is encoded in colour AND text (audit #34 — never
+                // colour alone), so it survives colour-blindness and grayscale.
+                const sev = String(a.severity ?? '').toLowerCase();
+                const sevWord = sev === 'critical' ? 'Critical' : sev === 'warning' ? 'Warning' : sev === 'success' ? 'Good' : 'Info';
+                const sc = sevColor(sev);
                 return (
                   <div key={i} style={{ display: 'flex', gap: 10, padding: '12px 16px', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-                    <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: sevColor(String(a.severity ?? '')), flexShrink: 0, marginTop: 5 }} />
+                    <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: sc, flexShrink: 0, marginTop: 5 }} />
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>{title}</p>
+                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
+                        {title}
+                        <span style={{ marginLeft: 8, fontSize: 'var(--fs-label)', fontWeight: 700, color: sc, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                          {sevWord}
+                        </span>
+                      </p>
                       {desc && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>{desc}</p>}
                     </div>
                   </div>
@@ -371,6 +418,9 @@ export default function DashboardHeader() {
               <Link href="/dashboard/profile" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
                 Your business data
               </Link>
+              <button type="button" role="menuitem" onClick={() => setOpen('shortcuts')} className="dash-row" style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
+                Keyboard shortcuts &amp; tips
+              </button>
               {isAdmin && (
                 <Link href="/admin" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
                   Admin panel
@@ -379,6 +429,38 @@ export default function DashboardHeader() {
               <button type="button" role="menuitem" onClick={() => { setOpen(null); logout(); }} className="dash-row" style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--crit)' }}>
                 Sign out
               </button>
+            </div>
+          </motion.div>
+        )}
+
+        {open === 'shortcuts' && (
+          <motion.div
+            key="shortcuts"
+            role="dialog" aria-label="Keyboard shortcuts and tips"
+            initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+            className="dash-pop" style={{ width: 'min(340px, 90vw)' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)' }}>Shortcuts &amp; tips</span>
+              <button type="button" onClick={() => setOpen(null)} aria-label="Close"
+                style={{ border: 'none', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer', fontSize: 'var(--fs-body)' }}>
+                ✕
+              </button>
+            </div>
+            <div style={{ padding: '10px 16px 14px' }}>
+              {[
+                ['Ctrl K', 'Search anything, or ask AIBOS a question'],
+                ['↑ ↓ + Enter', 'Move through search results and open one'],
+                ['Esc', 'Close any panel, menu or the assistant'],
+                ['Shift + Enter', 'New line in the AI CFO chat'],
+                ['Hold a card', 'Long-press any metric and AIBOS explains it'],
+              ].map(([key, tip]) => (
+                <div key={key} style={{ display: 'flex', gap: 12, alignItems: 'baseline', padding: '7px 0' }}>
+                  <kbd style={{ flexShrink: 0, minWidth: 92, textAlign: 'center', fontSize: 'var(--fs-label)', color: 'var(--text-2)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 5, padding: '2px 8px', fontFamily: 'inherit' }}>{key}</kbd>
+                  <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', lineHeight: 1.5 }}>{tip}</span>
+                </div>
+              ))}
             </div>
           </motion.div>
         )}

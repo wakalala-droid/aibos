@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { MotionConfig } from 'framer-motion';
 import Sidebar from './Sidebar';
+import MobileTabBar from './MobileTabBar';
 import { useStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme';
 import { ProfileProvider } from '@/lib/profile';
@@ -53,6 +54,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const mobileNavOpen = useStore((s) => s.mobileNavOpen);
   const toggleMobileNav = useStore((s) => s.toggleMobileNav);
   const setMobileNav = useStore((s) => s.setMobileNav);
+  const uiMode = useStore((s) => s.uiMode);
   const { toggle, isDark } = useTheme();
 
   if (isBare) {
@@ -70,7 +72,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <MotionConfig reducedMotion="user">
       <a href="#main" className="skip-link">Skip to main content</a>
 
-      <div className="app-shell">
+      {/* data-uimode lets CSS give Simple mode its mobile tab bar clearance. */}
+      <div className="app-shell" data-uimode={uiMode}>
         <Sidebar />
 
         {/* Backdrop — only rendered (and visible) when the mobile drawer is open. */}
@@ -131,6 +134,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Floating AI assistant — available across the dashboard chrome. */}
         <FloatingAiAssistant />
+
+        {/* Simple mode: thumb-reach bottom tabs on phones (hidden at lg+). */}
+        <MobileTabBar />
       </div>
     </MotionConfig>
     </AiAssistantProvider>
