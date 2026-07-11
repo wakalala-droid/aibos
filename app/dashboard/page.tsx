@@ -7,6 +7,7 @@ import InsightCard from '@/components/ui/InsightCard';
 import FileUpload from '@/components/upload/FileUpload';
 import AICFOChat from '@/components/chat/AICFOChat';
 import SimpleHome from '@/components/dashboard/SimpleHome';
+import DecisionsQueue from '@/components/dashboard/DecisionsQueue';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
@@ -208,6 +209,10 @@ function OverviewPage() {
         title="Overview"
         subtitle="Financial · Customer · Operations — unified Kwacha intelligence"
       />
+
+      {/* ── Decisions queue — the page opens on the answer, not the data.
+             Everything below this band is the evidence for it. ─────────── */}
+      <DecisionsQueue />
 
       {/* ── Contextual upgrade trigger (only at moments of demonstrated value) ── */}
       <UpgradeTrigger />
