@@ -29,8 +29,8 @@ export type Feature =
   | 'automation'       // future: auto reorder drafts, churn follow-up lists
   // Growth — every location, one brain.
   | 'cross_engine'
-  | 'multi_location'
-  | 'api_access';      // future: embed AIBOS intelligence via API
+  | 'multi_location'   // UNBUILT — flag reserved; never list as a live inclusion (audit 2026-07)
+  | 'api_access';      // UNBUILT — flag reserved; never list as a live inclusion (audit 2026-07)
 
 export interface TierMeta {
   id: Tier;
@@ -84,7 +84,7 @@ export const TIERS: Record<Tier, TierMeta> = {
       'AI CFO chat — unlimited',
       'Recurring schedule & reminders — NAPSA, ZRA, rent',
       'Payroll — PAYE, NAPSA & net pay computed for you',
-      'Daily or weekly AI brief to email',
+      'Daily or weekly AI brief to email — rolling out',
       'Customer & Operations intelligence (Engines 2 & 3)',
     ],
   },
@@ -98,7 +98,7 @@ export const TIERS: Record<Tier, TierMeta> = {
     inclusions: [
       'Everything in Pro',
       'Morning Brief — your day, ready before you ask',
-      'Brief delivered to WhatsApp every morning',
+      'Brief delivered to WhatsApp every morning — rolling out',
       'Record sales & expenses straight from the chat',
       'Expected deliveries — know what’s arriving and when',
       'One-tap reorder drafts when stock runs low',
@@ -108,17 +108,15 @@ export const TIERS: Record<Tier, TierMeta> = {
   growth: {
     id: 'growth',
     name: 'Growth',
-    tagline: 'Multiple locations, one command centre',
+    tagline: 'Every engine, one command centre',
     priceMonthly: 1499,
     priceAnnual: 14990,
     accent: 'var(--e3)',
     inclusions: [
       'Everything in Pro+',
-      'Multiple locations',
-      'Cross-engine composite score',
-      'Unified executive brief across locations',
-      'API access — rolling out',
+      'Cross-engine composite score — every engine, one signal',
       'Priority support',
+      'First in line: multiple locations & API access (in development)',
     ],
   },
 };

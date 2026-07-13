@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 const FEATURE_GLOSSARY: { term: string; plain: string }[] = [
   { term: 'An engine', plain: 'A whole department’s intelligence, covering Financial, Customer or Operations, not just a single chart. Free gives you the Financial engine, and Pro unlocks the rest.' },
   { term: 'AI CFO chat', plain: 'Ask your business anything in plain words, as often as you like. It answers from your own uploaded data, in Kwacha.' },
-  { term: 'A scheduled brief', plain: 'The one number that matters, sent to your email (or WhatsApp) daily or weekly, so you don’t have to remember to check.' },
-  { term: 'A location', plain: 'One shop, branch or site. Pro runs one beautifully; Growth is for when you’re juggling several at once.' },
+  { term: 'A scheduled brief', plain: 'The one number that matters, delivered daily or weekly so you don’t have to remember to check. Email and WhatsApp delivery are rolling out now.' },
+  { term: 'A location', plain: 'One shop, branch or site. Every plan runs one beautifully today; running several under one login is in development for Growth members first.' },
 ];
 
 const TIMELINE: { when: string; what: string }[] = [
