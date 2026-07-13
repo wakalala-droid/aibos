@@ -1,0 +1,36 @@
+# CI gate — audit item #12.
+# "next build passes clean" is a constitutional gate (docs/evolution/README.md);
+# this makes it enforced instead of remembered.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Build-time placeholders: the middleware fails open without real auth
+      # config and no page hits Supabase during prerender. If a future page
+      # fetches at build time, replace these with repo secrets.
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
