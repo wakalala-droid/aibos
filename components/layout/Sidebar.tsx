@@ -39,6 +39,7 @@ const IC: Record<string, JSX.Element> = {
   lock:       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>,
   admin:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   rooms:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 18v-6a2 2 0 012-2h14a2 2 0 012 2v6" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round"/><path d="M3 14h18M2 18h20M6 10V8a2 2 0 012-2h8a2 2 0 012 2v2" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>,
+  invoice:    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round"/><path d="M9 7h6M9 11h6M9 15h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   pricing:    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/></svg>,
   sliders:    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M1 14h6M9 8h6M17 16h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   sun:        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.6"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
@@ -61,6 +62,7 @@ const NAV: NavEntry[] = [
   { href: '/dashboard/record',     label: 'Record',           icon: IC.record     },
   { href: '/dashboard/timeline',   label: 'Timeline',         icon: IC.timeline   },
   { href: '/dashboard/schedule',   label: 'Schedule',         icon: IC.schedule   },
+  { href: '/dashboard/invoices',   label: 'Invoices',         icon: IC.invoice    },
   { href: '/dashboard/import',     label: 'Import',           icon: IC.import     },
   { href: '/data-studio',          label: 'Data Studio',      icon: IC.studio     },
 

@@ -330,6 +330,69 @@ async function spineFetch(path: string, init: RequestInit = {}): Promise<Record<
   return data;
 }
 
+// ── Invoices: the get-paid loop (audit #7) ────────────────────────────────────
+
+export interface InvoiceLine { description: string; qty: number; unit_price: number }
+
+export interface Invoice {
+  id: string;
+  number: string;
+  customer_name: string;
+  issued_at: string | null;
+  due_at: string | null;
+  currency: string;
+  lines: InvoiceLine[];
+  total: number;
+  notes: string | null;
+  status: 'draft' | 'sent' | 'paid' | 'cancelled';
+  sale_event_id: string | null;
+  payment_event_id: string | null;
+  paid_at: string | null;
+  created_at: string;
+}
+
+export async function listInvoices(status?: Invoice['status']): Promise<Invoice[]> {
+  const q = status ? `?status=${status}` : '';
+  const data = await spineFetch(`/invoices${q}`);
+  return (data.invoices as Invoice[]) ?? [];
+}
+
+export async function createInvoice(input: {
+  customer_name: string; lines: InvoiceLine[]; due_at?: string | null; notes?: string | null; currency?: string;
+}): Promise<Invoice> {
+  const data = await spineFetch('/invoices', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  });
+  return data.invoice as Invoice;
+}
+
+export async function sendInvoice(id: string): Promise<Invoice> {
+  const data = await spineFetch(`/invoices/${id}/send`, { method: 'POST' });
+  return data.invoice as Invoice;
+}
+
+export async function markInvoicePaid(id: string): Promise<Invoice> {
+  const data = await spineFetch(`/invoices/${id}/mark-paid`, { method: 'POST' });
+  return data.invoice as Invoice;
+}
+
+export async function cancelInvoice(id: string): Promise<Invoice> {
+  const data = await spineFetch(`/invoices/${id}/cancel`, { method: 'POST' });
+  return data.invoice as Invoice;
+}
+
+export async function deleteInvoice(id: string): Promise<void> {
+  await spineFetch(`/invoices/${id}`, { method: 'DELETE' });
+}
+
+export async function invoiceShareText(id: string, businessName?: string | null, payNote?: string | null): Promise<string> {
+  const q = new URLSearchParams();
+  if (businessName) q.set('business_name', businessName);
+  if (payNote) q.set('pay_note', payNote);
+  const data = await spineFetch(`/invoices/${id}/share-text?${q.toString()}`);
+  return (data.text as string) ?? '';
+}
+
 // ── Live customer intelligence (Engine 2 over the spine — audit #5) ──────────
 
 export interface LiveCustomerIntel {
