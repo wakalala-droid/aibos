@@ -1,9 +1,13 @@
 'use client';
+import { useEffect } from 'react';
 import { useStore } from '@/lib/store';
+import { logUsage } from '@/lib/usage';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import StrategicBriefView from '@/components/dashboard/StrategicBriefView';
 
 export default function BriefPage() {
+  // Funnel stage marker (audit #14) — explicit so it survives layout changes.
+  useEffect(() => { logUsage('brief_viewed'); }, []);
   const {
     kpi, health, monthly, alerts, currencySymbol,
     intelligenceScores, unifiedBrief, dataShape,

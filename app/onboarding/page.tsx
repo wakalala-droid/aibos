@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { useStore } from '@/lib/store';
 import { updateProfile, seedTwin } from '@/lib/api';
+import { logUsage } from '@/lib/usage';
 import { CURRENCIES } from '@/lib/currency';
 const INDUSTRIES = ['Retail', 'Restaurant / Food', 'Services', 'Wholesale', 'Hospitality', 'Manufacturing', 'Agriculture', 'Mining', 'Transport', 'Other'];
 const TAX = [
@@ -89,6 +90,7 @@ export default function OnboardingPage() {
         language: form.language,
         onboarded_at: new Date().toISOString(),
       });
+      logUsage('onboarding_completed');
       const cash = parseFloat(form.initial_cash);
       await seedTwin(isNaN(cash) ? 0 : cash, form.currency).catch(() => {});
       // 'auto': this seeds the starting symbol but keeps uploads authoritative —

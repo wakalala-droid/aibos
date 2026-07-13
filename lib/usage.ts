@@ -11,7 +11,12 @@
 
 import { createClient } from '@/lib/supabase';
 
-export type UsageEvent = 'login' | 'upload' | 'chat' | 'engine_view' | 'page_view';
+// Funnel events (audit item #14): 'onboarding_completed' fires once at wizard
+// finish, 'event_recorded' at every recording action (posted OR queued offline
+// — it measures the habit, not persistence), 'brief_viewed' on the brief page.
+export type UsageEvent =
+  | 'login' | 'upload' | 'chat' | 'engine_view' | 'page_view'
+  | 'onboarding_completed' | 'event_recorded' | 'brief_viewed';
 export type UsageEngine = 'engine1' | 'engine2' | 'engine3' | 'cross';
 
 interface LogOptions {

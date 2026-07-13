@@ -16,6 +16,7 @@
 
 import type { Product } from './api';
 import { createEvent, type BusinessEvent } from './api';
+import { logUsage } from './usage';
 import type { RfmRow } from './store';
 import { fmt } from './utils';
 
@@ -163,7 +164,7 @@ export async function draftReorder(p: ReorderProposal): Promise<BusinessEvent> {
   };
   if (p.supplier) payload.supplier = p.supplier;
   if (p.estimatedCost !== undefined) payload.amount = p.estimatedCost;
-  return createEvent({
+  const ev = await createEvent({
     event_type: 'InventoryReceipt',
     payload,
     source: 'manual',
@@ -171,4 +172,6 @@ export async function draftReorder(p: ReorderProposal): Promise<BusinessEvent> {
     status: 'pending',
     note: 'auto-proposed reorder — approved by owner, awaiting arrival',
   });
+  logUsage('event_recorded', { meta: { event_type: 'InventoryReceipt', via: 'reorder_draft' } });
+  return ev;
 }

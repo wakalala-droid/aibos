@@ -15,6 +15,7 @@ import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
+import { logUsage } from '@/lib/usage';
 import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
 import PageHeader from '@/components/ui/PageHeader';
 import {
@@ -187,6 +188,7 @@ export default function SchedulePage() {
         event_type: bridgeType, payload, source: 'manual', status: 'confirmed',
         occurred_at: new Date().toISOString(),
       });
+      logUsage('event_recorded', { meta: { event_type: bridgeType, via: 'schedule_bridge' } });
       await updateScheduleItem(bridge.id, { linked_event_id: ev.id });
       setBridge(null); await load();
     } catch (e) { setError((e as Error).message); }

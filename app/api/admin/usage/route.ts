@@ -24,9 +24,15 @@ export async function GET() {
     const since30 = new Date(now - 30 * DAY).toISOString();
     const cutoff7 = now - 7 * DAY;
 
-    const [{ count: totalAccounts }, eventsRes] = await Promise.all([
+    const [{ count: totalAccounts }, eventsRes, profilesRes, funnelRes] = await Promise.all([
       admin.from('profiles').select('id', { count: 'exact', head: true }),
       admin.from('usage_events').select('user_id, event, created_at').gte('created_at', since30),
+      admin.from('profiles').select('id, onboarded_at'),
+      // All-time funnel-stage events. Same revisit-with-a-SQL-rollup caveat as above.
+      admin
+        .from('usage_events')
+        .select('user_id, event, created_at')
+        .in('event', ['event_recorded', 'upload', 'engine_view', 'brief_viewed']),
     ]);
 
     const events = (eventsRes.data ?? []) as { user_id: string; event: string; created_at: string }[];
@@ -82,6 +88,37 @@ export async function GET() {
       }));
     }
 
+    // ── Activation funnel (audit #14) ────────────────────────────────────────
+    const profiles = (profilesRes.data ?? []) as { id: string; onboarded_at: string | null }[];
+    const funnelEvents = (funnelRes.data ?? []) as { user_id: string; event: string; created_at: string }[];
+
+    const recordedBy = new Map<string, number[]>(); // user → recording timestamps
+    const insightSet = new Set<string>();
+    for (const ev of funnelEvents) {
+      if (ev.event === 'event_recorded' || ev.event === 'upload') {
+        const list = recordedBy.get(ev.user_id) ?? [];
+        list.push(new Date(ev.created_at).getTime());
+        recordedBy.set(ev.user_id, list);
+      } else {
+        insightSet.add(ev.user_id);
+      }
+    }
+
+    // Habit: recorded on ≥3 distinct days within 7 days of the user's first
+    // recording. Only users whose first recording is >7 days old count in the
+    // denominator — younger accounts haven't had the chance yet.
+    let habitFormed = 0;
+    let habitEligible = 0;
+    for (const stamps of recordedBy.values()) {
+      const first = Math.min(...stamps);
+      if (now - first < 7 * DAY) continue;
+      habitEligible += 1;
+      const days = new Set(
+        stamps.filter((t) => t - first < 7 * DAY).map((t) => dayKey(new Date(t).toISOString()))
+      );
+      if (days.size >= 3) habitFormed += 1;
+    }
+
     const payload: UsageAggregate = {
       totalAccounts: totalAccounts ?? 0,
       activeAccounts30: activeSet.size,
@@ -91,6 +128,15 @@ export async function GET() {
       chats30,
       series: Object.entries(series).map(([date, v]) => ({ date, ...v })),
       topAccounts,
+      funnel: {
+        signups: totalAccounts ?? profiles.length,
+        onboarded: profiles.filter((p) => p.onboarded_at).length,
+        recordedData: recordedBy.size,
+        sawInsight: insightSet.size,
+        habitFormed,
+        habitEligible,
+        trackedSince: '2026-07-13', // event_recorded instrumentation start
+      },
     };
 
     return NextResponse.json(payload);

@@ -520,6 +520,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
           status: 'pending',
           note: 'drafted via chat',
         });
+        logUsage('event_recorded', { meta: { event_type: proposal.event_type, via: 'chat' } });
         const amt = Number(proposal.payload?.amount) || 0;
         const who = proposal.payload?.customer ?? proposal.payload?.supplier ?? proposal.payload?.item ?? proposal.payload?.category;
         const summary = `**${proposal.event_type}**${who ? ` · ${String(who)}` : ''}${amt > 0 ? ` — ${fmt(amt, true, sym)}` : ''}`;

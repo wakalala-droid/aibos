@@ -11,6 +11,7 @@
 // told exactly what's waiting.
 
 import { createEvent, type EventInput, type BusinessEvent } from './api';
+import { logUsage } from './usage';
 
 export interface OutboxItem {
   id: string;
@@ -86,10 +87,14 @@ export async function createEventOrQueue(
 ): Promise<{ queued: boolean; event?: BusinessEvent }> {
   try {
     const event = await createEvent(input);
+    logUsage('event_recorded', { meta: { event_type: input.event_type } });
     return { queued: false, event };
   } catch (err) {
     if (isNetworkError(err)) {
       queueEvent(input);
+      // Counted at the moment of the action; the flush later is not a second
+      // recording. (Offline, the usage insert itself may drop — acceptable.)
+      logUsage('event_recorded', { meta: { event_type: input.event_type, queued: true } });
       return { queued: true };
     }
     throw err;

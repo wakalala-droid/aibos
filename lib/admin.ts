@@ -75,4 +75,14 @@ export interface UsageAggregate {
   chats30: number;
   series: { date: string; uploads: number; chats: number; total: number }[];
   topAccounts: { user_id: string; business_name: string | null; email: string | null; events: number }[];
+  /** Activation funnel (audit #14): distinct accounts reaching each stage, all-time. */
+  funnel: {
+    signups: number;            // profiles rows
+    onboarded: number;          // profiles.onboarded_at set
+    recordedData: number;       // ≥1 'event_recorded' or 'upload' usage event
+    sawInsight: number;         // ≥1 'engine_view' or 'brief_viewed'
+    habitFormed: number;        // recorded on ≥3 distinct days within 7d of first recording
+    habitEligible: number;      // first recording >7 days ago (denominator for habitFormed)
+    trackedSince: string;       // 'event_recorded' instrumentation start date
+  };
 }

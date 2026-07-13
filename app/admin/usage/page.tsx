@@ -80,6 +80,43 @@ export default function AdminUsagePage() {
           <KPICard label="AI chats" sublabel="last 30 days" value={String(data.chats30)} sub={`${data.chats7} in last 7d`} sparkColor="#f97316" />
         </div>
 
+        <SectionCard
+          title="Activation funnel"
+          subtitle={`Signup → onboarded → recorded data → saw an insight, all time. Recording tracked since ${data.funnel.trackedSince}.`}
+          style={{ marginBottom: 16 }}
+        >
+          <div style={{ display: 'grid', gap: 10 }}>
+            {([
+              ['Signed up', data.funnel.signups],
+              ['Completed onboarding', data.funnel.onboarded],
+              ['Recorded data', data.funnel.recordedData],
+              ['Saw an insight', data.funnel.sawInsight],
+            ] as [string, number][]).map(([label, count]) => {
+              const pct = data.funnel.signups > 0 ? Math.round((count / data.funnel.signups) * 100) : 0;
+              return (
+                <div key={label} style={{ display: 'grid', gridTemplateColumns: '170px 1fr 72px', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', fontWeight: 600 }}>{label}</span>
+                  <div style={{ height: 10, borderRadius: 5, background: 'var(--bg-badge)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, borderRadius: 5, background: 'var(--cyan)', transition: 'width .4s ease' }} />
+                  </div>
+                  <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-1)', fontWeight: 700, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                    {count} · {pct}%
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '14px 0 0' }}>
+            Recording habit (≥3 days in first week):{' '}
+            <strong style={{ color: 'var(--text-1)' }}>
+              {data.funnel.habitEligible > 0
+                ? `${data.funnel.habitFormed} of ${data.funnel.habitEligible} eligible accounts`
+                : 'no accounts eligible yet'}
+            </strong>
+            {' '}— the audit’s 90-day exit metric is 40%.
+          </p>
+        </SectionCard>
+
         <SectionCard title="Activity — last 30 days" subtitle="Uploads and AI chats per day" style={{ marginBottom: 16 }}>
           {hasActivity ? (
             <div style={{ width: '100%', height: 260 }}>
