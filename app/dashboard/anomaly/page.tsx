@@ -8,6 +8,7 @@ import FeatureGate from '@/components/ui/FeatureGate';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
 import PageHeader from '@/components/ui/PageHeader';
+import WhatChanged from '@/components/dashboard/WhatChanged';
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine,
@@ -93,6 +94,10 @@ export default function AnomalyPage() {
         title="Anomaly Intelligence"
         subtitle="Statistical outlier detection · Z-score analysis · variance flags"
       />
+
+      {/* Auto-investigation from recorded events (audit #13) — silent when
+          there's no anomaly or under 4 months of history. */}
+      <WhatChanged />
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
