@@ -22,13 +22,15 @@ const ALERTS_SEEN_KEY = 'aibos-alerts-seen-v1';
 
 // Searchable destinations (kept in sync with the sidebar nav).
 const DESTINATIONS: { href: string; label: string; group: string }[] = [
-  { href: '/dashboard', label: 'Overview', group: 'Financial' },
+  { href: '/dashboard', label: 'Today', group: 'Financial' },
   { href: '/dashboard/cash', label: 'Cash Intelligence', group: 'Financial' },
   { href: '/dashboard/variance', label: 'Variance', group: 'Financial' },
   { href: '/dashboard/forecast', label: 'Forecast', group: 'Financial' },
   { href: '/dashboard/anomaly', label: 'Anomaly Intelligence', group: 'Financial' },
   { href: '/dashboard/breakeven', label: 'Breakeven', group: 'Financial' },
-  { href: '/dashboard/brief', label: 'Strategic Brief', group: 'Financial' },
+  { href: '/dashboard/brief', label: 'Briefs', group: 'Financial' },
+  { href: '/dashboard/brief?tab=advisor', label: 'Advisor', group: 'Financial' },
+  { href: '/dashboard/invoices', label: 'Invoices', group: 'Financial' },
   { href: '/data-studio', label: 'Data Studio', group: 'Financial' },
   { href: '/dashboard/customers', label: 'Customer Intelligence', group: 'Customer' },
   { href: '/dashboard/churn', label: 'Churn Risk', group: 'Customer' },
@@ -36,7 +38,7 @@ const DESTINATIONS: { href: string; label: string; group: string }[] = [
   { href: '/dashboard/market', label: 'Market Intelligence', group: 'Customer' },
   { href: '/dashboard/pos', label: 'POS Intelligence', group: 'Operations' },
   { href: '/dashboard/benchmarks', label: 'Benchmarks', group: 'Operations' },
-  { href: '/dashboard/ops-brief', label: 'Ops Brief', group: 'Operations' },
+  { href: '/dashboard/brief?tab=ops', label: 'Ops Brief', group: 'Operations' },
   { href: '/pricing', label: 'Plans & Pricing', group: 'Account' },
 ];
 

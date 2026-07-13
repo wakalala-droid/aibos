@@ -21,14 +21,15 @@ import { industryOf } from '@/lib/industries';
 import { TOUR_RESTART_EVENT } from '@/components/onboarding/DashboardTour';
 import { fmt } from '@/lib/utils';
 import { canAccess } from '@/lib/tiers';
-import { bucketSales, expectedOf, dailyFocus } from '@/lib/brief';
+import { dailyFocus } from '@/lib/brief';
+import { fetchBriefExtras } from '@/lib/briefData';
 import {
   reorderProposals, draftReorder, followUpProposals, dismissedFollowUps, dismissFollowUp,
   type ReorderProposal,
 } from '@/lib/automation';
 import { OutboxChip } from '@/components/pwa/OfflineSync';
 import BorderGlow from '@/components/ui/BorderGlow';
-import { listEvents, listProducts, type BusinessEvent, type Product } from '@/lib/api';
+import { type BusinessEvent, type Product } from '@/lib/api';
 
 const ASKED_KEY = 'aibos-simple-asked-v1';
 
@@ -102,22 +103,22 @@ export default function SimpleHome() {
   const [todaySales, setTodaySales] = useState<BusinessEvent[] | null>(null);
   const [yesterdaySales, setYesterdaySales] = useState<BusinessEvent[]>([]);
   const [expected, setExpected] = useState<BusinessEvent[]>([]);
+  const [commitments, setCommitments] = useState<string[]>([]);
+  const [overdueInv, setOverdueInv] = useState<{ count: number; total: number } | null>(null);
   const [asked, setAsked] = useState(true); // assume done until localStorage says otherwise
   useEffect(() => {
     let alive = true;
-    (async () => {
-      const [p, e, r] = await Promise.allSettled([
-        listProducts(),
-        listEvents({ event_type: 'Sale', limit: 300 }),
-        listEvents({ event_type: 'InventoryReceipt', status: 'pending', limit: 50 }),
-      ]);
+    // One shared fetcher with the Today card (audit #9) — the brief's inputs
+    // can never drift between the two homepages.
+    fetchBriefExtras().then((x) => {
       if (!alive) return;
-      setProducts(p.status === 'fulfilled' ? p.value : []);
-      const { today, yesterday } = bucketSales(e.status === 'fulfilled' ? e.value : []);
-      setTodaySales(e.status === 'fulfilled' ? today : []);
-      setYesterdaySales(yesterday);
-      setExpected(expectedOf(r.status === 'fulfilled' ? r.value : []));
-    })();
+      setProducts(x.products);
+      setTodaySales(x.salesToday);
+      setYesterdaySales(x.salesYesterday);
+      setExpected(x.expectedDeliveries);
+      setCommitments(x.commitmentsToday);
+      setOverdueInv(x.overdueInvoices);
+    }).catch(() => { if (alive) { setProducts([]); setTodaySales([]); } });
     try { setAsked(window.localStorage.getItem(ASKED_KEY) === '1'); } catch { /* private mode */ }
     return () => { alive = false; };
   }, []);
@@ -161,8 +162,10 @@ export default function SimpleHome() {
       salesToday: todaySales ?? [], salesYesterday: yesterdaySales,
       expectedDeliveries: expected,
       topFollowUp: followUps[0]?.headline ?? null,
+      commitmentsToday: commitments,
+      overdueInvoices: overdueInv,
     });
-  }, [canBrief, twinActive, sym, twin, products, todaySales, yesterdaySales, expected, followUps]);
+  }, [canBrief, twinActive, sym, twin, products, todaySales, yesterdaySales, expected, followUps, commitments, overdueInv]);
 
   // Anticipated work: reorders AIBOS has prepared. Computed in memory — nothing
   // touches the books until the owner taps Draft (propose → confirm, always).

@@ -8,6 +8,8 @@ import FileUpload from '@/components/upload/FileUpload';
 import AICFOChat from '@/components/chat/AICFOChat';
 import SimpleHome from '@/components/dashboard/SimpleHome';
 import DecisionsQueue from '@/components/dashboard/DecisionsQueue';
+import TodayBrief from '@/components/dashboard/TodayBrief';
+import { RecommendationList } from '@/components/dashboard/AdvisorPanel';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
@@ -206,13 +208,17 @@ function OverviewPage() {
     <>
       {/* ── Page header ─────────────────────────────────────────────────── */}
       <PageHeader
-        title="Overview"
-        subtitle="Financial · Customer · Operations — unified Kwacha intelligence"
+        title="Today"
+        subtitle="Your day answered first · Financial · Customer · Operations"
       />
 
-      {/* ── Decisions queue — the page opens on the answer, not the data.
-             Everything below this band is the evidence for it. ─────────── */}
+      {/* ── The day, answered (audit #9): brief → decide → the numbers.
+             Everything below this block is the evidence for it. ─────────── */}
+      <TodayBrief />
       <DecisionsQueue />
+      <div id="decide">
+        <RecommendationList limit={3} title="Decide next" subtitle="From your Digital Twin — evidence attached" seeAllHref="/dashboard/brief?tab=advisor" />
+      </div>
 
       {/* ── Contextual upgrade trigger (only at moments of demonstrated value) ── */}
       <UpgradeTrigger />
@@ -461,7 +467,7 @@ function OverviewPage() {
             delay={0.22}
             action={
               orderedInsights.length > 0 ? (
-                <Link href="/dashboard/ops-brief" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
+                <Link href="/dashboard/brief?tab=ops" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
                   View all →
                 </Link>
               ) : undefined
@@ -519,7 +525,7 @@ function OverviewPage() {
               subtitle="AI-BOS unified brief · Financial + Customer Intelligence + Operations"
               delay={0.26}
               action={
-                <Link href="/dashboard/ops-brief" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
+                <Link href="/dashboard/brief?tab=ops" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
                   Full brief →
                 </Link>
               }
@@ -586,7 +592,7 @@ function OverviewPage() {
               { href: '/dashboard/pos',         label: 'POS Intelligence',      sub: 'Revenue · Velocity · BCG', colour: 'var(--e3)'   },
               { href: '/dashboard/benchmarks',  label: 'Benchmarks',            sub: 'QSR · Industry targets',   colour: 'var(--e3)'   },
               { href: '/dashboard/churn',       label: 'Churn Risk',            sub: 'Interventions · CLV risk', colour: 'var(--e2)'   },
-              { href: '/dashboard/ops-brief',   label: 'Intelligence Brief',    sub: 'E1 + CI + Ops synthesis',  colour: 'var(--cyan)' },
+              { href: '/dashboard/brief?tab=ops',   label: 'Intelligence Brief',    sub: 'E1 + CI + Ops synthesis',  colour: 'var(--cyan)' },
             ].map(item => (
               <Link key={item.href} href={item.href} style={{ textDecoration: 'none', display: 'block', marginBottom: 6 }}>
                 <div style={{

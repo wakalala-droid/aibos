@@ -55,8 +55,10 @@ type NavEntry = NavItem | NavSection;
 // grouping the CI/Ops sections already proved works is applied everywhere).
 // Plans & Pricing lives in the plan chip at the rail's foot, not in the nav.
 const NAV: NavEntry[] = [
-  { href: '/dashboard',            label: 'Overview',         icon: IC.overview   },
-  { href: '/dashboard/advisor',    label: 'Advisor',          icon: IC.advisor    },
+  // Today IS the brief + the decisions (audit #9) — Advisor and the deep
+  // briefs merged into /dashboard and /dashboard/brief's tabs.
+  { href: '/dashboard',            label: 'Today',            icon: IC.overview   },
+  { href: '/dashboard/brief',      label: 'Briefs',           icon: IC.brief      },
 
   { type: 'section', label: 'Record & Plan', colour: 'var(--cyan)' },
   { href: '/dashboard/record',     label: 'Record',           icon: IC.record     },
@@ -72,7 +74,6 @@ const NAV: NavEntry[] = [
   { href: '/dashboard/forecast',   label: 'Forecast',         icon: IC.forecast   },
   { href: '/dashboard/anomaly',    label: 'Anomaly Intel',    icon: IC.anomaly    },
   { href: '/dashboard/breakeven',  label: 'Breakeven',        icon: IC.breakeven  },
-  { href: '/dashboard/brief',      label: 'Strategic Brief',  icon: IC.brief      },
 
   { type: 'section', label: 'People & Stock', colour: 'var(--purple)' },
   { href: '/dashboard/employees',  label: 'Employees',        icon: IC.people     },
@@ -87,7 +88,6 @@ const NAV: NavEntry[] = [
   { type: 'section', label: 'Operations', colour: 'var(--e3)', engine: 'ops' },
   { href: '/dashboard/pos',        label: 'POS Intelligence', icon: IC.pos,         engine: 'ops' },
   { href: '/dashboard/benchmarks', label: 'Benchmarks',       icon: IC.benchmarks,  engine: 'ops' },
-  { href: '/dashboard/ops-brief',  label: 'Ops Brief',        icon: IC.opsbrief,    engine: 'ops' },
 ];
 
 // Simple mode — the owner-language surface. Six doors, no jargon, no engine

@@ -22,6 +22,10 @@ export interface BriefInputs {
   expectedDeliveries: BusinessEvent[];
   /** Headline of the top at-risk customer (automation.ts followUpProposals), if any. */
   topFollowUp?: string | null;
+  /** Today's scheduled commitments, already formatted ("NAPSA — 10:00"). */
+  commitmentsToday?: string[];
+  /** Sent invoices past their due date. */
+  overdueInvoices?: { count: number; total: number } | null;
 }
 
 function sum(events: BusinessEvent[]): number {
@@ -57,6 +61,9 @@ export function expectedOf(receipts: BusinessEvent[]): BusinessEvent[] {
 
 /** The single most useful thing the owner can do right now, or null. */
 function oneThing(inp: BriefInputs, money: (n: number) => string): string | null {
+  if (inp.overdueInvoices && inp.overdueInvoices.count > 0) {
+    return `chase the ${inp.overdueInvoices.count} overdue invoice${inp.overdueInvoices.count === 1 ? '' : 's'} (${money(inp.overdueInvoices.total)}) — a WhatsApp nudge usually does it`;
+  }
   const low = inp.products.filter((p) => Number(p.reorder_level) > 0 && Number(p.on_hand ?? 0) <= Number(p.reorder_level));
   if (low.length > 0) {
     return `reorder ${low[0].name}${low[0].supplier ? ` from ${low[0].supplier}` : ''} before it runs out`;
@@ -97,48 +104,72 @@ export function dailyFocus(inp: BriefInputs): string[] {
     lines.push(`Next delivery: ${dayLabel(new Date(next.occurred_at))}${next.payload?.supplier ? ` from ${String(next.payload.supplier)}` : ''}.`);
   }
 
+  if (inp.commitmentsToday && inp.commitmentsToday.length > 0) {
+    lines.push(`On today: ${inp.commitmentsToday.slice(0, 2).join(' · ')}${inp.commitmentsToday.length > 2 ? ` (+${inp.commitmentsToday.length - 2} more)` : ''}.`);
+  }
+
+  if (inp.overdueInvoices && inp.overdueInvoices.count > 0) {
+    lines.push(`Overdue: ${inp.overdueInvoices.count} invoice${inp.overdueInvoices.count === 1 ? '' : 's'} worth ${money(inp.overdueInvoices.total)}.`);
+  }
+
   const action = oneThing(inp, money);
   if (action) lines.push(`One thing today: ${action}.`);
   return lines;
 }
 
-export function composeMorningBrief(inp: BriefInputs): string {
-  const money = (n: number) => fmt(n, true, inp.sym);
-  const lines: string[] = [];
-  const now = new Date();
+/** One structured brief line: emoji marker + markdown-lite text (**bold**). */
+export interface BriefLine { emoji: string; md: string }
 
-  lines.push(`**Your Morning Brief — ${dayLabel(now)}**`);
+/**
+ * The Morning Brief as STRUCTURED lines — the one source of truth. The chat
+ * renders them as markdown (composeMorningBrief); the Today card on the
+ * homepage renders them as rows. A line with no data behind it is omitted
+ * (SAFEGUARD §0.1).
+ */
+export function briefLines(inp: BriefInputs): BriefLine[] {
+  const money = (n: number) => fmt(n, true, inp.sym);
+  const lines: BriefLine[] = [];
 
   // Money position — always leads; it's the number every owner wakes up to.
   if (inp.twin) {
     const cash = Number(inp.twin.cash) || 0;
     const recv = Number(inp.twin.receivables) || 0;
     const pay = Number(inp.twin.payables) || 0;
-    let m = `💰 Cash: **${money(cash)}**.`;
+    let m = `Cash: **${money(cash)}**.`;
     if (recv > 0) m += ` Customers owe you ${money(recv)}.`;
     if (pay > 0) m += ` You owe suppliers ${money(pay)}.`;
-    lines.push(m);
+    lines.push({ emoji: '💰', md: m });
   }
 
   // How the trading day is going / went.
   const tToday = sum(inp.salesToday);
   const tYest = sum(inp.salesYesterday);
   if (inp.salesToday.length > 0) {
-    lines.push(`📈 Today so far: ${inp.salesToday.length} sale${inp.salesToday.length === 1 ? '' : 's'}, **${money(tToday)}**.`);
+    lines.push({ emoji: '📈', md: `Today so far: ${inp.salesToday.length} sale${inp.salesToday.length === 1 ? '' : 's'}, **${money(tToday)}**.` });
   }
   if (inp.salesYesterday.length > 0) {
-    lines.push(`🗓️ Yesterday: ${inp.salesYesterday.length} sale${inp.salesYesterday.length === 1 ? '' : 's'}, ${money(tYest)}.`);
+    lines.push({ emoji: '🗓️', md: `Yesterday: ${inp.salesYesterday.length} sale${inp.salesYesterday.length === 1 ? '' : 's'}, ${money(tYest)}.` });
   } else if (inp.twin && Number(inp.twin.event_count) > 0 && inp.salesToday.length === 0) {
-    lines.push('🗓️ No sales recorded yesterday or today yet.');
+    lines.push({ emoji: '🗓️', md: 'No sales recorded yesterday or today yet.' });
+  }
+
+  // Today's commitments (scheduler) — the day's shape, not just its money.
+  if (inp.commitmentsToday && inp.commitmentsToday.length > 0) {
+    lines.push({ emoji: '📅', md: `On today: ${inp.commitmentsToday.slice(0, 3).join(' · ')}${inp.commitmentsToday.length > 3 ? ` (+${inp.commitmentsToday.length - 3} more)` : ''}.` });
+  }
+
+  // Overdue invoices — the get-paid nudge.
+  if (inp.overdueInvoices && inp.overdueInvoices.count > 0) {
+    lines.push({ emoji: '⏰', md: `**${inp.overdueInvoices.count} invoice${inp.overdueInvoices.count === 1 ? '' : 's'} overdue** — ${money(inp.overdueInvoices.total)} waiting on **Invoices**.` });
   }
 
   // Stock watch.
   const low = inp.products.filter((p) => Number(p.reorder_level) > 0 && Number(p.on_hand ?? 0) <= Number(p.reorder_level));
   if (low.length > 0) {
     const names = low.slice(0, 3).map((p) => `${p.name} (${Number(p.on_hand ?? 0)} left)`).join(', ');
-    lines.push(`📦 Stock: **${low.length} item${low.length === 1 ? '' : 's'} low** — ${names}${low.length > 3 ? '…' : ''}.`);
+    lines.push({ emoji: '📦', md: `Stock: **${low.length} item${low.length === 1 ? '' : 's'} low** — ${names}${low.length > 3 ? '…' : ''}.` });
   } else if (inp.products.length > 0) {
-    lines.push(`📦 Stock: all ${inp.products.length} items above reorder level.`);
+    lines.push({ emoji: '📦', md: `Stock: all ${inp.products.length} items above reorder level.` });
   }
 
   // Expected deliveries (pending receipts dated today+).
@@ -147,19 +178,27 @@ export function composeMorningBrief(inp: BriefInputs): string {
   if (dueToday.length > 0) {
     const first = dueToday[0];
     const from = first.payload?.supplier ? ` from ${String(first.payload.supplier)}` : '';
-    lines.push(`🚚 Expected today: ${String(first.payload?.item ?? 'a delivery')}${from}${dueToday.length > 1 ? ` (+${dueToday.length - 1} more)` : ''} — confirm it on **Activity** when it arrives.`);
+    lines.push({ emoji: '🚚', md: `Expected today: ${String(first.payload?.item ?? 'a delivery')}${from}${dueToday.length > 1 ? ` (+${dueToday.length - 1} more)` : ''} — confirm it on **Activity** when it arrives.` });
   } else if (inp.expectedDeliveries.length > 0) {
     const next = inp.expectedDeliveries[0];
-    lines.push(`🚚 Next expected delivery: ${dayLabel(new Date(next.occurred_at))}${next.payload?.supplier ? ` from ${String(next.payload.supplier)}` : ''}.`);
+    lines.push({ emoji: '🚚', md: `Next expected delivery: ${dayLabel(new Date(next.occurred_at))}${next.payload?.supplier ? ` from ${String(next.payload.supplier)}` : ''}.` });
   }
 
   // One thing today — a single, concrete next action (never a list; decision
   // simplification per ux_intelligence.md).
   const action = oneThing(inp, money);
-  if (action) lines.push(`🎯 One thing today: ${action}.`);
+  if (action) lines.push({ emoji: '🎯', md: `One thing today: ${action}.` });
 
-  if (lines.length === 1) {
+  return lines;
+}
+
+export function composeMorningBrief(inp: BriefInputs): string {
+  const lines = briefLines(inp);
+  if (lines.length === 0) {
     return "**Your Morning Brief**\n\nNothing recorded yet — once you start recording sales and stock, I'll have your day summarised here every morning.";
   }
-  return lines.join('\n\n');
+  return [
+    `**Your Morning Brief — ${dayLabel(new Date())}**`,
+    ...lines.map((l) => `${l.emoji} ${l.md}`),
+  ].join('\n\n');
 }
