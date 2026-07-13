@@ -385,6 +385,30 @@ export async function deleteInvoice(id: string): Promise<void> {
   await spineFetch(`/invoices/${id}`, { method: 'DELETE' });
 }
 
+export interface DebtorRow {
+  name: string;
+  key: string;
+  total: number;
+  invoice_total: number;
+  credit_total: number;
+  buckets: Record<'current' | '1-30' | '31-60' | '60+', number>;
+  oldest_days: number;
+  nudge: string;
+}
+
+export interface AgingReport {
+  as_of: string;
+  customers: DebtorRow[];
+  totals: Record<string, number>;
+}
+
+/** AR aging per customer + ready-to-send WhatsApp nudge drafts (audit #15). */
+export async function getDebtors(businessName?: string | null): Promise<AgingReport> {
+  const q = businessName ? `?business_name=${encodeURIComponent(businessName)}` : '';
+  const data = await spineFetch(`/debtors${q}`);
+  return data as unknown as AgingReport;
+}
+
 export async function invoiceShareText(id: string, businessName?: string | null, payNote?: string | null): Promise<string> {
   const q = new URLSearchParams();
   if (businessName) q.set('business_name', businessName);

@@ -9,7 +9,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   listInvoices, createInvoice, sendInvoice, markInvoicePaid, cancelInvoice,
-  deleteInvoice, invoiceShareText, type Invoice, type InvoiceLine,
+  deleteInvoice, invoiceShareText, getDebtors,
+  type Invoice, type InvoiceLine, type AgingReport,
 } from '@/lib/api';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
@@ -45,12 +46,17 @@ export default function InvoicesPage() {
   const [lines, setLines] = useState<InvoiceLine[]>([{ ...EMPTY_LINE }]);
   const [saving, setSaving] = useState(false);
 
+  const [aging, setAging] = useState<AgingReport | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try { setInvoices(await listInvoices()); }
     catch (e) { setError((e as Error).message); }
     finally { setLoading(false); }
-  }, []);
+    // The ledger refreshes with every action; failures stay silent — the
+    // invoice list stands on its own.
+    getDebtors(profile?.business_name as string | null).then(setAging).catch(() => {});
+  }, [profile?.business_name]);
   useEffect(() => { void load(); }, [load]);
 
   const outstanding = useMemo(
@@ -213,6 +219,42 @@ export default function InvoicesPage() {
                 {saving ? 'Saving…' : 'Save draft'}
               </button>
             </div>
+          </div>
+        </SectionCard>
+      )}
+
+      {aging && aging.customers.length > 0 && (
+        <SectionCard
+          title="Who owes you"
+          subtitle={`Invoices + the credit book, as of ${aging.as_of} · oldest debt first to nudge`}
+          style={{ marginBottom: 20 }}
+        >
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 14 }}>
+            {(['current', '1-30', '31-60', '60+'] as const).map((b) => (
+              <span key={b} style={{ fontSize: 'var(--fs-label)', color: b === '60+' ? 'var(--crit)' : b === '31-60' ? 'var(--warn)' : 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>
+                {b === 'current' ? 'Not yet due' : `${b} days`}: <strong style={{ color: 'var(--text-1)' }}>{fmt(aging.totals[b] ?? 0, true, sym)}</strong>
+              </span>
+            ))}
+          </div>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {aging.customers.slice(0, 8).map((d) => (
+              <div key={d.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{d.name}</span>
+                  <span style={{ fontSize: 'var(--fs-label)', color: d.oldest_days > 60 ? 'var(--crit)' : d.oldest_days > 30 ? 'var(--warn)' : 'var(--text-3)', marginLeft: 8 }}>
+                    {d.oldest_days > 0 ? `oldest ${d.oldest_days}d` : 'not yet due'}
+                    {d.credit_total > 0 && ' · incl. credit book'}
+                  </span>
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                  <span style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', fontVariantNumeric: 'tabular-nums' }}>{fmt(d.total, false, sym)}</span>
+                  <button type="button" style={btn}
+                    onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(d.nudge)}`, '_blank', 'noopener')}>
+                    Nudge on WhatsApp
+                  </button>
+                </span>
+              </div>
+            ))}
           </div>
         </SectionCard>
       )}
