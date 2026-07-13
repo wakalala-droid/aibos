@@ -1,5 +1,6 @@
 'use client';
 import { useStore, type RfmRow } from '@/lib/store';
+import { useLiveCustomerIntel } from '@/hooks/useLiveCustomerIntel';
 import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
@@ -37,7 +38,8 @@ function RetentionRing({ rate }: { rate: number }) {
 }
 
 export default function CustomersPage() {
-  const { rfm, segments, retention, clvTiers, hasEngine2Data, currencySymbol } = useStore();
+  const { rfm, segments, retention, clvTiers, hasEngine2Data, customerIntelSource, currencySymbol } = useStore();
+  const liveProgress = useLiveCustomerIntel();
   const sym = currencySymbol || 'K';
   const total = retention?.total_customers ?? rfm.length;
   const retRate = retention?.retention_rate ?? 0;
@@ -89,6 +91,25 @@ export default function CustomersPage() {
       />
 
       <SimpleSummary page="customers" />
+
+      {customerIntelSource === 'spine' && (
+        <p style={{ display: 'inline-flex', alignItems: 'center', gap: 6, margin: '0 0 16px', fontSize: 'var(--fs-label)', color: 'var(--e2)', fontWeight: 600 }}>
+          <span aria-hidden style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--e2)' }} />
+          Live from your records — updates as you record sales
+        </p>
+      )}
+
+      {liveProgress && !hasEngine2Data && (
+        <SectionCard title="Live customer intelligence — almost on" style={{ marginBottom: 20 }}>
+          <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: '0 0 8px' }}>
+            {liveProgress.coverage.sales_with_customer} of {liveProgress.needed?.transactions ?? 10} named sales
+            {' · '}{liveProgress.coverage.customers} of {liveProgress.needed?.customers ?? 3} customers
+          </p>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>
+            {liveProgress.hint}
+          </p>
+        </SectionCard>
+      )}
 
       {/* KPI cards - E1 style */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>

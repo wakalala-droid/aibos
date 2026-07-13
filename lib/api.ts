@@ -330,6 +330,27 @@ async function spineFetch(path: string, init: RequestInit = {}): Promise<Record<
   return data;
 }
 
+// ── Live customer intelligence (Engine 2 over the spine — audit #5) ──────────
+
+export interface LiveCustomerIntel {
+  insufficient: boolean;
+  coverage: { sales_events: number; sales_with_customer: number; customers: number };
+  needed?: { transactions: number; customers: number };
+  hint?: string;
+  rfm?: unknown[];
+  segments?: unknown[];
+  clv_tiers?: unknown[];
+  retention?: unknown;
+  customer_intel_brief?: string;
+  source?: string;
+}
+
+/** Engine 2 computed from recorded events. Throws on 402 (Free tier). */
+export async function getCustomerIntelligence(): Promise<LiveCustomerIntel> {
+  const data = await spineFetch('/intelligence/customers');
+  return data as unknown as LiveCustomerIntel;
+}
+
 /** Free text → a proposed (not yet saved) event. */
 export async function classifyActivity(text: string, currency = 'ZMW'): Promise<EventProposal> {
   const data = await spineFetch('/events/classify', {

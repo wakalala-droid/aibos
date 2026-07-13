@@ -1,5 +1,6 @@
 'use client';
 import { useStore, type RfmRow } from '@/lib/store';
+import { useLiveCustomerIntel } from '@/hooks/useLiveCustomerIntel';
 import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
@@ -51,6 +52,7 @@ const churnColumns = (sym: string): DataTableColumn<RfmRow>[] => [
 
 export default function ChurnPage() {
   const { rfm, hasEngine2Data, currencySymbol } = useStore();
+  useLiveCustomerIntel(); // hydrates the shared Engine-2 slices from the spine
   const sym = currencySymbol || 'K';
 
   const high = rfm.filter(r => r.churn_risk >= 70).sort((a, b) => b.churn_risk - a.churn_risk);

@@ -285,6 +285,8 @@ export interface FinancialState {
   unifiedBrief: string;
   opsIntelBrief: string;
   customerIntelBrief: string;
+  /** Where the Engine-2 slices came from: file upload or the live event spine. */
+  customerIntelSource: 'upload' | 'spine' | null;
 
   // ── Evolution spine — Digital Twin (derived from Business Events) ────────────
   twin: Twin | null;
@@ -301,6 +303,9 @@ interface FinancialActions {
   setMobileNav: (v: boolean) => void;
   toggleMobileNav: () => void;
   setUiMode: (m: 'simple' | 'technical') => void;
+  /** Feed Engine-2 slices from GET /intelligence/customers (raw engine2 keys).
+   *  The spine is the living model — it wins over a stale upload. */
+  hydrateLiveCustomerIntel: (data: Record<string, unknown>) => void;
   setTier: (t: Tier) => void;
   addLocation: (name: string) => void;
   /** Claim the store for a signed-in user; wipes all data if it belonged to
@@ -395,6 +400,7 @@ const INITIAL: FinancialState = {
   unifiedBrief: "",
   opsIntelBrief: "",
   customerIntelBrief: "",
+  customerIntelSource: null,
 
   twin: null,
   recentEvents: [],
@@ -694,6 +700,24 @@ const _store = create<FinancialState & FinancialActions>()(
       toggleMobileNav: () => set((s) => ({ mobileNavOpen: !s.mobileNavOpen })),
 
       setUiMode: (m) => set({ uiMode: m }),
+
+      hydrateLiveCustomerIntel: (data) =>
+        set((prev) => ({
+          rfm: asArray<RfmRow>(data.rfm),
+          segments: asArray<SegmentRow>(data.segments),
+          clvTiers: asArray<ClvTierRow>(data.clv_tiers),
+          retention: asObjOrNull<RetentionShape>(data.retention),
+          customerIntelBrief:
+            typeof data.customer_intel_brief === "string"
+              ? data.customer_intel_brief
+              : prev.customerIntelBrief,
+          // products/basket_pairs deliberately NOT hydrated yet — the Product
+          // Matrix page expects the upload flow's normalized keys; verify
+          // parity before feeding it live rows.
+          hasEngine2Data: true,
+          engineFlags: { ...(prev.engineFlags ?? {}), e1: Boolean(prev.engineFlags?.e1), e2: true, e3: Boolean(prev.engineFlags?.e3) },
+          customerIntelSource: 'spine' as const,
+        })),
 
       setTier: (t) => set({ tier: t }),
       addLocation: (name) =>
