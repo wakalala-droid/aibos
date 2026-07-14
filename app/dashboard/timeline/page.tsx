@@ -5,7 +5,8 @@
  * by status and type, with confirm / void (soft-delete, audited). Becomes the
  * primary operational interface for small businesses.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import SectionCard from '@/components/ui/SectionCard';
 import EventList from '@/components/spine/EventList';
 import StartFresh from '@/components/spine/StartFresh';
@@ -25,14 +26,21 @@ const chip = (active: boolean): React.CSSProperties => ({
   fontSize: 'var(--fs-label)', fontWeight: 600,
 });
 
-export default function TimelinePage() {
+function TimelineInner() {
+  const params = useSearchParams();
   const refreshTwin = useStore(s => s.refreshTwin);
   const [events, setEvents] = useState<BusinessEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [status, setStatus] = useState<EventStatus | 'all'>('all');
-  const [type, setType] = useState<EventType | 'all'>('all');
+  // Deep-linkable (audit #31): any KPI/chart/driver links here with ?type=&status=
+  // so "the events behind this number" is one click from wherever it's shown.
+  const initType = params.get('type');
+  const initStatus = params.get('status');
+  const [status, setStatus] = useState<EventStatus | 'all'>(
+    (['confirmed', 'pending', 'void'] as string[]).includes(initStatus ?? '') ? (initStatus as EventStatus) : 'all');
+  const [type, setType] = useState<EventType | 'all'>(
+    (ALL_TYPES as string[]).includes(initType ?? '') ? (initType as EventType) : 'all');
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -120,5 +128,13 @@ export default function TimelinePage() {
 
       <StartFresh onDone={load} />
     </>
+  );
+}
+
+export default function TimelinePage() {
+  return (
+    <Suspense fallback={<div className="skeleton" style={{ height: 200 }} />}>
+      <TimelineInner />
+    </Suspense>
   );
 }

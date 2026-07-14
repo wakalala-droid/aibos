@@ -84,6 +84,7 @@ export default function CashPage() {
           iconBg="rgba(0,212,255,0.12)"
           sparkData={cashSpark.length > 1 ? cashSpark.slice(-6) : undefined}
           sparkColor="var(--cyan)" delay={0}
+          drillHref="/dashboard/timeline?type=CustomerPayment" drillLabel="Money in"
         />
         <KPICard
           label="MONTHLY BURN" value={fmt(monthlyBurn, false, sym)} sub="avg monthly spend"
@@ -91,6 +92,7 @@ export default function CashPage() {
           iconBg="rgba(249,115,22,0.15)"
           sparkData={monthly.slice(-6).map(m => Number(m.Costs) || 0)}
           sparkColor="var(--e2)" delay={0.06}
+          drillHref="/dashboard/timeline?type=Expense" drillLabel="See expenses"
         />
         <KPICard
           label="CASH RUNWAY" value={`${runway}mo`} sub={`vs ${runwayTarget}mo target`}

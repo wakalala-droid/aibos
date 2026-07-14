@@ -6,6 +6,7 @@
 // history (the honest floor is 4 recorded months).
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { authHeaders } from '@/lib/api';
 import { useStore } from '@/lib/store';
 import { fmt } from '@/lib/utils';
@@ -13,6 +14,7 @@ import SectionCard from '@/components/ui/SectionCard';
 
 interface Driver {
   label: string;
+  event_type: string;
   direction: 'in' | 'out';
   amount: number;
   baseline_avg: number;
@@ -66,7 +68,11 @@ export default function WhatChanged() {
           return (
             <div key={`${d.direction}-${d.label}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
               <span style={{ minWidth: 0 }}>
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{d.label}</span>
+                {/* Drill-through (audit #31): the events behind this driver. */}
+                <Link href={`/dashboard/timeline?type=${encodeURIComponent(d.event_type)}`}
+                  style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', textDecoration: 'none' }}>
+                  {d.label} <span aria-hidden style={{ color: 'var(--text-4)' }}>›</span>
+                </Link>
                 <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginLeft: 8 }}>
                   {d.count} event{d.count === 1 ? '' : 's'}
                   {d.baseline_avg > 0 && ` · usually ${fmt(d.baseline_avg, true, sym)}`}

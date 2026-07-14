@@ -1,5 +1,6 @@
 'use client';
 import { useId } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import BorderGlow from './BorderGlow';
@@ -22,6 +23,9 @@ interface KPICardProps {
   goodWhenUp?: boolean;
   /** Knowledge-base id — long-press the card to have the AI assistant explain it. */
   explainId?: string;
+  /** Drill-through (audit #31): a link to the records behind this number. */
+  drillHref?: string;
+  drillLabel?: string;
 }
 
 // Cursor edge-glow tuning shared by every KPI card (hsl "h s l" per React Bits).
@@ -32,7 +36,7 @@ export default function KPICard({
   label, sublabel, value, sub = 'vs prior period',
   growth, icon, iconBg = 'rgba(96,165,250,0.15)',
   sparkData, sparkColor = '#60a5fa', delay = 0, score, goodWhenUp = true,
-  explainId,
+  explainId, drillHref, drillLabel = 'See the records',
 }: KPICardProps) {
   const spark = sparkData?.map((v, i) => ({ v, i }));
   const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
@@ -129,6 +133,13 @@ export default function KPICard({
             </div>
           )}
         </div>
+
+        {drillHref && (
+          <Link href={drillHref}
+            style={{ display: 'inline-block', marginTop: 10, fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none' }}>
+            {drillLabel} <span aria-hidden>›</span>
+          </Link>
+        )}
       </div>
     </BorderGlow>
     </motion.div>
