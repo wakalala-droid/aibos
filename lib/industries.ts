@@ -144,6 +144,57 @@ const PROFILES: Record<string, IndustryProfile> = {
   },
 };
 
+// Starter catalogs (audit #51): a few real products per vertical so a new
+// owner isn't staring at an empty form — one tap seeds these, then they edit.
+// Prices intentionally omitted (the owner sets their own); category + unit only.
+export interface StarterProduct { name: string; category: string; unit: string }
+
+const STARTERS: Record<string, StarterProduct[]> = {
+  restaurant: [
+    { name: 'Nshima plate', category: 'Meals', unit: 'plate' },
+    { name: 'Chicken & chips', category: 'Meals', unit: 'plate' },
+    { name: 'Soft drink', category: 'Drinks', unit: 'bottle' },
+    { name: 'Cooking oil', category: 'Ingredients', unit: 'litre' },
+    { name: 'Mealie meal', category: 'Ingredients', unit: 'bag' },
+  ],
+  retail: [
+    { name: 'Mealie meal', category: 'Groceries', unit: 'bag' },
+    { name: 'Sugar', category: 'Groceries', unit: 'kg' },
+    { name: 'Cooking oil', category: 'Groceries', unit: 'litre' },
+    { name: 'Soft drink', category: 'Drinks', unit: 'bottle' },
+    { name: 'Soap', category: 'Household', unit: 'bar' },
+  ],
+  hospitality: [
+    { name: 'Standard room', category: 'Rooms', unit: 'night' },
+    { name: 'Deluxe room', category: 'Rooms', unit: 'night' },
+    { name: 'Breakfast', category: 'Meals', unit: 'guest' },
+    { name: 'Laundry service', category: 'Services', unit: 'load' },
+  ],
+  farm: [
+    { name: 'Eggs', category: 'Produce', unit: 'tray' },
+    { name: 'Broiler chicken', category: 'Produce', unit: 'bird' },
+    { name: 'Feed', category: 'Inputs', unit: 'bag' },
+    { name: 'Vegetables', category: 'Produce', unit: 'bundle' },
+  ],
+  services: [
+    { name: 'Consultation', category: 'Services', unit: 'hour' },
+    { name: 'Standard package', category: 'Services', unit: 'job' },
+  ],
+  ecommerce: [
+    { name: 'Best seller', category: 'Products', unit: 'item' },
+    { name: 'Accessory', category: 'Products', unit: 'item' },
+  ],
+  manufacturing: [
+    { name: 'Concrete block', category: 'Finished goods', unit: 'unit' },
+    { name: 'Cement', category: 'Raw materials', unit: 'bag' },
+  ],
+};
+
+export function starterProductsFor(businessType?: string | null, industry?: string | null): StarterProduct[] {
+  const key = industryOf(businessType, industry).key;
+  return STARTERS[key] ?? STARTERS.retail;
+}
+
 // Keyword → profile matching over business_type + industry free text. First
 // match wins; order puts the more specific words ahead of the broad ones.
 const MATCHERS: Array<[RegExp, keyof typeof PROFILES]> = [

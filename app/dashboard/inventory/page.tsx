@@ -9,6 +9,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
+import { useProfile } from '@/lib/profile';
+import { industryOf, starterProductsFor } from '@/lib/industries';
 import PageHeader from '@/components/ui/PageHeader';
 import {
   listProducts, createProduct, updateProduct, deleteProduct, importLoyverseItems, stockTake,
@@ -26,6 +28,7 @@ const lbl: React.CSSProperties = { fontSize: 'var(--fs-label)', fontWeight: 600,
 
 export default function InventoryPage() {
   const sym = useStore(s => s.currencySymbol) || 'K';
+  const { profile } = useProfile();
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +67,21 @@ export default function InventoryPage() {
   async function remove(id: string) {
     try { await deleteProduct(id); await load(); }
     catch (e) { setError((e as Error).message); }
+  }
+
+  // Industry starter products (audit #51) — one tap seeds a template catalog.
+  const ind = industryOf(profile?.business_type, profile?.industry);
+  const starters = starterProductsFor(profile?.business_type, profile?.industry);
+  const [seeding, setSeeding] = useState(false);
+  async function seedStarters() {
+    setSeeding(true); setError(null);
+    try {
+      for (const s of starters) {
+        await createProduct({ name: s.name, category: s.category, unit: s.unit, buy_price: 0, sell_price: 0, opening_stock: 0, reorder_level: 0, supplier: '' });
+      }
+      await load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setSeeding(false); }
   }
 
   // Stock-take (audit #49).
@@ -166,7 +184,14 @@ export default function InventoryPage() {
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 48 }} />)}</div>
           ) : items.length === 0 ? (
-            <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>No products yet — add your first one.</div>
+            <div style={{ padding: '28px 16px', textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)', margin: '0 0 14px' }}>No products yet — add your first one, or start from a template for your {ind.label}.</p>
+              <button type="button" className="touch-target" disabled={seeding}
+                onClick={() => void seedStarters()}
+                style={{ padding: '9px 16px', minHeight: 40, borderRadius: 8, border: '1px solid var(--cyan)', background: 'transparent', color: 'var(--cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
+                {seeding ? 'Adding…' : `Add ${starters.length} starter products`}
+              </button>
+            </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table className="data-table">
