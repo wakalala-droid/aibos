@@ -12,7 +12,10 @@ import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
-import { getRecommendations, simulate, type Recommendation, type SimResult } from '@/lib/api';
+import {
+  getRecommendations, simulate, setRecommendationStatus, getAdviceTrackRecord,
+  type Recommendation, type SimResult, type AdviceTrackRecord,
+} from '@/lib/api';
 
 const PRIORITY = {
   high: { fg: 'var(--red)', bg: 'var(--red-dim)', label: 'High' },
@@ -33,7 +36,11 @@ const inputStyle: React.CSSProperties = {
   fontSize: 'var(--fs-body)', outline: 'none',
 };
 
-function RecCard({ r }: { r: Recommendation }) {
+function RecCard({ r, onFeedback, busy }: {
+  r: Recommendation;
+  onFeedback?: (r: Recommendation, status: 'accepted' | 'dismissed') => void;
+  busy?: boolean;
+}) {
   const p = PRIORITY[r.priority] ?? PRIORITY.medium;
   return (
     <div style={{ padding: '16px 18px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
@@ -71,6 +78,34 @@ function RecCard({ r }: { r: Recommendation }) {
           <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>{r.alternatives.join(' · ')}</span>
         </div>
       )}
+
+      {/* Feedback loop (audit #20) — the missing learning signal. Buttons only
+          exist once the ledger row does (migration 0021). */}
+      {r.rec_id && (
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10, marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+          {r.status === 'accepted' ? (
+            <span className="badge" style={{ color: 'var(--good)', background: 'rgba(52,211,153,0.12)' }}>✓ You did this</span>
+          ) : r.status === 'dismissed' ? (
+            <span className="badge" style={{ color: 'var(--text-4)', background: 'var(--bg-badge)' }}>Not relevant</span>
+          ) : (
+            <>
+              <button type="button" className="touch-target" disabled={busy}
+                onClick={() => onFeedback?.(r, 'accepted')}
+                style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--good)', background: 'transparent', color: 'var(--good)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
+                Did this
+              </button>
+              <button type="button" className="touch-target" disabled={busy}
+                onClick={() => onFeedback?.(r, 'dismissed')}
+                style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
+                Not relevant
+              </button>
+            </>
+          )}
+          {(r.times_shown ?? 0) > 1 && r.status === 'open' && (
+            <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>shown {r.times_shown}×</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -84,19 +119,34 @@ export function RecommendationList({ limit, seeAllHref, title = 'Recommendations
   const [recs, setRecs] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [track, setTrack] = useState<AdviceTrackRecord | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setErr(null);
     try { setRecs(await getRecommendations()); }
     catch (e) { setErr((e as Error).message); }
     finally { setLoading(false); }
-  }, []);
+    if (!limit) getAdviceTrackRecord().then(setTrack).catch(() => {});
+  }, [limit]);
   useEffect(() => { load(); }, [load]);
 
-  // Homepage placement stays silent while empty — DecisionsQueue rule.
-  if (limit && !loading && recs.length === 0 && !err) return null;
+  const onFeedback = useCallback(async (r: Recommendation, status: 'accepted' | 'dismissed') => {
+    if (!r.rec_id) return;
+    setBusyId(r.rec_id);
+    try {
+      await setRecommendationStatus(r.rec_id, status);
+      setRecs(prev => prev.map(x => x.rec_id === r.rec_id ? { ...x, status } : x));
+    } catch (e) { setErr((e as Error).message); }
+    finally { setBusyId(null); }
+  }, []);
 
-  const shown = limit ? recs.slice(0, limit) : recs;
+  // Homepage placement stays silent while empty — DecisionsQueue rule.
+  // Dismissed advice also leaves the homepage; the full list keeps it visible.
+  const visible = limit ? recs.filter(r => r.status !== 'dismissed') : recs;
+  if (limit && !loading && visible.length === 0 && !err) return null;
+
+  const shown = limit ? visible.slice(0, limit) : visible;
 
   return (
     <SectionCard
@@ -117,7 +167,18 @@ export function RecommendationList({ limit, seeAllHref, title = 'Recommendations
           No recommendations right now — your numbers look healthy, or there isn&apos;t enough activity yet.
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{shown.map((r, i) => <RecCard key={i} r={r} />)}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {shown.map((r, i) => (
+            <RecCard key={r.rec_id ?? i} r={r} onFeedback={onFeedback} busy={busyId === r.rec_id} />
+          ))}
+        </div>
+      )}
+      {!limit && track?.available && track.total && track.total.shown > 0 && (
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '14px 0 0' }}>
+          AIBOS&apos;s advice record: {track.total.shown} recommendation{track.total.shown === 1 ? '' : 's'} made
+          {' · '}{track.total.accepted} taken · {track.total.dismissed} not relevant
+          {typeof track.acceptance_rate === 'number' && <> · <strong style={{ color: 'var(--text-1)' }}>{track.acceptance_rate}% taken</strong> of those you decided on</>}
+        </p>
       )}
     </SectionCard>
   );
