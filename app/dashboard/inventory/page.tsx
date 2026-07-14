@@ -11,7 +11,7 @@ import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import PageHeader from '@/components/ui/PageHeader';
 import {
-  listProducts, createProduct, updateProduct, deleteProduct, importLoyverseItems,
+  listProducts, createProduct, updateProduct, deleteProduct, importLoyverseItems, stockTake,
   type Product, type ProductInput,
 } from '@/lib/api';
 
@@ -66,6 +66,25 @@ export default function InventoryPage() {
     catch (e) { setError((e as Error).message); }
   }
 
+  // Stock-take (audit #49).
+  const [takeMode, setTakeMode] = useState(false);
+  const [counts, setCounts] = useState<Record<string, string>>({});
+  const [takeBusy, setTakeBusy] = useState(false);
+  const [takeMsg, setTakeMsg] = useState<string | null>(null);
+  async function submitStockTake() {
+    setTakeBusy(true); setError(null);
+    try {
+      const payload = Object.entries(counts)
+        .filter(([, v]) => v !== '' && !isNaN(Number(v)))
+        .map(([name, v]) => ({ name, counted: Number(v) }));
+      const out = await stockTake(payload);
+      setTakeMsg(`${out.adjusted} product${out.adjusted === 1 ? '' : 's'} adjusted${out.adjusted === 0 ? ' — everything matched' : ''}.`);
+      setCounts({});
+      await load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setTakeBusy(false); }
+  }
+
   // Loyverse catalog import (audit #29) — idempotent, existing names skipped.
   const loyverseRef = useRef<HTMLInputElement | null>(null);
   const [importing, setImporting] = useState(false);
@@ -106,8 +125,40 @@ export default function InventoryPage() {
           style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer', opacity: importing ? 0.7 : 1 }}>
           {importing ? 'Importing…' : 'Import from Loyverse'}
         </button>
+        {items.length > 0 && (
+          <button type="button" className="touch-target"
+            onClick={() => { setTakeMode(v => !v); setCounts({}); setTakeMsg(null); }}
+            style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid var(--border-md)', background: takeMode ? 'var(--bg-badge)' : 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
+            {takeMode ? 'Cancel stock-take' : 'Stock-take'}
+          </button>
+        )}
         {importMsg && <span role="status" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{importMsg}</span>}
       </div>
+
+      {takeMode && (
+        <SectionCard title="Stock-take" subtitle="Count what's physically on the shelf. AIBOS adjusts only where your count differs." style={{ marginBottom: 16 }}>
+          {takeMsg && <p role="status" style={{ fontSize: 'var(--fs-body)', color: 'var(--good)', margin: '0 0 12px' }}>{takeMsg}</p>}
+          <div style={{ display: 'grid', gap: 8 }}>
+            {items.map(p => {
+              const onHand = p.on_hand ?? p.opening_stock;
+              return (
+                <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 130px', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 600 }}>{p.name}</span>
+                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'right' }}>system: {onHand}</span>
+                  <input type="number" inputMode="decimal" aria-label={`Counted ${p.name}`} placeholder="count"
+                    value={counts[p.name] ?? ''} onChange={e => setCounts(c => ({ ...c, [p.name]: e.target.value }))}
+                    style={{ ...input, minHeight: 36 }} />
+                </div>
+              );
+            })}
+          </div>
+          <button type="button" className="touch-target" disabled={takeBusy || Object.keys(counts).length === 0}
+            onClick={() => void submitStockTake()}
+            style={{ marginTop: 14, padding: '9px 16px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: takeBusy ? 0.7 : 1 }}>
+            {takeBusy ? 'Saving…' : 'Save count'}
+          </button>
+        </SectionCard>
+      )}
 
       <div className="grid-main">
         <SectionCard title="Products" subtitle={loading ? 'Loading…' : `${items.length} product${items.length === 1 ? '' : 's'}`}>

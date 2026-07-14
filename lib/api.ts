@@ -275,6 +275,20 @@ export interface Business {
   is_default: boolean;
 }
 
+// ── What AIBOS has learned (audit #57) ────────────────────────────────────────
+export interface MemorySummary {
+  available: boolean;
+  total?: number;
+  aliases?: number;
+  category_rules?: number;
+  type_rules?: number;
+  sample_aliases?: { from: string; to: string; hits: number }[];
+}
+export async function getMemorySummary(): Promise<MemorySummary> {
+  const data = await spineFetch('/memory/summary');
+  return data as unknown as MemorySummary;
+}
+
 // ── Budgets & targets (audit #37) ─────────────────────────────────────────────
 export type BudgetMetric = 'revenue' | 'costs' | 'profit';
 export interface BudgetLine {
@@ -493,6 +507,15 @@ export async function updateMemberRole(id: string, role: TeamMemberRole): Promis
 
 export async function revokeMember(id: string): Promise<void> {
   await spineFetch(`/members/${id}`, { method: 'DELETE' });
+}
+
+/** Guided stock count → InventoryAdjustment events per discrepancy (audit #49). */
+export async function stockTake(counts: { name: string; counted: number }[]): Promise<{ adjusted: number; skipped: number }> {
+  const data = await spineFetch('/products/stock-take', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ counts }),
+  });
+  return data as unknown as { adjusted: number; skipped: number };
 }
 
 /** Loyverse items export → the product catalog in one upload (audit #29). */

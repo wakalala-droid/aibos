@@ -14,7 +14,7 @@ import { useStore } from '@/lib/store';
 import { CURRENCIES } from '@/lib/currency';
 import {
   briefDeliveryConfig, listMembers, inviteMember, updateMemberRole, revokeMember,
-  type TeamMember, type TeamMemberRole,
+  getMemorySummary, type TeamMember, type TeamMemberRole,
 } from '@/lib/api';
 import PageHeader from '@/components/ui/PageHeader';
 
@@ -357,8 +357,39 @@ export default function BusinessProfilePage() {
         {/* Team — owners only (audit #27/#28). */}
         {teamRole === 'owner' && <TeamCard />}
 
+        {/* What AIBOS has learned (audit #57) — the correction loop made visible. */}
+        <MemoryLearnedCard />
+
         {user?.id && <InviteCard userId={user.id} />}
       </div>
+    </div>
+  );
+}
+
+function MemoryLearnedCard() {
+  const [mem, setMem] = useState<import('@/lib/api').MemorySummary | null>(null);
+  useEffect(() => { getMemorySummary().then(setMem).catch(() => {}); }, []);
+  if (!mem?.available || !mem.total) return null;
+  return (
+    <div className="section-card" style={{ marginTop: 20 }}>
+      <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>What AIBOS has learned</h2>
+      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 14px' }}>
+        Every correction you make teaches AIBOS, so you never enter the same thing twice.
+      </p>
+      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 14 }}>
+        <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}><strong style={{ color: 'var(--text-1)' }}>{mem.aliases ?? 0}</strong> names learned</span>
+        <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}><strong style={{ color: 'var(--text-1)' }}>{mem.category_rules ?? 0}</strong> category rules</span>
+        <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}><strong style={{ color: 'var(--text-1)' }}>{mem.type_rules ?? 0}</strong> shortcuts</span>
+      </div>
+      {(mem.sample_aliases?.length ?? 0) > 0 && (
+        <div style={{ display: 'grid', gap: 6 }}>
+          {mem.sample_aliases!.map((a, i) => (
+            <div key={i} style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+              “{a.from}” → <strong style={{ color: 'var(--text-2)' }}>{a.to}</strong>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
