@@ -16,6 +16,7 @@ import { useAiAssistant } from '@/lib/aiAssistant';
 import { TIERS } from '@/lib/tiers';
 import { buildNotifications, type Notification as LiveNotification } from '@/lib/notifications';
 import CurrencySelector from '@/components/ui/CurrencySelector';
+import BusinessSwitcher from '@/components/layout/BusinessSwitcher';
 
 // Bell read-state: the dot shows only for alerts the user hasn't opened the
 // tray for. On-device signature — the alert list itself stays server-driven.
@@ -251,6 +252,11 @@ export default function DashboardHeader() {
         <span className="dash-searchbar-hint">Search or ask AIBOS…</span>
         <kbd className="dash-searchbar-kbd">Ctrl K</kbd>
       </button>
+
+      {/* Which venture's books (audit #16). Owners with >1 business only. */}
+      <div onMouseDownCapture={() => setOpen(null)} style={{ display: 'contents' }}>
+        <BusinessSwitcher />
+      </div>
 
       {/* Universal currency format. It manages its own popover; the capture
           handler closes this header's popovers when the user reaches for it

@@ -35,6 +35,11 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
   const auth = req.headers.get("authorization");
   if (auth) headers["authorization"] = auth;
 
+  // Multi-business scope (audit #16): forward the active-business header so the
+  // backend resolves which venture's books this request touches.
+  const biz = req.headers.get("x-business-id");
+  if (biz) headers["x-business-id"] = biz;
+
   const hasBody = method !== "GET" && method !== "DELETE" && req.body != null;
   const isMultipart = ct.includes("multipart/form-data");
 

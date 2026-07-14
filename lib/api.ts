@@ -249,14 +249,42 @@ export async function checkPaymentStatus(reference: string): Promise<{ reference
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /** Attach the current Supabase access token so the backend can verify the user. */
+/** localStorage key for the active business id (audit #16). */
+export const ACTIVE_BUSINESS_KEY = 'aibos-active-business-v1';
+
 export async function authHeaders(): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {};
+  // Active-business scope — read on every call so a switch takes effect at once.
+  try {
+    const biz = window.localStorage.getItem(ACTIVE_BUSINESS_KEY);
+    if (biz) headers['X-Business-Id'] = biz;
+  } catch { /* SSR / private mode — no scope header, backend uses the default */ }
   try {
     const { data } = await createClient().auth.getSession();
     const token = data.session?.access_token;
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  } catch {
-    return {};
-  }
+    if (token) headers.Authorization = `Bearer ${token}`;
+  } catch { /* no session */ }
+  return headers;
+}
+
+export interface Business {
+  id: string;
+  name: string;
+  industry: string | null;
+  currency: string;
+  is_default: boolean;
+}
+
+export async function listBusinesses(): Promise<{ businesses: Business[]; active: string | null }> {
+  const data = await spineFetch('/businesses');
+  return { businesses: (data.businesses as Business[]) ?? [], active: (data.active as string | null) ?? null };
+}
+
+export async function createBusiness(input: { name: string; industry?: string; currency?: string }): Promise<Business> {
+  const data = await spineFetch('/businesses', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  });
+  return data.business as Business;
 }
 
 export type EventType =

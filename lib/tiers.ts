@@ -27,8 +27,9 @@ export type Feature =
   | 'chat_actions'     // record sales/expenses straight from the chat
   | 'deliveries'       // expected-delivery tracking (pending receipts due)
   | 'automation'       // future: auto reorder drafts, churn follow-up lists
-  // Growth — every location, one brain.
+  // Growth — every venture, one brain.
   | 'cross_engine'
+  | 'multi_business'   // run several businesses under one login (audit #16)
   | 'multi_location'   // UNBUILT — flag reserved; never list as a live inclusion (audit 2026-07)
   | 'api_access';      // UNBUILT — flag reserved; never list as a live inclusion (audit 2026-07)
 
@@ -115,9 +116,10 @@ export const TIERS: Record<Tier, TierMeta> = {
     accent: 'var(--e3)',
     inclusions: [
       'Everything in Pro+',
+      'Run multiple businesses under one login — separate books',
       'Cross-engine composite score — every engine, one signal',
       'Priority support',
-      'First in line: multiple locations & API access (in development)',
+      'First in line: API access (in development)',
     ],
   },
 };
