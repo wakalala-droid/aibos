@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import {
-  classifyActivity, listEvents, ingestQr, ingestReceipt,
+  classifyActivity, listEvents, ingestQr, ingestReceipt, transcribeAudio,
   type EventType, type EventProposal, type EventSource,
 } from '@/lib/api';
 import { createEventOrQueue } from '@/lib/outbox';
@@ -101,7 +101,25 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [listening, setListening] = useState(false);
   const recRef = useRef<SpeechRec | null>(null);
-  useEffect(() => { setVoiceSupported(getSpeechCtor() != null); }, []);
+  const mediaRef = useRef<MediaRecorder | null>(null);
+  // Voice is always offered now: browsers with the Web Speech API use it
+  // directly; everything else records a note for server-side Whisper
+  // (audit #17). Mic-permission failures surface at press time.
+  useEffect(() => {
+    setVoiceSupported(getSpeechCtor() != null || typeof MediaRecorder !== 'undefined');
+  }, []);
+
+  // Onboarding hands off here with ?receipt=1 (audit #18): the first-five-
+  // minutes magic moment is scanning a real receipt, not facing an empty form.
+  // window.location (not useSearchParams) keeps the page statically prerenderable.
+  const [receiptSpotlight, setReceiptSpotlight] = useState(false);
+  useEffect(() => {
+    try {
+      if (new URLSearchParams(window.location.search).get('receipt') === '1') {
+        setReceiptSpotlight(true);
+      }
+    } catch { /* SSR/older browsers — no spotlight */ }
+  }, []);
 
   // QR scan (Initiative 7) — decode a receipt QR, parse it server-side into a proposal.
   const [scanning, setScanning] = useState(false);
@@ -167,10 +185,46 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     }
   }
 
+  async function startWhisperFallback() {
+    // No Web Speech API (most Android browsers here) → record a short note,
+    // transcribe server-side, then join the normal classify flow.
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const rec = new MediaRecorder(stream);
+      const chunks: BlobPart[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setListening(false);
+        const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+        if (blob.size === 0) return;
+        setPhase('classifying');
+        try {
+          const transcript = await transcribeAudio(blob);
+          setText(transcript);
+          await handleClassify(transcript, 'voice');
+        } catch (e) {
+          setPhase('idle');
+          setError((e as Error).message || "Didn't catch that — try again or type it.");
+        }
+      };
+      mediaRef.current = rec;
+      setError(null); setListening(true);
+      rec.start();
+    } catch {
+      setListening(false);
+      setError('Mic access is blocked — allow microphone permission for this site and try again.');
+    }
+  }
+
   function toggleVoice() {
-    if (listening) { recRef.current?.stop(); return; }
+    if (listening) {
+      recRef.current?.stop();
+      if (mediaRef.current?.state === 'recording') mediaRef.current.stop();
+      return;
+    }
     const Ctor = getSpeechCtor();
-    if (!Ctor) return;
+    if (!Ctor) { void startWhisperFallback(); return; }
     const rec = new Ctor();
     rec.lang = 'en-US'; rec.interimResults = false; rec.continuous = false;
     rec.onresult = (e) => {
@@ -258,6 +312,26 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
 
   return (
     <div>
+      {receiptSpotlight && phase === 'idle' && (
+        <div role="status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '12px 14px', marginBottom: 14, borderRadius: 10, border: '1px solid var(--cyan)', background: 'var(--cyan-dim)' }}>
+          <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>
+            📸 <strong>Got a receipt nearby?</strong> Photograph it and AIBOS records the purchase for you — your first numbers in under a minute.
+          </span>
+          <span style={{ display: 'flex', gap: 8 }}>
+            <button type="button" className="touch-target"
+              onClick={() => { setReceiptSpotlight(false); fileRef.current?.click(); }}
+              style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
+              Scan a receipt
+            </button>
+            <button type="button" className="touch-target" aria-label="Dismiss"
+              onClick={() => setReceiptSpotlight(false)}
+              style={{ padding: '8px 12px', minHeight: 40, borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
+              Type instead
+            </button>
+          </span>
+        </div>
+      )}
+
       {/* ── Conversational input ─────────────────────────────────────────────── */}
       <label htmlFor="record-input" style={labelStyle}>What happened?</label>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

@@ -402,6 +402,22 @@ export interface AgingReport {
   totals: Record<string, number>;
 }
 
+/** Voice note → text via server-side Whisper (audit #17) — the fallback for
+ *  phones without the Web Speech API. The transcript then rides the same
+ *  classify → propose → confirm flow as typed text. */
+export async function transcribeAudio(blob: Blob): Promise<string> {
+  const form = new FormData();
+  form.append('file', blob, 'note.webm');
+  const res = await fetch(`${PROXY}/transcribe`, {
+    method: 'POST',
+    headers: await authHeaders(),          // no Content-Type — FormData sets it
+    body: form,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { detail?: string }).detail || `Transcription failed (${res.status})`);
+  return ((data as { text?: string }).text || '').trim();
+}
+
 /** AR aging per customer + ready-to-send WhatsApp nudge drafts (audit #15). */
 export async function getDebtors(businessName?: string | null): Promise<AgingReport> {
   const q = businessName ? `?business_name=${encodeURIComponent(businessName)}` : '';
@@ -869,11 +885,35 @@ export interface Recommendation {
   alternatives: string[];
   impact: { metric?: string; delta?: number; unit?: string };
   priority: 'low' | 'medium' | 'high';
+  /** Ledger annotations (audit #20) — absent before migration 0021 runs. */
+  rec_id?: string;
+  status?: 'open' | 'accepted' | 'dismissed';
+  times_shown?: number;
 }
 
 export async function getRecommendations(): Promise<Recommendation[]> {
   const data = await spineFetch('/recommendations');
   return (data.recommendations as Recommendation[]) ?? [];
+}
+
+/** Owner feedback on a recommendation: 'accepted' (did this) or 'dismissed'. */
+export async function setRecommendationStatus(recId: string, status: 'accepted' | 'dismissed'): Promise<void> {
+  await spineFetch(`/recommendations/${recId}/status`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+}
+
+export interface AdviceTrackRecord {
+  available: boolean;
+  total?: { shown: number; accepted: number; dismissed: number; open: number };
+  acceptance_rate?: number | null;
+}
+
+/** AIBOS's own advice scoreboard — self-auditing intelligence (audit #20). */
+export async function getAdviceTrackRecord(): Promise<AdviceTrackRecord> {
+  const data = await spineFetch('/recommendations/track-record');
+  return data as unknown as AdviceTrackRecord;
 }
 
 export interface SimResult {
