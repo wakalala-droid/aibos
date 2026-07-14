@@ -53,6 +53,32 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(self), microphone=(self), geolocation=()',
           },
+          {
+            // HSTS (audit #82): force HTTPS for a year, including subdomains.
+            // Safe on Vercel (always TLS); harmless locally (http ignores it).
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains',
+          },
+          {
+            // Conservative CSP (audit #82). Next.js needs 'unsafe-inline' +
+            // 'unsafe-eval' for its runtime and the app's pervasive inline
+            // styles; a nonce-based tightening is a dedicated follow-up. connect
+            // is same-origin (the API is reached via /api/proxy) plus Supabase.
+            // frame-ancestors 'none' backs up X-Frame-Options against clickjacking.
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
+              "font-src 'self' data:",
+              "connect-src 'self' https://*.supabase.co",
+              "media-src 'self' blob:",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "frame-ancestors 'none'",
+            ].join('; '),
+          },
         ],
       },
     ];
