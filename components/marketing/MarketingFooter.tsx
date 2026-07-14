@@ -16,6 +16,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
     links: [
       { href: '/about', label: 'Our story' },
       { href: '/trust', label: 'Trust & security' },
+      { href: '/privacy', label: 'Privacy' },
       { href: 'mailto:hello@aibos.app', label: 'Contact' },
     ],
   },
