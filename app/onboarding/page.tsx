@@ -96,7 +96,9 @@ export default function OnboardingPage() {
       // 'auto': this seeds the starting symbol but keeps uploads authoritative —
       // only the universal selector (header) pins a manual override.
       setCurrency(sym, 'auto');
-      router.push('/dashboard/record');
+      // Land on the magic moment, not an empty form (audit #18): the record
+      // page opens with the scan-your-first-receipt spotlight.
+      router.push('/dashboard/record?receipt=1');
     } catch (e) {
       setError((e as Error).message || 'Could not complete setup.');
       setSaving(false);
