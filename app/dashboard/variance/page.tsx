@@ -8,6 +8,7 @@ import FeatureGate from '@/components/ui/FeatureGate';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
 import PageHeader from '@/components/ui/PageHeader';
+import BudgetCard from '@/components/dashboard/BudgetCard';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine, Cell,
@@ -87,6 +88,10 @@ export default function VariancePage() {
         title="Variance Analysis"
         subtitle="Month-over-month changes · cost spikes · margin trends"
       />
+
+      {/* Plan vs actual (audit #37) — variance against intent, not just
+          against last month. Silent before migration 0024 is run. */}
+      <BudgetCard />
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>

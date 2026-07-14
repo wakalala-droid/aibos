@@ -275,6 +275,34 @@ export interface Business {
   is_default: boolean;
 }
 
+// ── Budgets & targets (audit #37) ─────────────────────────────────────────────
+export type BudgetMetric = 'revenue' | 'costs' | 'profit';
+export interface BudgetLine {
+  metric: BudgetMetric;
+  target: number;
+  actual: number;
+  delta: number;
+  pct_of_target: number | null;
+  on_track: boolean;
+}
+export interface BudgetReport {
+  month: string;
+  actuals: { revenue: number; costs: number; profit: number };
+  lines: BudgetLine[];
+}
+
+export async function getBudgets(month: string): Promise<BudgetReport> {
+  const data = await spineFetch(`/budgets?month=${encodeURIComponent(month)}`);
+  return data as unknown as BudgetReport;
+}
+
+export async function setBudget(month: string, metric: BudgetMetric, target: number): Promise<void> {
+  await spineFetch('/budgets', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ month, metric, target }),
+  });
+}
+
 export async function listBusinesses(): Promise<{ businesses: Business[]; active: string | null }> {
   const data = await spineFetch('/businesses');
   return { businesses: (data.businesses as Business[]) ?? [], active: (data.active as string | null) ?? null };
