@@ -9,6 +9,7 @@ import FeatureGate from '@/components/ui/FeatureGate';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import { motion } from 'framer-motion';
 import PageHeader from '@/components/ui/PageHeader';
+import CashForecastFan from '@/components/dashboard/CashForecastFan';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
@@ -157,6 +158,10 @@ export default function ForecastPage() {
         title="Forecast Engine"
         subtitle={<>AI-powered revenue prediction · {hasBand ? '95% prediction interval' : 'trend estimate'}</>}
       />
+
+      {/* P10/P50/P90 cash bands from recorded events (audit #19) — silent
+          under 4 completed months of history. */}
+      <CashForecastFan />
 
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="NEXT MONTH FORECAST" value={fmt(firstFcast, false, sym)} sub="vs prior period" growth={growthPct}
