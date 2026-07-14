@@ -679,6 +679,13 @@ export async function listSchedule(horizonDays = 60): Promise<ScheduleItem[]> {
   return (data.items as ScheduleItem[]) ?? [];
 }
 
+/** One tap: recurring PAYE/NAPSA/NHIMA reminders on the 10th, amounts from
+ *  the latest payroll run. Idempotent (audit #25). */
+export async function seedStatutorySchedule(): Promise<{ created_count: number; skipped_existing: number }> {
+  const data = await spineFetch('/schedule/statutory', { method: 'POST' });
+  return data as unknown as { created_count: number; skipped_existing: number };
+}
+
 export async function createScheduleItem(input: ScheduleItemInput): Promise<ScheduleItem> {
   const data = await spineFetch('/schedule', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),

@@ -20,7 +20,8 @@ import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
 import PageHeader from '@/components/ui/PageHeader';
 import {
   listSchedule, createScheduleItem, updateScheduleItem, setScheduleStatus,
-  deleteScheduleItem, createEvent, type ScheduleItem, type ScheduleKind,
+  deleteScheduleItem, createEvent, seedStatutorySchedule,
+  type ScheduleItem, type ScheduleKind,
   type Recurrence, type EventType,
 } from '@/lib/api';
 
@@ -111,6 +112,7 @@ export default function SchedulePage() {
   const [bridge, setBridge] = useState<ScheduleItem | null>(null);
   const [bridgeType, setBridgeType] = useState<EventType>('Sale');
   const [bridgeBusy, setBridgeBusy] = useState(false);
+  const [statutoryBusy, setStatutoryBusy] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -120,6 +122,13 @@ export default function SchedulePage() {
     finally { setLoading(false); }
   }, []);
   useEffect(() => { load(); }, [load]);
+
+  async function seedStatutory() {
+    setStatutoryBusy(true); setError(null);
+    try { await seedStatutorySchedule(); await load(); }
+    catch (e) { setError((e as Error).message); }
+    finally { setStatutoryBusy(false); }
+  }
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm(p => ({ ...p, [k]: v }));
 
@@ -314,6 +323,22 @@ export default function SchedulePage() {
         title="Schedule"
         subtitle="Meetings, pick-ups and deadlines — your week, one glance."
       />
+
+      {/* Statutory autopilot (audit #25): one tap seeds recurring PAYE/NAPSA/
+          NHIMA reminders, amounts from the latest payroll run. Hidden once
+          all three exist. */}
+      {pro && !loading && !items.some(i => i.title === 'NAPSA contribution') && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '12px 14px', marginBottom: 16, borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+          <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
+            <strong style={{ color: 'var(--text-1)' }}>Never miss ZRA, NAPSA or NHIMA again</strong> — recurring reminders on the 10th, amounts filled from your last payroll run.
+          </span>
+          <button type="button" className="touch-target" disabled={statutoryBusy}
+            onClick={() => void seedStatutory()}
+            style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: statutoryBusy ? 0.7 : 1 }}>
+            {statutoryBusy ? 'Setting up…' : 'Set up statutory reminders'}
+          </button>
+        </div>
+      )}
 
       <div className="grid-main">
         <SectionCard
