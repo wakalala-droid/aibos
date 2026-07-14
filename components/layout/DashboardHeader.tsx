@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { useAiAssistant } from '@/lib/aiAssistant';
 import { TIERS } from '@/lib/tiers';
+import { buildNotifications, type Notification as LiveNotification } from '@/lib/notifications';
 import CurrencySelector from '@/components/ui/CurrencySelector';
 
 // Bell read-state: the dot shows only for alerts the user hasn't opened the
@@ -86,19 +87,39 @@ function IconButton({
 
 export default function DashboardHeader() {
   const router = useRouter();
-  const { alerts, posBusinessName, tier, rfm, breakdown } = useStore();
+  const { alerts, posBusinessName, tier, rfm, breakdown, twin, currencySymbol } = useStore();
   const { user, logout } = useAuth();
   const { profile, isAdmin } = useProfile();
   const { setOpen: setAssistantOpen, sendMessage } = useAiAssistant();
 
   const safeAlerts = Array.isArray(alerts) ? alerts : [];
-  const unread = safeAlerts.length;
+
+  // Live, deterministic notifications (audit #32) — runway/overdue/low-stock
+  // derived from recorded data, so a recording-only user still gets a feed.
+  // Merged with the upload-era Engine-1 alerts under one bell.
+  const [liveNotifs, setLiveNotifs] = useState<LiveNotification[]>([]);
+  useEffect(() => {
+    let alive = true;
+    buildNotifications(twin, currencySymbol || 'K')
+      .then((n) => { if (alive) setLiveNotifs(n); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [twin, currencySymbol]);
+
+  const mergedAlerts = [
+    ...liveNotifs.map((n) => ({
+      id: n.id, title: n.title, description: n.description,
+      severity: n.severity, href: n.href,
+    })),
+    ...safeAlerts,
+  ];
+  const unread = mergedAlerts.length;
 
   const [open, setOpen] = useState<null | 'search' | 'bell' | 'profile' | 'shortcuts'>(null);
   const [query, setQuery] = useState('');
 
   // Alerts the user hasn't seen yet — the dot clears once the tray is opened.
-  const alertSig = safeAlerts.map((a) => `${a.id ?? ''}:${a.title}`).join('|');
+  const alertSig = mergedAlerts.map((a) => `${a.id ?? ''}:${a.title}`).join('|');
   const [seenSig, setSeenSig] = useState<string | null>(null);
   useEffect(() => {
     try { setSeenSig(window.localStorage.getItem(ALERTS_SEEN_KEY)); } catch { /* private mode */ }
@@ -366,9 +387,9 @@ export default function DashboardHeader() {
             <div style={{ maxHeight: 360, overflowY: 'auto' }}>
               {unread === 0 ? (
                 <p style={{ padding: '20px 16px', fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
-                  You’re all clear — no alerts right now. Upload data and AI-BOS will flag anything that breaks trend.
+                  You’re all clear — nothing needs you right now. As you record, AI-BOS flags anything that needs attention here.
                 </p>
-              ) : safeAlerts.slice(0, 12).map((a, i) => {
+              ) : mergedAlerts.slice(0, 12).map((a, i) => {
                 const title = String(a.title ?? 'Alert');
                 const desc = String(a.description ?? '');
                 // Severity is encoded in colour AND text (audit #34 — never
@@ -376,8 +397,9 @@ export default function DashboardHeader() {
                 const sev = String(a.severity ?? '').toLowerCase();
                 const sevWord = sev === 'critical' ? 'Critical' : sev === 'warning' ? 'Warning' : sev === 'success' ? 'Good' : 'Info';
                 const sc = sevColor(sev);
-                return (
-                  <div key={i} style={{ display: 'flex', gap: 10, padding: '12px 16px', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                const href = (a as { href?: string }).href;
+                const body = (
+                  <div style={{ display: 'flex', gap: 10, padding: '12px 16px', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
                     <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: sc, flexShrink: 0, marginTop: 5 }} />
                     <div style={{ minWidth: 0 }}>
                       <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
@@ -390,6 +412,9 @@ export default function DashboardHeader() {
                     </div>
                   </div>
                 );
+                return href ? (
+                  <Link key={i} href={href} onClick={() => setOpen(null)} style={{ display: 'block', textDecoration: 'none' }}>{body}</Link>
+                ) : <div key={i}>{body}</div>;
               })}
             </div>
             <Link href="/dashboard/anomaly" onClick={() => setOpen(null)} style={{ display: 'block', textAlign: 'center', padding: '11px 16px', borderTop: '1px solid var(--border)', fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
