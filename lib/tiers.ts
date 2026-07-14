@@ -65,6 +65,7 @@ export const TIERS: Record<Tier, TierMeta> = {
       'Financial engine (Engine 1)',
       'Last 30 days of data',
       'Full P&L and cashflow',
+      'AI CFO chat — 3 questions a day',
       'Forecast, anomaly, variance & breakeven — preview',
       'Schedule — meetings, pick-ups & deadlines',
       'Export your data anytime',
