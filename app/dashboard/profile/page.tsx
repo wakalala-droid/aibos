@@ -12,7 +12,10 @@ import { useProfile } from '@/lib/profile';
 import { TIERS, canAccess, type Tier } from '@/lib/tiers';
 import { useStore } from '@/lib/store';
 import { CURRENCIES } from '@/lib/currency';
-import { briefDeliveryConfig } from '@/lib/api';
+import {
+  briefDeliveryConfig, listMembers, inviteMember, updateMemberRole, revokeMember,
+  type TeamMember, type TeamMemberRole,
+} from '@/lib/api';
 import PageHeader from '@/components/ui/PageHeader';
 
 const BUSINESS_TYPES = [
@@ -78,7 +81,7 @@ const inputStyle: React.CSSProperties = {
 
 export default function BusinessProfilePage() {
   const { user } = useAuth();
-  const { profile, loading, refresh } = useProfile();
+  const { profile, loading, refresh, teamRole } = useProfile();
   const setCurrency = useStore((s) => s.setCurrency);
 
   const [form, setForm] = useState<FormState>(EMPTY);
@@ -351,8 +354,86 @@ export default function BusinessProfilePage() {
           onSaved={refresh}
         />
 
+        {/* Team — owners only (audit #27/#28). */}
+        {teamRole === 'owner' && <TeamCard />}
+
         {user?.id && <InviteCard userId={user.id} />}
       </div>
+    </div>
+  );
+}
+
+function TeamCard() {
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState<TeamMemberRole>('staff');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = () => { listMembers().then(setMembers).catch(() => {}); };
+  useEffect(() => { load(); }, []);
+
+  async function invite() {
+    if (!email.trim()) return;
+    setBusy(true); setError(null);
+    try { await inviteMember(email.trim(), role); setEmail(''); load(); }
+    catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+  async function changeRole(id: string, r: TeamMemberRole) {
+    try { await updateMemberRole(id, r); load(); } catch (e) { setError((e as Error).message); }
+  }
+  async function remove(id: string) {
+    try { await revokeMember(id); load(); } catch (e) { setError((e as Error).message); }
+  }
+
+  const cardInput: React.CSSProperties = { minHeight: 40, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
+  const cardBtn: React.CSSProperties = { minHeight: 36, padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-label)' };
+
+  return (
+    <div className="section-card" style={{ marginTop: 20 }}>
+      <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>Your team</h2>
+      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 16px' }}>
+        Invite a cashier to <strong>record</strong> sales (you confirm them) or an accountant to <strong>view and export</strong> — read-only. The accountant seat is free.
+      </p>
+
+      {error && <p role="alert" style={{ color: 'var(--crit)', fontSize: 'var(--fs-label)', margin: '0 0 12px' }}>{error}</p>}
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+        <input type="email" inputMode="email" value={email} onChange={e => setEmail(e.target.value)}
+          placeholder="teammate@email.com" aria-label="Invite email" style={{ ...cardInput, flex: '1 1 200px' }} />
+        <select value={role} onChange={e => setRole(e.target.value as TeamMemberRole)} aria-label="Role" style={cardInput}>
+          <option value="staff">Staff — records</option>
+          <option value="accountant">Accountant — read-only</option>
+        </select>
+        <button type="button" style={{ ...cardBtn, color: 'var(--cyan)', borderColor: 'var(--cyan)' }} disabled={busy || !email.trim()} onClick={() => void invite()}>
+          {busy ? 'Inviting…' : 'Invite'}
+        </button>
+      </div>
+
+      {members.length === 0 ? (
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>No team members yet — it&apos;s just you.</p>
+      ) : (
+        <div style={{ display: 'grid', gap: 8 }}>
+          {members.map(m => (
+            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
+              <span style={{ minWidth: 0 }}>
+                <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 600 }}>{m.email}</span>
+                <span className="badge" style={{ marginLeft: 8, color: m.status === 'active' ? 'var(--good)' : 'var(--warn)', borderColor: 'var(--border)' }}>
+                  {m.status === 'active' ? 'active' : 'invite pending'}
+                </span>
+              </span>
+              <span style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                <select value={m.role} onChange={e => void changeRole(m.id, e.target.value as TeamMemberRole)} aria-label={`Role for ${m.email}`} style={{ ...cardInput, minHeight: 32, padding: '4px 8px', fontSize: 'var(--fs-label)' }}>
+                  <option value="staff">Staff</option>
+                  <option value="accountant">Accountant</option>
+                </select>
+                <button type="button" style={cardBtn} onClick={() => void remove(m.id)}>Remove</button>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

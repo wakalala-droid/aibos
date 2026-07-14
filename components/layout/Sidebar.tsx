@@ -116,10 +116,23 @@ export default function Sidebar() {
     mobileNavOpen, setMobileNav, tier, uiMode, setUiMode,
   } = useStore();
   const { toggle, isDark } = useTheme();
-  const { isAdmin } = useProfile();
+  const { isAdmin, teamRole } = useProfile();
   const { setOpen: setAssistantOpen } = useAiAssistant();
   const col = sidebarCollapsed;
   const simple = uiMode === 'simple';
+
+  // Team roles (audit #27/#28): staff see the day-to-day (record + plan), not
+  // the money/intelligence pages; accountants read everything but the
+  // write-only capture surfaces. Owners see everything (the default).
+  const STAFF_HREFS = new Set([
+    '/dashboard', '/dashboard/record', '/dashboard/timeline', '/dashboard/schedule',
+    '/dashboard/inventory', '/dashboard/hospitality',
+  ]);
+  const ACCOUNTANT_HIDE = new Set(['/dashboard/record', '/dashboard/import']);
+  const roleAllows = (href: string) =>
+    teamRole === 'staff' ? STAFF_HREFS.has(href)
+    : teamRole === 'accountant' ? !ACCOUNTANT_HIDE.has(href)
+    : true;
 
   // Splice the Hospitality vertical into the nav only when the plan entitles it.
   // Simple mode gets a plain door alongside the other essentials; Pro mode gets
@@ -138,6 +151,18 @@ export default function Sidebar() {
     const block: NavEntry[] = [HOSPITALITY_SECTION, HOSPITALITY_ITEM];
     base.splice(at >= 0 ? at : base.length, 0, ...block);
     return base;
+  })();
+
+  // Apply the team-role filter, then drop any section header left with no
+  // items beneath it (so staff don't see an empty "Financial" label).
+  const roleFiltered: NavEntry[] = (() => {
+    if (teamRole === 'owner') return entries;
+    const kept = entries.filter(e => 'type' in e ? true : roleAllows(e.href));
+    return kept.filter((e, i) => {
+      if (!('type' in e)) return true;
+      const next = kept[i + 1];
+      return next !== undefined && !('type' in next);   // header only if followed by an item
+    });
   })();
 
   const isLocked = (eng?: 'ci' | 'ops') =>
@@ -209,7 +234,7 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav aria-label="Dashboard sections" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '8px 0' }}>
-        {entries.map((entry, i) => {
+        {roleFiltered.map((entry, i) => {
           if ('type' in entry) {
             return (
               <AnimatePresence key={`sec-${i}`}>

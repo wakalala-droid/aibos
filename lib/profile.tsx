@@ -27,6 +27,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useStore } from '@/lib/store';
 import { logUsage } from '@/lib/usage';
+import { authHeaders } from '@/lib/api';
 import type { Tier } from '@/lib/tiers';
 
 export type Role = 'member' | 'admin' | 'owner';
@@ -54,10 +55,16 @@ export interface Profile {
   whatsapp_number?: string | null;
 }
 
+/** Team membership role (audit #27/#28) — distinct from the admin `Role`.
+ *  Everyone is 'owner' of their own tenant until an owner invites them. */
+export type TeamRole = 'owner' | 'staff' | 'accountant';
+
 interface ProfileContextValue {
   profile: Profile | null;
   role: Role;
   isAdmin: boolean;
+  /** Team role in the tenant the user is acting in. */
+  teamRole: TeamRole;
   loading: boolean;
   refresh: () => Promise<void>;
 }
@@ -66,6 +73,7 @@ const DEFAULT: ProfileContextValue = {
   profile: null,
   role: 'member',
   isAdmin: false,
+  teamRole: 'owner',
   loading: true,
   refresh: async () => {},
 };
@@ -82,6 +90,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [teamRole, setTeamRole] = useState<TeamRole>('owner');
   const [loading, setLoading] = useState(true);
   const loggedLoginFor = useRef<string | null>(null);
 
@@ -121,6 +130,18 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
     setLoading(false);
 
+    // Team membership (audit #27/#28): accept any pending invites for this
+    // account, then resolve the role we're acting in. Best-effort — a plain
+    // owner (no membership) stays 'owner' and nothing changes.
+    try {
+      await fetch('/api/proxy/members/accept', { method: 'POST', headers: await authHeaders() }).catch(() => {});
+      const meRes = await fetch('/api/proxy/members/me', { headers: await authHeaders() });
+      if (meRes.ok) {
+        const me = (await meRes.json()) as { role?: TeamRole };
+        setTeamRole(me.role === 'staff' || me.role === 'accountant' ? me.role : 'owner');
+      }
+    } catch { /* non-fatal — default to owner */ }
+
     // One login event per signed-in session.
     if (loggedLoginFor.current !== user.id) {
       loggedLoginFor.current = user.id;
@@ -138,6 +159,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     profile,
     role,
     isAdmin,
+    teamRole,
     loading,
     refresh: load,
   };

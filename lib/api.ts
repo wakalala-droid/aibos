@@ -402,6 +402,43 @@ export interface AgingReport {
   totals: Record<string, number>;
 }
 
+// ── Team members: roles + accountant seat (audit #27, #28) ────────────────────
+
+export type TeamMemberRole = 'staff' | 'accountant';
+export interface TeamMember {
+  id: string;
+  email: string;
+  role: TeamMemberRole;
+  status: 'pending' | 'active' | 'revoked';
+  invited_at: string;
+  accepted_at: string | null;
+}
+
+export async function listMembers(): Promise<TeamMember[]> {
+  const data = await spineFetch('/members');
+  return (data.members as TeamMember[]) ?? [];
+}
+
+export async function inviteMember(email: string, role: TeamMemberRole): Promise<TeamMember> {
+  const data = await spineFetch('/members', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, role }),
+  });
+  return data.member as TeamMember;
+}
+
+export async function updateMemberRole(id: string, role: TeamMemberRole): Promise<TeamMember> {
+  const data = await spineFetch(`/members/${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ role }),
+  });
+  return data.member as TeamMember;
+}
+
+export async function revokeMember(id: string): Promise<void> {
+  await spineFetch(`/members/${id}`, { method: 'DELETE' });
+}
+
 /** Loyverse items export → the product catalog in one upload (audit #29). */
 export async function importLoyverseItems(file: File): Promise<{
   store: string | null; created_count: number; skipped_existing: number; warnings: string[];
