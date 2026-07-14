@@ -5,13 +5,13 @@
  * On-hand is derived from events (Slice B). Low-stock items are flagged and also
  * drive the Advisor's LowStockEngine.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import PageHeader from '@/components/ui/PageHeader';
 import {
-  listProducts, createProduct, updateProduct, deleteProduct,
+  listProducts, createProduct, updateProduct, deleteProduct, importLoyverseItems,
   type Product, type ProductInput,
 } from '@/lib/api';
 
@@ -66,6 +66,24 @@ export default function InventoryPage() {
     catch (e) { setError((e as Error).message); }
   }
 
+  // Loyverse catalog import (audit #29) — idempotent, existing names skipped.
+  const loyverseRef = useRef<HTMLInputElement | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importMsg, setImportMsg] = useState<string | null>(null);
+  async function importLoyverse(file: File) {
+    setImporting(true); setError(null); setImportMsg(null);
+    try {
+      const out = await importLoyverseItems(file);
+      setImportMsg(
+        `${out.created_count} product${out.created_count === 1 ? '' : 's'} imported`
+        + (out.store ? ` from ${out.store}` : '')
+        + (out.skipped_existing ? ` · ${out.skipped_existing} already here` : '')
+        + (out.warnings.length ? ` · ${out.warnings.length} row(s) skipped` : ''));
+      await load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setImporting(false); }
+  }
+
   const isLow = (p: Product) => p.reorder_level > 0 && (p.on_hand ?? p.opening_stock) <= p.reorder_level;
 
   return (
@@ -74,6 +92,22 @@ export default function InventoryPage() {
         title="Inventory"
         subtitle="Your product catalog — prices, stock and reorder levels."
       />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+        <input
+          ref={loyverseRef}
+          type="file"
+          accept=".csv,text/csv"
+          onChange={e => { const f = e.target.files?.[0]; if (f) void importLoyverse(f); e.target.value = ''; }}
+          style={{ display: 'none' }}
+        />
+        <button type="button" className="touch-target" disabled={importing}
+          onClick={() => loyverseRef.current?.click()}
+          style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer', opacity: importing ? 0.7 : 1 }}>
+          {importing ? 'Importing…' : 'Import from Loyverse'}
+        </button>
+        {importMsg && <span role="status" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{importMsg}</span>}
+      </div>
 
       <div className="grid-main">
         <SectionCard title="Products" subtitle={loading ? 'Loading…' : `${items.length} product${items.length === 1 ? '' : 's'}`}>

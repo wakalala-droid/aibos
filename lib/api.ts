@@ -402,6 +402,22 @@ export interface AgingReport {
   totals: Record<string, number>;
 }
 
+/** Loyverse items export → the product catalog in one upload (audit #29). */
+export async function importLoyverseItems(file: File): Promise<{
+  store: string | null; created_count: number; skipped_existing: number; warnings: string[];
+}> {
+  const form = new FormData();
+  form.append('file', file, file.name);
+  const res = await fetch(`${PROXY}/products/import/loyverse`, {
+    method: 'POST',
+    headers: await authHeaders(),          // no Content-Type — FormData sets it
+    body: form,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { detail?: string }).detail || `Import failed (${res.status})`);
+  return data as { store: string | null; created_count: number; skipped_existing: number; warnings: string[] };
+}
+
 /** Voice note → text via server-side Whisper (audit #17) — the fallback for
  *  phones without the Web Speech API. The transcript then rides the same
  *  classify → propose → confirm flow as typed text. */
