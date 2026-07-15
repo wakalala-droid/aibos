@@ -10,6 +10,7 @@ import SimpleHome from '@/components/dashboard/SimpleHome';
 import DecisionsQueue from '@/components/dashboard/DecisionsQueue';
 import TodayBrief from '@/components/dashboard/TodayBrief';
 import MilestoneBanner from '@/components/dashboard/MilestoneBanner';
+import ActivationProgress from '@/components/dashboard/ActivationProgress';
 import { RecommendationList } from '@/components/dashboard/AdvisorPanel';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
@@ -215,6 +216,7 @@ function OverviewPage() {
 
       {/* ── The day, answered (audit #9): brief → decide → the numbers.
              Everything below this block is the evidence for it. ─────────── */}
+      <ActivationProgress />
       <MilestoneBanner />
       <TodayBrief />
       <DecisionsQueue />

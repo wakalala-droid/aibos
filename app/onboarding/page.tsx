@@ -12,9 +12,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { useStore } from '@/lib/store';
-import { updateProfile, seedTwin } from '@/lib/api';
+import { updateProfile, seedTwin, createProduct } from '@/lib/api';
 import { logUsage } from '@/lib/usage';
 import { CURRENCIES } from '@/lib/currency';
+import { starterProductsFor, industryOf } from '@/lib/industries';
 const INDUSTRIES = ['Retail', 'Restaurant / Food', 'Services', 'Wholesale', 'Hospitality', 'Manufacturing', 'Agriculture', 'Mining', 'Transport', 'Other'];
 const TAX = [
   { v: 'unregistered', l: 'Not registered yet' },
@@ -49,6 +50,10 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // First-win step (post-setup): seed a starter catalog so the owner never
+  // lands on an empty product list (audit §10 fix #2).
+  const [seeding, setSeeding] = useState(false);
+  const [seeded, setSeeded] = useState(false);
 
   const [form, setForm] = useState({
     business_name: '', industry: '', currency: 'ZMW',
@@ -96,13 +101,26 @@ export default function OnboardingPage() {
       // 'auto': this seeds the starting symbol but keeps uploads authoritative —
       // only the universal selector (header) pins a manual override.
       setCurrency(sym, 'auto');
-      // Land on the magic moment, not an empty form (audit #18): the record
-      // page opens with the scan-your-first-receipt spotlight.
-      router.push('/dashboard/record?receipt=1');
+      // Don't dump them on an empty dashboard (audit §10): advance to a
+      // first-win step where they get real numbers in the first minute.
+      setSaving(false);
+      setStep(4);
     } catch (e) {
       setError((e as Error).message || 'Could not complete setup.');
       setSaving(false);
     }
+  }
+
+  async function seedStarters() {
+    setSeeding(true); setError(null);
+    try {
+      const starters = starterProductsFor(form.industry, form.industry);
+      for (const s of starters) {
+        await createProduct({ name: s.name, category: s.category, unit: s.unit, buy_price: 0, sell_price: 0, opening_stock: 0, reorder_level: 0, supplier: '' });
+      }
+      setSeeded(true);
+    } catch (e) { setError((e as Error).message || 'Could not add starter products.'); }
+    finally { setSeeding(false); }
   }
 
   return (
@@ -115,15 +133,17 @@ export default function OnboardingPage() {
           A few essentials — everything else you can add later.
         </p>
 
-        {/* Stepper */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
-          {STEPS.map((s, i) => (
-            <div key={s} style={{ flex: 1 }}>
-              <div style={{ height: 4, borderRadius: 99, background: i <= step ? 'var(--cyan)' : 'var(--border)' }} />
-              <div style={{ marginTop: 6, fontSize: 'var(--fs-label)', color: i === step ? 'var(--cyan)' : 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s}</div>
-            </div>
-          ))}
-        </div>
+        {/* Stepper — hidden on the post-setup first-win step. */}
+        {step < 4 && (
+          <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
+            {STEPS.map((s, i) => (
+              <div key={s} style={{ flex: 1 }}>
+                <div style={{ height: 4, borderRadius: 99, background: i <= step ? 'var(--cyan)' : 'var(--border)' }} />
+                <div style={{ marginTop: 6, fontSize: 'var(--fs-label)', color: i === step ? 'var(--cyan)' : 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="section-card" style={{ padding: 24 }}>
           <AnimatePresence mode="wait">
@@ -191,6 +211,59 @@ export default function OnboardingPage() {
                 </>
               )}
 
+              {step === 4 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div>
+                    <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 4px' }}>
+                      You&apos;re set up. Let&apos;s get your first numbers. 🎉
+                    </h2>
+                    <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
+                      One real entry and your dashboard comes alive. Pick whatever&apos;s easiest right now.
+                    </p>
+                  </div>
+
+                  <button type="button" onClick={() => router.push('/dashboard/record?receipt=1')} className="touch-target"
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 12, border: '1px solid var(--cyan)', background: 'var(--cyan-dim)', cursor: 'pointer' }}>
+                    <span aria-hidden style={{ fontSize: '1.5rem' }}>📸</span>
+                    <span>
+                      <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>Scan your last receipt</span>
+                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Photograph it — AIBOS reads it and records the purchase.</span>
+                    </span>
+                  </button>
+
+                  <button type="button" onClick={() => router.push('/dashboard/record')} className="touch-target"
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 12, border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: 'pointer' }}>
+                    <span aria-hidden style={{ fontSize: '1.5rem' }}>💬</span>
+                    <span>
+                      <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>Record a sale in words</span>
+                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>“{industryOf(form.industry, form.industry).saleExample}”</span>
+                    </span>
+                  </button>
+
+                  <button type="button" onClick={() => void seedStarters()} disabled={seeding || seeded} className="touch-target"
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 12, border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: seeded ? 'default' : 'pointer', opacity: seeded ? 0.75 : 1 }}>
+                    <span aria-hidden style={{ fontSize: '1.5rem' }}>{seeded ? '✅' : '📦'}</span>
+                    <span>
+                      <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
+                        {seeded ? 'Starter products added' : seeding ? 'Adding…' : `Add starter products for your ${industryOf(form.industry, form.industry).label}`}
+                      </span>
+                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                        {seeded ? 'Edit prices and stock anytime on the Inventory page.' : 'A ready-made catalog you can edit — no blank page.'}
+                      </span>
+                    </span>
+                  </button>
+
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '4px 0 0', textAlign: 'center' }}>
+                    💡 Record for 3 days and your Morning Brief unlocks automatically.
+                  </p>
+
+                  <button type="button" onClick={() => router.push('/dashboard')} className="touch-target"
+                    style={{ marginTop: 4, padding: '12px 20px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer' }}>
+                    {seeded ? 'Go to my dashboard' : 'I&apos;ll do this later — go to dashboard'}
+                  </button>
+                </div>
+              )}
+
               {step === 3 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {[
@@ -220,7 +293,8 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Nav */}
+          {/* Nav — the first-win step has its own actions. */}
+          {step < 4 && (
           <div style={{ display: 'flex', gap: 8, marginTop: 24, justifyContent: 'space-between' }}>
             <button
               type="button" onClick={() => setStep(s => Math.max(0, s - 1))}
@@ -245,14 +319,17 @@ export default function OnboardingPage() {
               </button>
             )}
           </div>
+          )}
         </div>
 
+        {step < 4 && (
         <button
           type="button" onClick={() => router.push('/dashboard/record')}
           style={{ marginTop: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 'var(--fs-label)', textDecoration: 'underline', display: 'block', marginInline: 'auto' }}
         >
           Skip for now
         </button>
+        )}
       </div>
     </div>
   );

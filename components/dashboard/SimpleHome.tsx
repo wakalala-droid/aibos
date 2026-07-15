@@ -30,6 +30,7 @@ import {
 import { OutboxChip } from '@/components/pwa/OfflineSync';
 import BorderGlow from '@/components/ui/BorderGlow';
 import MilestoneBanner from '@/components/dashboard/MilestoneBanner';
+import ActivationProgress from '@/components/dashboard/ActivationProgress';
 import { type BusinessEvent, type Product } from '@/lib/api';
 
 const ASKED_KEY = 'aibos-simple-asked-v1';
@@ -222,7 +223,8 @@ export default function SimpleHome() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* A genuine business win, when there is one (audit #58). */}
+      {/* Activation goal → first brief (audit §10 fix #4), then a genuine win. */}
+      <ActivationProgress />
       <MilestoneBanner />
 
       {/* Greeting */}
