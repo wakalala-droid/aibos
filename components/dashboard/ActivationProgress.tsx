@@ -68,7 +68,9 @@ export default function ActivationProgress() {
               style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', textDecoration: 'underline', fontSize: 'var(--fs-label)' }}>dismiss</button>
           </>
         ) : (
-          <>Record a sale or expense on {GOAL_DAYS} different days — that&apos;s enough for AIBOS to spot your first patterns. <Link href="/dashboard/record" style={{ color: 'var(--cyan)', fontWeight: 600 }}>Record now →</Link></>
+          <>Record a sale or expense on {GOAL_DAYS} different days — that&apos;s enough for AIBOS to spot your first patterns. <Link href="/dashboard/record" style={{ color: 'var(--cyan)', fontWeight: 600 }}>Record now →</Link>
+            {days === 0 && <> · <Link href="/dashboard/demo" style={{ color: 'var(--text-3)', fontWeight: 600 }}>see a sample first</Link></>}
+          </>
         )}
       </p>
     </div>
