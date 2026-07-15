@@ -111,7 +111,7 @@ function CheckoutInner() {
         </h1>
         <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 24px', lineHeight: 1.55 }}>
           {planParam === 'free'
-            ? 'Engine 1, last 30 days, full P&L and cashflow — no payment needed.'
+            ? 'Financial engine, last 30 days, full P&L and cashflow — no payment needed.'
             : 'Head back to pricing to pick Pro or Growth.'}
         </p>
         {planParam === 'free' && (

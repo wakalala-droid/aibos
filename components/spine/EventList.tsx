@@ -4,6 +4,7 @@
  * row, key fields only — responsive_design_system.md DATA TABLE RULE), with optional
  * confirm / void actions. Used by the Timeline and the Record page's recent list.
  */
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
@@ -18,8 +19,28 @@ interface Props {
   emptyHint?: string;
 }
 
+// Flatten ev.corrections ({ isoTime: { "payload.field": {from,to} } }) into
+// readable "field: from → to" lines, newest first (audit #61).
+function correctionLines(corrections?: Record<string, unknown>): { when: string; field: string; from: string; to: string }[] {
+  if (!corrections) return [];
+  const out: { when: string; field: string; from: string; to: string }[] = [];
+  for (const [when, changes] of Object.entries(corrections)) {
+    if (!changes || typeof changes !== 'object') continue;
+    for (const [field, diff] of Object.entries(changes as Record<string, { from?: unknown; to?: unknown }>)) {
+      out.push({
+        when,
+        field: field.replace(/^payload\./, '').replace(/_/g, ' '),
+        from: String((diff as { from?: unknown }).from ?? '—'),
+        to: String((diff as { to?: unknown }).to ?? '—'),
+      });
+    }
+  }
+  return out.sort((a, b) => b.when.localeCompare(a.when));
+}
+
 export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint }: Props) {
   const sym = useStore(s => s.currencySymbol) || 'K';
+  const [openHistory, setOpenHistory] = useState<string | null>(null);
 
   if (!events.length) {
     return (
@@ -67,13 +88,24 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
                     ~{Math.round(ev.confidence * 100)}% sure
                   </span>
                 )}
-                {/* Edit history (audit #61): this event was corrected. */}
+                {/* Edit history (audit #61): click to reveal exactly what changed. */}
                 {ev.corrections && Object.keys(ev.corrections).length > 0 && (
-                  <span title={`Edited ${Object.keys(ev.corrections).length} time(s)`} style={{ color: 'var(--cyan)', fontWeight: 600 }}>
-                    · edited
-                  </span>
+                  <button type="button" onClick={() => setOpenHistory(openHistory === ev.id ? null : ev.id)}
+                    aria-expanded={openHistory === ev.id}
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--cyan)', fontWeight: 600, fontSize: 'var(--fs-label)' }}>
+                    · edited {openHistory === ev.id ? '▲' : '▾'}
+                  </button>
                 )}
               </div>
+              {openHistory === ev.id && (
+                <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: 'var(--bg-badge)', display: 'grid', gap: 4 }}>
+                  {correctionLines(ev.corrections).map((c, ci) => (
+                    <div key={ci} style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                      <span style={{ textTransform: 'capitalize', color: 'var(--text-2)', fontWeight: 600 }}>{c.field}</span>: {c.from} <span aria-hidden>→</span> <span style={{ color: 'var(--text-1)' }}>{c.to}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Amount */}

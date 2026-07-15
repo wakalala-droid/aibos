@@ -32,7 +32,7 @@ export default function UpgradeTrigger() {
     triggers.push({
       id: 'anomaly',
       headline: 'We spotted something in your numbers',
-      detail: 'An anomaly was flagged in your data. See exactly what’s driving it with full Engine 1.',
+      detail: 'An anomaly was flagged in your data. See exactly what’s driving it with the full Financial engine.',
       cta: 'Investigate with Pro',
       href: '/checkout?plan=pro',
       colour: 'var(--warn)',

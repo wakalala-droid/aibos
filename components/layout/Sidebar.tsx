@@ -74,6 +74,7 @@ const NAV: NavEntry[] = [
   { href: '/dashboard/forecast',   label: 'Forecast',         icon: IC.forecast   },
   { href: '/dashboard/anomaly',    label: 'Anomaly Intel',    icon: IC.anomaly    },
   { href: '/dashboard/breakeven',  label: 'Breakeven',        icon: IC.breakeven  },
+  { href: '/dashboard/simulate',   label: 'Simulator',        icon: IC.forecast   },
 
   { type: 'section', label: 'People & Stock', colour: 'var(--purple)' },
   { href: '/dashboard/employees',  label: 'Employees',        icon: IC.people     },

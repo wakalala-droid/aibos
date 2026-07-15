@@ -84,7 +84,7 @@ export default function CustomersPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Engine 2 · Customer"
+        eyebrow="Customer Intelligence"
         eyebrowColour="var(--e2)"
         title="Customer Intelligence"
         subtitle="RFM segmentation · CLV · Retention · Churn risk"

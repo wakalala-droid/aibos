@@ -30,6 +30,7 @@ const DESTINATIONS: { href: string; label: string; group: string }[] = [
   { href: '/dashboard/forecast', label: 'Forecast', group: 'Financial' },
   { href: '/dashboard/anomaly', label: 'Anomaly Intelligence', group: 'Financial' },
   { href: '/dashboard/breakeven', label: 'Breakeven', group: 'Financial' },
+  { href: '/dashboard/simulate', label: 'Simulator', group: 'Financial' },
   { href: '/dashboard/brief', label: 'Briefs', group: 'Financial' },
   { href: '/dashboard/brief?tab=advisor', label: 'Advisor', group: 'Financial' },
   { href: '/dashboard/invoices', label: 'Invoices', group: 'Financial' },

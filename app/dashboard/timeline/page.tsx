@@ -5,7 +5,7 @@
  * by status and type, with confirm / void (soft-delete, audited). Becomes the
  * primary operational interface for small businesses.
  */
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SectionCard from '@/components/ui/SectionCard';
 import EventList from '@/components/spine/EventList';
@@ -41,6 +41,21 @@ function TimelineInner() {
     (['confirmed', 'pending', 'void'] as string[]).includes(initStatus ?? '') ? (initStatus as EventStatus) : 'all');
   const [type, setType] = useState<EventType | 'all'>(
     (ALL_TYPES as string[]).includes(initType ?? '') ? (initType as EventType) : 'all');
+
+  // Free-text search across the record (audit #38): matches customer, supplier,
+  // category, note, item, amount and type — "fuel", "chanda", "450".
+  const [q, setQ] = useState('');
+  const shown = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return events;
+    return events.filter((e) => {
+      const p = e.payload ?? {};
+      const hay = [e.event_type, p.customer, p.supplier, p.category, p.note, p.item,
+                   ...(Array.isArray(p.items) ? (p.items as unknown[]) : []), p.amount]
+        .map((v) => String(v ?? '')).join(' ').toLowerCase();
+      return hay.includes(needle);
+    });
+  }, [events, q]);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -82,7 +97,7 @@ function TimelineInner() {
 
       <SectionCard
         title="Activity"
-        subtitle={loading ? 'Loading…' : `${events.length} event${events.length === 1 ? '' : 's'}`}
+        subtitle={loading ? 'Loading…' : q.trim() ? `${shown.length} of ${events.length} match “${q.trim()}”` : `${events.length} event${events.length === 1 ? '' : 's'}`}
         action={
           <button type="button" onClick={load} className="touch-target"
             style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
@@ -90,6 +105,14 @@ function TimelineInner() {
           </button>
         }
       >
+        {/* Search (audit #38) */}
+        <input
+          type="search" value={q} onChange={(e) => setQ(e.target.value)}
+          placeholder="Search — e.g. fuel, Chanda, 450"
+          aria-label="Search events"
+          style={{ width: '100%', minHeight: 40, padding: '8px 12px', marginBottom: 10, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
+        />
+
         {/* Filters */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
           {(['all', 'confirmed', 'pending', 'void'] as const).map(s => (
@@ -117,7 +140,7 @@ function TimelineInner() {
           </div>
         ) : (
           <EventList
-            events={events}
+            events={shown}
             busyId={busyId}
             onConfirm={handleConfirm}
             onVoid={handleVoid}

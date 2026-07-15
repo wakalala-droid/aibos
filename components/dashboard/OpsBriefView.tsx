@@ -73,7 +73,7 @@ export default function OpsBriefView() {
       )}
 
       {/* Operations AI Brief */}
-      <SectionCard title="AI Operations Brief" subtitle="Engine 3 · POS analysis · AI-generated" delay={0.1} style={{ marginBottom: 20 }}>
+      <SectionCard title="AI Operations Brief" subtitle="Operations · POS analysis · AI-generated" delay={0.1} style={{ marginBottom: 20 }}>
         {opsBriefLines.length > 0
           ? opsBriefLines.map((l, i) => <BriefPoint key={i} text={l} index={i} />)
           : <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Upload POS data to generate operations intelligence</p>
