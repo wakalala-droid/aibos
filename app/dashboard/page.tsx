@@ -632,9 +632,10 @@ function OverviewPage() {
       </div>
 
       {/* ── AI CFO Chat ─────────────────────────────────────────────────── */}
-      {/* Full-width section below the main grid. Gated to paid tiers — free sees
-          a locked preview teasing the capability. The chat component renders its
-          own labelled <section> + heading, so no duplicate heading here. */}
+      {/* Full-width section below the main grid. Unlimited on paid; Free gets the
+          real chat with a daily taster (tiers.ts FREE_TASTER, counted server-side
+          by entitlements.chat_taster) rather than a locked card. The chat renders
+          its own labelled <section> + heading, so no duplicate heading here. */}
       <div style={{ marginBottom: 8 }}>
         <FeatureGate
           feature="ai_chat"

@@ -142,7 +142,10 @@ const PROPLUS: Feature[] = [
 ];
 const GROWTH: Feature[] = [
   ...PROPLUS,
-  'cross_engine', 'multi_location', 'api_access',
+  // 'multi_business' is the Growth anchor (audit #16) and entitlements.py grants
+  // it — omitting it here locked paying Growth owners out of the business
+  // switcher the backend would have allowed. Lock-step is the whole point.
+  'cross_engine', 'multi_business', 'multi_location', 'api_access',
 ];
 
 const ACCESS: Record<Tier, Feature[]> = {
@@ -154,6 +157,26 @@ const ACCESS: Record<Tier, Feature[]> = {
 
 export function canAccess(tier: Tier, feature: Feature): boolean {
   return ACCESS[tier]?.includes(feature) ?? false;
+}
+
+/**
+ * Free "taste of the flagship" allowances (audit #24): capabilities a Free
+ * account may use a few times a day rather than not at all.
+ *
+ * The SERVER is authoritative — entitlements.py counts each use in usage_events
+ * and 402s once they're spent, and its reply says how many are left. This map
+ * exists so the UI OFFERS what the backend already grants: without it a tasted
+ * feature renders as a locked upsell card and the allowance is unreachable,
+ * which is exactly the drift that shipped. Keep the numbers in lock-step with
+ * entitlements.py CHAT_TASTER_PER_DAY.
+ */
+export const FREE_TASTER: Partial<Record<Feature, { perDay: number; noun: string }>> = {
+  ai_chat: { perDay: 3, noun: 'question' },
+};
+
+/** The Free daily allowance for `feature`, or undefined if it has none. */
+export function tasterLimit(feature: Feature): { perDay: number; noun: string } | undefined {
+  return FREE_TASTER[feature];
 }
 
 /** The lowest paid tier that unlocks a feature — used to label upgrade CTAs. */

@@ -32,7 +32,7 @@ import { matchBenchmark, referenceContext } from '@/lib/industryIntel';
 import { isNetworkError } from '@/lib/outbox';
 import { parseScenario, runScenario } from '@/lib/scenario';
 import {
-  localAnswer, getComponentDoc, renderExplanation, type LiveMetrics,
+  localAnswer, asksForOwnFigures, getComponentDoc, renderExplanation, type LiveMetrics,
 } from '@/lib/aiKnowledge';
 
 export const MAX_CHARS = 2000;
@@ -654,16 +654,23 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     const local = localAnswer(text, lv);
     if (local) { pushAssistant(local); return; }
 
-    // 3) No data yet (no upload AND no recorded events) → DO NOT call the
-    //    model. With an empty context it will happily invent the user's
-    //    figures, which is exactly the trust failure we must never ship.
-    if (!lv.hasFinancial && !lv.hasCustomer && !lv.hasOps && !lv.hasTwin) {
+    // 3) No data yet, and they're asking for THEIR figures → answer here. This
+    //    used to refuse EVERY question on an empty account, which meant a new
+    //    owner could never reach the model at all: the chat just fired canned
+    //    text, and a Free owner's daily taster questions were unspendable.
+    //    The anti-fabrication line is now held where it belongs — the server
+    //    states the empty state outright (has_data:false → _context_to_text)
+    //    and the tools return empty — so everything else goes to the model and
+    //    gets a real answer. Only a direct request for their own numbers stops
+    //    here, because a round-trip could only say the same thing slower.
+    const noData = !lv.hasFinancial && !lv.hasCustomer && !lv.hasOps && !lv.hasTwin;
+    if (noData && asksForOwnFigures(text)) {
       pushAssistant("I don't have any of your business data yet, so I can't give you real figures — and I won't make them up.\n\nThe quickest start: open **Record** and tell me what happened today (“sold 3 crates of drinks for K360”). Or upload a CSV/Excel file on the **Overview** page. Until then I can still explain any metric or term — try \"Explain net margin\".");
       setSuggestions(['How do I record a sale?', 'Explain net margin', 'How do I upload data?']);
       return;
     }
 
-    // 3) Open-ended reasoning → the AI CFO backend with full master context.
+    // 4) Everything else → the AI CFO backend with full master context.
     //    Streamed (audit #21): the answer types out as the model writes it.
     //    Any streaming failure falls back to the buffered /chat below, so the
     //    chat can never be worse than it was before streaming existed.

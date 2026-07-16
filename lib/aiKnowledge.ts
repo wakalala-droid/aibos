@@ -362,6 +362,24 @@ const has = (q: string, ...terms: string[]) => terms.some((t) => q.includes(t));
  * Returns the answer string, or null when the question needs the Grok API
  * (open-ended reasoning, "why did X happen", "what should I do").
  */
+/**
+ * True when the message asks for the owner's OWN numbers ("how much did I make
+ * today?", "what's my cash?") — as opposed to a definition, a general business
+ * question, or ordinary conversation.
+ *
+ * Used by the no-data path: when nothing has been recorded, this ONE case is
+ * answered locally, because a round-trip could only come back with the same
+ * "I don't have it". Everything else must reach the model — a blanket refusal
+ * is what made the chat feel like a wall of canned text.
+ */
+export function asksForOwnFigures(rawQuery: string): boolean {
+  const q = rawQuery.toLowerCase().trim().replace(/[?!.]+$/, '');
+  if (!q) return false;
+  const isLookup = /\b(how much|how many|what's my|whats my|what is my|what are my|my current|show me my|value of|figure for)\b/.test(q);
+  const selfRef = /\b(i|my|mine|our|ours|we|us)\b/.test(q);
+  return isLookup && selfRef;
+}
+
 export function localAnswer(rawQuery: string, lv: LiveMetrics): string | null {
   const q = rawQuery.toLowerCase().trim().replace(/[?!.]+$/, '');
   if (!q) return null;
