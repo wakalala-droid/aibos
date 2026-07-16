@@ -453,6 +453,65 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     setMessages((p) => [...p, { id: `a-${Date.now()}-${p.length}`, role: 'assistant', content, timestamp: nowTime() }]);
   }, []);
 
+  /**
+   * Streamed answer (audit #21). POSTs to /chat/stream and appends each token
+   * to a live assistant bubble as it arrives. Returns true when it handled the
+   * turn (streamed an answer, or showed the upgrade gate); false/throws to let
+   * the caller fall back to the buffered /chat.
+   */
+  const streamChat = useCallback(async (payload: string): Promise<boolean> => {
+    const res = await fetch(`${API}/chat/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+      body: payload,
+    });
+
+    // 402 = tier gate. Raised before the stream opens, so it's plain JSON.
+    if (res.status === 402) {
+      const d = await res.json().catch(() => ({} as Record<string, unknown>));
+      setOnline(true);
+      pushAssistant(`${typeof d.detail === 'string' ? d.detail : 'The AI CFO chat is a Pro feature.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`);
+      return true;
+    }
+    const ct = res.headers.get('content-type') ?? '';
+    if (!res.ok || !ct.includes('text/event-stream') || !res.body) return false;
+
+    const id = `a-${Date.now()}-stream`;
+    setMessages((p) => [...p, { id, role: 'assistant', content: '', timestamp: nowTime() }]);
+    const append = (chunk: string) =>
+      setMessages((p) => p.map((m) => (m.id === id ? { ...m, content: m.content + chunk } : m)));
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    let got = false;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      // SSE frames are separated by a blank line; keep any partial tail.
+      const frames = buf.split('\n\n');
+      buf = frames.pop() ?? '';
+      for (const frame of frames) {
+        const line = frame.trim();
+        if (!line.startsWith('data:')) continue;
+        try {
+          const msg = JSON.parse(line.slice(5).trim()) as { t?: string; tool?: string; error?: string; done?: boolean };
+          if (msg.t) { append(msg.t); got = true; setLoading(false); }
+          else if (msg.error) { append(`\n\n${msg.error}`); got = true; }
+        } catch { /* ignore a malformed frame rather than kill the answer */ }
+      }
+    }
+    if (!got) {
+      // Nothing came through — drop the empty bubble and let the caller retry
+      // on the buffered path rather than leaving a blank message.
+      setMessages((p) => p.filter((m) => m.id !== id));
+      return false;
+    }
+    setOnline(true);
+    return true;
+  }, [pushAssistant]);
+
   const sendMessage = useCallback(async (raw: string) => {
     const text = raw.trim().slice(0, MAX_CHARS);
     if (!text || loadingRef.current) return;
@@ -604,22 +663,34 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       return;
     }
 
-    // 3) Open-ended reasoning → Grok backend with full master context.
+    // 3) Open-ended reasoning → the AI CFO backend with full master context.
+    //    Streamed (audit #21): the answer types out as the model writes it.
+    //    Any streaming failure falls back to the buffered /chat below, so the
+    //    chat can never be worse than it was before streaming existed.
     setLoading(true);
     logUsage('chat');
+    const payload = JSON.stringify({
+      message: text,
+      context: buildContext(s, lv, {
+        name: profileRef.current?.business_name,
+        type: profileRef.current?.business_type,
+        industry: profileRef.current?.industry,
+        location: profileRef.current?.location,
+      }),
+    });
+
+    try {
+      const streamed = await streamChat(payload);
+      if (streamed) { setLoading(false); return; }   // handled (answer or gate)
+    } catch {
+      /* fall through to the buffered path */
+    }
+
     try {
       const res = await fetch(`${API}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-        body: JSON.stringify({
-          message: text,
-          context: buildContext(s, lv, {
-            name: profileRef.current?.business_name,
-            type: profileRef.current?.business_type,
-            industry: profileRef.current?.industry,
-            location: profileRef.current?.location,
-          }),
-        }),
+        body: payload,
       });
       const body = await res.text();
       let data: Record<string, unknown> = {};
@@ -647,7 +718,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     } finally {
       setLoading(false);
     }
-  }, [pushAssistant]);
+  }, [pushAssistant, streamChat]);
 
   // ── Long-press explanation → answer instantly from the knowledge base ──────
   useEffect(() => {

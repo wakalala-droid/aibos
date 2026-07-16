@@ -69,15 +69,30 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
 
   try {
     const res = await fetch(upstream, init);
+    const resCt = res.headers.get("content-type") ?? "application/json";
+
+    // Server-Sent Events (the streamed AI chat, audit #21) must be piped
+    // through UNBUFFERED — awaiting res.text() here would hold every token
+    // until the answer finished, defeating the whole point of streaming.
+    if (resCt.includes("text/event-stream") && res.body) {
+      return new NextResponse(res.body, {
+        status: res.status,
+        headers: {
+          "content-type": "text/event-stream",
+          "cache-control": "no-cache, no-transform",
+          "x-accel-buffering": "no",
+          connection: "keep-alive",
+        },
+      });
+    }
+
     const text = await res.text();
     // No CORS header: this proxy is called same-origin from our own app. A
     // wildcard `access-control-allow-origin` here would let any website read
     // these responses through a victim's browser — remove it entirely.
     return new NextResponse(text, {
       status: res.status,
-      headers: {
-        "content-type": res.headers.get("content-type") ?? "application/json",
-      },
+      headers: { "content-type": resCt },
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
