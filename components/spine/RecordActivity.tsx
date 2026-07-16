@@ -226,7 +226,11 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     const Ctor = getSpeechCtor();
     if (!Ctor) { void startWhisperFallback(); return; }
     const rec = new Ctor();
-    rec.lang = 'en-US'; rec.interimResults = false; rec.continuous = false;
+    // Respect the device locale for on-device recognition (audit #17). True
+    // vernacular (Nyanja/Bemba) rides the server-side Whisper fallback below,
+    // which auto-detects language — the Web Speech API only does its locale.
+    rec.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-US';
+    rec.interimResults = false; rec.continuous = false;
     rec.onresult = (e) => {
       const transcript = e.results?.[0]?.[0]?.transcript ?? '';
       if (transcript) { setText(transcript); handleClassify(transcript, 'voice'); }

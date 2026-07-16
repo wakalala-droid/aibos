@@ -289,6 +289,47 @@ export async function getMemorySummary(): Promise<MemorySummary> {
   return data as unknown as MemorySummary;
 }
 
+export interface MemoryMapping { id: string; kind: string; key: string; value: Record<string, unknown>; hits: number }
+export async function getMemoryMappings(): Promise<MemoryMapping[]> {
+  const data = await spineFetch('/memory/mappings');
+  return (data.mappings as MemoryMapping[]) ?? [];
+}
+export async function forgetMapping(id: string): Promise<void> {
+  await spineFetch(`/memory/mappings/${id}`, { method: 'DELETE' });
+}
+
+// ── Accountant export pack (audit #27/#28) ────────────────────────────────────
+async function downloadCsv(path: string, filename: string): Promise<void> {
+  const res = await fetch(`${PROXY}${path}`, { headers: await authHeaders() });
+  if (!res.ok) throw new Error(`Export failed (${res.status})`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+export const exportEventsCsv = () => downloadCsv('/export/events.csv', 'aibos_events.csv');
+export const exportPnlCsv = () => downloadCsv('/export/pnl.csv', 'aibos_pnl.csv');
+
+export interface Party {
+  id: string;
+  name: string;
+  normalized_key: string;
+  kind: 'customer' | 'supplier' | 'both';
+  last_seen_at: string | null;
+  stats: { revenue: number; spend: number; txn_count: number } | null;
+}
+export async function listParties(kind?: 'customer' | 'supplier'): Promise<Party[]> {
+  const q = kind ? `?kind=${kind}` : '';
+  const data = await spineFetch(`/parties${q}`);
+  return (data.parties as Party[]) ?? [];
+}
+
+/** Merge two duplicate parties — keep one, fold the other in (audit #6). */
+export async function mergeParties(keepId: string, removeId: string): Promise<void> {
+  await spineFetch(`/parties/${keepId}/merge/${removeId}`, { method: 'POST' });
+}
+
 // ── Budgets & targets (audit #37) ─────────────────────────────────────────────
 export type BudgetMetric = 'revenue' | 'costs' | 'profit';
 export interface BudgetLine {

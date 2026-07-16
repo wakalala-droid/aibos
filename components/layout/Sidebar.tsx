@@ -81,6 +81,7 @@ const NAV: NavEntry[] = [
   { href: '/dashboard/inventory',  label: 'Inventory',        icon: IC.inventory  },
 
   { type: 'section', label: 'Customer Intelligence', colour: 'var(--e2)', engine: 'ci' },
+  { href: '/dashboard/contacts',   label: 'Contacts',         icon: IC.customers },
   { href: '/dashboard/customers',  label: 'Customer Intel',   icon: IC.customers,   engine: 'ci' },
   { href: '/dashboard/churn',      label: 'Churn Risk',       icon: IC.churn,       engine: 'ci' },
   { href: '/dashboard/products',   label: 'Product Matrix',   icon: IC.products,    engine: 'ci' },

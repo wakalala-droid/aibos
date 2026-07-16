@@ -70,6 +70,21 @@ const SECTIONS: { h: string; body: string[] }[] = [
     ],
   },
   {
+    h: 'Data processing (for business customers)',
+    body: [
+      'When you record your customers’, suppliers’ or guests’ personal details in AIBOS, you are the data controller and AIBOS is your data processor. We process that data only on your instructions — to run the features you use — and never for our own purposes.',
+      'We keep it confidential, apply the security measures described above (RLS isolation, field encryption for guest IDs, TLS), and do not transfer it to anyone except the sub-processors listed below, each bound to equivalent terms.',
+      'On request we will help you meet your own obligations to the people whose data you hold — including access, correction, export and deletion — and we return or delete the data when you close your account. For a signed Data Processing Agreement, contact us.',
+    ],
+  },
+  {
+    h: 'Benchmarks and anonymised insights',
+    body: [
+      'In future, AIBOS may offer benchmark insights — e.g. “restaurants like yours run a 62% food margin.” Any such benchmarks are built ONLY from data that has been aggregated and anonymised so no individual business can be identified, and only from businesses that have explicitly opted in.',
+      'This is off by default. We will ask for your clear consent before your (anonymised) figures ever contribute to a benchmark, and you can withdraw at any time. We never sell your data, benchmarked or otherwise.',
+    ],
+  },
+  {
     h: 'Changes and contact',
     body: [
       'We will give notice before any material change to this policy. Questions or requests: reach us at the support address shown in the app, or via the business you signed up with.',

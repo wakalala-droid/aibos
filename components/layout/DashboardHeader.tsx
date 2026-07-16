@@ -35,6 +35,7 @@ const DESTINATIONS: { href: string; label: string; group: string }[] = [
   { href: '/dashboard/brief?tab=advisor', label: 'Advisor', group: 'Financial' },
   { href: '/dashboard/invoices', label: 'Invoices', group: 'Financial' },
   { href: '/data-studio', label: 'Data Studio', group: 'Financial' },
+  { href: '/dashboard/contacts', label: 'Contacts', group: 'Customer' },
   { href: '/dashboard/customers', label: 'Customer Intelligence', group: 'Customer' },
   { href: '/dashboard/churn', label: 'Churn Risk', group: 'Customer' },
   { href: '/dashboard/products', label: 'Product Matrix', group: 'Customer' },

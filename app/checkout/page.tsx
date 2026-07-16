@@ -22,7 +22,9 @@ function isTier(v: string | null): v is Tier {
 function CheckoutInner() {
   const params = useSearchParams();
   const planParam = params.get('plan');
-  const billing = params.get('billing') === 'annual' ? 'annual' : 'monthly';
+  // Billing is chosen here (audit #71): default from the URL, but the owner can
+  // switch to annual — two months free — right at the point of payment.
+  const [billing, setBilling] = useState<'monthly' | 'annual'>(params.get('billing') === 'annual' ? 'annual' : 'monthly');
   const setTier = useStore((s) => s.setTier);
 
   // Tier is SERVER-authoritative and the client can no longer write it directly
@@ -174,6 +176,24 @@ function CheckoutInner() {
           <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
             {periodLabel} · ≈ ${usdApprox(amount)}
           </span>
+        </div>
+        {/* Monthly / annual choice — annual is two months free (audit #71). */}
+        <div role="radiogroup" aria-label="Billing period" style={{ display: 'flex', gap: 8, margin: '14px 0 0' }}>
+          {(['monthly', 'annual'] as const).map((b) => {
+            const on = billing === b;
+            return (
+              <button key={b} type="button" role="radio" aria-checked={on} onClick={() => setBilling(b)}
+                style={{ flex: 1, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+                  border: `1px solid ${on ? 'var(--cyan)' : 'var(--border-md)'}`, background: on ? 'var(--cyan-dim)' : 'transparent' }}>
+                <span style={{ display: 'block', fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)' }}>
+                  {b === 'monthly' ? 'Monthly' : 'Annual'}
+                </span>
+                <span style={{ fontSize: 'var(--fs-label)', color: on ? 'var(--cyan)' : 'var(--text-3)' }}>
+                  {b === 'monthly' ? `K${meta.priceMonthly.toLocaleString()}/mo` : `K${meta.priceAnnual.toLocaleString()}/yr · 2 months free`}
+                </span>
+              </button>
+            );
+          })}
         </div>
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '12px 0 0', lineHeight: 1.5 }}>
           Total today: <strong style={{ color: 'var(--text-2)' }}>K{amount.toLocaleString()}</strong>. No setup fees, no add-ons. Cancel anytime.

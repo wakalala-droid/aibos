@@ -14,7 +14,8 @@ import { useStore } from '@/lib/store';
 import { CURRENCIES } from '@/lib/currency';
 import {
   briefDeliveryConfig, listMembers, inviteMember, updateMemberRole, revokeMember,
-  getMemorySummary, type TeamMember, type TeamMemberRole,
+  getMemorySummary, getMemoryMappings, forgetMapping, exportEventsCsv, exportPnlCsv,
+  type TeamMember, type TeamMemberRole,
 } from '@/lib/api';
 import PageHeader from '@/components/ui/PageHeader';
 
@@ -360,6 +361,9 @@ export default function BusinessProfilePage() {
         {/* What AIBOS has learned (audit #57) — the correction loop made visible. */}
         <MemoryLearnedCard />
 
+        {/* Export your books (audit #27/#28) — data is yours, in CSV. */}
+        <ExportCard />
+
         {user?.id && <InviteCard userId={user.id} />}
       </div>
     </div>
@@ -368,28 +372,97 @@ export default function BusinessProfilePage() {
 
 function MemoryLearnedCard() {
   const [mem, setMem] = useState<import('@/lib/api').MemorySummary | null>(null);
+  const [managing, setManaging] = useState(false);
+  const [mappings, setMappings] = useState<import('@/lib/api').MemoryMapping[]>([]);
   useEffect(() => { getMemorySummary().then(setMem).catch(() => {}); }, []);
+
+  async function openManage() {
+    setManaging(true);
+    try { setMappings(await getMemoryMappings()); } catch { /* */ }
+  }
+  async function forget(id: string) {
+    try { await forgetMapping(id); setMappings((m) => m.filter((x) => x.id !== id)); getMemorySummary().then(setMem).catch(() => {}); } catch { /* */ }
+  }
+  const describe = (m: import('@/lib/api').MemoryMapping): string => {
+    const v = m.value || {};
+    if (m.kind === 'alias') return `“${m.key}” → ${String(v.name ?? '')}`;
+    if (m.kind === 'category_for_party') return `${m.key} → category ${String(v.category ?? '')}`;
+    if (m.kind === 'type_for_keyword') return `“${m.key}” → ${String(v.event_type ?? '')}`;
+    return `${m.kind}: ${m.key}`;
+  };
+
   if (!mem?.available || !mem.total) return null;
   return (
     <div className="section-card" style={{ marginTop: 20 }}>
-      <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>What AIBOS has learned</h2>
-      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 14px' }}>
-        Every correction you make teaches AIBOS, so you never enter the same thing twice.
-      </p>
-      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 14 }}>
-        <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}><strong style={{ color: 'var(--text-1)' }}>{mem.aliases ?? 0}</strong> names learned</span>
-        <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}><strong style={{ color: 'var(--text-1)' }}>{mem.category_rules ?? 0}</strong> category rules</span>
-        <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}><strong style={{ color: 'var(--text-1)' }}>{mem.type_rules ?? 0}</strong> shortcuts</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+        <div>
+          <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>What AIBOS has learned</h2>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 14px' }}>
+            Every correction you make teaches AIBOS, so you never enter the same thing twice.
+          </p>
+        </div>
+        <button type="button" onClick={() => managing ? setManaging(false) : void openManage()}
+          style={{ flexShrink: 0, minHeight: 32, padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border-md)', background: managing ? 'var(--bg-badge)' : 'transparent', color: 'var(--text-3)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-label)' }}>
+          {managing ? 'Done' : 'Manage'}
+        </button>
       </div>
-      {(mem.sample_aliases?.length ?? 0) > 0 && (
+
+      {!managing ? (
+        <>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 14 }}>
+            <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}><strong style={{ color: 'var(--text-1)' }}>{mem.aliases ?? 0}</strong> names learned</span>
+            <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}><strong style={{ color: 'var(--text-1)' }}>{mem.category_rules ?? 0}</strong> category rules</span>
+            <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}><strong style={{ color: 'var(--text-1)' }}>{mem.type_rules ?? 0}</strong> shortcuts</span>
+          </div>
+          {(mem.sample_aliases?.length ?? 0) > 0 && (
+            <div style={{ display: 'grid', gap: 6 }}>
+              {mem.sample_aliases!.map((a, i) => (
+                <div key={i} style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                  “{a.from}” → <strong style={{ color: 'var(--text-2)' }}>{a.to}</strong>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
         <div style={{ display: 'grid', gap: 6 }}>
-          {mem.sample_aliases!.map((a, i) => (
-            <div key={i} style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-              “{a.from}” → <strong style={{ color: 'var(--text-2)' }}>{a.to}</strong>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px' }}>Wrong? Remove it and AIBOS forgets — you correct it, not the other way round.</p>
+          {mappings.length === 0 ? (
+            <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Nothing learned yet.</span>
+          ) : mappings.map((m) => (
+            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)', minWidth: 0 }}>{describe(m)}</span>
+              <button type="button" onClick={() => void forget(m.id)} aria-label="Forget this"
+                style={{ flexShrink: 0, background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', textDecoration: 'underline', fontSize: 'var(--fs-label)' }}>Forget</button>
             </div>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ExportCard() {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  async function run(which: 'events' | 'pnl') {
+    setBusy(which); setErr(null);
+    try { which === 'events' ? await exportEventsCsv() : await exportPnlCsv(); }
+    catch (e) { setErr((e as Error).message); }
+    finally { setBusy(null); }
+  }
+  const btn: React.CSSProperties = { minHeight: 40, padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
+  return (
+    <div className="section-card" style={{ marginTop: 20 }}>
+      <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>Export your books</h2>
+      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 14px' }}>
+        Your data is yours — pull it out as CSV any time, for your accountant or your own records.
+      </p>
+      {err && <p role="alert" style={{ color: 'var(--crit)', fontSize: 'var(--fs-label)', margin: '0 0 10px' }}>{err}</p>}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button type="button" style={btn} disabled={busy !== null} onClick={() => void run('events')}>{busy === 'events' ? 'Preparing…' : 'Events ledger (CSV)'}</button>
+        <button type="button" style={btn} disabled={busy !== null} onClick={() => void run('pnl')}>{busy === 'pnl' ? 'Preparing…' : 'Monthly P&L (CSV)'}</button>
+      </div>
     </div>
   );
 }
