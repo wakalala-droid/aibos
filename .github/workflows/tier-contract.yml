@@ -1,0 +1,40 @@
+# Tier contract guard — stops lib/tiers.ts drifting from the backend.
+#
+# AIBOS is two repos that deploy independently and each kept its own copy of what
+# a plan unlocks. Nothing compared them, so they drifted and shipped real bugs:
+# paying Growth owners locked out of multi-business, and the Free chat taster
+# advertised on the pricing page while being unreachable. This fetches
+# aibos-api/tier_contract.json and fails if lib/tiers.ts disagrees.
+#
+# Separate from ci.yml (build/lint) on purpose:
+#   • it is seconds, not minutes — no npm install, no build;
+#   • the SCHEDULE matters. A backend-only change that updates the contract would
+#     otherwise leave this repo stale until someone happened to touch it. The
+#     daily run catches drift that no frontend commit would.
+#
+# Expect a transient red when a change spans both repos: push aibos-api FIRST,
+# then this repo. Frontend-first just means red until the backend lands.
+name: Tier contract
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '17 5 * * *'   # daily, catches backend-only drift
+  workflow_dispatch:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check lib/tiers.ts against the backend contract
+        # stdlib only — no pip install. Data is fetched, never remote code.
+        run: python3 scripts/check_tier_contract.py

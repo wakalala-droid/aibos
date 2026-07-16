@@ -28,7 +28,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useStore } from '@/lib/store';
 import { logUsage } from '@/lib/usage';
 import { authHeaders } from '@/lib/api';
-import type { Tier } from '@/lib/tiers';
+import { TIER_ORDER, type Tier } from '@/lib/tiers';
 
 export type Role = 'member' | 'admin' | 'owner';
 
@@ -80,8 +80,17 @@ const DEFAULT: ProfileContextValue = {
 
 const ProfileContext = createContext<ProfileContextValue>(DEFAULT);
 
+/**
+ * Validate `profiles.tier` against the ladder in tiers.ts — never a hand-written
+ * list. This function used to spell out 'pro' and 'growth' and fall through to
+ * 'free' for anything else, so when Pro+ was added it silently DOWNGRADED every
+ * proplus customer to Free on page load: checkout cached the right tier, then
+ * the first refresh wiped it, the whole UI locked, and the API kept honouring
+ * Pro+ (entitlements.py reads profiles.tier straight from the row). Deriving
+ * from TIER_ORDER means a new tier can never leave this behind again.
+ */
 function normaliseTier(v: unknown): Tier {
-  return v === 'pro' || v === 'growth' ? v : 'free';
+  return TIER_ORDER.includes(v as Tier) ? (v as Tier) : 'free';
 }
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
