@@ -37,7 +37,7 @@ export default function TimeSeriesUnavailable({
           </p>
           <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: 0, lineHeight: 1.6, maxWidth: 460 }}>
             This file has <strong>item-level data</strong> (rows are products/categories, not months),
-            so there is no time axis to project. AI-BOS won&apos;t invent one — that would be a
+            so there is no time axis to project. AIBOS won&apos;t invent one — that would be a
             fabricated trend.
           </p>
           <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.6, maxWidth: 460 }}>

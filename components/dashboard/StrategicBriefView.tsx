@@ -179,7 +179,7 @@ export default function StrategicBriefView({
       </SectionCard>
 
       {briefLines.length > 0 && (
-        <SectionCard title="Executive Action Plan" subtitle="AI-BOS Intelligence · E1 + Customer Intelligence + Operations" delay={0.24} style={{ marginBottom: 20 }}>
+        <SectionCard title="Executive Action Plan" subtitle="AIBOS Intelligence · E1 + Customer Intelligence + Operations" delay={0.24} style={{ marginBottom: 20 }}>
           {briefLines.map((line, i) => (<BriefPoint key={i} text={line} index={i} colour="var(--cyan)" />))}
         </SectionCard>
       )}

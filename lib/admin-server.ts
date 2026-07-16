@@ -1,5 +1,5 @@
 /**
- * AI-BOS — Server-only admin authorization (Node runtime).
+ * AIBOS — Server-only admin authorization (Node runtime).
  *
  * Resolves the current caller from the Supabase session cookie and decides
  * whether they are an admin (allowlist OR profiles.role='admin'). Use at the top

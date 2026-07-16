@@ -5,7 +5,7 @@ import Reveal from '@/components/marketing/Reveal';
 export const metadata: Metadata = {
   title: 'Our Story',
   description:
-    'Why AI-BOS exists: to give every African SME the kind of financial intelligence that used to be reserved for big companies, made affordable, priced in Kwacha, and built for how they actually run.',
+    'Why AIBOS exists: to give every African SME the kind of financial intelligence that used to be reserved for big companies, made affordable, priced in Kwacha, and built for how they actually run.',
   alternates: { canonical: '/about' },
 };
 
@@ -21,7 +21,7 @@ const FOUNDER = {
   videoHref: '',                    // optional 'Our Story' video link
   quote: 'Ask your business anything.',
   story:
-    'I kept picturing a world where every business simply ran: no nasty surprises, no finding out too late that you’d been bleeding cash just because nobody was turning the numbers into real insight. That’s the day I stopped wishing and started building AI-BOS.',
+    'I kept picturing a world where every business simply ran: no nasty surprises, no finding out too late that you’d been bleeding cash just because nobody was turning the numbers into real insight. That’s the day I stopped wishing and started building AIBOS.',
 };
 
 const ARC: { eyebrow: string; title: string; body: string }[] = [
@@ -33,7 +33,7 @@ const ARC: { eyebrow: string; title: string; body: string }[] = [
   {
     eyebrow: 'Your business tomorrow',
     title: 'A CFO in your pocket',
-    body: 'Imagine asking your business a question in plain words and getting a straight answer, in Kwacha, in seconds. Knowing your runway before it runs out. Seeing which product really pays. That’s not enterprise software; that’s AI-BOS, and it costs less than one bad decision.',
+    body: 'Imagine asking your business a question in plain words and getting a straight answer, in Kwacha, in seconds. Knowing your runway before it runs out. Seeing which product really pays. That’s not enterprise software; that’s AIBOS, and it costs less than one bad decision.',
   },
   {
     eyebrow: 'The world we’re building',
@@ -61,7 +61,7 @@ export default function AboutPage() {
               Make every African business intelligent.
             </h1>
             <p className="mkt-lead" style={{ marginTop: 20, marginInline: 'auto', maxWidth: 580 }}>
-              AI-BOS exists for one reason: the tools that let big companies see clearly should belong to the small ones too, in their language, their currency, and their reach.
+              AIBOS exists for one reason: the tools that let big companies see clearly should belong to the small ones too, in their language, their currency, and their reach.
             </p>
           </Reveal>
         </div>
@@ -77,7 +77,7 @@ export default function AboutPage() {
                 // eslint-disable-next-line @next/next/no-img-element -- founder portrait served from /public
                 <img
                   src={FOUNDER.photo}
-                  alt={FOUNDER.name ? `${FOUNDER.name}, ${FOUNDER.title}` : 'AI-BOS founder'}
+                  alt={FOUNDER.name ? `${FOUNDER.name}, ${FOUNDER.title}` : 'AIBOS founder'}
                   style={{ width: '100%', aspectRatio: '4 / 5', objectFit: 'cover', objectPosition: 'center 25%', borderRadius: 16, border: '1px solid var(--border-md)' }}
                 />
               ) : (

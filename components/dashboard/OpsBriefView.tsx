@@ -93,7 +93,7 @@ export default function OpsBriefView() {
 
       {/* Unified executive brief */}
       {unifiedLines.length > 0 && (
-        <SectionCard title="Unified Executive Action Plan" subtitle="AI-BOS Intelligence · Financial + Customer Intelligence + Operations synthesis" delay={0.22}>
+        <SectionCard title="Unified Executive Action Plan" subtitle="AIBOS Intelligence · Financial + Customer Intelligence + Operations synthesis" delay={0.22}>
           {unifiedLines.map((l, i) => <BriefPoint key={i} text={l} index={i} />)}
         </SectionCard>
       )}

@@ -1,5 +1,5 @@
 "use client";
-// lib/store.ts — AI-BOS Zustand store
+// lib/store.ts — AIBOS Zustand store
 // Field names verified against actual page source at commit c72bfd2.
 // monthly[] uses PascalCase keys (Month, Revenue, Costs) — every page reads m.Revenue, m.Costs, m.Month.
 // kpi and health are DIRECTLY destructured and accessed (kpi.avgMargin, health.score) with
@@ -176,7 +176,7 @@ export interface EngineFlagsShape {
   e3?: boolean;
 }
 
-// Read-fidelity manifest (SAFEGUARD.md Layer 1) — how AI-BOS read the file.
+// Read-fidelity manifest (SAFEGUARD.md Layer 1) — how AIBOS read the file.
 export interface ManifestColumn {
   name: string;
   role: string;

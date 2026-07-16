@@ -5,7 +5,7 @@ import Reveal from '@/components/marketing/Reveal';
 export const metadata: Metadata = {
   title: 'Trust Center',
   description:
-    'Your numbers are yours, and AI-BOS keeps them that way. Export anytime, private AI that never trains on your data, no fabricated trends, and a free tier so you can prove it before you pay.',
+    'Your numbers are yours, and AIBOS keeps them that way. Export anytime, private AI that never trains on your data, no fabricated trends, and a free tier so you can prove it before you pay.',
   alternates: { canonical: '/trust' },
 };
 
@@ -22,7 +22,7 @@ const PROMISES: { title: string; body: string; accent: string }[] = [
   },
   {
     title: 'No fabrication',
-    body: 'AI-BOS refuses to invent a trend it cannot see. If a file has no time axis, it tells you, instead of drawing a confident line through nothing.',
+    body: 'AIBOS refuses to invent a trend it cannot see. If a file has no time axis, it tells you, instead of drawing a confident line through nothing.',
     accent: 'var(--e-fore)',
   },
   {
@@ -55,7 +55,7 @@ export default function TrustPage() {
               Your numbers are yours. Here’s exactly how we keep them that way.
             </h1>
             <p className="mkt-lead" style={{ marginTop: 18, marginInline: 'auto', maxWidth: 560 }}>
-              The most sensitive thing you’ll ever upload is your own money. We built AI-BOS so that trusting it with that is the easy part.
+              The most sensitive thing you’ll ever upload is your own money. We built AIBOS so that trusting it with that is the easy part.
             </p>
           </Reveal>
         </div>
@@ -85,13 +85,13 @@ export default function TrustPage() {
               <p className="mkt-eyebrow" style={{ color: 'var(--cyan)' }}>The hardest promise, and the most important</p>
               <h2 className="mkt-h2">It would rather say “I don’t know” than lie to you.</h2>
               <p className="mkt-lead" style={{ marginTop: 18 }}>
-                Most AI tools will happily invent a confident answer. AI-BOS has a hard rule against it: if your data can’t support a trend, a forecast, or a number, it says so, and shows you why.
+                Most AI tools will happily invent a confident answer. AIBOS has a hard rule against it: if your data can’t support a trend, a forecast, or a number, it says so, and shows you why.
               </p>
             </div>
           </Reveal>
           <Reveal delay={0.1}>
             <div className="mkt-card">
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>How AI-BOS read your file</p>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>How AIBOS read your file</p>
               {[
                 ['date', 'read as the time axis', 'var(--good)'],
                 ['revenue', 'read as income (ZMW)', 'var(--good)'],

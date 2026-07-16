@@ -18,13 +18,13 @@ import MarketingFooter from '@/components/marketing/MarketingFooter';
 export const metadata: Metadata = {
   metadataBase: new URL('https://aibos.app'),
   title: {
-    default: 'AI-BOS — The brain behind every business',
-    template: '%s · AI-BOS',
+    default: 'AIBOS — The brain behind every business',
+    template: '%s · AIBOS',
   },
   description:
-    'AI-BOS is the AI business operating system for African SMEs. Ask your business anything and get the answer back in Kwacha, instantly. Start free.',
+    'AIBOS is the AI business operating system for African SMEs. Ask your business anything and get the answer back in Kwacha, instantly. Start free.',
   openGraph: {
-    title: 'AI-BOS — The brain behind every business',
+    title: 'AIBOS — The brain behind every business',
     description:
       'A CFO, analyst and consultant in your pocket, priced in Kwacha. Upload your data and get answers, briefs and decisions in minutes.',
     type: 'website',

@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Record Business Activity (Evolution Initiative 1).
+ * AIBOS — Record Business Activity (Evolution Initiative 1).
  * The single conversational entry point: the user says what happened in plain
  * language, AI proposes a structured Business Event, the user reviews/edits, then
  * confirms. Nothing is saved until confirmation (SAFEGUARD §0.4). Manual entry

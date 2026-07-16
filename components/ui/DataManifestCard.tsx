@@ -1,6 +1,6 @@
 'use client';
 
-// DataManifestCard — "How AI-BOS read your file" (SAFEGUARD.md Layer 1).
+// DataManifestCard — "How AIBOS read your file" (SAFEGUARD.md Layer 1).
 // Shows column→role mappings with confidence, honesty flags, and (for
 // item-level files) the per-item economics breakdown. Read-only, transparency-
 // first: the user sees exactly how their data was interpreted.
@@ -41,7 +41,7 @@ export default function DataManifestCard({
 
   return (
     <SectionCard
-      title="How AI-BOS read your file"
+      title="How AIBOS read your file"
       subtitle="Transparency-first — every column, how it was mapped, and how confident we are"
       delay={0.12}
     >

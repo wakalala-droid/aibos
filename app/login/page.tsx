@@ -60,7 +60,7 @@ function LogoMark() {
   return (
     <Image
       src="/brand/aibos-mark-white.png"
-      alt="AI-BOS — Artificial Intelligence Business Operating System"
+      alt="AIBOS — Artificial Intelligence Business Operating System"
       width={240}
       height={178}
       style={{ width: 240, height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 0 18px rgba(96,165,250,0.4))' }}
@@ -252,7 +252,7 @@ export default function LoginPage() {
       </Suspense>
       <div className="absolute bottom-6 left-0 right-0 flex justify-center">
         <p style={{ fontSize: 'var(--fs-label)', color: '#2d4a70', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          AI-BOS v2.0 · Next.js + Supabase
+          AIBOS v2.0 · Next.js + Supabase
         </p>
       </div>
     </div>

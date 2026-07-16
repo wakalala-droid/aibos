@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Record (Evolution Initiative 1 + 12).
+ * AIBOS — Record (Evolution Initiative 1 + 12).
  * The everyday entry point for businesses running on AIBOS: say what happened, and
  * the Digital Twin (cash / revenue / profit) updates live. No spreadsheet required.
  */

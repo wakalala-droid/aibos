@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * AI-BOS — Usage instrumentation (client, fire-and-forget)
+ * AIBOS — Usage instrumentation (client, fire-and-forget)
  *
  * logUsage() appends a row to `usage_events` using the caller's own browser
  * Supabase client (RLS lets a user insert their own events). It NEVER throws and

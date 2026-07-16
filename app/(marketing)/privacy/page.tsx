@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
-    'How AI-BOS collects, uses, stores and protects your business data — including financial records, payroll, and guest details — and the rights you have over it.',
+    'How AIBOS collects, uses, stores and protects your business data — including financial records, payroll, and guest details — and the rights you have over it.',
   alternates: { canonical: '/privacy' },
 };
 

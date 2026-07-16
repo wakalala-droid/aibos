@@ -284,7 +284,7 @@ export default function AdminProposalsPage() {
         <SectionCard title="No proposals yet" subtitle="Upload a file, then “Scan current file for functions”">
           <p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)', lineHeight: 1.6, margin: 0 }}>
             When a file contains columns the engines don’t use (e.g. a promotion multiplier),
-            AI-BOS proposes a derived metric here — already run safely on your data — for you to approve.
+            AIBOS proposes a derived metric here — already run safely on your data — for you to approve.
           </p>
         </SectionCard>
       ) : (

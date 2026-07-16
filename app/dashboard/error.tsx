@@ -17,7 +17,7 @@ export default function DashboardError({
 }) {
   useEffect(() => {
     // Surface the real cause in the console for diagnosis; the UI stays calm.
-    console.error('[AI-BOS] dashboard error boundary:', error);
+    console.error('[AIBOS] dashboard error boundary:', error);
   }, [error]);
 
   return (

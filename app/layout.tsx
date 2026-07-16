@@ -5,7 +5,7 @@ import { OfflineSync } from '@/components/pwa/OfflineSync';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AI-BOS — Business Intelligence Platform',
+  title: 'AIBOS — Business Intelligence Platform',
   description: 'Financial · Customer · Operations intelligence for Zambian SMEs',
   manifest: '/manifest.webmanifest',
   icons: {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'AI-BOS',
+    title: 'AIBOS',
   },
 };
 

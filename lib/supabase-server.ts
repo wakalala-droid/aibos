@@ -1,5 +1,5 @@
 /**
- * AI-BOS — Supabase Server Clients
+ * AIBOS — Supabase Server Clients
  * Server Component client + Middleware client.
  * NEVER import this from a 'use client' component.
  * Use in: layout.tsx, route handlers, middleware.ts only.

@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Inventory catalog (Evolution Initiative 3, Slice A).
+ * AIBOS — Inventory catalog (Evolution Initiative 3, Slice A).
  * The product master list: name, prices, opening stock, reorder level, supplier.
  * On-hand is derived from events (Slice B). Low-stock items are flagged and also
  * drive the Advisor's LowStockEngine.

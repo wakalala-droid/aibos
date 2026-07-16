@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — "Coming up" strip on the Overview.
+ * AIBOS — "Coming up" strip on the Overview.
  * The next three commitments + an overdue warning, one glance, one tap to the
  * Scheduler. Free for every tier — daily calendar opens are the cheapest
  * retention loop, so the habit surface is never gated (the Pro layer is

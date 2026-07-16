@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Import history from Excel/CSV (Evolution Initiative 2).
+ * AIBOS — Import history from Excel/CSV (Evolution Initiative 2).
  * Adapt to the user's spreadsheet, never the reverse: upload → AI suggests a
  * column mapping → preview & validate → import (partial import supported; bad
  * rows are reported, not dropped silently). Mapping is remembered locally as a

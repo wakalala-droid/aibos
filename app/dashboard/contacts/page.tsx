@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Contacts (audit #6): the customer & supplier ENTITIES AIBOS builds
+ * AIBOS — Contacts (audit #6): the customer & supplier ENTITIES AIBOS builds
  * from what you record, finally with a home. Shows who you deal with, how much
  * has flowed each way, and a MERGE TOOL to fold duplicate records into one
  * (AIBOS then remembers the alias so it never splits them again).

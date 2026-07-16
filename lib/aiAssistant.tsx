@@ -661,7 +661,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     } else {
       const label = explainTarget.label || 'this component';
       const valueLine = explainTarget.value ? `\n\n📊 It currently shows ${explainTarget.value}.` : '';
-      pushAssistant(`**${label}**\n\nThis is part of your AI-BOS dashboard. Ask me what you'd like to know about it and I'll pull the detail from your data.${valueLine}`);
+      pushAssistant(`**${label}**\n\nThis is part of your AIBOS dashboard. Ask me what you'd like to know about it and I'll pull the detail from your data.${valueLine}`);
       setSuggestions([]);
     }
     setOpenState(true);

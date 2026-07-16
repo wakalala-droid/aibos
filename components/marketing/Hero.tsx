@@ -32,7 +32,7 @@ export default function Hero() {
             <span style={{ color: 'var(--cyan)' }}>anything.</span>
           </motion.h1>
           <motion.p className="mkt-lead" style={{ marginTop: 24, maxWidth: 480 }} {...rise(0.18)}>
-            Upload your numbers and get the answer back in Kwacha, in seconds. AI-BOS is
+            Upload your numbers and get the answer back in Kwacha, in seconds. AIBOS is
             the AI business operating system that gives African SMEs a CFO, analyst
             and consultant in their pocket.
           </motion.p>

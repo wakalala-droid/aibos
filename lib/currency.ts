@@ -5,7 +5,7 @@
 
 // ── Universal currency catalog ────────────────────────────────────────────────
 // Single source of truth for the currency-format selector, onboarding, and the
-// business profile. Display formatting only — AI-BOS never converts amounts.
+// business profile. Display formatting only — AIBOS never converts amounts.
 
 export interface CurrencyDef {
   code: string;   // ISO 4217

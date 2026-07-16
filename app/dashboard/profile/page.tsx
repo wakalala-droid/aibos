@@ -682,7 +682,7 @@ function InviteCard({ userId }: { userId: string }) {
   const [copied, setCopied] = useState(false);
   const code = userId.replace(/-/g, '').slice(0, 8);
   const link = typeof window !== 'undefined' ? `${window.location.origin}/login?ref=${code}` : `/login?ref=${code}`;
-  const waText = `I run my business on AI-BOS — it keeps the books, watches my stock and answers questions about my numbers. Try it free: ${link}`;
+  const waText = `I run my business on AIBOS — it keeps the books, watches my stock and answers questions about my numbers. Try it free: ${link}`;
 
   async function copy() {
     try {

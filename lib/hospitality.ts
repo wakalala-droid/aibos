@@ -1,12 +1,12 @@
 /**
- * AI-BOS — Hospitality (short-let PMS) API client.
+ * AIBOS — Hospitality (short-let PMS) API client.
  *
  * Thin typed wrappers over the FastAPI `/hospitality/*` routes, called through the
  * same `/api/proxy` server hop as the rest of the app (no CORS). Every call carries
  * the Supabase JWT via authHeaders(); the backend is tenant-scoped and gated on the
  * `hospitality` entitlement, so a Free user gets a clean 403 here.
  *
- * The whole point of this module living inside AI-BOS: a confirmed booking and an
+ * The whole point of this module living inside AIBOS: a confirmed booking and an
  * expense already post Sale/Expense events to the spine on the server, so the
  * numbers below also show up in Cash Intel, Timeline and the P&L with no extra work.
  */

@@ -3,7 +3,7 @@
 // components/ui/glowing-ai-chat-assistant.tsx
 // FloatingAiAssistant — a floating, brand-marked launcher for the AI CFO.
 //
-//  • Collapsed: a glowing circular button showing the AI-BOS mark (light / dark
+//  • Collapsed: a glowing circular button showing the AIBOS mark (light / dark
 //    variant for the active theme). Toggles to an X when open.
 //  • Expanded: a glassy chat panel (status · model · tier · close, big prompt,
 //    composer with attach / voice / send, char counter, footer).
@@ -354,7 +354,7 @@ export function FloatingAiAssistant() {
             </motion.span>
           ) : (
             <motion.span key="logo" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.18 }} style={{ display: 'flex' }}>
-              <Image src={mark} alt="AI-BOS" width={62} height={62} style={{ width: 62, height: 62, objectFit: 'cover' }} priority />
+              <Image src={mark} alt="AIBOS" width={62} height={62} style={{ width: 62, height: 62, objectFit: 'cover' }} priority />
             </motion.span>
           )}
         </AnimatePresence>

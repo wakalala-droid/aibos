@@ -1,4 +1,4 @@
-// lib/utils.ts — AI-BOS shared utilities
+// lib/utils.ts — AIBOS shared utilities
 
 export {
   setCurrencyGlobal,

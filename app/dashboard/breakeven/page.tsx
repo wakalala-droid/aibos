@@ -88,7 +88,7 @@ export default function BreakevenPage() {
               No revenue or cost data yet
             </p>
             <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0, lineHeight: 1.6, maxWidth: 420 }}>
-              Upload a financial file with <strong>Month</strong>, <strong>Revenue</strong> and <strong>Costs</strong> columns on the dashboard, and AI-BOS will compute your fixed/variable split, contribution margin and the exact revenue you need to break even.
+              Upload a financial file with <strong>Month</strong>, <strong>Revenue</strong> and <strong>Costs</strong> columns on the dashboard, and AIBOS will compute your fixed/variable split, contribution margin and the exact revenue you need to break even.
             </p>
           </div>
         </SectionCard>

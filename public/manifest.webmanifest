@@ -1,6 +1,6 @@
 {
-  "name": "AI-BOS — The brain behind every business",
-  "short_name": "AI-BOS",
+  "name": "AIBOS — The brain behind every business",
+  "short_name": "AIBOS",
   "description": "Record what happens, ask anything, and let AIBOS run the numbers — built for African SMEs.",
   "id": "/dashboard",
   "start_url": "/dashboard",

@@ -86,7 +86,7 @@ export default function StrategicIntelligence() {
         <motion.p className="mkt-lead" style={{ marginTop: 20, maxWidth: 560 }} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.16 }}>
           The signals that decide whether a month works, like a margin slipping, a
           customer drifting, or cash tightening, stay invisible until it’s too late.
-          AI-BOS surfaces them while you can still act, and writes the brief for you.
+          AIBOS surfaces them while you can still act, and writes the brief for you.
         </motion.p>
       </div>
 

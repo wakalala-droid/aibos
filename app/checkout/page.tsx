@@ -165,7 +165,7 @@ function CheckoutInner() {
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
-            AI-BOS {meta.name}
+            AIBOS {meta.name}
           </span>
           <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-1)' }}>
             K{amount.toLocaleString()}
@@ -240,7 +240,7 @@ function CheckoutInner() {
             on your phone to approve <strong>K{amount.toLocaleString()}</strong>.
           </p>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '8px 0 0' }}>
-            Prefer manual? Dial {m.ussd} and send to {m.number} (AI-BOS · {m.label}).
+            Prefer manual? Dial {m.ussd} and send to {m.number} (AIBOS · {m.label}).
           </p>
         </div>
 

@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Employees & Payroll.
+ * AIBOS — Employees & Payroll.
  * The company's people (a free register — master data, like the product catalog)
  * and a Zambian statutory payroll engine (Pro). Running a period computes PAYE,
  * NAPSA, NHIMA and net pay for each active employee, decrements staff loans, and

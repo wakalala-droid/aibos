@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Cash & scenario simulator (audit #93). A dedicated home for the
+ * AIBOS — Cash & scenario simulator (audit #93). A dedicated home for the
  * /simulate backend that previously had no page: run "what if" scenarios
  * against a COPY of the Digital Twin (never live data) and see the P10/P50/P90
  * cash fan side by side, so the owner can test a decision — hire, price change,

@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Timeline (Evolution Initiative 5).
+ * AIBOS — Timeline (Evolution Initiative 5).
  * The unified operational record of the business: every Business Event, filterable
  * by status and type, with confirm / void (soft-delete, audited). Becomes the
  * primary operational interface for small businesses.

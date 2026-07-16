@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Event list (Evolution spine). Mobile-first stacked rows (one record per
+ * AIBOS — Event list (Evolution spine). Mobile-first stacked rows (one record per
  * row, key fields only — responsive_design_system.md DATA TABLE RULE), with optional
  * confirm / void actions. Used by the Timeline and the Record page's recent list.
  */

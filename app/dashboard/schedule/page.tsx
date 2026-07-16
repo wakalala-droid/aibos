@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Schedule (the Scheduler).
+ * AIBOS — Schedule (the Scheduler).
  * Meetings, pick-ups, deliveries, deadlines, payments due — the owner's week in
  * one agenda. A schedule item is a commitment, not a business fact: completing a
  * pick-up or payment offers the record bridge, one tap creating the matching

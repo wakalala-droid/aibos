@@ -1,5 +1,5 @@
 /**
- * AI-BOS — useAuth Hook
+ * AIBOS — useAuth Hook
  * Manages session state, user data, and logout across the app.
  * Uses Supabase's onAuthStateChange for real-time session sync.
  */
@@ -49,7 +49,7 @@ export function useAuth(): UseAuthReturn {
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
-          console.error('[AI-BOS useAuth] getSession error:', error);
+          console.error('[AIBOS useAuth] getSession error:', error);
         }
 
         if (mounted) {
@@ -61,7 +61,7 @@ export function useAuth(): UseAuthReturn {
           });
         }
       } catch (err) {
-        console.error('[AI-BOS useAuth] unexpected error:', err);
+        console.error('[AIBOS useAuth] unexpected error:', err);
         if (mounted) {
           setState(prev => ({ ...prev, loading: false, initialized: true }));
         }
@@ -117,7 +117,7 @@ export function useAuth(): UseAuthReturn {
     const { error } = await supabase.auth.signOut();
 
     if (error) {
-      console.error('[AI-BOS useAuth] logout error:', error);
+      console.error('[AIBOS useAuth] logout error:', error);
       setState(prev => ({ ...prev, loading: false }));
       return;
     }
@@ -130,7 +130,7 @@ export function useAuth(): UseAuthReturn {
     const { data: { session }, error } = await supabase.auth.refreshSession();
 
     if (error) {
-      console.error('[AI-BOS useAuth] refresh error:', error);
+      console.error('[AIBOS useAuth] refresh error:', error);
       return;
     }
 

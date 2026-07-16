@@ -313,7 +313,7 @@ function OverviewPage() {
         {/* LEFT */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-          {/* How AI-BOS read your file (self-hides when there's no manifest) */}
+          {/* How AIBOS read your file (self-hides when there's no manifest) */}
           <DataManifestCard />
 
           {/* Owner-approved custom metrics, computed live (self-hides otherwise) */}
@@ -526,7 +526,7 @@ function OverviewPage() {
             <SectionCard
               explainId="card.executiveBrief"
               title="Executive Action Plan"
-              subtitle="AI-BOS unified brief · Financial + Customer Intelligence + Operations"
+              subtitle="AIBOS unified brief · Financial + Customer Intelligence + Operations"
               delay={0.26}
               action={
                 <Link href="/dashboard/brief?tab=ops" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>

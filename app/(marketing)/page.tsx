@@ -15,9 +15,9 @@ import {
 } from '@/lib/demoData';
 
 export const metadata: Metadata = {
-  title: 'AI-BOS — The brain behind every business',
+  title: 'AIBOS — The brain behind every business',
   description:
-    'Ask your business anything and get the answer, in Kwacha, instantly. AI-BOS reads your data and gives you a CFO, analyst and consultant in your pocket. Start free.',
+    'Ask your business anything and get the answer, in Kwacha, instantly. AIBOS reads your data and gives you a CFO, analyst and consultant in your pocket. Start free.',
   alternates: { canonical: '/' },
 };
 
@@ -49,7 +49,7 @@ export default function MarketingHome() {
       <ShowcaseBand
         eyebrow="See around the corner"
         title="Know what’s coming, while you can still act."
-        lead="AI-BOS projects your revenue from your own history and shows the range, not a fake single number. You see the strong month to ride, and the soft one to brace for."
+        lead="AIBOS projects your revenue from your own history and shows the range, not a fake single number. You see the strong month to ride, and the soft one to brace for."
         values={['Built only from your real data', 'A 95% confidence band, never false precision', 'Updates the moment you upload']}
         cta={{ label: 'Start free', href: '/login' }}
       >
@@ -64,7 +64,7 @@ export default function MarketingHome() {
         dark
         eyebrow="Never get caught short"
         title="Know your runway to the day."
-        lead="Stop finding out about a cash crunch when it hits. AI-BOS tracks your runway and projects your cash position forward, so a tight month becomes a warning you can act on weeks early."
+        lead="Stop finding out about a cash crunch when it hits. AIBOS tracks your runway and projects your cash position forward, so a tight month becomes a warning you can act on weeks early."
         values={['Live runway against your target', 'Forward cash projection from your trend', 'Flags the month you dip before you do']}
       >
         <AibosWindow>
@@ -79,7 +79,7 @@ export default function MarketingHome() {
         reverse
         eyebrow="Know who really pays you"
         title="Your best customers, not just your busiest."
-        lead="AI-BOS sorts every customer by what they’re actually worth, from the champions you should spotlight to the ones slipping away you can win back, so your time and your offers land where the money is."
+        lead="AIBOS sorts every customer by what they’re actually worth, from the champions you should spotlight to the ones slipping away you can win back, so your time and your offers land where the money is."
         values={['RFM segments straight from your sales', 'Retention and churn risk surfaced', 'Who to keep, who to win back']}
         cta={{ label: 'Start free', href: '/login' }}
       >
@@ -108,7 +108,7 @@ export default function MarketingHome() {
         dark
         eyebrow="Catch it early"
         title="Spot the problem before it costs you."
-        lead="AI-BOS watches your numbers statistically and flags whatever breaks the pattern, whether it’s a cost spike or a margin slip, the day your file lands, with a likely cause and a next move."
+        lead="AIBOS watches your numbers statistically and flags whatever breaks the pattern, whether it’s a cost spike or a margin slip, the day your file lands, with a likely cause and a next move."
         values={['Statistical anomaly detection', 'Critical vs warning, colour-coded', 'A cause and an action, not just a red number']}
       >
         <AibosWindow>
@@ -122,7 +122,7 @@ export default function MarketingHome() {
         reverse
         eyebrow="No black box"
         title="It shows its working."
-        lead="Before any insight, AI-BOS tells you exactly how it read your file: every column, what it became, and how confident it is. When the data can’t answer, it says so."
+        lead="Before any insight, AIBOS tells you exactly how it read your file: every column, what it became, and how confident it is. When the data can’t answer, it says so."
         values={['A plain-English read-out of every file', 'Confidence shown on each column', 'Refuses to invent what isn’t there']}
       >
         <AibosWindow>

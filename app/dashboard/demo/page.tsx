@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Sample business (audit §10 fix #3, the demo bridge).
+ * AIBOS — Sample business (audit §10 fix #3, the demo bridge).
  * A brand-new owner with an empty dashboard can see EXACTLY what AIBOS looks
  * like full — Zoe's Kitchen, a year of real, internally-consistent numbers —
  * then "replace with my numbers" in one tap. Read-only and clearly labelled as

@@ -207,7 +207,7 @@ export default function Sidebar() {
         }}>
           <Image
             src={isDark ? '/brand/aibos-mark-white-glyph.png' : '/brand/aibos-mark.png'}
-            alt="AI-BOS"
+            alt="AIBOS"
             width={30}
             height={30}
             style={{ width: 30, height: 30, objectFit: 'contain' }}
@@ -223,7 +223,7 @@ export default function Sidebar() {
             >
               <Image
                 src={isDark ? '/brand/aibos-wordmark-white.png' : '/brand/aibos-wordmark.png'}
-                alt="AI-BOS"
+                alt="AIBOS"
                 width={74}
                 height={19}
                 style={{ width: 74, height: 'auto', objectFit: 'contain' }}

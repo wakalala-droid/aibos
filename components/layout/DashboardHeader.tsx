@@ -395,7 +395,7 @@ export default function DashboardHeader() {
             <div style={{ maxHeight: 360, overflowY: 'auto' }}>
               {unread === 0 ? (
                 <p style={{ padding: '20px 16px', fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
-                  You’re all clear — nothing needs you right now. As you record, AI-BOS flags anything that needs attention here.
+                  You’re all clear — nothing needs you right now. As you record, AIBOS flags anything that needs attention here.
                 </p>
               ) : mergedAlerts.slice(0, 12).map((a, i) => {
                 const title = String(a.title ?? 'Alert');

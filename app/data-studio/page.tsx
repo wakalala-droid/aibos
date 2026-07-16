@@ -1,5 +1,5 @@
 "use client";
-// app/data-studio/page.tsx — AI-BOS Data Studio
+// app/data-studio/page.tsx — AIBOS Data Studio
 // Excel-like formula engine + AI formula mode + data grid
 // Data binding derives from canonical PascalCase store fields (Month/Revenue/Costs)
 // with lowercase fallback, then computes profit/margin — so it works regardless of

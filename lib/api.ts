@@ -1,5 +1,5 @@
 /**
- * AI-BOS — API Client
+ * AIBOS — API Client
  * All requests go through /api/proxy (Next.js server) → Railway FastAPI.
  * This avoids CORS entirely — server-to-server calls have no restrictions.
  */

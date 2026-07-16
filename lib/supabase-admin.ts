@@ -1,5 +1,5 @@
 /**
- * AI-BOS — Supabase Service-Role Client (SERVER ONLY)
+ * AIBOS — Supabase Service-Role Client (SERVER ONLY)
  *
  * This client uses the `service_role` key, which BYPASSES Row Level Security.
  * It must NEVER be imported from a 'use client' component or shipped to the

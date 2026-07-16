@@ -1,4 +1,4 @@
-// lib/tiers.ts — AI-BOS subscription tiers + feature gating.
+// lib/tiers.ts — AIBOS subscription tiers + feature gating.
 // Single source of truth for what each plan unlocks and how it is priced.
 // Priced and billed in ZMW (Kwacha) — USD is a secondary display only, per
 // conversion_psychology.md PRICING DISPLAY RULE.

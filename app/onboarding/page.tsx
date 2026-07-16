@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Business Setup Wizard (Evolution Initiative 1).
+ * AIBOS — Business Setup Wizard (Evolution Initiative 1).
  * Start a business on AIBOS with only a phone: a few essentials, everything else
  * optional. "Initial cash" seeds the Digital Twin's opening balance; the rest
  * updates the profile. Mobile-first, one decision at a time (ux_intelligence.md

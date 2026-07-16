@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — Start Fresh (Timeline danger zone).
+ * AIBOS — Start Fresh (Timeline danger zone).
  * Recovery path for "the wrong file was imported / everything mapped incorrectly":
  * permanently deletes recorded data (all events, or only file-imported ones) and
  * replays the twin from whatever remains. This is a HARD delete — single mistakes

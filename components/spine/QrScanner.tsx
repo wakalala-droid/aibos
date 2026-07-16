@@ -1,6 +1,6 @@
 'use client';
 /**
- * AI-BOS — QR scanner (Evolution Initiative 7).
+ * AIBOS — QR scanner (Evolution Initiative 7).
  * Decodes a receipt QR with the browser's native BarcodeDetector where available
  * (Chrome/Android/Edge), with a universal "paste the code" fallback so every device
  * can still use it. Returns the decoded string; the backend (parse_qr) turns it into

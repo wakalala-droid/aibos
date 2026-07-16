@@ -1,5 +1,5 @@
 /**
- * AI-BOS — Current user's profile (server-resolved).
+ * AIBOS — Current user's profile (server-resolved).
  *
  * The browser cannot reliably read its own `profiles` row directly (RLS on the
  * existing table blocks the self-select, so client reads come back null). This

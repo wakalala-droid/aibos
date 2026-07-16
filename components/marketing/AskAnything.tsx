@@ -82,7 +82,7 @@ export default function AskAnything() {
           </div>
 
           <p style={{ margin: '18px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'right' }}>
-            Illustrative. AI-BOS answers only from your own uploaded data.
+            Illustrative. AIBOS answers only from your own uploaded data.
           </p>
         </motion.div>
       </div>

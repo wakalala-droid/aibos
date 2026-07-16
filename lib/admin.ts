@@ -1,5 +1,5 @@
 /**
- * AI-BOS — Admin identity helpers (PURE / runtime-agnostic)
+ * AIBOS — Admin identity helpers (PURE / runtime-agnostic)
  *
  * Admin is identified by an email allowlist (bootstrap) OR a durable
  * `profiles.role = 'admin'` row. The allowlist lets the first admin work before

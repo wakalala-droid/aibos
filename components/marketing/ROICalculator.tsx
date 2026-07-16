@@ -93,7 +93,7 @@ export default function ROICalculator() {
         </p>
 
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '16px 0 0', lineHeight: 1.5 }}>
-          Estimates, not promises. Your numbers, your call. AI-BOS won’t invent a result it can’t see in your data.
+          Estimates, not promises. Your numbers, your call. AIBOS won’t invent a result it can’t see in your data.
         </p>
 
         <Link href="/login" className="mkt-btn mkt-btn-primary" style={{ marginTop: 18, justifyContent: 'center', width: '100%' }}>

@@ -1,4 +1,4 @@
-// AI-BOS — Business Event display helpers (Evolution spine).
+// AIBOS — Business Event display helpers (Evolution spine).
 // Pure helpers shared by the Timeline and Record surfaces so event rendering is
 // consistent everywhere (component_system.md: same meaning → same component).
 import type { BusinessEvent, EventType } from '@/lib/api';

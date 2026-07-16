@@ -1,4 +1,4 @@
-/* AI-BOS service worker — deliberately conservative.
+/* AIBOS service worker — deliberately conservative.
  *
  * Strategy (Devil's-Advocate-approved to avoid the classic stale-cache trap):
  *  - Hashed static assets (/_next/static, icons, brand, fonts): cache-first.

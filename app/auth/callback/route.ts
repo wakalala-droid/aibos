@@ -1,5 +1,5 @@
 /**
- * AI-BOS — OAuth Callback Handler
+ * AIBOS — OAuth Callback Handler
  * Route: /auth/callback
  *
  * After Google OAuth completes, Supabase redirects here with ?code=...
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   // ── OAuth error from Google/Supabase ──────────────────────────────────────
   if (error) {
-    console.error(`[AI-BOS Auth] OAuth error: ${error} — ${errorDesc}`);
+    console.error(`[AIBOS Auth] OAuth error: ${error} — ${errorDesc}`);
     const loginUrl = new URL('/login', origin);
     loginUrl.searchParams.set('error', error);
     loginUrl.searchParams.set('error_description', errorDesc ?? 'Authentication failed');
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
   // ── No code present ───────────────────────────────────────────────────────
   if (!code) {
-    console.error('[AI-BOS Auth] No code param in callback URL');
+    console.error('[AIBOS Auth] No code param in callback URL');
     return NextResponse.redirect(new URL('/login?error=no_code', origin));
   }
 
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
   const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
   if (exchangeError) {
-    console.error('[AI-BOS Auth] Session exchange error:', exchangeError.message);
+    console.error('[AIBOS Auth] Session exchange error:', exchangeError.message);
     const loginUrl = new URL('/login', origin);
     loginUrl.searchParams.set('error', 'session_exchange_failed');
     loginUrl.searchParams.set('error_description', exchangeError.message);
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     }
   } catch (profileError) {
     // Non-fatal — user can still use the app
-    console.warn('[AI-BOS Auth] Profile upsert failed (non-fatal):', profileError);
+    console.warn('[AIBOS Auth] Profile upsert failed (non-fatal):', profileError);
   }
 
   // ── Success → redirect to dashboard (or intended route) ──────────────────

@@ -1,4 +1,4 @@
-// The five AI-BOS engines, as presented on the marketing surface.
+// The five AIBOS engines, as presented on the marketing surface.
 // "Five expert departments reporting to one AI command centre."
 // Sprites live in public/marketing/engines/ (placeholder glass cores — the
 // owner replaces these with AI-generated WebP/MP4 renders per BRIEF §11b).
