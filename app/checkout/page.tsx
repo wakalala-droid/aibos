@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useStore } from '@/lib/store';
-import { TIERS, usdApprox, type Tier } from '@/lib/tiers';
+import { TIERS, isTier, usdApprox, type PaidTier, type Tier } from '@/lib/tiers';
 import { initiatePayment, checkPaymentStatus } from '@/lib/api';
 
 // Merchant mobile-money accounts payments are sent to.
@@ -14,10 +14,6 @@ const MERCHANT = {
 } as const;
 
 type Network = keyof typeof MERCHANT;
-
-function isTier(v: string | null): v is Tier {
-  return v === 'free' || v === 'pro' || v === 'proplus' || v === 'growth';
-}
 
 function CheckoutInner() {
   const params = useSearchParams();
@@ -92,7 +88,7 @@ function CheckoutInner() {
     try {
       const r = await initiatePayment({
         network,
-        plan: planParam as 'pro' | 'proplus' | 'growth',
+        plan: planParam as PaidTier,
         billing,
         payer_phone: phone,
       });

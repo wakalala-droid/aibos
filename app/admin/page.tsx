@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import type { AccountOverview } from '@/lib/admin';
-import { TIERS, type Tier } from '@/lib/tiers';
+import { TIERS, TIER_ORDER, type Tier } from '@/lib/tiers';
 
 // ── Small presentational helpers ─────────────────────────────────────────────
 
@@ -193,10 +193,11 @@ export default function AdminAccountsPage() {
       />
       <select aria-label="Filter by tier" value={tierFilter} onChange={(e) => setTierFilter(e.target.value as 'all' | Tier)} style={{ minHeight: 42, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
         <option value="all">All tiers</option>
-        <option value="free">Free</option>
-        <option value="pro">Pro</option>
-        <option value="proplus">Pro+</option>
-        <option value="growth">Growth</option>
+        {/* Derived from the ladder — a new tier appears here automatically
+            instead of being invisible until someone remembers this list. */}
+        {TIER_ORDER.map((t) => (
+          <option key={t} value={t}>{TIERS[t].name}</option>
+        ))}
       </select>
       <select aria-label="Sort accounts" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} style={{ minHeight: 42, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
         <option value="active">Sort: last active</option>

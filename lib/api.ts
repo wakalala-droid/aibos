@@ -5,6 +5,7 @@
  */
 
 import { createClient } from '@/lib/supabase';
+import type { PaidTier } from '@/lib/tiers';
 
 const PROXY = '/api/proxy';
 
@@ -191,7 +192,8 @@ export type PaymentStatus = 'pending' | 'successful' | 'failed';
 
 export interface InitiatePaymentPayload {
   network: PaymentNetwork;
-  plan: 'pro' | 'proplus' | 'growth';
+  /** Derived from the ladder — never a hand-written union (see tiers.ts isTier). */
+  plan: PaidTier;
   billing: 'monthly' | 'annual';
   payer_phone: string;
   user_id?: string;

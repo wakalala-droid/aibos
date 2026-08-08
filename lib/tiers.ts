@@ -126,6 +126,29 @@ export const TIERS: Record<Tier, TierMeta> = {
 
 export const TIER_ORDER: Tier[] = ['free', 'pro', 'proplus', 'growth'];
 
+/**
+ * Runtime guard for a value claiming to be a Tier — DERIVED from TIER_ORDER, so
+ * adding a tier can never leave a caller behind.
+ *
+ * Use this instead of spelling the tiers out again. Hand-written tier lists are
+ * how Pro+ shipped broken: profile.tsx's normaliseTier() listed 'pro' and
+ * 'growth' and fell through to 'free' for anything else, so when Pro+ was added
+ * every proplus customer was silently downgraded to Free on page load while the
+ * API went on honouring what they'd paid for.
+ */
+export function isTier(v: unknown): v is Tier {
+  return TIER_ORDER.includes(v as Tier);
+}
+
+/** The tiers you can actually pay for, in ladder order. */
+export type PaidTier = Exclude<Tier, 'free'>;
+
+export const PAID_TIERS: PaidTier[] = TIER_ORDER.filter((t): t is PaidTier => t !== 'free');
+
+export function isPaidTier(v: unknown): v is PaidTier {
+  return PAID_TIERS.includes(v as PaidTier);
+}
+
 // Each paid tier is a strict superset of the one below — supersets are built
 // by spreading so a feature can never accidentally vanish when upgrading.
 const PRO: Feature[] = [

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import type { AdminAuditRow, UsageEventRow } from '@/lib/admin';
+import { TIERS, isTier } from '@/lib/tiers';
 
 interface DetailPayload {
   profile: Record<string, unknown> | null;
@@ -103,7 +104,9 @@ export default function AdminAccountDetailPage() {
       <div className="section-card" style={{ marginBottom: 16 }}>
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Profile</p>
         <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
-          <Fact label="Plan" value={<span style={{ textTransform: 'uppercase' }}>{tier === 'proplus' ? 'Pro+' : tier}</span>} />
+          {/* Display name from the ladder — hand-writing the Pro+ special case
+              here is how a new tier ends up shown as a raw id. */}
+          <Fact label="Plan" value={<span style={{ textTransform: 'uppercase' }}>{isTier(tier) ? TIERS[tier].name : tier}</span>} />
           <Fact label="Tier source" value={p.tier_source} />
           <Fact label="Referred by" value={p.referred_by} />
           <Fact label="Granted by" value={p.tier_granted_by} />

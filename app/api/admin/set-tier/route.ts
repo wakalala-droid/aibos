@@ -1,6 +1,7 @@
 /**
  * POST /api/admin/set-tier — promote/demote any account's tier.
- * Body: { targetUserId: string, tier: 'free'|'pro'|'proplus'|'growth', source?: string }
+ * Body: { targetUserId: string, tier: Tier, source?: string }
+ * `tier` is validated against the ladder in lib/tiers.ts, not a list kept here.
  *
  * Admin-verified; writes `profiles` (tier, tier_source, tier_granted_by/at) and
  * an `admin_audit` row, both via the service-role client.
@@ -11,8 +12,10 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-server';
 import { createServiceClient } from '@/lib/supabase-admin';
+// isTier is derived from TIER_ORDER — a hand-written list here would silently
+// reject (or, worse, accept) a tier the rest of the app knows about.
+import { isTier } from '@/lib/tiers';
 
-const TIERS = ['free', 'pro', 'proplus', 'growth'] as const;
 const SOURCES = ['self', 'payment', 'admin_demo'] as const;
 
 export async function POST(req: NextRequest) {
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest) {
     ? (body.source as string)
     : 'admin_demo';
 
-  if (!targetUserId || !TIERS.includes(tier as (typeof TIERS)[number])) {
+  if (!targetUserId || !isTier(tier)) {
     return NextResponse.json({ error: 'targetUserId and a valid tier are required.' }, { status: 400 });
   }
 
