@@ -301,17 +301,38 @@ export async function forgetMapping(id: string): Promise<void> {
 }
 
 // ── Accountant export pack (audit #27/#28) ────────────────────────────────────
-async function downloadCsv(path: string, filename: string): Promise<void> {
+/** Fetch an authed file endpoint and save it. The backend may answer with a
+ *  PDF or, where reportlab is unavailable, a .txt of the same content — so the
+ *  extension follows the response, never the caller's assumption. */
+async function downloadFile(path: string, filename: string): Promise<void> {
   const res = await fetch(`${PROXY}${path}`, { headers: await authHeaders() });
-  if (!res.ok) throw new Error(`Export failed (${res.status})`);
+  if (!res.ok) throw new Error(`Download failed (${res.status})`);
   const blob = await res.blob();
+  const name = blob.type === 'text/plain' ? filename.replace(/\.pdf$/, '.txt') : filename;
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
+  a.href = url; a.download = name; a.click();
   URL.revokeObjectURL(url);
 }
-export const exportEventsCsv = () => downloadCsv('/export/events.csv', 'aibos_events.csv');
-export const exportPnlCsv = () => downloadCsv('/export/pnl.csv', 'aibos_pnl.csv');
+export const exportEventsCsv = () => downloadFile('/export/events.csv', 'aibos_events.csv');
+export const exportPnlCsv = () => downloadFile('/export/pnl.csv', 'aibos_pnl.csv');
+
+// ── Payroll documents (audit #26 payslip PDF, #66 statutory summary PDF) ──────
+// These endpoints shipped with no caller at all: the server rendered the PDFs,
+// test_payroll.py covered the TEXT helpers, and no screen in the product ever
+// asked for one. Wiring them is the whole feature from the owner's side.
+export const downloadPayslipPdf = (runId: string, employeeId: string, period: string, businessName?: string) =>
+  downloadFile(
+    `/payroll/runs/${runId}/payslip.pdf?employee_id=${encodeURIComponent(employeeId)}` +
+      (businessName ? `&business_name=${encodeURIComponent(businessName)}` : ''),
+    `payslip_${period}.pdf`,
+  );
+export const downloadCompliancePdf = (runId: string, period: string, businessName?: string) =>
+  downloadFile(
+    `/payroll/runs/${runId}/compliance.pdf` +
+      (businessName ? `?business_name=${encodeURIComponent(businessName)}` : ''),
+    `statutory_${period}.pdf`,
+  );
 
 export interface Party {
   id: string;

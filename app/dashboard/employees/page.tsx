@@ -14,11 +14,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
 import { useStore } from '@/lib/store';
+import { useProfile } from '@/lib/profile';
 import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
 import PageHeader from '@/components/ui/PageHeader';
 import {
   listEmployees, createEmployee, updateEmployee, deleteEmployee,
   previewPayroll, runPayroll, listPayrollRuns, getPayrollRates,
+  downloadPayslipPdf, downloadCompliancePdf,
   type Employee, type EmployeeInput, type EmploymentType,
   type PayrollPreview, type PayrollRun, type PayrollRates, type RemittanceDraft,
 } from '@/lib/api';
@@ -52,6 +54,8 @@ const fmtDue = (iso: string) =>
 export default function EmployeesPage() {
   const sym = useStore(s => s.currencySymbol) || 'K';
   const tier = useStore(s => s.tier);
+  const { profile } = useProfile();
+  const businessName = profile?.business_name || undefined;
   const pro = canAccess(tier, 'payroll');
   const needTier = TIERS[requiredTier('payroll')].name;
 
@@ -75,6 +79,24 @@ export default function EmployeesPage() {
   const [busy, setBusy] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
   const [runOk, setRunOk] = useState<string | null>(null);
+
+  // Payroll documents (audit #26/#66). The endpoints existed for a release with
+  // nothing calling them, so the owner could never obtain a payslip PDF.
+  const [docBusy, setDocBusy] = useState<string | null>(null);
+  const [docError, setDocError] = useState<string | null>(null);
+
+  async function getDoc(runId: string, runPeriod: string, employeeId?: string) {
+    const key = employeeId ? `${runId}:${employeeId}` : runId;
+    setDocBusy(key); setDocError(null);
+    try {
+      if (employeeId) await downloadPayslipPdf(runId, employeeId, runPeriod, businessName);
+      else await downloadCompliancePdf(runId, runPeriod, businessName);
+    } catch (e) {
+      setDocError((e as Error).message || 'Could not prepare that document.');
+    } finally {
+      setDocBusy(null);
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -153,7 +175,8 @@ export default function EmployeesPage() {
   }
 
   const active = useMemo(() => employees.filter(e => e.status === 'active'), [employees]);
-  const alreadyRun = useMemo(() => runs.some(r => r.period === period), [runs, period]);
+  const periodRun = useMemo(() => runs.find(r => r.period === period), [runs, period]);
+  const alreadyRun = !!periodRun;
 
   return (
     <>
@@ -284,6 +307,7 @@ export default function EmployeesPage() {
                     <th style={{ ...th, textAlign: 'left' }}>Employee</th>
                     <th style={th}>Gross</th><th style={th}>NAPSA</th><th style={th}>NHIMA</th>
                     <th style={th}>PAYE</th><th style={th}>Loan</th><th style={{ ...th, color: 'var(--text-2)' }}>Net</th>
+                    {periodRun && <th style={th} aria-label="Payslip" />}
                   </tr>
                 </thead>
                 <tbody>
@@ -296,6 +320,20 @@ export default function EmployeesPage() {
                       <td style={td}>{money(s.paye)}</td>
                       <td style={td}>{money(s.loan_deduction)}</td>
                       <td style={{ ...td, color: 'var(--text-1)', fontWeight: 700 }}>{money(s.net)}</td>
+                      {/* Payslip PDF (audit #26) — only once the period has
+                          actually been run, because a payslip is a record of
+                          payment, not of a preview. */}
+                      {periodRun && (
+                        <td style={td}>
+                          {s.employee_id && (
+                            <button type="button" onClick={() => void getDoc(periodRun.id, periodRun.period, s.employee_id!)}
+                              disabled={docBusy === `${periodRun.id}:${s.employee_id}`} className="touch-target"
+                              style={{ padding: '4px 9px', minHeight: 30, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                              {docBusy === `${periodRun.id}:${s.employee_id}` ? '…' : 'Payslip'}
+                            </button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -308,6 +346,7 @@ export default function EmployeesPage() {
                     <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.paye)}</td>
                     <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.loan_deduction)}</td>
                     <td style={{ ...td, fontWeight: 800, color: 'var(--text-1)' }}>{money(preview.totals.net)}</td>
+                    {periodRun && <td style={td} />}
                   </tr>
                 </tfoot>
               </table>
@@ -359,13 +398,24 @@ export default function EmployeesPage() {
             <div style={{ marginTop: 4 }}>
               <div style={{ fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', marginBottom: 4 }}>Past runs</div>
               {runs.map(r => (
-                <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                   <span style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)' }}>
                     {r.period} <span style={{ color: 'var(--text-4)', fontWeight: 500 }}>· {r.totals.headcount} paid</span>
                   </span>
-                  <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>{money(r.totals.net)} net</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>{money(r.totals.net)} net</span>
+                    {/* Audit #66 — the statutory pack the server has always been
+                        able to render, now actually reachable. */}
+                    <button type="button" onClick={() => void getDoc(r.id, r.period)} disabled={docBusy === r.id} className="touch-target"
+                      style={{ padding: '5px 10px', minHeight: 32, borderRadius: 7, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: docBusy === r.id ? 'wait' : 'pointer' }}>
+                      {docBusy === r.id ? 'Preparing…' : 'Statutory PDF'}
+                    </button>
+                  </span>
                 </div>
               ))}
+              {docError && (
+                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--red)', marginTop: 6 }}>{docError}</p>
+              )}
             </div>
           )}
 

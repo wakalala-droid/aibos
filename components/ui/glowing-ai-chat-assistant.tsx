@@ -131,7 +131,11 @@ export function FloatingAiAssistant() {
     if (listening) { recognitionRef.current?.stop(); return; }
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const rec = new SR();
-    rec.lang = 'en-US'; rec.interimResults = true; rec.continuous = false;
+    // Follow the device locale, same as RecordActivity (audit #17). This mic
+    // was left on en-US when the Record page was fixed — a Nyanja or Bemba
+    // speaker dictating into the floating assistant still got English.
+    rec.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-US';
+    rec.interimResults = true; rec.continuous = false;
     rec.onresult = (e: any) => {
       const transcript = Array.from(e.results).map((r: any) => r[0].transcript).join('');
       setInput(transcript.slice(0, MAX_CHARS));

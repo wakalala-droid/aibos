@@ -676,8 +676,16 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     //    chat can never be worse than it was before streaming existed.
     setLoading(true);
     logUsage('chat');
+    // ONE id for this question, sent on BOTH hops below. A Free owner's daily
+    // taster is charged server-side per question, not per request — without
+    // this the streaming attempt and its buffered fallback each took one, so
+    // "3 free questions a day" ran out after two (audit #24).
+    const qid = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `q-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const payload = JSON.stringify({
       message: text,
+      qid,
       context: buildContext(s, lv, {
         name: profileRef.current?.business_name,
         type: profileRef.current?.business_type,
