@@ -10,6 +10,13 @@
 import { useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion, useMotionValue, useMotionValueEvent, animate } from 'framer-motion';
+// NOTE: the line is drawn with a left→right CLIP WIPE, not stroke-dash/pathLength.
+// The band is stretched (preserveAspectRatio="none" maps 1200 user units across a
+// ~1900px viewport) and the stroke is non-scaling: with pathLength="1" the browser
+// sizes the dash in USER space but dashes along the DEVICE-space path, so a "full"
+// dash covered only ~1200/viewportWidth of the line and it stopped short of the
+// last dot. Clipping by x has no such mismatch, and since the curve is monotonic
+// in x it reveals identically.
 import StrategicBriefView from '@/components/dashboard/StrategicBriefView';
 import { DEMO_BRIEF } from '@/lib/demoData';
 
@@ -26,6 +33,7 @@ export default function StrategicIntelligence() {
   const reduce = useReducedMotion();
   const zoneElRef = useRef<HTMLDivElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
+  const wipeRef = useRef<SVGRectElement>(null);
   const tipRef = useRef<HTMLSpanElement>(null);
   const startedRef = useRef(false);
   const progress = useMotionValue(0);
@@ -35,9 +43,13 @@ export default function StrategicIntelligence() {
     const p = (pathRef.current ?? document.querySelector('.si-line path[data-siline]')) as SVGPathElement | null;
     if (!p) return;
     const total = p.getTotalLength();
+    const f = Math.max(0, Math.min(1, v));
+    // the wipe edge rides the head of the line, so at f=1 it reaches x=1200 and
+    // the whole stroke (including the flat tail) is painted.
+    const head = p.getPointAtLength(total * f);
+    wipeRef.current?.setAttribute('width', String(head.x + 20));
     const t = tipRef.current;
     if (t) {
-      const f = Math.max(0, Math.min(1, v));
       // stop the tip at the end of the CURVE (before the flat tail) so it sits
       // exactly on the dot and the line clearly terminates there.
       const pt = p.getPointAtLength(Math.min(total * f, total - TAIL));
@@ -107,11 +119,17 @@ export default function StrategicIntelligence() {
               <stop offset="52%" stopColor="#00d4ff" stopOpacity="0.13" />
               <stop offset="100%" stopColor="#00d4ff" stopOpacity="0" />
             </linearGradient>
+            {/* left→right wipe that draws the line (width set in paint()) */}
+            <clipPath id="siWipe" clipPathUnits="userSpaceOnUse">
+              <rect ref={wipeRef} x={-20} y={-60} width={0} height={360} />
+            </clipPath>
           </defs>
           {/* solid white above the line; fills extend FLAT to the right edge (no wedge) */}
           <path d={`${LINE} L1200,${END_Y} L1200,0 L0,0 Z`} fill="#f4f3ef" />
           <path d={`${LINE} L1200,${END_Y} L1200,240 L0,240 Z`} fill="url(#siReveal)" />
-          <motion.path ref={pathRef} data-siline className="si-graphline" d={LINE} fill="none" stroke="url(#siLine)" strokeWidth={4} strokeLinecap="round" vectorEffect="non-scaling-stroke" style={{ pathLength: progress }} />
+          <g clipPath="url(#siWipe)">
+            <path ref={pathRef} data-siline className="si-graphline" d={LINE} fill="none" stroke="url(#siLine)" strokeWidth={4} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          </g>
         </svg>
         {DOTS.map((f) => (<span key={f} className="si-dot" data-f={f} aria-hidden />))}
         <span className="si-tip" ref={tipRef} aria-hidden />
