@@ -159,7 +159,15 @@ def parse_tiers_ts(src: str) -> dict:
             raise ValueError(f"TIERS.{tier} is missing priceMonthly/priceAnnual")
         prices[tier] = {"monthly": int(month.group(1)), "annual": int(annual.group(1))}
 
-    return {"access": access, "taster": taster, "prices": prices}
+    # export const UNBUILT: Feature[] = ['multi_location', 'api_access']
+    # Reserved flags that grant nothing. Both repos must agree on WHICH ones,
+    # or one side denies a feature the other hands out.
+    m = re.search(r"const\s+UNBUILT\s*:\s*Feature\[\]\s*=\s*\[", src)
+    if not m:
+        raise ValueError("could not find UNBUILT in tiers.ts")
+    unbuilt = sorted(re.findall(r"'([^']+)'", balanced(src, m.end() - 1, "[", "]")))
+
+    return {"access": access, "taster": taster, "prices": prices, "unbuilt": unbuilt}
 
 
 def assert_not_vacuous(parsed: dict) -> None:
@@ -174,6 +182,12 @@ def assert_not_vacuous(parsed: dict) -> None:
         raise ValueError("parsed no ai_chat taster — the parser is broken")
     if parsed["prices"]["pro"]["monthly"] <= 0:
         raise ValueError("parsed a non-positive Pro price — the parser is broken")
+    for flag in parsed["unbuilt"]:
+        if flag not in parsed["access"]["growth"]:
+            raise ValueError(
+                f"UNBUILT lists {flag!r}, which is not in the ladder at all — "
+                "an unbuilt flag must still be declared where it will live"
+            )
 
 
 # ── Compare ──────────────────────────────────────────────────────────────────
@@ -210,6 +224,14 @@ def compare(parsed: dict, contract: dict) -> list[str]:
                 + (f"    only in lib/tiers.ts:      {only_fe}\n" if only_fe else "")
                 + (f"    only in the backend:      {only_be}" if only_be else "").rstrip()
             )
+
+    if parsed["unbuilt"] != sorted(contract.get("unbuilt", [])):
+        problems.append(
+            f"UNBUILT disagrees:\n"
+            f"    lib/tiers.ts: {parsed['unbuilt']}\n"
+            f"    backend:      {sorted(contract.get('unbuilt', []))}\n"
+            f"    One repo would grant a reserved flag the other denies."
+        )
 
     if parsed["taster"] != contract["taster"]:
         problems.append(

@@ -178,7 +178,26 @@ const ACCESS: Record<Tier, Feature[]> = {
   growth: GROWTH,
 };
 
+/**
+ * Flags reserved for features that DO NOT EXIST YET. They stay in the ladder
+ * above so the plan structure lives in one place, but they grant nothing —
+ * canAccess() denies them to every tier, Growth included.
+ *
+ * Before this, canAccess('growth', 'multi_location') returned true. Nothing
+ * consumed it, so nothing was broken; but the first gate wired on one of these
+ * would have shown a paying Growth customer a feature with no implementation
+ * behind it. Failing closed makes that impossible, and the opposite mistake —
+ * building it and forgetting to unlist it — is caught loudly by
+ * scripts/check_unbuilt_features.py, which goes red as soon as any UI file
+ * mentions a flag still listed here.
+ *
+ * Keep in lock-step with entitlements.py _UNBUILT and tier_contract.json
+ * "unbuilt" (checked by scripts/check_tier_contract.py).
+ */
+export const UNBUILT: Feature[] = ['multi_location', 'api_access'];
+
 export function canAccess(tier: Tier, feature: Feature): boolean {
+  if (UNBUILT.includes(feature)) return false;
   return ACCESS[tier]?.includes(feature) ?? false;
 }
 

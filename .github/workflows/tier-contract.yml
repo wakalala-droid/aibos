@@ -39,6 +39,16 @@ jobs:
         # stdlib only — no pip install. Data is fetched, never remote code.
         run: python3 scripts/check_tier_contract.py
 
+      - name: Check the migrations here match what the backend expects
+        # /health reports EXPECTS_MIGRATION and the owner reads it to confirm a
+        # deploy is live. The .sql files live HERE; the declaration lives there.
+        run: python3 scripts/check_migration_contract.py
+
+      - name: Check no UI depends on an unbuilt feature flag
+        # canAccess() denies reserved flags to every tier, so a gate wired on
+        # one is invisible to the customers who paid — audit #16 all over again.
+        run: python3 scripts/check_unbuilt_features.py
+
       - name: Check the chat client holds up its end
         # The Free taster is charged per QUESTION, keyed on the `qid` this
         # client sends on both the streaming hop and its buffered fallback.
