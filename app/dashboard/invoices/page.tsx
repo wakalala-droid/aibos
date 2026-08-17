@@ -2,14 +2,21 @@
 /**
  * Invoices — the get-paid loop (audit #7). Issue → share on WhatsApp (the
  * owner sends from their OWN phone — AIBOS never messages a customer) →
- * mark paid. The accounting rides the spine: send posts a confirmed credit
- * Sale (+receivables), mark-paid posts the CustomerPayment (cash). Free on
+ * get paid. The accounting rides the spine: send posts a confirmed credit
+ * Sale (+receivables), settlement posts the CustomerPayment (cash). Free on
  * every plan, like recording.
+ *
+ * Two ways an invoice settles, one accounting path (invoices.mark_paid):
+ *   · "Mark paid"    — the owner saw the money arrive some other way
+ *   · payment link   — the customer paid by mobile money on /pay/<token>,
+ *                      and the backend settled it (migration 0025)
+ * The shared WhatsApp message carries that link, so the common case needs no
+ * extra step from the owner. "Payment link" copies it for SMS, email or a QR.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   listInvoices, createInvoice, sendInvoice, markInvoicePaid, cancelInvoice,
-  deleteInvoice, invoiceShareText, getDebtors,
+  deleteInvoice, invoiceShareText, invoicePayLink, getDebtors,
   type Invoice, type InvoiceLine, type AgingReport,
 } from '@/lib/api';
 import { useStore } from '@/lib/store';
@@ -40,6 +47,7 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [customer, setCustomer] = useState('');
   const [dueAt, setDueAt] = useState('');
@@ -99,12 +107,32 @@ export default function InvoicesPage() {
   async function share(inv: Invoice) {
     setBusyId(inv.id); setError(null);
     try {
-      const text = await invoiceShareText(
+      // The message carries the tap-to-pay link; the manual momo number stays
+      // in it as the fallback for customers who'd rather send money as usual.
+      const { text } = await invoiceShareText(
         inv.id,
         (profile?.business_name as string | null) ?? null,
         (profile?.whatsapp as string | null) ? `Mobile money to ${profile?.whatsapp}` : null,
       );
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusyId(null); }
+  }
+
+  /** Copy the public payment link for pasting anywhere — SMS, email, a printed QR. */
+  async function copyLink(inv: Invoice) {
+    setBusyId(inv.id); setError(null); setCopiedId(null);
+    try {
+      const url = await invoicePayLink(inv.id);
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopiedId(inv.id);
+        setTimeout(() => setCopiedId(c => (c === inv.id ? null : c)), 2500);
+      } catch {
+        // Clipboard is blocked on insecure origins and in some mobile webviews.
+        // Show the link instead of silently doing nothing.
+        window.prompt('Copy this payment link:', url);
+      }
     } catch (e) { setError((e as Error).message); }
     finally { setBusyId(null); }
   }
@@ -141,6 +169,9 @@ export default function InvoicesPage() {
             {i.status === 'sent' && (
               <>
                 <button type="button" style={btn} disabled={busy} onClick={() => void share(i)}>Share on WhatsApp</button>
+                <button type="button" style={btn} disabled={busy} onClick={() => void copyLink(i)}>
+                  {copiedId === i.id ? 'Link copied' : 'Payment link'}
+                </button>
                 <button type="button" style={{ ...btn, color: 'var(--good)' }} disabled={busy}
                   onClick={() => { void act(i.id, markInvoicePaid); logUsage('event_recorded', { meta: { event_type: 'CustomerPayment', via: 'invoice_paid' } }); }}>
                   Mark paid

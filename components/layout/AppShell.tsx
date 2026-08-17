@@ -13,7 +13,10 @@ import { FloatingAiAssistant } from '@/components/ui/glowing-ai-chat-assistant';
 // Routes that render full-screen WITHOUT the app chrome (sidebar + padded
 // main area). The login/auth screens are standalone and must not show the
 // navigation — you aren't signed in yet.
-const BARE_ROUTES = ['/login', '/auth', '/onboarding'];
+// '/pay' is the customer-facing invoice payment page (migration 0025). The
+// person on it has no AIBOS account and never will — showing them the product
+// sidebar would be nonsense.
+const BARE_ROUTES = ['/login', '/auth', '/onboarding', '/pay'];
 
 // Public marketing surface. These live in app/(marketing)/ and bring their own
 // chrome (MarketingNav / MarketingFooter) + warm-light skin, so AppShell must

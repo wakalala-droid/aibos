@@ -621,12 +621,101 @@ export async function getDebtors(businessName?: string | null): Promise<AgingRep
   return data as unknown as AgingReport;
 }
 
-export async function invoiceShareText(id: string, businessName?: string | null, payNote?: string | null): Promise<string> {
+export async function invoiceShareText(
+  id: string, businessName?: string | null, payNote?: string | null,
+): Promise<{ text: string; payUrl: string | null }> {
   const q = new URLSearchParams();
   if (businessName) q.set('business_name', businessName);
   if (payNote) q.set('pay_note', payNote);
   const data = await spineFetch(`/invoices/${id}/share-text?${q.toString()}`);
-  return (data.text as string) ?? '';
+  return { text: (data.text as string) ?? '', payUrl: (data.pay_url as string | null) ?? null };
+}
+
+/** Mint (or fetch) the public payment link for a SENT invoice. */
+export async function invoicePayLink(id: string): Promise<string> {
+  const data = await spineFetch(`/invoices/${id}/pay-link`, { method: 'POST' });
+  return data.url as string;
+}
+
+// ── The public payment page (migration 0025) ─────────────────────────────────
+// These are the ONLY calls in this file that must NOT carry auth: the caller is
+// the owner's customer, who has no AIBOS account and never will. The token in
+// the path is the whole credential. Using spineFetch here would be a bug — it
+// awaits a Supabase session that doesn't exist.
+
+export interface PublicInvoice {
+  number: string;
+  customer_name: string;
+  business_name: string | null;
+  currency: string;
+  lines: InvoiceLine[];
+  total: number;
+  issued_at: string | null;
+  due_at: string | null;
+  status: Invoice['status'];
+  payable: boolean;
+}
+
+export type PayNetwork = 'mtn' | 'airtel';
+
+/** An error from a public route, carrying the HTTP status so the page can tell
+ *  "this link is wrong" (404 — the customer should ask for a new one) apart
+ *  from "we're having trouble" (anything else — they should just retry). */
+export class PublicApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'PublicApiError';
+    this.status = status;
+  }
+}
+
+async function publicFetch(path: string, init: RequestInit = {}): Promise<Record<string, unknown>> {
+  let res: Response;
+  try {
+    res = await fetch(`${PROXY}${path}`, init);
+  } catch {
+    // The customer is on mobile data; a dropped request is routine. 0 = "never
+    // reached the server", which the page reports as a retryable hiccup.
+    throw new PublicApiError('Could not reach the server.', 0);
+  }
+  const raw = await res.text();
+  let data: Record<string, unknown> = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch { /* non-JSON */ }
+  if (!res.ok) {
+    const detail = typeof data.detail === 'string' ? data.detail : `Request failed (${res.status})`;
+    throw new PublicApiError(detail, res.status);
+  }
+  return data;
+}
+
+export async function getPublicInvoice(token: string): Promise<{
+  invoice: PublicInvoice; networks: Record<PayNetwork, boolean>;
+}> {
+  const data = await publicFetch(`/pay/${encodeURIComponent(token)}`);
+  return {
+    invoice: data.invoice as unknown as PublicInvoice,
+    networks: data.networks as Record<PayNetwork, boolean>,
+  };
+}
+
+export async function initiatePublicPayment(
+  token: string, network: PayNetwork, payerPhone: string,
+): Promise<{ reference: string; status: string }> {
+  const data = await publicFetch(`/pay/${encodeURIComponent(token)}/initiate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ network, payer_phone: payerPhone }),
+  });
+  return { reference: data.reference as string, status: data.status as string };
+}
+
+export async function checkPublicPaymentStatus(
+  token: string, reference: string,
+): Promise<'pending' | 'successful' | 'failed'> {
+  const data = await publicFetch(
+    `/pay/${encodeURIComponent(token)}/status/${encodeURIComponent(reference)}`);
+  return data.status as 'pending' | 'successful' | 'failed';
 }
 
 // ── Live customer intelligence (Engine 2 over the spine — audit #5) ──────────
