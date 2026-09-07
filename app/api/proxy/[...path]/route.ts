@@ -100,6 +100,52 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
     }
 
     const text = await res.text();
+
+    /*
+      SAY WHEN THE THING ON THE OTHER END IS NOT OUR API.
+
+      Every error this API raises is FastAPI-shaped: {"detail": "..."}, and the
+      clients read `detail` to show the user something useful. A reply with no
+      `detail` did not come from us, it came from whatever is answering at that
+      address — and the clients fall back to "Request failed (404)", which says
+      nothing about where to look.
+
+      That is not hypothetical. Pointed at the retired Railway host, this proxy
+      faithfully relayed `{"status":"error","code":404,"message":"Application
+      not found"}` and the Hospitality screen showed "Request failed (404)".
+      The address was the whole problem and nothing on screen said so.
+
+      So: on an error with no `detail`, put one in, naming the host that
+      answered. `upstream` is built from NEXT_PUBLIC_API_URL, which is public
+      by definition, so there is nothing here a visitor could not already read.
+    */
+    if (!res.ok) {
+      let looksLikeOurApi = false;
+      try {
+        looksLikeOurApi = typeof JSON.parse(text)?.detail === "string";
+      } catch {
+        /* not JSON at all — an HTML error page, say. Definitely not ours. */
+      }
+      if (!looksLikeOurApi) {
+        const host = (() => {
+          try { return new URL(API_BASE).host; } catch { return API_BASE; }
+        })();
+        console.error("[proxy] %s %s -> %s (not an API response): %s",
+          method, path, res.status, text.slice(0, 200));
+        return NextResponse.json(
+          {
+            detail:
+              `The backend at ${host} answered ${res.status}, and it was not ` +
+              `this API. Check NEXT_PUBLIC_API_URL points at the running ` +
+              `service, then redeploy so the new value is built in.`,
+            upstream_status: res.status,
+            upstream_body: text.slice(0, 300),
+          },
+          { status: 502 },
+        );
+      }
+    }
+
     // No CORS header: this proxy is called same-origin from our own app. A
     // wildcard `access-control-allow-origin` here would let any website read
     // these responses through a victim's browser — remove it entirely.
