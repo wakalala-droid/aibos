@@ -10,6 +10,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
+import { slugFrom } from '@/lib/slug';
 import {
   listUnits, listChannels, createChannel, updateChannel, deleteChannel,
   syncChannel, icalFeedUrl,
@@ -383,16 +384,4 @@ function Setting({ name, value, missing, secret, revealed, onReveal, copied, onC
       </button>
     </div>
   );
-}
-
-/** Mirrors the server's fallback so the tab shows the handle a unit will
- *  actually answer to before anyone has set one by hand. */
-function slugFrom(name: string): string {
-  return name
-    .split('')
-    .map((c) => (/[a-z0-9]/i.test(c) ? c.toLowerCase() : '-'))
-    .join('')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 60);
 }

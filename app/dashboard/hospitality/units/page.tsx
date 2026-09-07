@@ -9,6 +9,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
+import { slugFrom } from '@/lib/slug';
 import { fmt, symbolForToken, CURRENCIES } from '@/lib/currency';
 import {
   listProperties, listUnits, createProperty, createUnit, updateUnit, deleteUnit,
@@ -236,16 +237,4 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
       </div>
     </SectionCard>
   );
-}
-
-/** Mirrors the server's fallback, so the placeholder shows the handle this unit
- *  will actually answer to before anybody sets one by hand. */
-function slugFrom(name: string): string {
-  return name
-    .split('')
-    .map((c) => (/[a-z0-9]/i.test(c) ? c.toLowerCase() : '-'))
-    .join('')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 60);
 }

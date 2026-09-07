@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import type { AdminAuditRow, UsageEventRow } from '@/lib/admin';
 import { TIERS, isTier } from '@/lib/tiers';
+import HospitalitySetup from '@/components/admin/HospitalitySetup';
 
 interface DetailPayload {
   profile: Record<string, unknown> | null;
@@ -19,6 +20,23 @@ function fmtDateTime(v: string | null | undefined): string {
   if (!v) return '—';
   const d = new Date(v);
   return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString(undefined, { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+/** Plain English for an audit row. Without this the new hospitality actions
+ *  render as raw ids next to a sentence, which reads as a bug in the log. */
+function describeAudit(action: string, detail: unknown): string {
+  const d = (detail ?? {}) as { tier?: string; property?: string; units?: string[]; result?: string };
+  if (action === 'set_tier') return `Set to ${String(d.tier ?? '').toUpperCase()}`;
+  if (action === 'hospitality_setup') {
+    const count = d.units?.length ?? 0;
+    return `Set up "${d.property}" with ${count} unit${count === 1 ? '' : 's'}`;
+  }
+  if (action === 'hospitality_site_token') {
+    return d.result === 'cleared' ? 'Took their website offline'
+      : d.result === 'rotated' ? 'Issued a new website key'
+      : 'Minted their website key';
+  }
+  return action;
 }
 
 function Fact({ label, value }: { label: string; value: React.ReactNode }) {
@@ -122,16 +140,19 @@ export default function AdminAccountDetailPage() {
         </div>
       </div>
 
+      {/* Set the customer's booking website up without holding their login. */}
+      {userId && <HospitalitySetup userId={userId} />}
+
       <div className="section-card" style={{ marginBottom: 16 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Tier history</p>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Admin actions</p>
         {data.audit.length === 0 ? (
-          <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>No admin tier changes recorded.</p>
+          <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>Nothing an admin has done to this account.</p>
         ) : (
           <div style={{ display: 'grid', gap: 8 }}>
             {data.audit.map((a) => (
               <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                 <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>
-                  {a.action === 'set_tier' ? `Set to ${String((a.detail as { tier?: string }).tier ?? '').toUpperCase()}` : a.action}
+                  {describeAudit(a.action, a.detail)}
                   <span style={{ color: 'var(--text-4)' }}> · by {a.admin_email}</span>
                 </span>
                 <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', flexShrink: 0 }}>{fmtDateTime(a.created_at)}</span>
