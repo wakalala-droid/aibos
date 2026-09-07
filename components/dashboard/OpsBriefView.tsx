@@ -56,17 +56,29 @@ export default function OpsBriefView() {
             </p>
             <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '2px 0 0' }}>OVERALL</p>
           </div>
+          {/* An engine with no data behind it scored 0 and was printed as a big
+              bold zero in the same type as a real score. "Operations 0" is a
+              verdict; "no data yet" is the truth. */}
           {[
-            { l: 'FINANCIAL',              s: scores.e1_score, c: 'var(--e1)' },
-            { l: 'CUSTOMER INTELLIGENCE',  s: scores.e2_score, c: 'var(--e2)' },
-            { l: 'OPERATIONS',             s: scores.e3_score, c: 'var(--e3)' },
+            { l: 'FINANCIAL',              s: scores.e1_score, c: 'var(--e1)', measured: scores.measured?.e1 ?? true },
+            { l: 'CUSTOMER INTELLIGENCE',  s: scores.e2_score, c: 'var(--e2)', measured: scores.measured?.e2 ?? true },
+            { l: 'OPERATIONS',             s: scores.e3_score, c: 'var(--e3)', measured: scores.measured?.e3 ?? true },
           ].map(item => (
             <div key={item.l} className="kpi-card">
               <p className="kpi-label" style={{ color: item.c }}>{item.l}</p>
-              <p style={{ fontSize: '2rem', fontWeight: 800, color: scoreColor(item.s), margin: '8px 0 10px', letterSpacing: '-0.03em' }}>{item.s}</p>
-              <div className="progress-track">
-                <motion.div className="progress-fill" style={{ background: scoreColor(item.s) }} initial={{ width: 0 }} animate={{ width: `${item.s}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
-              </div>
+              {item.measured ? (
+                <>
+                  <p style={{ fontSize: '2rem', fontWeight: 800, color: scoreColor(item.s), margin: '8px 0 10px', letterSpacing: '-0.03em' }}>{item.s}</p>
+                  <div className="progress-track">
+                    <motion.div className="progress-fill" style={{ background: scoreColor(item.s) }} initial={{ width: 0 }} animate={{ width: `${item.s}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-4)', margin: '8px 0 10px' }}>No data yet</p>
+                  <div className="progress-track" />
+                </>
+              )}
             </div>
           ))}
         </div>

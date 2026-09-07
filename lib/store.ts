@@ -118,6 +118,15 @@ export interface HealthShape {
   label: string;
   bestMonth: string;
   worstMonth: string;
+  /** Profit in the best and worst month. Undefined when there is no data.
+   *  Carried alongside the month names so a card can colour a loss correctly
+   *  instead of assuming the best month made money. */
+  bestProfit?: number;
+  worstProfit?: number;
+  /** How many months the figures are based on. One month means best and worst
+   *  are the same month, which is a fact worth saying rather than printing the
+   *  same row twice. */
+  monthsCounted?: number;
 }
 
 export interface CashflowShape {
@@ -168,6 +177,10 @@ export interface IntelligenceScoresShape {
   e1_score: number;
   e2_score: number;
   e3_score: number;
+  /** Whether each engine had any data behind its score. An engine with none
+   *  scored 0 and was drawn as a measured zero, which reads as "your customers
+   *  are worthless" rather than "nobody has uploaded customer data". */
+  measured?: { e1: boolean; e2: boolean; e3: boolean };
 }
 
 export interface EngineFlagsShape {
@@ -338,6 +351,7 @@ const INITIAL_HEALTH: HealthShape = {
   label: "No Data",
   bestMonth: "—",
   worstMonth: "—",
+  monthsCounted: 0,
 };
 
 const INITIAL: FinancialState = {
@@ -428,24 +442,41 @@ function deriveKpi(monthly: MonthlyRow[], rawKpi?: Record<string, unknown>): Kpi
   return { totalRevenue, totalCosts, totalProfit, avgMargin };
 }
 
-function deriveHealth(monthly: MonthlyRow[], rawHealth?: Record<string, unknown>): HealthShape {
-  if (rawHealth && typeof rawHealth.score === "number") {
-    return {
-      score: Number(rawHealth.score) || 0,
-      label: String(rawHealth.label ?? "—"),
-      bestMonth: String(rawHealth.bestMonth ?? "—"),
-      worstMonth: String(rawHealth.worstMonth ?? "—"),
-    };
-  }
-  if (!monthly.length) return { ...INITIAL_HEALTH };
-
+/** Best and worst month by profit, straight from the rows. */
+function extremes(monthly: MonthlyRow[]) {
+  if (!monthly.length) return null;
   const withProfit = monthly.map((m) => ({
     month: String(m.Month),
     profit: (Number(m.Revenue) || 0) - (Number(m.Costs) || 0),
   }));
+  return {
+    best: withProfit.reduce((a, b) => (b.profit > a.profit ? b : a), withProfit[0]),
+    worst: withProfit.reduce((a, b) => (b.profit < a.profit ? b : a), withProfit[0]),
+    count: withProfit.length,
+  };
+}
 
-  const best = withProfit.reduce((a, b) => (b.profit > a.profit ? b : a), withProfit[0]);
-  const worst = withProfit.reduce((a, b) => (b.profit < a.profit ? b : a), withProfit[0]);
+function deriveHealth(monthly: MonthlyRow[], rawHealth?: Record<string, unknown>): HealthShape {
+  const ext = extremes(monthly);
+
+  // The server's health payload carries a score and a label. On the event-spine
+  // path (/twin/financials) it carries NOTHING ELSE — no best or worst month.
+  // This used to return early on it, so both months printed as an em-dash for
+  // every account running off recorded events, which is all of them since the
+  // rebuild. Take what the server sent and work the rest out from the rows we
+  // already have, rather than showing a placeholder next to real numbers.
+  if (rawHealth && typeof rawHealth.score === "number") {
+    return {
+      score: Number(rawHealth.score) || 0,
+      label: String(rawHealth.label ?? "—"),
+      bestMonth: String(rawHealth.bestMonth ?? ext?.best.month ?? "—"),
+      worstMonth: String(rawHealth.worstMonth ?? ext?.worst.month ?? "—"),
+      bestProfit: ext?.best.profit,
+      worstProfit: ext?.worst.profit,
+      monthsCounted: ext?.count ?? 0,
+    };
+  }
+  if (!ext) return { ...INITIAL_HEALTH };
 
   const totalRevenue = monthly.reduce((s, m) => s + (Number(m.Revenue) || 0), 0);
   const totalCosts = monthly.reduce((s, m) => s + (Number(m.Costs) || 0), 0);
@@ -458,8 +489,11 @@ function deriveHealth(monthly: MonthlyRow[], rawHealth?: Record<string, unknown>
   return {
     score,
     label,
-    bestMonth: best.month,
-    worstMonth: worst.month,
+    bestMonth: ext.best.month,
+    worstMonth: ext.worst.month,
+    bestProfit: ext.best.profit,
+    worstProfit: ext.worst.profit,
+    monthsCounted: ext.count,
   };
 }
 
@@ -508,6 +542,7 @@ function deriveIntelligence(s: FinancialState): IntelligenceScoresShape | null {
     e1_score: e1,
     e2_score: e2,
     e3_score: e3,
+    measured: { e1: hasE1, e2: hasE2, e3: hasE3 },
   };
 }
 

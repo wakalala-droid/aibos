@@ -44,6 +44,9 @@ export interface Property {
   longitude?: number | null;
   description?: string | null;
   status: PropertyStatus;
+  /** Token the property's own website uses to read availability and send
+   *  booking requests (migration 0027). Null until the owner mints one. */
+  public_site_token?: string | null;
 }
 export type PropertyInput = Partial<Omit<Property, 'id'>> & { name: string };
 
@@ -58,6 +61,10 @@ export interface Unit {
   base_nightly_rate: number;
   currency: string;
   photos: string[];
+  /** The handle the property's own website uses for this unit in a URL.
+   *  Kept apart from unit_name because a slug lives in links people have
+   *  already shared: renaming a unit must not break the public site. */
+  public_slug?: string | null;
 }
 export type UnitInput = Partial<Omit<Unit, 'id' | 'property_id'>> & { unit_name: string; property_id: string };
 
@@ -178,6 +185,16 @@ export async function deleteProperty(id: string): Promise<void> {
   await hfetch(`/hospitality/properties/${id}`, { method: 'DELETE' });
 }
 
+/** Mint the token the property's own website uses, or replace the one it has.
+ *  Rotating is the revoke: whoever holds the old one is cut off at once. */
+export async function mintSiteToken(propertyId: string): Promise<Property> {
+  return (await hfetch(`/hospitality/properties/${propertyId}/site-token`, { method: 'POST' })).property as Property;
+}
+/** Take the public website offline. */
+export async function clearSiteToken(propertyId: string): Promise<Property> {
+  return (await hfetch(`/hospitality/properties/${propertyId}/site-token`, { method: 'DELETE' })).property as Property;
+}
+
 // ─── Units (single source of truth) ─────────────────────────────────────────
 
 export async function listUnits(propertyId?: string): Promise<Unit[]> {
@@ -264,6 +281,14 @@ export async function rotateExportToken(id: string): Promise<Channel> {
 export function icalFeedUrl(token: string): string {
   if (typeof window === 'undefined') return `/api/proxy/hospitality/ical/${token}.ics`;
   return `${window.location.origin}/api/proxy/hospitality/ical/${token}.ics`;
+}
+
+/** The address a property's own website calls. This is what goes into the
+ *  site's NEXT_PUBLIC_AIBOS_API_URL, so it must be the API itself and NOT the
+ *  /api/proxy hop: the proxy attaches this browser's session, and a public
+ *  website has none. */
+export function publicSiteBase(): string {
+  return process.env.NEXT_PUBLIC_API_URL ?? '';
 }
 
 // ─── Expenses (feed the spine → engine.py) ──────────────────────────────────

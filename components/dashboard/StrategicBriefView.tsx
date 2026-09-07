@@ -74,10 +74,14 @@ export default function StrategicBriefView({
   if (kpi.totalProfit > 0) {
     recs.push({ title: 'Reinvest Profit', recommendation: `Net profit of ${fmt(kpi.totalProfit, true, sym)} provides capacity for growth investment. Prioritise customer acquisition and inventory.`, priority: 'low' });
   }
-  if (scores && scores.e2_score < 70) {
+  // Only judge an engine that was actually measured. Firing "Customer Retention
+  // at Risk — score is 0/100" at an owner who has never uploaded customer data
+  // is a finding about nothing, and it is the kind of thing that costs trust in
+  // every other number on the page.
+  if (scores && (scores.measured?.e2 ?? true) && scores.e2_score < 70) {
     recs.push({ title: 'Customer Retention at Risk', recommendation: `Customer Intelligence score is ${scores.e2_score}/100. Focus on reducing churn in the At Risk segment.`, priority: 'medium' });
   }
-  if (scores && scores.e3_score < 70) {
+  if (scores && (scores.measured?.e3 ?? true) && scores.e3_score < 70) {
     recs.push({ title: 'Operations Below Benchmark', recommendation: `Operations score is ${scores.e3_score}/100. Drink attach rate and primary category mix need improvement.`, priority: 'medium' });
   }
   if (recs.length === 0) {
@@ -91,6 +95,25 @@ export default function StrategicBriefView({
   const briefLines = (unifiedBrief || '').split('\n').filter((l) => l.trim() && /^\d+\./.test(l.trim()));
   const healthColour = scoreColor(health.score);
   const months = Math.max(monthly.length, 1);
+
+  // ── Best and worst month, as facts rather than decoration ────────────────
+  // monthsCounted / bestProfit / worstProfit come from the store, which works
+  // them out from the same rows the rest of the page uses. Falling back to the
+  // rows here keeps this honest for any caller that passes a bare health object
+  // (the marketing render does).
+  const monthCount = health.monthsCounted ?? monthly.length;
+  const profitOf = (m: MonthlyRow) => (Number(m.Revenue) || 0) - (Number(m.Costs) || 0);
+  const profits = monthly.map(profitOf);
+  const bestProfit = health.bestProfit ?? (profits.length ? Math.max(...profits) : 0);
+  const worstProfit = health.worstProfit ?? (profits.length ? Math.min(...profits) : 0);
+
+  // Colour carries meaning in this system, so a loss is never green — not even
+  // when it is the least bad month of the ones recorded.
+  const profitColour = (v: number) => (v < 0 ? 'var(--crit)' : 'var(--good)');
+  // Bars in proportion to the figures they represent, against whichever month
+  // is largest either way. A hardcoded width is a picture of nothing.
+  const barScale = Math.max(Math.abs(bestProfit), Math.abs(worstProfit), 1);
+  const barWidth = (v: number) => `${Math.round((Math.abs(v) / barScale) * 100)}%`;
 
   return (
     <>
@@ -136,33 +159,90 @@ export default function StrategicBriefView({
             </div>
           </div>
           <div>
-            <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Best Month</p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{health.bestMonth}</span>
-                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--good)' }}>
-                  {fmt(monthly.length > 0 ? monthly.reduce((best, m) => { const p = (Number(m.Revenue) || 0) - (Number(m.Costs) || 0); return p > best ? p : best; }, -Infinity) : 0, false, sym)} profit
-                </span>
+            {/* Best and worst month.
+                These two rows used to draw a full-width GREEN bar for the best
+                month and a 65%-wide amber bar for the worst, both hardcoded.
+                They were decoration wearing the clothes of measurement: a month
+                that LOST K8,041 was drawn as a full green bar labelled "best",
+                because the code assumed the best month made money. With a
+                single month of data it also printed the same figure twice, once
+                as the best and once as the worst, which reads as a broken card.
+                Colour carries meaning here, so a loss is never green, the bars
+                are proportional to the actual figures, and one month says it is
+                one month. */}
+            {monthCount === 0 ? (
+              <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.6 }}>
+                No monthly figures yet. Record a few sales and expenses and your best
+                and worst months appear here.
+              </p>
+            ) : monthCount === 1 ? (
+              <div>
+                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>
+                  Only month so far
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 5 }}>
+                  <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{health.bestMonth}</span>
+                  <span style={{ fontSize: 'var(--fs-label)', color: profitColour(bestProfit) }}>
+                    {fmt(bestProfit, false, sym)} {bestProfit < 0 ? 'loss' : 'profit'}
+                  </span>
+                </div>
+                <div className="progress-track">
+                  <motion.div className="progress-fill" style={{ background: profitColour(bestProfit) }}
+                    initial={{ width: 0 }} animate={{ width: '100%' }}
+                    transition={{ duration: 1, ease: 'easeOut', delay: 0.4 }} />
+                </div>
+                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '6px 0 0' }}>
+                  A second month of figures turns this into a best and worst comparison.
+                </p>
               </div>
-              <div className="progress-track"><motion.div className="progress-fill" style={{ background: 'var(--good)', width: '100%' }} initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1, ease: 'easeOut', delay: 0.4 }} /></div>
-            </div>
-            <div>
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Worst Month</p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{health.worstMonth}</span>
-                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--warn)' }}>
-                  {fmt(monthly.length > 0 ? monthly.reduce((worst, m) => { const p = (Number(m.Revenue) || 0) - (Number(m.Costs) || 0); return p < worst ? p : worst; }, Infinity) : 0, false, sym)} profit
-                </span>
-              </div>
-              <div className="progress-track"><motion.div className="progress-fill" style={{ background: 'var(--warn)' }} initial={{ width: 0 }} animate={{ width: '65%' }} transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }} /></div>
-            </div>
+            ) : (
+              <>
+                <div style={{ marginBottom: 14 }}>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Best Month</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 5 }}>
+                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{health.bestMonth}</span>
+                    <span style={{ fontSize: 'var(--fs-label)', color: profitColour(bestProfit) }}>
+                      {fmt(bestProfit, false, sym)} {bestProfit < 0 ? 'loss' : 'profit'}
+                    </span>
+                  </div>
+                  <div className="progress-track">
+                    <motion.div className="progress-fill" style={{ background: profitColour(bestProfit) }}
+                      initial={{ width: 0 }} animate={{ width: barWidth(bestProfit) }}
+                      transition={{ duration: 1, ease: 'easeOut', delay: 0.4 }} />
+                  </div>
+                </div>
+                <div>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Worst Month</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 5 }}>
+                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{health.worstMonth}</span>
+                    <span style={{ fontSize: 'var(--fs-label)', color: profitColour(worstProfit) }}>
+                      {fmt(worstProfit, false, sym)} {worstProfit < 0 ? 'loss' : 'profit'}
+                    </span>
+                  </div>
+                  <div className="progress-track">
+                    <motion.div className="progress-fill" style={{ background: profitColour(worstProfit) }}
+                      initial={{ width: 0 }} animate={{ width: barWidth(worstProfit) }}
+                      transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }} />
+                  </div>
+                </div>
+              </>
+            )}
             {scores && (
               <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-                {[{ label: 'Financial', score: scores.e1_score, colour: 'var(--e1)' }, { label: 'Customer', score: scores.e2_score, colour: 'var(--e2)' }, { label: 'Operations', score: scores.e3_score, colour: 'var(--e3)' }].map((item) => (
+                {/* An engine nobody has given data to scored 0 and was drawn as a
+                    measured zero, so a business with no POS export read as
+                    "Operations: 0" rather than "nothing uploaded yet". */}
+                {[
+                  { label: 'Financial', score: scores.e1_score, colour: 'var(--e1)', measured: scores.measured?.e1 ?? true },
+                  { label: 'Customer', score: scores.e2_score, colour: 'var(--e2)', measured: scores.measured?.e2 ?? true },
+                  { label: 'Operations', score: scores.e3_score, colour: 'var(--e3)', measured: scores.measured?.e3 ?? true },
+                ].map((item) => (
                   <div key={item.label} style={{ flex: 1 }}>
                     <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.label}</p>
-                    <div className="progress-track" style={{ marginBottom: 3 }}><motion.div className="progress-fill" style={{ background: item.colour }} initial={{ width: 0 }} animate={{ width: `${item.score}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }} /></div>
-                    <span style={{ fontSize: 'var(--fs-label)', color: item.colour, fontWeight: 700 }}>{item.score}</span>
+                    <div className="progress-track" style={{ marginBottom: 3 }}><motion.div className="progress-fill" style={{ background: item.measured ? item.colour : 'var(--border-md)' }} initial={{ width: 0 }} animate={{ width: item.measured ? `${item.score}%` : '0%' }} transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }} /></div>
+                    <span style={{ fontSize: 'var(--fs-label)', color: item.measured ? item.colour : 'var(--text-4)', fontWeight: 700 }}>
+                      {item.measured ? item.score : 'No data yet'}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -192,8 +272,8 @@ export default function StrategicBriefView({
             { label: 'Total Costs', value: fmt(kpi.totalCosts, true, sym), colour: 'var(--e2)' },
             { label: 'Net Profit', value: fmt(kpi.totalProfit, true, sym), colour: 'var(--good)' },
             { label: 'Avg Margin', value: `${kpi.avgMargin.toFixed(1)}%`, colour: 'var(--purple)' },
-            { label: 'Best Month', value: health.bestMonth, colour: 'var(--good)' },
-            { label: 'Worst Month', value: health.worstMonth, colour: 'var(--warn)' },
+            { label: 'Best Month', value: health.bestMonth, colour: profitColour(bestProfit) },
+            { label: 'Worst Month', value: health.worstMonth, colour: profitColour(worstProfit) },
           ].map((item) => (
             <div key={item.label} style={{ padding: '12px 14px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>{item.label}</p>

@@ -13,7 +13,8 @@ import SectionCard from '@/components/ui/SectionCard';
 import {
   listUnits, listChannels, createChannel, updateChannel, deleteChannel,
   syncChannel, icalFeedUrl,
-  type Unit, type Channel, type ChannelType, type SyncStatus,
+  listProperties, mintSiteToken, clearSiteToken, publicSiteBase,
+  type Unit, type Channel, type ChannelType, type SyncStatus, type Property,
 } from '@/lib/hospitality';
 
 const input: React.CSSProperties = {
@@ -48,13 +49,15 @@ export default function ChannelsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [units, setUnits] = useState<Unit[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [channels, setChannels] = useState<Record<string, Channel[]>>({});
 
   const load = useCallback(async () => {
     setError('');
     try {
-      const us = await listUnits();
+      const [us, props] = await Promise.all([listUnits(), listProperties()]);
       setUnits(us);
+      setProperties(props);
       const entries = await Promise.all(us.map(async u => [u.id, await listChannels(u.id)] as const));
       setChannels(Object.fromEntries(entries));
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not load channels.'); }
@@ -62,14 +65,15 @@ export default function ChannelsPage() {
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  if (!loading && units.length === 0) {
-    return <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>Add a unit first — channels attach to a unit.</p>;
-  }
+  const noUnits = !loading && units.length === 0;
 
   return (
     <>
       {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
       {loading && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>Loading…</p>}
+      {noUnits && <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>Add a unit first — channels attach to a unit.</p>}
+
+      <WebsiteCard properties={properties} units={units} onChange={load} onError={setError} />
 
       {units.map(u => (
         <div key={u.id} style={{ marginBottom: 18 }}>
@@ -174,4 +178,180 @@ function UnitChannels({ unit, channels, onChange, onError }: { unit: Unit; chann
       </div>
     </SectionCard>
   );
+}
+
+/**
+ * Your own website — the direct-booking channel.
+ *
+ * Every other channel here is somebody else's shopfront taking a commission.
+ * This one is the property's own site, and it works the same way the iCal feed
+ * does: an unguessable token IS the key. Paste the two settings below into the
+ * site, and it can read live availability and send booking requests straight
+ * into this calendar. Rotate the token and the site is cut off at once.
+ *
+ * A request from the site arrives as PENDING, which holds the dates without
+ * booking any money. Confirming it here is what puts the stay in the books.
+ */
+function WebsiteCard({ properties, units, onChange, onError }: {
+  properties: Property[]; units: Unit[];
+  onChange: () => Promise<void>; onError: (m: string) => void;
+}) {
+  const [busy, setBusy] = useState('');
+  const [copied, setCopied] = useState('');
+  const [shown, setShown] = useState<Record<string, boolean>>({});
+
+  const apiBase = publicSiteBase();
+
+  const copy = (key: string, value: string) => {
+    navigator.clipboard?.writeText(value).then(() => {
+      setCopied(key);
+      setTimeout(() => setCopied(''), 1500);
+    });
+  };
+
+  const mint = async (p: Property) => {
+    setBusy(p.id); onError('');
+    try { await mintSiteToken(p.id); await onChange(); }
+    catch (e) { onError(e instanceof Error ? e.message : 'Could not connect the website.'); }
+    finally { setBusy(''); }
+  };
+
+  const rotate = async (p: Property) => {
+    if (!confirm('Make a new key? Your website stops working until you paste the new one in.')) return;
+    await mint(p);
+  };
+
+  const disconnect = async (p: Property) => {
+    if (!confirm('Take the website offline? It will no longer show availability or take requests.')) return;
+    setBusy(p.id); onError('');
+    try { await clearSiteToken(p.id); await onChange(); }
+    catch (e) { onError(e instanceof Error ? e.message : 'Could not disconnect.'); }
+    finally { setBusy(''); }
+  };
+
+  if (properties.length === 0) return null;
+
+  return (
+    <SectionCard
+      title="Your own website"
+      subtitle="Take bookings direct, with no commission. Requests land here as pending."
+      style={{ marginBottom: 18 }}
+    >
+      {properties.map((p) => {
+        const token = p.public_site_token || '';
+        const mine = units.filter((u) => u.property_id === p.id);
+        return (
+          <div key={p.id} style={{ paddingBottom: 14, marginBottom: 14, borderBottom: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-1)' }}>{p.name}</span>
+              <span className="badge" style={{
+                color: token ? 'var(--green)' : 'var(--text-4)',
+                borderColor: token ? 'var(--green)' : 'var(--border)',
+              }}>
+                {token ? 'CONNECTED' : 'NOT CONNECTED'}
+              </span>
+            </div>
+
+            {!token ? (
+              <>
+                <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 10px' }}>
+                  Connect your website and it can show which nights are free and send
+                  booking requests straight into this calendar.
+                </p>
+                <button type="button" style={primaryBtn} disabled={busy === p.id} onClick={() => mint(p)}>
+                  {busy === p.id ? 'Connecting…' : 'Connect my website'}
+                </button>
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 10px' }}>
+                  Put these two settings into your website, then publish it.
+                </p>
+
+                <Setting
+                  name="NEXT_PUBLIC_AIBOS_API_URL"
+                  value={apiBase}
+                  missing={!apiBase}
+                  copied={copied === `${p.id}-url`}
+                  onCopy={() => copy(`${p.id}-url`, apiBase)}
+                />
+                <Setting
+                  name="NEXT_PUBLIC_AIBOS_SITE_TOKEN"
+                  value={shown[p.id] ? token : `${token.slice(0, 6)}${'•'.repeat(18)}`}
+                  secret
+                  revealed={Boolean(shown[p.id])}
+                  onReveal={() => setShown((s) => ({ ...s, [p.id]: !s[p.id] }))}
+                  copied={copied === `${p.id}-token`}
+                  onCopy={() => copy(`${p.id}-token`, token)}
+                />
+
+                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '10px 0 0', lineHeight: 1.6 }}>
+                  Web addresses for your units:{' '}
+                  {mine.length === 0
+                    ? 'add a unit first.'
+                    : mine.map((u) => u.public_slug || slugFrom(u.unit_name)).join(' · ')}
+                  {'. '}Set them on the Units tab.
+                </p>
+
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+                  <button type="button" style={ghostBtn} disabled={busy === p.id} onClick={() => rotate(p)}>
+                    New key
+                  </button>
+                  <button type="button" style={ghostBtn} disabled={busy === p.id} onClick={() => disconnect(p)}>
+                    Take offline
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })}
+    </SectionCard>
+  );
+}
+
+/** One copy-me setting line. */
+function Setting({ name, value, missing, secret, revealed, onReveal, copied, onCopy }: {
+  name: string; value: string; missing?: boolean; secret?: boolean;
+  revealed?: boolean; onReveal?: () => void; copied: boolean; onCopy: () => void;
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+      <code style={{
+        fontSize: 'var(--fs-label)', color: 'var(--text-3)', minWidth: 210,
+        fontFamily: 'inherit', fontWeight: 600,
+      }}>
+        {name}
+      </code>
+      <code style={{
+        flex: '1 1 220px', minWidth: 0, padding: '6px 10px', borderRadius: 6,
+        background: 'var(--bg-input)', border: '1px solid var(--border-md)',
+        fontSize: 'var(--fs-label)', fontFamily: 'inherit',
+        color: missing ? 'var(--red)' : 'var(--text-1)',
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      }}>
+        {missing ? 'Not set on this deployment' : value}
+      </code>
+      {secret && (
+        <button type="button" style={ghostBtn} onClick={onReveal}>
+          {revealed ? 'Hide' : 'Show'}
+        </button>
+      )}
+      <button type="button" style={ghostBtn} disabled={missing} onClick={onCopy}>
+        {copied ? 'Copied' : 'Copy'}
+      </button>
+    </div>
+  );
+}
+
+/** Mirrors the server's fallback so the tab shows the handle a unit will
+ *  actually answer to before anyone has set one by hand. */
+function slugFrom(name: string): string {
+  return name
+    .split('')
+    .map((c) => (/[a-z0-9]/i.test(c) ? c.toLowerCase() : '-'))
+    .join('')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 60);
 }

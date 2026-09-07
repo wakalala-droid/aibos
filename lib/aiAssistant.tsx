@@ -495,6 +495,11 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     const decoder = new TextDecoder();
     let buf = '';
     let got = false;
+    // Tracked apart from `got` because an error frame that arrives BEFORE any
+    // words is not an answer: the buffered path deserves a go at it. Marking
+    // it as received is why every failure ended at the error text and the
+    // fallback that exists for exactly this case never ran.
+    let sawText = false;
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -507,12 +512,14 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         if (!line.startsWith('data:')) continue;
         try {
           const msg = JSON.parse(line.slice(5).trim()) as { t?: string; tool?: string; error?: string; done?: boolean };
-          if (msg.t) { append(msg.t); got = true; setLoading(false); }
-          else if (msg.error) { append(`\n\n${msg.error}`); got = true; }
+          if (msg.t) { append(msg.t); got = true; sawText = true; setLoading(false); }
+          // Mid-answer: keep what was written and say why it stopped. Before a
+          // single word: say nothing here and let the buffered path try.
+          else if (msg.error && sawText) { append(`\n\n${msg.error}`); got = true; }
         } catch { /* ignore a malformed frame rather than kill the answer */ }
       }
     }
-    if (!got) {
+    if (!got || !sawText) {
       // Nothing came through — drop the empty bubble and let the caller retry
       // on the buffered path rather than leaving a blank message.
       setMessages((p) => p.filter((m) => m.id !== id));

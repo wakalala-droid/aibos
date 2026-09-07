@@ -128,6 +128,7 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
     max_guests: String(unit.max_guests ?? 1),
     base_nightly_rate: String(unit.base_nightly_rate ?? 0),
     currency: unit.currency || 'ZMW',
+    public_slug: unit.public_slug || '',
   });
   const [amenities, setAmenities] = useState<string[]>(unit.amenities || []);
   const [amenityDraft, setAmenityDraft] = useState('');
@@ -153,6 +154,7 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
         base_nightly_rate: Number(f.base_nightly_rate) || 0,
         currency: f.currency,
         amenities,
+        public_slug: f.public_slug.trim(),
       });
       setSaved(true);
       await onSaved();
@@ -188,6 +190,27 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
         </div>
       </div>
 
+      {/* The handle this unit answers to on the property's own website.
+          Deliberately separate from the unit name: it appears in links people
+          have already sent each other, so renaming the unit here must not
+          quietly break the site. Blank is fine — the name is used instead. */}
+      <div style={{ marginTop: 14 }}>
+        <label style={lbl}>Web address on your own site</label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>/residences/</span>
+          <input
+            style={{ ...input, flex: '1 1 160px' }}
+            value={f.public_slug}
+            onChange={e => set('public_slug', e.target.value)}
+            placeholder={slugFrom(f.unit_name)}
+          />
+        </div>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '4px 0 0' }}>
+          Leave it blank and your site uses <strong>{slugFrom(f.unit_name) || 'the unit name'}</strong>.
+          Changing it breaks links already shared.
+        </p>
+      </div>
+
       {/* Amenities — canonical list every listing inherits */}
       <div style={{ marginTop: 14 }}>
         <label style={lbl}>Amenities (the canonical list)</label>
@@ -213,4 +236,16 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
       </div>
     </SectionCard>
   );
+}
+
+/** Mirrors the server's fallback, so the placeholder shows the handle this unit
+ *  will actually answer to before anybody sets one by hand. */
+function slugFrom(name: string): string {
+  return name
+    .split('')
+    .map((c) => (/[a-z0-9]/i.test(c) ? c.toLowerCase() : '-'))
+    .join('')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 60);
 }

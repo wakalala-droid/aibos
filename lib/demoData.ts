@@ -34,7 +34,14 @@ export const DEMO_BRIEF: {
   health: { score: 75, label: 'Excellent', bestMonth: 'December', worstMonth: 'September' },
   monthly: BRIEF_MONTHLY,
   alerts: [],
-  scores: { overall_score: 75, overall_label: 'Excellent', e1_score: 75, e2_score: 0, e3_score: 60 },
+  // e2 has no data in this dataset, which is why its score is 0. Saying so
+  // is the point: the brief then recommends uploading transaction data
+  // instead of announcing a customer-retention problem it cannot see.
+  scores: {
+    overall_score: 75, overall_label: 'Excellent',
+    e1_score: 75, e2_score: 0, e3_score: 60,
+    measured: { e1: true, e2: false, e3: true },
+  },
   unifiedBrief: '',
 };
 
