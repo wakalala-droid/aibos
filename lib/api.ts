@@ -1,6 +1,7 @@
 /**
  * AIBOS — API Client
- * All requests go through /api/proxy (Next.js server) → Railway FastAPI.
+ * All requests go through /api/proxy (Next.js server) → the FastAPI backend,
+ * wherever that is hosted. The address is resolved once in lib/api-base.ts.
  * This avoids CORS entirely — server-to-server calls have no restrictions.
  */
 

@@ -13,10 +13,7 @@
 //   - GET / DELETE (no body)
 
 import { NextRequest, NextResponse } from "next/server";
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ??
-  "https://aibos-api-production.up.railway.app";
+import { apiBase } from "@/lib/api-base";
 
 // Force this route to run on the Node.js runtime (not Edge) so streaming
 // request bodies (file uploads) are handled reliably.
@@ -24,6 +21,22 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
+  /*
+    Resolved per request rather than once at module load. The address used to
+    be a module constant with the Railway URL as its fallback, so a missing
+    variable produced a working-looking site pointed at a dead host. Now a
+    missing variable is a 503 that says which variable and what to do.
+  */
+  const base = apiBase();
+  if (!base.ok) {
+    console.error("[proxy] %s", base.reason);
+    return NextResponse.json(
+      { error: "The backend is not configured.", detail: base.reason },
+      { status: 503 },
+    );
+  }
+  const API_BASE = base.url;
+
   const url = new URL(req.url);
   // Strip the /api/proxy prefix to get the downstream backend path.
   const path = url.pathname.replace(/^\/api\/proxy/, "") || "/";
