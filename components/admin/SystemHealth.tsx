@@ -146,7 +146,7 @@ export default function SystemHealth() {
               ok={apiKeyOk}
               label="API key"
               detail={apiKeyOk === null
-                ? 'Not checked — the API did not answer.'
+                ? 'Not checked. The API did not answer.'
                 : apiKeyOk
                   ? 'Can read and write the database.'
                   : (api.db_note ?? 'Cannot see the database.')}
@@ -158,7 +158,7 @@ export default function SystemHealth() {
                 ? (api.ai_configured
                     ? `${api.ai_provider} · ${api.ai_model}`
                     : 'No AI key is set, so the CFO chat cannot answer.')
-                : 'Not checked — the API did not answer.'}
+                : 'Not checked. The API did not answer.'}
             />
           </ul>
         </>

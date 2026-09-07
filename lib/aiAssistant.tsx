@@ -473,6 +473,16 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       pushAssistant(`${typeof d.detail === 'string' ? d.detail : 'The AI CFO chat is a Pro feature.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`);
       return true;
     }
+    // 503 = we could not establish the plan (or no AI key). Not a reason to
+    // sell an upgrade, and not worth a second attempt down the buffered path —
+    // it will fail identically. Say what happened.
+    if (res.status === 503) {
+      const d = await res.json().catch(() => ({} as Record<string, unknown>));
+      setOnline(true);
+      pushAssistant(typeof d.detail === 'string' ? d.detail
+        : 'The chat is unavailable right now. This is a fault on our side.');
+      return true;
+    }
     const ct = res.headers.get('content-type') ?? '';
     if (!res.ok || !ct.includes('text/event-stream') || !res.body) return false;
 
@@ -721,6 +731,15 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
           ? data.detail
           : 'The AI CFO chat is a Pro feature.';
         pushAssistant(`${msg}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`);
+        setLoading(false);
+        return;
+      }
+      // 503 = the service is at fault (no AI key, or the plan could not be
+      // read). Show what it said rather than dressing it up as a network error.
+      if (res.status === 503) {
+        setOnline(true);
+        pushAssistant(typeof data.detail === 'string' ? data.detail
+          : 'The chat is unavailable right now. This is a fault on our side.');
         setLoading(false);
         return;
       }

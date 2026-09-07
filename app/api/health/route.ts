@@ -58,8 +58,8 @@ async function checkServiceKey(): Promise<KeyVerdict> {
         configured: true,
         service_role: false,
         note:
-          'SUPABASE_SERVICE_ROLE_KEY is set but it is NOT the service_role key — ' +
-          `listing users was refused (${error.message}). Copy the service_role key ` +
+          'SUPABASE_SERVICE_ROLE_KEY is set but it is NOT the service_role key. ' +
+          `Listing users was refused (${error.message}). Copy the service_role key ` +
           'from Supabase → Project Settings → API and redeploy.',
       };
     }
