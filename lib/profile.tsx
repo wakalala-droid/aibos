@@ -53,6 +53,9 @@ export interface Profile {
   /** Morning Brief delivery preferences (migration 0013). */
   brief_email_enabled?: boolean | null;
   whatsapp_number?: string | null;
+  /** The plan whose welcome this account has already closed (migration 0028).
+   *  A tier rather than a flag, so a second upgrade gets its own welcome. */
+  welcome_seen_tier?: string | null;
 }
 
 /** Team membership role (audit #27/#28) — distinct from the admin `Role`.

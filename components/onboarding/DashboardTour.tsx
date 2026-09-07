@@ -13,6 +13,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { WELCOME_CLOSED_EVENT } from './WelcomeTour';
 
 const DONE_KEY = 'aibos-tour-done-v1';
 export const TOUR_RESTART_EVENT = 'aibos:start-tour';
@@ -67,13 +68,30 @@ export default function DashboardTour() {
   }, []);
 
   // First-run trigger — dashboard home only, once, after paint settles.
+  //
+  // Waits while the upgrade welcome is on screen. Someone who signs up already
+  // paying gets both on the same load, and a spotlight cutting holes in a page
+  // hidden behind a panel is worse than either on its own. The welcome fires an
+  // event on its way out and this picks up where it left off.
   useEffect(() => {
     if (pathname !== '/dashboard') return;
     let done = '1';
     try { done = window.localStorage.getItem(DONE_KEY) ?? ''; } catch { /* private mode */ }
     if (done === '1') return;
-    const t = window.setTimeout(begin, 900);
-    return () => window.clearTimeout(t);
+
+    let timer = 0;
+    const start = () => { timer = window.setTimeout(begin, 900); };
+
+    if (document.body.dataset.welcomeTour === 'open') {
+      window.addEventListener(WELCOME_CLOSED_EVENT, start, { once: true });
+      return () => {
+        window.removeEventListener(WELCOME_CLOSED_EVENT, start);
+        window.clearTimeout(timer);
+      };
+    }
+
+    start();
+    return () => window.clearTimeout(timer);
   }, [pathname, begin]);
 
   // Manual replay (SimpleHome dispatches this).

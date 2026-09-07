@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import DashboardHeader from '@/components/layout/DashboardHeader';
 import PlanNotice from '@/components/ui/PlanNotice';
+import WelcomeTour from '@/components/onboarding/WelcomeTour';
 import DashboardTour from '@/components/onboarding/DashboardTour';
 import { logUsage, type UsageEngine } from '@/lib/usage';
 
@@ -50,6 +51,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <PlanNotice />
       {children}
       <DashboardTour />
+      {/* Shown once after an upgrade, and stays until it is closed. */}
+      <WelcomeTour />
     </div>
   );
 }

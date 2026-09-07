@@ -42,6 +42,10 @@ const EDITABLE = [
   // dispatch (aibos-api), so storing the preference itself is safe for anyone.
   'brief_email_enabled',
   'whatsapp_number',
+  // Which plan's welcome this account has closed (migration 0028). A
+  // preference, not a privilege: it only decides whether a panel is on screen,
+  // and the profiles guard trigger still pins role and tier on a self-update.
+  'welcome_seen_tier',
   // Onboarding fields (migration 0007 · Evolution Initiative 1).
   'tax_status',
   'employees',
