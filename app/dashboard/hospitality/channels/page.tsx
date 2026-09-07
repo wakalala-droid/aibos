@@ -229,7 +229,23 @@ function WebsiteCard({ properties, units, onChange, onError }: {
     finally { setBusy(''); }
   };
 
-  if (properties.length === 0) return null;
+  // Do NOT return null with no properties. Somebody arriving here to connect
+  // their site would find an empty tab and no way forward, which is the dead
+  // end this card exists to remove.
+  if (properties.length === 0) {
+    return (
+      <SectionCard
+        title="Your own website"
+        subtitle="Take bookings direct, with no commission."
+        style={{ marginBottom: 18 }}
+      >
+        <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
+          Add your property and its units on the Units tab first. The key your
+          website uses belongs to a property, so there has to be one to give it to.
+        </p>
+      </SectionCard>
+    );
+  }
 
   return (
     <SectionCard
@@ -285,13 +301,38 @@ function WebsiteCard({ properties, units, onChange, onError }: {
                   onCopy={() => copy(`${p.id}-token`, token)}
                 />
 
-                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '10px 0 0', lineHeight: 1.6 }}>
-                  Web addresses for your units:{' '}
-                  {mine.length === 0
-                    ? 'add a unit first.'
-                    : mine.map((u) => u.public_slug || slugFrom(u.unit_name)).join(' · ')}
-                  {'. '}Set them on the Units tab.
-                </p>
+                <div style={{ marginTop: 12 }}>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', fontWeight: 600, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Web address of each unit
+                  </p>
+                  {mine.length === 0 ? (
+                    <p style={{ fontSize: 15, color: 'var(--text-3)', margin: 0 }}>
+                      No units yet. Add them on the Units tab.
+                    </p>
+                  ) : (
+                    <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                      {mine.map((u) => (
+                        <li key={u.id} style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap', padding: '2px 0' }}>
+                          <code style={{ fontFamily: 'inherit', fontSize: 15, fontWeight: 600, color: 'var(--text-1)' }}>
+                            {u.public_slug || slugFrom(u.unit_name)}
+                          </code>
+                          <span style={{ fontSize: 15, color: 'var(--text-3)' }}>{u.unit_name}</span>
+                          {!u.public_slug && (
+                            <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
+                              from the name
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '6px 0 0', lineHeight: 1.6 }}>
+                    Your website has to ask for these exact words. Change them on the
+                    Units tab. If they do not match, that residence answers
+                    &ldquo;does not exist&rdquo; and nothing else goes wrong, which is
+                    why it is worth checking now.
+                  </p>
+                </div>
 
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
                   <button type="button" style={ghostBtn} disabled={busy === p.id} onClick={() => rotate(p)}>
