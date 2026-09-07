@@ -149,6 +149,17 @@ export default function AdminAccountsPage() {
     const busy = busyId === acc.id;
     return (
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+        {/* Everything past changing a plan lives on the account itself: the
+            booking website, the activity, the history. The only way in used to
+            be clicking the business name, which is an em-dash on an account
+            that has not filled one in, so for a new customer there was
+            literally nothing on the row to aim at. */}
+        <Link
+          href={`/admin/${acc.id}`}
+          style={{ ...btn('ghost'), textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+        >
+          Open
+        </Link>
         <button
           type="button"
           onClick={() => setTier(acc, 'growth')}
@@ -178,7 +189,9 @@ export default function AdminAccountsPage() {
         Accounts
       </h1>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
-        {loading ? 'Loading accounts…' : `${accounts.length} account${accounts.length === 1 ? '' : 's'}. Grant full access instantly to demo the product live.`}
+        {loading
+          ? 'Loading accounts…'
+          : `${accounts.length} account${accounts.length === 1 ? '' : 's'}. Change a plan here; open an account to set up its booking website.`}
       </p>
     </header>
   );
@@ -255,7 +268,7 @@ export default function AdminAccountsPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
               <div style={{ minWidth: 0 }}>
                 <Link href={`/admin/${a.id}`} style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {a.business_name || '—'}
+                  {a.business_name || a.email || 'Unnamed account'}
                 </Link>
                 <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{a.email}</span>
               </div>
@@ -297,7 +310,7 @@ export default function AdminAccountsPage() {
               <tr key={a.id}>
                 <td style={{ maxWidth: 240 }}>
                   <Link href={`/admin/${a.id}`} style={{ color: 'var(--text-1)', fontWeight: 700, textDecoration: 'none', display: 'block', fontSize: 'var(--fs-data)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {a.business_name || '—'}
+                    {a.business_name || a.email || 'Unnamed account'}
                   </Link>
                   <span style={{ color: 'var(--text-3)', fontSize: 'var(--fs-label)' }}>{a.email}</span>
                 </td>
