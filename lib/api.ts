@@ -647,6 +647,9 @@ export interface PublicInvoice {
   number: string;
   customer_name: string;
   business_name: string | null;
+  /** The sender's mark. A stranger's payment link is easier to trust with a
+   *  face on it — whitelisted server-side in invoices.public_view(). */
+  business_logo_url: string | null;
   currency: string;
   lines: InvoiceLine[];
   total: number;
@@ -1238,6 +1241,56 @@ export async function seedTwin(opening_cash: number, currency = 'ZMW'): Promise<
     body: JSON.stringify({ opening_cash, currency }),
   });
   return data.twin as Twin;
+}
+
+// ── Business identity: "it already knew me" (Setup Wizard) ───────────────────
+
+/** One public listing that might be the owner's business. Field names match the
+ *  profile columns they fill, so applying a match is a plain spread — no second
+ *  mapping here to drift out of step with aibos-api/identity.py. */
+export interface BusinessMatch {
+  place_id:        string;
+  business_name:   string;
+  industry:        string;       // '' when Google's types didn't map cleanly
+  location:        string;
+  operating_hours: string;
+  phone:           string;
+  website:         string;
+  logo_url:        string;
+  /** Context for the "Is this you?" card — shown to help them decide, not saved. */
+  address:         string;
+  rating:          number | null;
+  reviews:         number | null;
+  closed:          boolean;
+  confidence:      number;       // 0-1
+  source:          string;       // 'google_places'
+}
+
+export interface IdentityLookup {
+  /** False when this deployment has no PLACES_API_KEY. The wizard then shows
+   *  nothing at all — an absent feature must not look like a failed one. */
+  configured: boolean;
+  candidates: BusinessMatch[];
+}
+
+/** Find the owner's existing online presence. Never throws: a lookup that fails
+ *  must not stop someone from finishing setup by typing. */
+export async function lookupBusinessIdentity(
+  q: string, opts: { phone?: string; country?: string; signal?: AbortSignal } = {},
+): Promise<IdentityLookup> {
+  const params = new URLSearchParams({ q, country: opts.country || 'ZM' });
+  if (opts.phone) params.set('phone', opts.phone);
+  try {
+    const headers = await authHeaders();
+    const res = await fetch(`${PROXY}/identity/lookup?${params}`, { headers, signal: opts.signal });
+    if (!res.ok) return { configured: false, candidates: [] };
+    const data = (await res.json()) as Partial<IdentityLookup>;
+    return { configured: !!data.configured, candidates: data.candidates ?? [] };
+  } catch {
+    // Includes the AbortError from a superseded keystroke — the caller has
+    // already moved on, so there is nothing to report.
+    return { configured: false, candidates: [] };
+  }
 }
 
 /** Update the caller's own profile (onboarding/business details) via the Next route. */

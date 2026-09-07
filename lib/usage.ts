@@ -16,7 +16,10 @@ import { createClient } from '@/lib/supabase';
 // — it measures the habit, not persistence), 'brief_viewed' on the brief page.
 export type UsageEvent =
   | 'login' | 'upload' | 'chat' | 'engine_view' | 'page_view'
-  | 'onboarding_completed' | 'event_recorded' | 'brief_viewed';
+  | 'onboarding_completed' | 'event_recorded' | 'brief_viewed'
+  // Setup Wizard identity match confirmed — the honest measure of whether the
+  // lookup is worth what the Places calls cost.
+  | 'identity_match_applied';
 export type UsageEngine = 'engine1' | 'engine2' | 'engine3' | 'cross';
 
 interface LogOptions {

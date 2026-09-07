@@ -30,6 +30,14 @@ const EDITABLE = [
   'whatsapp',
   'contact_email',
   'logo_url',
+  'website',
+  // Identity provenance (migration 0026): set when the owner confirms a match
+  // found by /identity/lookup. Editable by the user because THEY are the one
+  // confirming it — nothing here is a privilege, only a record of where their
+  // own details came from.
+  'identity_place_id',
+  'identity_source',
+  'identity_confirmed_at',
   // Morning Brief delivery (migration 0013): tier is enforced server-side at
   // dispatch (aibos-api), so storing the preference itself is safe for anyone.
   'brief_email_enabled',

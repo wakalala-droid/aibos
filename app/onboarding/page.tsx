@@ -6,16 +6,17 @@
  * updates the profile. Mobile-first, one decision at a time (ux_intelligence.md
  * DECISION SIMPLIFICATION), every state handled.
  */
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { useStore } from '@/lib/store';
-import { updateProfile, seedTwin, createProduct } from '@/lib/api';
+import { updateProfile, seedTwin, createProduct, lookupBusinessIdentity, type BusinessMatch } from '@/lib/api';
 import { logUsage } from '@/lib/usage';
 import { CURRENCIES } from '@/lib/currency';
 import { starterProductsFor, industryOf } from '@/lib/industries';
+import BusinessMatchCard from '@/components/onboarding/BusinessMatchCard';
 const INDUSTRIES = ['Retail', 'Restaurant / Food', 'Services', 'Wholesale', 'Hospitality', 'Manufacturing', 'Agriculture', 'Mining', 'Transport', 'Other'];
 const TAX = [
   { v: 'unregistered', l: 'Not registered yet' },
@@ -59,8 +60,90 @@ export default function OnboardingPage() {
     business_name: '', industry: '', currency: 'ZMW',
     initial_cash: '', tax_status: 'unregistered',
     employees: '', operating_hours: '', location: '', language: 'en',
+    // Filled only by an identity match — the wizard never asks for these, so
+    // they cost the owner nothing and quietly brand their first invoice.
+    phone: '', website: '', logo_url: '',
   });
   const set = (k: keyof typeof form, v: string) => setForm(p => ({ ...p, [k]: v }));
+
+  // ── Identity match: "it already knew me" ──────────────────────────────────
+  // Look the business up as they type, and offer what we find as one tap. All
+  // of this is best-effort garnish: every path here can fail silently and the
+  // wizard still works exactly as it did before.
+  const [matches, setMatches] = useState<BusinessMatch[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [appliedMatch, setAppliedMatch] = useState<BusinessMatch | null>(null);
+  const [lookupOff, setLookupOff] = useState(false);   // "none of these" — for this session
+  // What the fields held before a match was applied, so Undo is exact rather
+  // than a guess at which values were ours.
+  const beforeMatch = useRef<Partial<typeof form> | null>(null);
+  const lastQuery = useRef('');
+  const lookups = useRef(0);
+  // Hard session cap. Every miss is a paid Places call, and no honest owner
+  // needs more than a handful of tries to type their own name.
+  const LOOKUP_BUDGET = 6;
+
+  useEffect(() => {
+    const q = form.business_name.trim();
+    if (lookupOff || appliedMatch || step !== 0 || q.length < 3) return;
+    if (q.toLowerCase() === lastQuery.current) return;
+    if (lookups.current >= LOOKUP_BUDGET) return;
+
+    const controller = new AbortController();
+    // Fire on a PAUSE in typing, never per keystroke — this is the difference
+    // between ~1 lookup per signup and ~15.
+    const timer = setTimeout(async () => {
+      lastQuery.current = q.toLowerCase();
+      lookups.current += 1;
+      setSearching(true);
+      const { configured, candidates } = await lookupBusinessIdentity(q, {
+        phone: profile?.phone ?? undefined,
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      setSearching(false);
+      setMatches(candidates);
+      // Only claim "we found nothing" when a lookup actually ran. With no
+      // provider configured the feature stays invisible instead of apologising.
+      setSearched(configured);
+    }, 700);
+
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [form.business_name, step, lookupOff, appliedMatch, profile?.phone]);
+
+  const applyMatch = useCallback((m: BusinessMatch) => {
+    setForm(p => {
+      beforeMatch.current = {
+        business_name: p.business_name, industry: p.industry, location: p.location,
+        operating_hours: p.operating_hours, phone: p.phone, website: p.website,
+        logo_url: p.logo_url,
+      };
+      // Their own typing wins over anything imported: a field they already
+      // filled is never overwritten by a listing.
+      return {
+        ...p,
+        business_name:   m.business_name || p.business_name,
+        industry:        p.industry || m.industry,
+        location:        p.location || m.location,
+        operating_hours: p.operating_hours || m.operating_hours,
+        phone:           p.phone || m.phone,
+        website:         p.website || m.website,
+        logo_url:        p.logo_url || m.logo_url,
+      };
+    });
+    setAppliedMatch(m);
+    setMatches([]);
+    logUsage('identity_match_applied');
+  }, []);
+
+  const undoMatch = useCallback(() => {
+    if (beforeMatch.current) setForm(p => ({ ...p, ...beforeMatch.current }));
+    beforeMatch.current = null;
+    setAppliedMatch(null);
+    // Don't immediately re-offer what they just rejected.
+    setLookupOff(true);
+  }, []);
 
   // Redirect unauthenticated users to login; prefill from any existing profile.
   useEffect(() => {
@@ -74,6 +157,8 @@ export default function OnboardingPage() {
         industry: profile.industry || p.industry,
         currency: profile.currency || p.currency,
         location: profile.location || p.location,
+        phone: profile.phone || p.phone,
+        logo_url: profile.logo_url || p.logo_url,
       }));
     }
   }, [profile]);
@@ -94,6 +179,16 @@ export default function OnboardingPage() {
         operating_hours: form.operating_hours || null,
         language: form.language,
         onboarded_at: new Date().toISOString(),
+        // From an identity match (or left untouched if there wasn't one).
+        phone: form.phone || null,
+        website: form.website || null,
+        logo_url: form.logo_url || null,
+        // Provenance (migration 0026): these details came from outside AIBOS and
+        // a human confirmed them. Recorded so nothing downstream mistakes an
+        // accepted suggestion for something AIBOS observed.
+        identity_place_id: appliedMatch?.place_id || null,
+        identity_source: appliedMatch?.source || null,
+        identity_confirmed_at: appliedMatch ? new Date().toISOString() : null,
       });
       logUsage('onboarding_completed');
       const cash = parseFloat(form.initial_cash);
@@ -154,6 +249,20 @@ export default function OnboardingPage() {
                     <label style={labelStyle}>Business name *</label>
                     <input autoFocus value={form.business_name} onChange={e => set('business_name', e.target.value)} placeholder="e.g. Mwansa General Dealers" style={inputStyle} />
                   </div>
+
+                  {/* If they already have an online presence, offer it back as
+                      one tap. Renders nothing when there's nothing to offer. */}
+                  <BusinessMatchCard
+                    matches={matches}
+                    searching={searching}
+                    searched={searched}
+                    query={form.business_name}
+                    applied={appliedMatch}
+                    onApply={applyMatch}
+                    onUndo={undoMatch}
+                    onDismiss={() => { setMatches([]); setSearched(false); setLookupOff(true); }}
+                  />
+
                   <div style={fieldGap}>
                     <label style={labelStyle}>Industry</label>
                     <select value={form.industry} onChange={e => set('industry', e.target.value)} style={inputStyle}>
@@ -270,6 +379,10 @@ export default function OnboardingPage() {
                     ['Business', form.business_name || '—'],
                     ['Industry', form.industry || '—'],
                     ['Location', form.location || '—'],
+                    // Shown only when an identity match supplied them — no point
+                    // printing two empty rows for everyone else.
+                    ...(form.phone ? [['Phone', form.phone]] : []),
+                    ...(form.website ? [['Website', form.website]] : []),
                     ['Currency', form.currency],
                     ['Cash on hand', form.initial_cash ? `${sym}${form.initial_cash}` : `${sym}0`],
                     ['Tax status', TAX.find(t => t.v === form.tax_status)?.l ?? '—'],

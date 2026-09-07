@@ -181,6 +181,25 @@ export default function PayInvoicePage() {
         {invoice && phase !== 'invalid' && phase !== 'unavailable' && (
           <>
             <div style={{ ...card, marginBottom: 16 }}>
+              {/* The sender's mark, when they have one. A stranger's payment
+                  link is a hard thing to trust; the logo the customer already
+                  knows from the shopfront does more for that than any copy.
+                  It self-heals: a dead image URL removes itself rather than
+                  leaving a broken icon on a page that is asking for money. */}
+              {invoice.business_logo_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={invoice.business_logo_url}
+                  alt={invoice.business_name ?? ''}
+                  width={48}
+                  height={48}
+                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                  style={{
+                    display: 'block', borderRadius: 10, objectFit: 'cover',
+                    border: '1px solid var(--border)', marginBottom: 12,
+                  }}
+                />
+              )}
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>
                 {invoice.business_name ? `${invoice.business_name} · ` : ''}Invoice {invoice.number}
               </p>
