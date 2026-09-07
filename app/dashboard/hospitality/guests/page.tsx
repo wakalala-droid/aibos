@@ -7,6 +7,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
+import { useProfile } from '@/lib/profile';
 import {
   listGuests, createGuest, getGuest, type Guest,
 } from '@/lib/hospitality';
@@ -45,6 +46,11 @@ export default function GuestsPage() {
   const [form, setForm] = useState(emptyForm);
   const [busy, setBusy] = useState(false);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
+  // Unsealing a passport or NRC number is the owner's call. Staff run the
+  // stay and see the masked tail; the server refuses the rest, so offering
+  // a button that always fails would only look broken.
+  const { teamRole } = useProfile();
+  const canReveal = teamRole === 'owner';
 
   const load = useCallback(async (q?: string) => {
     setError('');
@@ -141,7 +147,9 @@ export default function GuestsPage() {
                 {g.id_document_on_file && (
                   revealed[g.id]
                     ? <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>{g.id_document_type}: {revealed[g.id]}</span>
-                    : <button style={ghostBtn} onClick={() => reveal(g.id)} title="Reveal sealed ID">{g.id_document_masked || 'ID on file'} · reveal</button>
+                    : canReveal
+                      ? <button style={ghostBtn} onClick={() => reveal(g.id)} title="Reveal sealed ID">{g.id_document_masked || 'ID on file'} · reveal</button>
+                      : <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }} title="Only the owner can reveal a sealed ID">{g.id_document_masked || 'ID on file'}</span>
                 )}
               </div>
             </div>

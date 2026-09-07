@@ -130,7 +130,9 @@ export default function Sidebar() {
     '/dashboard', '/dashboard/record', '/dashboard/timeline', '/dashboard/schedule',
     '/dashboard/inventory', '/dashboard/hospitality',
   ]);
-  const ACCOUNTANT_HIDE = new Set(['/dashboard/record', '/dashboard/import']);
+  // Employees/Payroll is owner-only on the server (a register of what everyone
+  // earns), so the door is hidden rather than offered and then refused.
+  const ACCOUNTANT_HIDE = new Set(['/dashboard/record', '/dashboard/import', '/dashboard/employees']);
   const roleAllows = (href: string) =>
     teamRole === 'staff' ? STAFF_HREFS.has(href)
     : teamRole === 'accountant' ? !ACCOUNTANT_HIDE.has(href)
