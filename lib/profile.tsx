@@ -59,6 +59,16 @@ export interface Profile {
  *  Everyone is 'owner' of their own tenant until an owner invites them. */
 export type TeamRole = 'owner' | 'staff' | 'accountant';
 
+/** What the API says it will honour for this account — the tiebreaker.
+ *  See aibos-api GET /me/entitlements. */
+interface Entitlements {
+  tier: Tier;
+  reason: 'ok' | 'provisioned' | 'unreadable';
+  plan_readable: boolean;
+  features: string[];
+  note: string;
+}
+
 interface ProfileContextValue {
   profile: Profile | null;
   role: Role;
@@ -67,6 +77,16 @@ interface ProfileContextValue {
   teamRole: TeamRole;
   loading: boolean;
   refresh: () => Promise<void>;
+  /**
+   * False when the API could not establish which plan this account is on.
+   * Not the same as being on Free: the interface is running on a remembered
+   * answer, so some things will refuse even though the plan allows them.
+   */
+  planConfirmed: boolean;
+  /** Plain-language explanation when planConfirmed is false. */
+  planNote: string;
+  /** The plan the API will actually enforce, when it could say. */
+  serverTier: Tier | null;
 }
 
 const DEFAULT: ProfileContextValue = {
@@ -76,6 +96,9 @@ const DEFAULT: ProfileContextValue = {
   teamRole: 'owner',
   loading: true,
   refresh: async () => {},
+  planConfirmed: true,
+  planNote: '',
+  serverTier: null,
 };
 
 const ProfileContext = createContext<ProfileContextValue>(DEFAULT);
@@ -100,6 +123,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [teamRole, setTeamRole] = useState<TeamRole>('owner');
   const [loading, setLoading] = useState(true);
+  const [planConfirmed, setPlanConfirmed] = useState(true);
+  const [planNote, setPlanNote] = useState('');
+  const [serverTier, setServerTier] = useState<Tier | null>(null);
   const loggedLoginFor = useRef<string | null>(null);
 
   const load = useCallback(async () => {
@@ -119,6 +145,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     // the browser's self-select (role comes back null), so reading directly here
     // would never see role/tier. `/api/profile` provisions + reads with the
     // service role and returns the authoritative `isAdmin` verdict.
+    let rowTier: Tier | null = null;
     try {
       const res = await fetch('/api/profile', { cache: 'no-store' });
       if (res.ok) {
@@ -128,14 +155,54 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         };
         if (p) {
           setProfile(p);
-          // Cache tier into the store so the existing gate reflects reality.
-          setTier(normaliseTier(p.tier));
+          rowTier = normaliseTier(p.tier);
         }
         setIsAdmin(Boolean(admin));
       }
     } catch {
       /* non-fatal — keep defaults so the dashboard still renders */
     }
+
+    // ── Which plan does the API actually enforce? ────────────────────────────
+    // The store's `tier` is a cache that outlives a logout and even a rebuilt
+    // database, and the gate in front of every paid screen reads it. So the
+    // browser can show a paid surface while the API answers "upgrade" to every
+    // call behind it — which is exactly what a Growth owner hit on Hospitality.
+    //
+    // The API is what enforces, so the API's answer wins whenever it HAS one.
+    // When it doesn't, we keep what we had rather than demoting a paying
+    // customer over one failed request, and say plainly that we could not check.
+    let server: Entitlements | null = null;
+    try {
+      const r = await fetch('/api/proxy/me/entitlements', {
+        headers: await authHeaders(),
+        cache: 'no-store',
+      });
+      if (r.ok) server = (await r.json()) as Entitlements;
+    } catch { /* offline / API asleep — handled below */ }
+
+    if (server && server.plan_readable && isTier(server.tier)) {
+      setServerTier(server.tier);
+      setTier(server.tier);
+      setPlanConfirmed(true);
+      setPlanNote(
+        rowTier && rowTier !== server.tier
+          ? `Your account record says ${rowTier}, but the app is granting ${server.tier}. ` +
+            'Sign out and back in; if it stays this way it needs looking at.'
+          : '',
+      );
+    } else {
+      setServerTier(null);
+      setPlanConfirmed(false);
+      setPlanNote(
+        server?.note ||
+        'We could not check which plan this account is on, so the app is using ' +
+        'the last answer it had. Some things may refuse even though your plan ' +
+        'allows them. This is a fault on our side, not a change to your plan.',
+      );
+      if (rowTier) setTier(rowTier);
+    }
+
     setLoading(false);
 
     // Team membership (audit #27/#28): accept any pending invites for this
@@ -170,6 +237,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     teamRole,
     loading,
     refresh: load,
+    planConfirmed,
+    planNote,
+    serverTier,
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

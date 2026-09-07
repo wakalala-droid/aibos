@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import SystemHealth from '@/components/admin/SystemHealth';
 import type { AccountOverview } from '@/lib/admin';
 import { TIERS, TIER_ORDER, type Tier } from '@/lib/tiers';
 
@@ -323,6 +324,7 @@ export default function AdminAccountsPage() {
         <Link href="/admin/usage" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Usage</Link>
         <Link href="/admin/proposals" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Proposals</Link>
       </nav>
+      <SystemHealth />
       {controls}
       {toastEl}
       {body}

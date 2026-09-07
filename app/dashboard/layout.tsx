@@ -3,6 +3,7 @@ import { useStore } from '@/lib/store';
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import DashboardHeader from '@/components/layout/DashboardHeader';
+import PlanNotice from '@/components/ui/PlanNotice';
 import DashboardTour from '@/components/onboarding/DashboardTour';
 import { logUsage, type UsageEngine } from '@/lib/usage';
 
@@ -46,6 +47,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="page-container" data-bento>
       <DashboardHeader />
+      <PlanNotice />
       {children}
       <DashboardTour />
     </div>
