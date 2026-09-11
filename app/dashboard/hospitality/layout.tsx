@@ -9,8 +9,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import PageHeader from '@/components/ui/PageHeader';
 
+// Bookings sits next to Calendar because they answer different questions about
+// the same thing: the calendar says whether a unit is free, the list says who is
+// waiting on an answer. A guest profile has no tab of its own (it needs an id),
+// and it lives under /guests/<id>, so the Guests tab stays lit while you read one.
 const TABS = [
   { href: '/dashboard/hospitality',          label: 'Calendar' },
+  { href: '/dashboard/hospitality/bookings', label: 'Bookings' },
   { href: '/dashboard/hospitality/units',    label: 'Units'    },
   { href: '/dashboard/hospitality/guests',   label: 'Guests'   },
   { href: '/dashboard/hospitality/channels', label: 'Channels' },

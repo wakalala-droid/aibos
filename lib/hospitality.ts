@@ -68,7 +68,20 @@ export interface Unit {
 }
 export type UnitInput = Partial<Omit<Unit, 'id' | 'property_id'>> & { unit_name: string; property_id: string };
 
-export type BookingStatus = 'confirmed' | 'pending' | 'cancelled' | 'completed' | 'no_show';
+/** Keep in lock-step with BOOKING_STATUSES in aibos-api/hospitality.py and the
+ *  bookings_status_chk constraint in migration 0029. All three are asserted
+ *  equal by test_booking_engine.py, because a status one side accepts and
+ *  another rejects loses a real booking at the moment somebody presses the
+ *  button. This union was the side that got missed when 'declined' was added. */
+export type BookingStatus =
+  | 'confirmed'
+  | 'pending'
+  | 'cancelled'
+  | 'completed'
+  | 'no_show'
+  /** A request that was never agreed to. Distinct from 'cancelled', which is an
+   *  agreed stay called off. Both free the dates, only one is ever a refund. */
+  | 'declined';
 export type PaymentStatus = 'unpaid' | 'partial' | 'paid' | 'refunded';
 
 export interface Booking {
@@ -87,6 +100,55 @@ export interface Booking {
   source_notes?: string | null;
   linked_event_id?: string | null;
   external_uid?: string | null;
+
+  /** What the guest actually told us (migration 0029). All of this used to be
+   *  one English sentence in source_notes that nothing read back. */
+  reference?: string | null;
+  source?: BookingSource | null;
+  guest_name?: string | null;
+  guest_email?: string | null;
+  guest_phone?: string | null;
+  organisation?: string | null;
+  purpose?: string | null;
+  arrival_time?: string | null;
+  payment_method?: string | null;
+  guest_notes?: string | null;
+  quoted_total?: number | null;
+
+  /** When the answer was given, and why. */
+  confirmed_at?: string | null;
+  declined_at?: string | null;
+  cancelled_at?: string | null;
+  decline_reason?: string | null;
+  created_at?: string | null;
+
+  /** The guest record, attached by the server on every list read. Null when the
+   *  booking has no guest (an availability block pulled from an OTA feed). */
+  guest?: Guest | null;
+}
+
+export type BookingSource = 'direct' | 'website' | 'ota' | 'phone' | 'walk_in';
+
+/** How a booking reached us, in the words an owner would use. */
+export const SOURCE_LABEL: Record<BookingSource, string> = {
+  website: 'Your website',
+  direct: 'Added here',
+  ota: 'Booking channel',
+  phone: 'Phone',
+  walk_in: 'Walk-in',
+};
+
+/** Nights between arrival and departure. The stay is half-open, so a Friday to
+ *  Sunday booking is two nights and Sunday is free for the next guest. */
+export function nights(b: Pick<Booking, 'check_in' | 'check_out'>): number {
+  const ms = new Date(`${b.check_out}T00:00:00`).getTime() - new Date(`${b.check_in}T00:00:00`).getTime();
+  return Math.max(0, Math.round(ms / 86_400_000));
+}
+
+/** A booking's own currency symbol. The calendar used to label every amount
+ *  with the FIRST unit's symbol, which is wrong the moment two units differ. */
+export function bookingSymbol(b: Pick<Booking, 'currency'>): string {
+  return ({ ZMW: 'K', USD: '$', EUR: '\u20ac', GBP: '\u00a3' } as Record<string, string>)[b.currency] ?? b.currency ?? 'K';
 }
 export type BookingInput =
   Partial<Omit<Booking, 'id' | 'linked_event_id' | 'external_uid'>> &
@@ -213,14 +275,52 @@ export async function deleteUnit(id: string): Promise<void> {
 
 // ─── Bookings + availability (the P0 core loop) ─────────────────────────────
 
-export async function listBookings(params: { unit_id?: string; status?: BookingStatus; from?: string; to?: string } = {}): Promise<Booking[]> {
+export async function listBookings(params: {
+  unit_id?: string; status?: BookingStatus; from?: string; to?: string;
+  /** A SET of statuses. The question an owner asks is "what is pending OR
+   *  confirmed", which one status cannot express. */
+  statuses?: BookingStatus[];
+  source?: BookingSource;
+  /** Matches a guest name, a reference, a phone number or a company. */
+  search?: string;
+  order?: 'check_in' | 'check_out' | 'created_at';
+  limit?: number;
+} = {}): Promise<Booking[]> {
   const q = new URLSearchParams();
   if (params.unit_id) q.set('unit_id', params.unit_id);
   if (params.status) q.set('status', params.status);
+  if (params.statuses?.length) q.set('statuses', params.statuses.join(','));
+  if (params.source) q.set('source', params.source);
+  if (params.search) q.set('search', params.search);
+  if (params.order) q.set('order', params.order);
+  if (params.limit) q.set('limit', String(params.limit));
   if (params.from) q.set('from', params.from);
   if (params.to) q.set('to', params.to);
   const qs = q.toString();
   return ((await hfetch(`/hospitality/bookings${qs ? `?${qs}` : ''}`)).bookings as Booking[]) ?? [];
+}
+
+/** One booking, refetched after a write without re-listing everything. */
+export async function getBooking(id: string): Promise<Booking> {
+  return (await hfetch(`/hospitality/bookings/${id}`)).booking as Booking;
+}
+
+/** Everything this guest has ever booked. The route has existed on the server
+ *  since the module shipped and had no client function, so the stay history was
+ *  built and unreachable. */
+export async function listGuestBookings(guestId: string): Promise<Booking[]> {
+  return ((await hfetch(`/hospitality/guests/${guestId}/bookings`)).bookings as Booking[]) ?? [];
+}
+
+/** Say yes. This is what puts the stay in the books. */
+export async function confirmBooking(id: string): Promise<Booking> {
+  return (await hfetch(`/hospitality/bookings/${id}/confirm`, { method: 'POST' })).booking as Booking;
+}
+
+/** Turn down a request that was never agreed to. Frees the dates, records why,
+ *  and touches nothing in the books because nothing was ever posted. */
+export async function declineBooking(id: string, reason?: string): Promise<Booking> {
+  return (await hfetch(`/hospitality/bookings/${id}/decline`, jsonInit('POST', { reason }))).booking as Booking;
 }
 export async function createBooking(input: BookingInput): Promise<Booking> {
   return (await hfetch('/hospitality/bookings', jsonInit('POST', input))).booking as Booking;
