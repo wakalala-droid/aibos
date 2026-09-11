@@ -14,13 +14,26 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { useAiAssistant } from '@/lib/aiAssistant';
 import { TIERS } from '@/lib/tiers';
-import { buildNotifications, type Notification as LiveNotification } from '@/lib/notifications';
+import {
+  buildNotifications, fetchHappenedNotifications, markNotificationRead,
+  mergeNotifications, timeAgo, type Notification as LiveNotification,
+} from '@/lib/notifications';
 import CurrencySelector from '@/components/ui/CurrencySelector';
 import BusinessSwitcher from '@/components/layout/BusinessSwitcher';
 
 // Bell read-state: the dot shows only for alerts the user hasn't opened the
 // tray for. On-device signature — the alert list itself stays server-driven.
 const ALERTS_SEEN_KEY = 'aibos-alerts-seen-v1';
+
+// How often the bell asks the server what happened. A minute is the honest
+// version of "without fail" here: there is no socket held open on a free-tier
+// host, and a booking that shows up within a minute of arriving is a booking the
+// owner can still answer while the guest is waiting.
+const FEED_POLL_MS = 60_000;
+// A tab switch fires visibilitychange AND focus, and a phone waking fires both
+// again. Without a floor the bell would hit the server three times for one
+// glance at the screen.
+const FEED_MIN_GAP_MS = 10_000;
 
 // Searchable destinations (kept in sync with the sidebar nav).
 const DESTINATIONS: { href: string; label: string; group: string }[] = [
@@ -100,19 +113,50 @@ export default function DashboardHeader() {
   // Live, deterministic notifications (audit #32) — runway/overdue/low-stock
   // derived from recorded data, so a recording-only user still gets a feed.
   // Merged with the upload-era Engine-1 alerts under one bell.
-  const [liveNotifs, setLiveNotifs] = useState<LiveNotification[]>([]);
+  const [derivedNotifs, setDerivedNotifs] = useState<LiveNotification[]>([]);
   useEffect(() => {
     let alive = true;
     buildNotifications(twin, currencySymbol || 'K')
-      .then((n) => { if (alive) setLiveNotifs(n); })
+      .then((n) => { if (alive) setDerivedNotifs(n); })
       .catch(() => {});
     return () => { alive = false; };
   }, [twin, currencySymbol]);
 
+  // Things that actually happened (migration 0030). A booking request lands here
+  // the moment a guest sends it from a property's own site, which is the whole
+  // reason the feed exists: nothing derived from the twin could ever know about
+  // it. Polled, not pushed, and never while the tab is hidden.
+  const [feedNotifs, setFeedNotifs] = useState<LiveNotification[]>([]);
+  useEffect(() => {
+    let alive = true;
+    let lastAt = 0;
+    const load = async () => {
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - lastAt < FEED_MIN_GAP_MS) return;
+      lastAt = Date.now();
+      const rows = await fetchHappenedNotifications();
+      // null is "could not read it", not "nothing waiting". Keep what is already
+      // on screen so one failed poll never empties the bell.
+      if (alive && rows) setFeedNotifs(rows);
+    };
+    void load();
+    const timer = window.setInterval(() => { void load(); }, FEED_POLL_MS);
+    const onVisible = () => { if (document.visibilityState === 'visible') void load(); };
+    const onFocus = () => { void load(); };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
+
   const mergedAlerts = [
-    ...liveNotifs.map((n) => ({
+    ...mergeNotifications(feedNotifs, derivedNotifs).map((n) => ({
       id: n.id, title: n.title, description: n.description,
-      severity: n.severity, href: n.href,
+      severity: n.severity, href: n.href, serverId: n.serverId, happenedAt: n.happenedAt,
     })),
     ...safeAlerts,
   ];
@@ -122,16 +166,44 @@ export default function DashboardHeader() {
   const [query, setQuery] = useState('');
 
   // Alerts the user hasn't seen yet — the dot clears once the tray is opened.
-  const alertSig = mergedAlerts.map((a) => `${a.id ?? ''}:${a.title}`).join('|');
+  // Stored as the same '|'-joined key list it always was, so a signature written
+  // by the previous version still reads correctly. What changed is the QUESTION
+  // asked of it: "is anything here that I have not shown you", rather than "is
+  // this list different". Answering a booking SHRINKS the list, and under the
+  // old comparison that counted as a change and raised the dot again for the
+  // items the owner had just finished reading.
+  const alertKeys = mergedAlerts.map((a) => `${a.id ?? ''}:${a.title}`);
+  const alertSig = alertKeys.join('|');
   const [seenSig, setSeenSig] = useState<string | null>(null);
   useEffect(() => {
     try { setSeenSig(window.localStorage.getItem(ALERTS_SEEN_KEY)); } catch { /* private mode */ }
   }, []);
-  const hasNewAlerts = unread > 0 && alertSig !== seenSig;
+  const seenKeys = useMemo(() => new Set((seenSig ?? '').split('|').filter(Boolean)), [seenSig]);
+  const hasNewAlerts = alertKeys.some((k) => !seenKeys.has(k));
   const toggleBell = () => {
     setOpen(open === 'bell' ? null : 'bell');
     try { window.localStorage.setItem(ALERTS_SEEN_KEY, alertSig); } catch { /* private mode */ }
     setSeenSig(alertSig);
+  };
+  // While the tray is open the owner is looking straight at the list, so
+  // anything that changes underneath them is already seen. Without this,
+  // answering one booking would change the signature and raise the dot again
+  // for the items still sitting there.
+  useEffect(() => {
+    if (open !== 'bell') return;
+    try { window.localStorage.setItem(ALERTS_SEEN_KEY, alertSig); } catch { /* private mode */ }
+    setSeenSig(alertSig);
+  }, [open, alertSig]);
+
+  // Opening a thing that happened settles it: it is marked read on the server
+  // and dropped from the tray at once, so the count falls on the click rather
+  // than a minute later. Derived alerts pass through with serverId undefined and
+  // behave exactly as they always have (close the tray, follow the link).
+  const openNotification = (serverId?: string) => {
+    setOpen(null);
+    if (!serverId) return;
+    setFeedNotifs((rows) => rows.filter((r) => r.serverId !== serverId));
+    void markNotificationRead(serverId);
   };
 
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -386,16 +458,16 @@ export default function DashboardHeader() {
             role="menu" aria-label="Notifications"
             initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
-            className="dash-pop" style={{ width: 'min(360px, 90vw)' }}
+            className="dash-pop" style={{ width: 'min(420px, 92vw)' }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-              <span style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)' }}>Alerts</span>
-              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', background: 'var(--bg-badge)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: 999 }}>{unread} total</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 18, lineHeight: 1.6, fontWeight: 800, color: 'var(--text-1)' }}>Alerts</span>
+              <span style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-4)', background: 'var(--bg-badge)', border: '1px solid var(--border)', padding: '2px 12px', borderRadius: 999 }}>{unread} total</span>
             </div>
             <div style={{ maxHeight: 360, overflowY: 'auto' }}>
               {unread === 0 ? (
-                <p style={{ padding: '20px 16px', fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
-                  You’re all clear — nothing needs you right now. As you record, AIBOS flags anything that needs attention here.
+                <p style={{ padding: '24px 16px', fontSize: 18, lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
+                  You are all clear. Nothing needs you right now. As you record, AIBOS flags anything that needs attention here.
                 </p>
               ) : mergedAlerts.slice(0, 12).map((a, i) => {
                 const title = String(a.title ?? 'Alert');
@@ -405,27 +477,49 @@ export default function DashboardHeader() {
                 const sev = String(a.severity ?? '').toLowerCase();
                 const sevWord = sev === 'critical' ? 'Critical' : sev === 'warning' ? 'Warning' : sev === 'success' ? 'Good' : 'Info';
                 const sc = sevColor(sev);
-                const href = (a as { href?: string }).href;
+                // Feed rows carry a serverId and a moment; derived alerts carry
+                // neither, which is exactly what tells the two apart here.
+                const extra = a as { href?: string; serverId?: string; happenedAt?: string };
+                const href = extra.href;
+                const when = timeAgo(extra.happenedAt);
                 const body = (
-                  <div style={{ display: 'flex', gap: 10, padding: '12px 16px', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-                    <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: sc, flexShrink: 0, marginTop: 5 }} />
+                  <div style={{ display: 'flex', gap: 12, padding: '16px', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                    <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: sc, flexShrink: 0, marginTop: 10 }} />
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
+                      <p style={{ fontSize: 18, lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)', margin: '0 0 4px' }}>
                         {title}
-                        <span style={{ marginLeft: 8, fontSize: 'var(--fs-label)', fontWeight: 700, color: sc, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 700, color: sc, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                           {sevWord}
                         </span>
                       </p>
-                      {desc && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>{desc}</p>}
+                      {desc && <p style={{ fontSize: 18, color: 'var(--text-3)', margin: 0, lineHeight: 1.6 }}>{desc}</p>}
+                      {/* Only a thing that happened has a moment worth printing. */}
+                      {when && <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-4)', margin: '4px 0 0' }}>{when}</p>}
                     </div>
                   </div>
                 );
-                return href ? (
-                  <Link key={i} href={href} onClick={() => setOpen(null)} style={{ display: 'block', textDecoration: 'none' }}>{body}</Link>
-                ) : <div key={i}>{body}</div>;
+                if (href) {
+                  return (
+                    <Link key={i} href={href} onClick={() => openNotification(extra.serverId)} style={{ display: 'block', textDecoration: 'none' }}>{body}</Link>
+                  );
+                }
+                // A feed row with no link still has to be answerable, otherwise
+                // it sits in the bell for ever and the count never comes down.
+                if (extra.serverId) {
+                  return (
+                    <button
+                      key={i} type="button" aria-label={`Mark as read: ${title}`}
+                      onClick={() => openNotification(extra.serverId)}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer', font: 'inherit' }}
+                    >
+                      {body}
+                    </button>
+                  );
+                }
+                return <div key={i}>{body}</div>;
               })}
             </div>
-            <Link href="/dashboard/anomaly" onClick={() => setOpen(null)} style={{ display: 'block', textAlign: 'center', padding: '11px 16px', borderTop: '1px solid var(--border)', fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
+            <Link href="/dashboard/anomaly" onClick={() => setOpen(null)} style={{ display: 'block', textAlign: 'center', padding: '16px', borderTop: '1px solid var(--border)', fontSize: 18, lineHeight: 1.6, fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
               View anomaly intelligence →
             </Link>
           </motion.div>

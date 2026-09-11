@@ -9,12 +9,29 @@
 //
 // Push delivery (web-push/VAPID) is the dormant-keys follow-up; the in-app
 // centre is the higher-value half and ships first.
+//
+// TWO HALVES, ONE BELL.
+//   DERIVED (buildNotifications, below) recomputes runway, overdue invoices and
+//   low stock in the browser every time the header mounts. Those are CONDITIONS:
+//   they have no moment at which they happened, and they clear themselves the
+//   moment the condition does.
+//   HAPPENED (fetchHappenedNotifications) reads the server feed from migration
+//   0030, where a row is written when something actually occurred. A booking
+//   request from a property's own website is the one that forced it: the owner
+//   asked to be told whenever a booking is made, and a browser recomputing three
+//   financial conditions can never carry that promise.
+//
+// The feed half is best-effort by design. Every failure, including the server's
+// own { note } fallback shape, falls back to the derived half in silence,
+// because a bell that errors is worse than a quiet one.
 
 import type { Twin, Product } from './api';
-import { getDebtors, listProducts } from './api';
+import { authHeaders, getDebtors, listProducts } from './api';
 import { fmt } from './utils';
 
-export type NotifySeverity = 'critical' | 'warning' | 'info';
+const PROXY = '/api/proxy';
+
+export type NotifySeverity = 'critical' | 'warning' | 'info' | 'success';
 
 export interface Notification {
   id: string;
@@ -22,9 +39,14 @@ export interface Notification {
   title: string;
   description: string;
   href?: string;
+  /** Set only on feed items: the server row id, which marking-read needs.
+   *  Its absence is how a caller tells a fact apart from a derivation. */
+  serverId?: string;
+  /** ISO moment the thing happened. Derived alerts have none, on purpose. */
+  happenedAt?: string;
 }
 
-const RANK: Record<NotifySeverity, number> = { critical: 0, warning: 1, info: 2 };
+const RANK: Record<NotifySeverity, number> = { critical: 0, warning: 1, info: 2, success: 3 };
 
 /** Build the live notification list. Best-effort per source; a failed fetch
  *  simply contributes nothing. `sym` is the currency symbol. */
@@ -89,4 +111,121 @@ export async function buildNotifications(twin: Twin | null, sym: string): Promis
 
   out.sort((a, b) => RANK[a.severity] - RANK[b.severity]);
   return out;
+}
+
+// ── The server feed: things that HAPPENED (migration 0030) ────────────────────
+// Same /api/proxy hop and the same authHeaders() as every other call, so the
+// backend scopes the rows to this user and this business with no CORS in play.
+
+/** One row as the backend stores it. Field names match the table, so there is
+ *  no second mapping here to drift out of step with migration 0030. */
+interface FeedRow {
+  id: string;
+  kind: string;
+  title: string;
+  body: string | null;
+  link: string | null;
+  meta: Record<string, unknown> | null;
+  read_at: string | null;
+  created_at: string;
+}
+
+/** Colour carries meaning, so a kind has to say which meaning. A booking asked
+ *  for is good news that still needs an answer; a cancellation is a loss of
+ *  money the owner had counted on. Anything new the backend starts writing
+ *  lands on 'info' rather than on nothing at all. */
+const FEED_SEVERITY: Record<string, NotifySeverity> = {
+  booking_request: 'success',
+  booking_cancelled: 'warning',
+};
+
+function toNotification(row: FeedRow): Notification {
+  // The backend writes the body as several short lines, one fact each, because
+  // email needs the breaks. The tray is one line of context under a title, and
+  // the full record is one tap away behind the link, so flatten it here.
+  const description = (row.body ?? '')
+    .split('\n').map((s) => s.trim()).filter(Boolean).join(' ');
+  return {
+    // Namespaced so a server row can never collide with 'runway' or 'low-stock'.
+    id: `feed:${row.id}`,
+    serverId: row.id,
+    severity: FEED_SEVERITY[row.kind] ?? 'info',
+    title: row.title,
+    description,
+    href: row.link || undefined,
+    happenedAt: row.created_at,
+  };
+}
+
+/** Unread things that happened, newest first.
+ *
+ *  Returns null, never an empty array, when the feed could not be read. The
+ *  difference matters to the caller: [] means "nothing is waiting for you" and
+ *  is safe to render, while null means "we do not know" and must leave whatever
+ *  is already on screen alone. One bad poll should not blank the bell.
+ *
+ *  A server-side read failure answers 200 with { notifications: [], note }, so
+ *  the note is checked as carefully as the HTTP status. */
+export async function fetchHappenedNotifications(limit = 20): Promise<Notification[] | null> {
+  try {
+    const res = await fetch(`${PROXY}/notifications?unread_only=true&limit=${limit}`, {
+      headers: await authHeaders(),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { notifications?: FeedRow[]; note?: string };
+    if (typeof data.note === 'string') return null;
+    return (data.notifications ?? []).map(toNotification);
+  } catch {
+    // Offline, no session, or an HTML error page from the proxy. All of them
+    // mean the same thing to the bell: show the derived half and say nothing.
+    return null;
+  }
+}
+
+/** Mark one row read. Best-effort: a failure just means the row comes back on
+ *  the next poll, which is the harmless direction to fail in. */
+export async function markNotificationRead(serverId: string): Promise<void> {
+  try {
+    await fetch(`${PROXY}/notifications/${encodeURIComponent(serverId)}/read`, {
+      method: 'POST',
+      headers: await authHeaders(),
+    });
+  } catch { /* the owner has already moved on to the record itself */ }
+}
+
+/** One list for the bell: what happened on top, what was derived below.
+ *
+ *  Newest first only sorts things that have a date. A derived alert has none,
+ *  and pretending it happened "now" would park a recomputed condition above a
+ *  booking that arrived this morning on every single mount. So the rule the
+ *  owner actually asked for falls out cleanly: a thing that happened outranks a
+ *  derived alert, and the derived ones keep the severity order buildNotifications
+ *  already gave them. */
+export function mergeNotifications(happened: Notification[], derived: Notification[]): Notification[] {
+  // Parsed, not compared as text: the same instant can be written with a +02:00
+  // offset or a Z, and sorting those as strings puts them in the wrong order.
+  const at = (item: Notification) => {
+    const t = Date.parse(item.happenedAt ?? '');
+    return Number.isFinite(t) ? t : 0;
+  };
+  const newestFirst = [...happened].sort((a, b) => at(b) - at(a));
+  return [...newestFirst, ...derived];
+}
+
+/** "20 minutes ago" for a feed row. Plain words, no clock arithmetic for the
+ *  reader to do. Empty for anything undated, which is how derived alerts skip
+ *  the line entirely. */
+export function timeAgo(iso?: string): string {
+  if (!iso) return '';
+  const then = Date.parse(iso);
+  if (!Number.isFinite(then)) return '';
+  const mins = Math.floor((Date.now() - then) / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days} days ago`;
+  return new Date(then).toLocaleDateString();
 }
