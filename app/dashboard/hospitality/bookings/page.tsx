@@ -325,6 +325,15 @@ export default function BookingsPage() {
                       <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, color: 'var(--text-3)' }}>
                         {nightCount} night{nightCount === 1 ? '' : 's'}
                       </div>
+                      {/* An unanswered website request stops holding its nights
+                          after a day, so the calendar and the website can sell
+                          them. It stays here to be answered, and the row has to
+                          say which of the two is true. */}
+                      {b.holding === false && (
+                        <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, fontWeight: 700, color: 'var(--warn)' }}>
+                          Dates no longer held
+                        </div>
+                      )}
                     </div>
 
                     {/* The booking's OWN symbol. One unit priced in dollars and

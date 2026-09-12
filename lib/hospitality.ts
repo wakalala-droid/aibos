@@ -150,6 +150,14 @@ export interface Booking {
   /** The guest record, attached by the server on every list read. Null when the
    *  booking has no guest (an availability block pulled from an OTA feed). */
   guest?: Guest | null;
+
+  /** Is this booking still standing in the way of a paying guest? The server
+   *  answers it, because an unanswered WEBSITE request stops holding its nights
+   *  after PENDING_HOLD_HOURS and nothing in a status can say so. Screens that
+   *  worked it out from the status alone kept a night sold-out here while the
+   *  property's own website was busy selling it. Undefined on an older reply,
+   *  so test it as `!== false`, never as `=== true`. */
+  holding?: boolean;
 }
 
 export type BookingSource = 'direct' | 'website' | 'ota' | 'phone' | 'walk_in';
@@ -443,7 +451,10 @@ export function occupancyRate(units: Unit[], bookings: Booking[], from: Date, to
   if (capacity === 0) return 0;
   let sold = 0;
   for (const b of bookings) {
-    if (b.status === 'cancelled' || b.status === 'no_show') continue;
+    // The status list was written before `declined` existed and before a hold
+    // could lapse, so it counted both as occupancy.
+    if (b.status === 'cancelled' || b.status === 'no_show' || b.status === 'declined') continue;
+    if (b.holding === false) continue;
     const ci = new Date(b.check_in + 'T00:00:00');
     const co = new Date(b.check_out + 'T00:00:00');
     const start = ci < from ? from : ci;

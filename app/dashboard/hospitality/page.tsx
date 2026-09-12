@@ -97,9 +97,15 @@ const PAYMENT_COLOUR: Record<PaymentStatus, string> = {
 };
 
 const BLOCKING: BookingStatus[] = ['confirmed', 'pending', 'completed'];
-/** A cancelled, declined or no-show booking gave the nights back, so it must not
- *  count as sold. occupancyRate only knows the first two, hence the filter here. */
-const SOLD = (b: Booking) => BLOCKING.includes(b.status);
+/** Is this booking actually occupying its unit right now?
+ *
+ *  A cancelled, declined or no-show booking gave the nights back. So did an
+ *  unanswered website request once its hold lapsed — the server says so with
+ *  `holding: false`, and every screen here has to ask, because the status alone
+ *  still reads 'pending'. Without this the calendar showed a room as taken
+ *  while the property's own website was selling that very night. */
+const HOLDS = (b: Booking) => BLOCKING.includes(b.status) && b.holding !== false;
+const SOLD = HOLDS;
 
 /* confirmBooking answers 409 when the nights were taken while the request sat
    waiting. This used to match the server's WORDING, and the list of words it
@@ -231,7 +237,7 @@ export default function HospitalityPage() {
     const soon = addDays(today, 7);
     return bookings.filter(b => {
       const ci = parseISO(b.check_in);
-      return ci >= today && ci < soon && BLOCKING.includes(b.status);
+      return ci >= today && ci < soon && HOLDS(b);
     }).length;
   }, [bookings]);
 
@@ -239,7 +245,7 @@ export default function HospitalityPage() {
   const occupancyOn = useCallback((unitId: string, day: Date): Booking | undefined => {
     const t = day.getTime();
     return bookings.find(b =>
-      b.unit_id === unitId && BLOCKING.includes(b.status) &&
+      b.unit_id === unitId && HOLDS(b) &&
       parseISO(b.check_in).getTime() <= t && parseISO(b.check_out).getTime() > t,
     );
   }, [bookings]);
@@ -406,6 +412,14 @@ export default function HospitalityPage() {
                       <span style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)' }}>
                         {shortDate(b.check_in)} to {shortDate(b.check_out)} · {nightsLabel(b)} · {unitName(b.unit_id)}
                       </span>
+                      {/* Still in the queue, no longer standing in anyone's way.
+                          Saying nothing would have the owner believe the room is
+                          being kept when the website can already sell it. */}
+                      {b.holding === false && (
+                        <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.6, color: 'var(--warn)' }}>
+                          Waited too long, so the dates are open again
+                        </span>
+                      )}
                       <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
                         <span style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.6, color: 'var(--text-2)' }}>
                           {fmt(b.total_amount || 0, false, bookingSymbol(b))}
