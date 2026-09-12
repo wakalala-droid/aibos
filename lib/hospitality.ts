@@ -23,9 +23,34 @@ async function hfetch(path: string, init: RequestInit = {}): Promise<Record<stri
   try { data = raw ? JSON.parse(raw) : {}; } catch { /* non-JSON (e.g. an .ics feed) */ }
   if (!res.ok) {
     const detail = typeof data.detail === 'string' ? data.detail : `Request failed (${res.status})`;
-    throw new Error(detail);
+    throw new HospitalityError(detail, res.status);
   }
   return data;
+}
+
+/**
+ * An error that still knows what the server answered.
+ *
+ * Every failure used to arrive as a bare Error carrying only a sentence, so a
+ * caller wanting to react to a date clash had to pattern-match English prose.
+ * The calendar did exactly that, and the list of words it looked for did not
+ * include the word the server actually uses, so a genuine 409 would have shown
+ * the raw sentence instead of the plain one. Prose is for people; code should
+ * branch on the status.
+ */
+export class HospitalityError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'HospitalityError';
+    this.status = status;
+  }
+}
+
+/** True when the server said those nights are gone (HTTP 409). */
+export function isDatesTaken(e: unknown): boolean {
+  return e instanceof HospitalityError && e.status === 409;
 }
 
 const jsonInit = (method: string, body: unknown): RequestInit => ({

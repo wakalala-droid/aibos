@@ -29,7 +29,7 @@ import { fmt, symbolForToken } from '@/lib/currency';
 import {
   listProperties, listUnits, listBookings, createBooking, cancelBooking,
   confirmBooking, declineBooking, createProperty, createUnit, createGuest,
-  occupancyRate, nights, bookingSymbol, SOURCE_LABEL,
+  occupancyRate, nights, bookingSymbol, SOURCE_LABEL, isDatesTaken,
   type Property, type Unit, type Booking, type BookingStatus, type PaymentStatus,
 } from '@/lib/hospitality';
 
@@ -101,10 +101,11 @@ const BLOCKING: BookingStatus[] = ['confirmed', 'pending', 'completed'];
  *  count as sold. occupancyRate only knows the first two, hence the filter here. */
 const SOLD = (b: Booking) => BLOCKING.includes(b.status);
 
-/** confirmBooking answers 409 when the nights were taken while the request sat
- *  waiting. The client throws the server's own sentence with no status code on it,
- *  so match the wording and say the plain thing instead of leaking a raw error. */
-const DATES_GONE = /409|conflict|overlap|already booked|not available|unavailable|taken/i;
+/* confirmBooking answers 409 when the nights were taken while the request sat
+   waiting. This used to match the server's WORDING, and the list of words it
+   looked for did not include the one the server actually uses ("clash"), so a
+   genuine clash would have shown the raw sentence. isDatesTaken reads the HTTP
+   status the client now carries, which cannot drift when someone edits copy. */
 
 // ── Reading a booking ────────────────────────────────────────────────────────
 // The joined guest record is the one we keep; guest_name and friends are only what
@@ -294,7 +295,7 @@ export default function HospitalityPage() {
       await load(gridStart);
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
-      setPanelNote(DATES_GONE.test(msg)
+      setPanelNote(isDatesTaken(e)
         ? 'Those nights are no longer free. Another booking took them while this request was waiting, so it cannot be confirmed. Offer the guest different dates or free the nights first.'
         : (msg || 'Could not confirm this booking. Try again in a moment.'));
     } finally { setBusy(false); }
