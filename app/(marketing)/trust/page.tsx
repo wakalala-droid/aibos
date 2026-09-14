@@ -116,7 +116,7 @@ export default function TrustPage() {
             <h2 className="mkt-h2">Questions about security?</h2>
             <p className="mkt-lead" style={{ marginTop: 14, marginInline: 'auto', maxWidth: 520 }}>
               We’d rather you ask. Reach a real person at{' '}
-              <a href="mailto:security@aibos.app" style={{ color: 'var(--cyan)', fontWeight: 600 }}>security@aibos.app</a>.
+              <a href="mailto:security@ai-bos.website" style={{ color: 'var(--cyan)', fontWeight: 600 }}>security@ai-bos.website</a>.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 28 }}>
               <Link href="/login" className="mkt-btn mkt-btn-primary">Start free, your data stays yours</Link>

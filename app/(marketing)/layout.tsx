@@ -16,7 +16,9 @@ import MarketingFooter from '@/components/marketing/MarketingFooter';
  */
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://aibos.app'),
+  // The official domain. aibos.app was never ours: every canonical tag and
+  // link-preview image pointed search engines and WhatsApp at somebody else.
+  metadataBase: new URL('https://ai-bos.website'),
   title: {
     default: 'AIBOS — The brain behind every business',
     template: '%s · AIBOS',

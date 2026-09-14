@@ -17,7 +17,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
       { href: '/about', label: 'Our story' },
       { href: '/trust', label: 'Trust & security' },
       { href: '/privacy', label: 'Privacy' },
-      { href: 'mailto:hello@aibos.app', label: 'Contact' },
+      { href: 'mailto:hello@ai-bos.website', label: 'Contact' },
     ],
   },
 ];
