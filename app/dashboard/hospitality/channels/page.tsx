@@ -15,7 +15,8 @@ import {
   listUnits, listChannels, createChannel, updateChannel, deleteChannel,
   syncChannel, icalFeedUrl,
   listProperties, mintSiteToken, clearSiteToken, publicSiteBase,
-  type Unit, type Channel, type ChannelType, type SyncStatus, type Property,
+  updateProperty, getGuestEmailStatus, sendGuestEmailSamples,
+  type Unit, type Channel, type ChannelType, type SyncStatus, type Property, type GuestEmailStatus,
 } from '@/lib/hospitality';
 
 const input: React.CSSProperties = {
@@ -75,6 +76,7 @@ export default function ChannelsPage() {
       {noUnits && <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>Add a unit first — channels attach to a unit.</p>}
 
       <WebsiteCard properties={properties} units={units} onChange={load} onError={setError} />
+      <GuestEmailsCard properties={properties} onChange={load} onError={setError} />
 
       {units.map(u => (
         <div key={u.id} style={{ marginBottom: 18 }}>
@@ -349,6 +351,206 @@ function WebsiteCard({ properties, units, onChange, onError }: {
         );
       })}
     </SectionCard>
+  );
+}
+
+/**
+ * Emails to your guests: sent in the property's name, never in ours.
+ *
+ * A guest who booked on the property's own website used to hear nothing in
+ * writing. Now they get three emails: the moment the request lands, and again
+ * when the owner confirms or turns it down. The owner's rule was that the guest
+ * must never hear from AI-BOS, so everything here is about what the GUEST sees:
+ * whose name, which address, where a reply lands.
+ *
+ * Off until the owner turns it on, and "Send me the samples" sits before the
+ * switch on purpose: nobody should start emailing strangers without reading
+ * what they will get.
+ */
+function GuestEmailsCard({ properties, onChange, onError }: {
+  properties: Property[];
+  onChange: () => Promise<void>;
+  onError: (m: string) => void;
+}) {
+  if (properties.length === 0) return null;
+  return (
+    <SectionCard
+      title="Emails to your guests"
+      subtitle="Sent in your property's name. Your guests never see AI-BOS."
+      style={{ marginBottom: 18 }}
+    >
+      {properties.map((p, i) => (
+        <GuestEmailsForProperty key={p.id} property={p} last={i === properties.length - 1} onChange={onChange} onError={onError} />
+      ))}
+    </SectionCard>
+  );
+}
+
+const BODY: React.CSSProperties = { fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)', margin: 0 };
+const FIELD: React.CSSProperties = { ...input, fontSize: 18, minHeight: 46 };
+
+function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
+  property: Property; last: boolean;
+  onChange: () => Promise<void>; onError: (m: string) => void;
+}) {
+  const [status, setStatus] = useState<GuestEmailStatus | null>(null);
+  const [form, setForm] = useState({
+    guest_email_from_name: p.guest_email_from_name || '',
+    guest_email_from: p.guest_email_from || '',
+    guest_email_reply_to: p.guest_email_reply_to || '',
+    guest_contact_phone: p.guest_contact_phone || '',
+    guest_payment_instructions: p.guest_payment_instructions || '',
+  });
+  const [busy, setBusy] = useState('');
+  const [message, setMessage] = useState<{ text: string; tone: 'good' | 'warn' } | null>(null);
+
+  const refresh = useCallback(async () => {
+    try { setStatus(await getGuestEmailStatus(p.id)); } catch { /* the card still works without it */ }
+  }, [p.id]);
+  useEffect(() => { refresh(); }, [refresh]);
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const save = async (extra: Partial<Property> = {}, done = 'Saved.') => {
+    setBusy('save'); setMessage(null); onError('');
+    try {
+      await updateProperty(p.id, { ...form, ...extra });
+      await Promise.all([onChange(), refresh()]);
+      setMessage({ text: done, tone: 'good' });
+    } catch (e) {
+      setMessage({ text: e instanceof Error ? e.message : 'Could not save.', tone: 'warn' });
+    } finally { setBusy(''); }
+  };
+
+  const samples = async () => {
+    setBusy('samples'); setMessage(null);
+    try {
+      const r = await sendGuestEmailSamples(p.id);
+      if (r.status) setStatus(r.status);
+      if (!r.to) {
+        setMessage({ text: r.note || 'There is no email address on your profile to send the samples to.', tone: 'warn' });
+      } else if (r.ok) {
+        const fell = r.results && Object.values(r.results).some(x => x.fallback);
+        setMessage({
+          text: `Three sample emails are on their way to ${r.to}.` +
+            (fell ? ' They came from the backup address because your own domain is not verified yet.' : ''),
+          tone: fell ? 'warn' : 'good',
+        });
+      } else {
+        const why = r.results && Object.values(r.results).find(x => !x.sent)?.note;
+        setMessage({ text: `The samples did not send. ${why || ''}`.trim(), tone: 'warn' });
+      }
+    } catch (e) {
+      setMessage({ text: e instanceof Error ? e.message : 'Could not send the samples.', tone: 'warn' });
+    } finally { setBusy(''); }
+  };
+
+  const on = Boolean(p.guest_emails_enabled);
+  const notReady = status !== null && !status.ready;
+  const notLive = status !== null && !status.email_live;
+
+  return (
+    <div style={{ paddingBottom: last ? 0 : 18, marginBottom: last ? 0 : 18, borderBottom: last ? 'none' : '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+        <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)' }}>{p.name}</span>
+        <span className="badge" style={{ color: on ? 'var(--green)' : 'var(--text-4)', borderColor: on ? 'var(--green)' : 'var(--border)' }}>
+          {on ? 'ON' : 'OFF'}
+        </span>
+      </div>
+
+      {notReady && (
+        <p style={{ ...BODY, color: 'var(--warn)', marginBottom: 12 }}>
+          This needs a one-time database update before it can be used: run migration 0031 in Supabase.
+        </p>
+      )}
+      {notLive && (
+        <p style={{ ...BODY, color: 'var(--warn)', marginBottom: 12 }}>
+          Email is not switched on for AI-BOS yet, so nothing can be sent.
+        </p>
+      )}
+
+      <p style={{ ...BODY, marginBottom: 16 }}>
+        When a guest books on your website they get an email straight away. They get another when
+        you confirm the booking or turn it down. When they reply, it comes to you.
+      </p>
+
+      <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
+        <label>
+          <span style={lbl}>Name your guests see</span>
+          <input style={FIELD} value={form.guest_email_from_name} onChange={set('guest_email_from_name')} placeholder={p.name} />
+        </label>
+        <label>
+          <span style={lbl}>Send from</span>
+          <input style={FIELD} type="email" value={form.guest_email_from} onChange={set('guest_email_from')} placeholder="reservations@yourdomain.com" />
+        </label>
+        <label>
+          <span style={lbl}>Replies go to</span>
+          <input style={FIELD} type="email" value={form.guest_email_reply_to} onChange={set('guest_email_reply_to')} placeholder="The inbox you actually read" />
+        </label>
+        <label>
+          <span style={lbl}>Phone for guests</span>
+          <input style={FIELD} value={form.guest_contact_phone} onChange={set('guest_contact_phone')} placeholder="+260" />
+        </label>
+      </div>
+
+      <label style={{ display: 'block', marginTop: 14 }}>
+        <span style={lbl}>How to pay</span>
+        <textarea
+          style={{ ...FIELD, minHeight: 120, resize: 'vertical', lineHeight: 1.6 }}
+          value={form.guest_payment_instructions}
+          onChange={set('guest_payment_instructions')}
+          placeholder="Mobile money and bank details, exactly as a guest should copy them."
+        />
+      </label>
+      <p style={{ ...BODY, fontSize: 16, color: 'var(--text-3)', marginTop: 6 }}>
+        Shown in the first email as an option to pay now, and in the confirmation.
+      </p>
+
+      {status && (
+        <div style={{ marginTop: 16, padding: '12px 14px', borderRadius: 10, background: 'var(--bg-badge)', border: '1px solid var(--border-md)' }}>
+          <p style={{ ...BODY, color: 'var(--text-3)', fontSize: 16 }}>Your guests will see it from</p>
+          <p style={{ ...BODY, fontWeight: 700, color: 'var(--text-1)', wordBreak: 'break-word' }}>{status.sending_as}</p>
+          {status.own_domain_verified === false && (
+            <p style={{ ...BODY, color: 'var(--warn)', marginTop: 6 }}>
+              {status.own_domain} is not verified for sending yet, so emails go out from the backup
+              address above, still in your name. Replies still come to you.
+            </p>
+          )}
+          {status.own_domain_verified === null && status.from_address && (
+            <p style={{ ...BODY, color: 'var(--text-3)', marginTop: 6 }}>
+              Send yourself the samples to check that {status.own_domain} is ready to send from.
+            </p>
+          )}
+          {!status.from_address && (
+            <p style={{ ...BODY, color: 'var(--text-3)', marginTop: 6 }}>
+              To send from your own address, verify your domain for sending and put the address in &ldquo;Send from&rdquo;.
+            </p>
+          )}
+        </div>
+      )}
+
+      {message && (
+        <p style={{ ...BODY, marginTop: 12, color: message.tone === 'good' ? 'var(--good)' : 'var(--warn)' }}>{message.text}</p>
+      )}
+
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
+        <button type="button" style={{ ...ghostBtn, fontSize: 16, minHeight: 44 }} disabled={Boolean(busy)} onClick={() => save()}>
+          {busy === 'save' ? 'Saving…' : 'Save'}
+        </button>
+        <button type="button" style={{ ...ghostBtn, fontSize: 16, minHeight: 44 }} disabled={Boolean(busy) || notReady || notLive} onClick={samples}>
+          {busy === 'samples' ? 'Sending…' : 'Send me the three samples'}
+        </button>
+        <button
+          type="button"
+          style={{ ...primaryBtn, fontSize: 16, minHeight: 44, ...(on ? { background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)' } : {}) }}
+          disabled={Boolean(busy) || notReady}
+          onClick={() => save({ guest_emails_enabled: !on }, on ? 'Emails to guests are off.' : 'Emails to guests are on.')}
+        >
+          {on ? 'Turn off' : 'Turn on emails to guests'}
+        </button>
+      </div>
+    </div>
   );
 }
 

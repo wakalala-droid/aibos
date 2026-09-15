@@ -17,7 +17,7 @@ import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/currency';
 import {
-  listBookings, listUnits, confirmBooking, declineBooking,
+  listBookings, listUnits, confirmBooking, declineBooking, guestEmailOutcome,
   nights, bookingSymbol, SOURCE_LABEL,
   type Booking, type BookingStatus, type BookingSource, type Unit,
 } from '@/lib/hospitality';
@@ -133,6 +133,8 @@ export default function BookingsPage() {
   const [busyId, setBusyId] = useState('');
   const [decliningId, setDecliningId] = useState('');
   const [reason, setReason] = useState('');
+  /** Whether the guest heard about the answer, so the owner knows if they must ring. */
+  const [emailNote, setEmailNote] = useState<{ text: string; tone: 'good' | 'warn' } | null>(null);
 
   // Units are the row labels, not a filter, so they load once and stay put.
   useEffect(() => {
@@ -180,10 +182,13 @@ export default function BookingsPage() {
   const waiting = useMemo(() => rows.filter(b => b.status === 'pending').length, [rows]);
 
   const answer = async (id: string, yes: boolean) => {
-    setBusyId(id); setError('');
+    setBusyId(id); setError(''); setEmailNote(null);
     try {
-      if (yes) await confirmBooking(id);
-      else await declineBooking(id, reason.trim() || undefined);
+      const b = bookings.find(x => x.id === id);
+      const { guestEmail } = yes
+        ? await confirmBooking(id)
+        : await declineBooking(id, reason.trim() || undefined);
+      setEmailNote(guestEmailOutcome(guestEmail, b ? (b.guest?.full_name || b.guest_name || '') : '', yes ? 'Confirmed' : 'Turned down'));
       setDecliningId(''); setReason('');
       await load();
     } catch (e) {
@@ -204,6 +209,14 @@ export default function BookingsPage() {
       {error && (
         <div style={{ marginBottom: 16, padding: '12px 16px', borderRadius: 10, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: FS_SMALL, lineHeight: 1.6 }}>
           {error}
+        </div>
+      )}
+      {emailNote && (
+        <div style={{
+          marginBottom: 16, padding: '12px 16px', borderRadius: 10, background: 'var(--bg-badge)', color: 'var(--text-1)',
+          border: `1px solid ${emailNote.tone === 'good' ? 'var(--good)' : 'var(--warn)'}`, fontSize: FS_BODY, lineHeight: 1.6,
+        }}>
+          {emailNote.text}
         </div>
       )}
 

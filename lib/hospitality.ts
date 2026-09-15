@@ -72,6 +72,15 @@ export interface Property {
   /** Token the property's own website uses to read availability and send
    *  booking requests (migration 0027). Null until the owner mints one. */
   public_site_token?: string | null;
+
+  /** How the property writes to its guests (migration 0031). Absent until that
+   *  migration is run, which reads as switched off. */
+  guest_emails_enabled?: boolean;
+  guest_email_from_name?: string | null;
+  guest_email_from?: string | null;
+  guest_email_reply_to?: string | null;
+  guest_contact_phone?: string | null;
+  guest_payment_instructions?: string | null;
 }
 export type PropertyInput = Partial<Omit<Property, 'id'>> & { name: string };
 
@@ -158,6 +167,94 @@ export interface Booking {
    *  property's own website was busy selling it. Undefined on an older reply,
    *  so test it as `!== false`, never as `=== true`. */
   holding?: boolean;
+
+  /** When each email went to the guest (migration 0031). */
+  guest_emails?: Partial<Record<GuestEmailKind, string>>;
+}
+
+// ─── Emails to the guest ────────────────────────────────────────────────────
+// Sent in the PROPERTY's name. The guest never hears from AI-BOS.
+
+export type GuestEmailKind = 'received' | 'confirmed' | 'declined';
+
+/** What happened to one guest email. */
+export interface GuestEmailResult {
+  sent: boolean;
+  /** Why nothing was sent, when that was deliberate rather than a failure. */
+  skipped?: 'off' | 'no_address' | 'already_sent';
+  note?: string;
+  /** The From line the guest actually saw. */
+  as?: string;
+  to?: string;
+  /** True when the property's own domain was refused and the platform address
+   *  carried it instead, still under the property's name. */
+  fallback?: boolean;
+}
+
+export interface BookingDecision {
+  booking: Booking;
+  guestEmail: GuestEmailResult | null;
+}
+
+export interface GuestEmailStatus {
+  /** False until migration 0031 is run. */
+  ready: boolean;
+  enabled: boolean;
+  from_name: string;
+  from_address: string | null;
+  fallback_address: string;
+  reply_to: string | null;
+  phone: string | null;
+  payment_instructions: string | null;
+  /** RESEND_API_KEY is set on the API. */
+  email_live: boolean;
+  /** The From line a guest will see, e.g. "Dunslim Apartments <reservations@…>". */
+  sending_as: string;
+  /** null until a send (or the samples) has asked the provider. */
+  own_domain_verified: boolean | null;
+  own_domain: string | null;
+}
+
+export interface GuestEmailSamples {
+  ok: boolean;
+  to?: string;
+  note?: string;
+  results?: Record<GuestEmailKind, GuestEmailResult>;
+  status?: GuestEmailStatus;
+}
+
+export async function getGuestEmailStatus(propertyId: string): Promise<GuestEmailStatus> {
+  return (await hfetch(`/hospitality/properties/${propertyId}/guest-emails`)) as unknown as GuestEmailStatus;
+}
+
+/** All three emails, with example details, to the signed-in person's own inbox. */
+export async function sendGuestEmailSamples(propertyId: string): Promise<GuestEmailSamples> {
+  return (await hfetch(`/hospitality/properties/${propertyId}/guest-emails/samples`, { method: 'POST' })) as unknown as GuestEmailSamples;
+}
+
+/** What to tell the owner about the guest's email after they answer a request.
+ *  Null when there is nothing worth saying (it had already gone). */
+export function guestEmailOutcome(
+  result: GuestEmailResult | null | undefined,
+  guestName: string,
+  verb: 'Confirmed' | 'Turned down',
+): { text: string; tone: 'good' | 'warn' } | null {
+  if (!result || result.skipped === 'already_sent') return null;
+  const who = guestName.trim() || 'the guest';
+  if (result.sent) {
+    const where = result.to ? ` at ${result.to}` : '';
+    const fallback = result.fallback
+      ? ' It went out under your name from the AI-BOS address, because your own email domain is not verified yet.'
+      : '';
+    return { text: `${verb}. ${who} has been emailed${where}.${fallback}`, tone: 'good' };
+  }
+  if (result.skipped === 'off') {
+    return { text: `${verb}. Emails to guests are switched off, so let ${who} know yourself. You can switch them on in Channels.`, tone: 'warn' };
+  }
+  if (result.skipped === 'no_address') {
+    return { text: `${verb}. ${who} left no email address, so let them know yourself.`, tone: 'warn' };
+  }
+  return { text: `${verb}, but the email to ${who} did not go out. Let them know yourself.`, tone: 'warn' };
 }
 
 export type BookingSource = 'direct' | 'website' | 'ota' | 'phone' | 'walk_in';
@@ -346,14 +443,16 @@ export async function listGuestBookings(guestId: string): Promise<Booking[]> {
 }
 
 /** Say yes. This is what puts the stay in the books. */
-export async function confirmBooking(id: string): Promise<Booking> {
-  return (await hfetch(`/hospitality/bookings/${id}/confirm`, { method: 'POST' })).booking as Booking;
+export async function confirmBooking(id: string): Promise<BookingDecision> {
+  const data = await hfetch(`/hospitality/bookings/${id}/confirm`, { method: 'POST' });
+  return { booking: data.booking as Booking, guestEmail: (data.guest_email as GuestEmailResult | null) ?? null };
 }
 
 /** Turn down a request that was never agreed to. Frees the dates, records why,
  *  and touches nothing in the books because nothing was ever posted. */
-export async function declineBooking(id: string, reason?: string): Promise<Booking> {
-  return (await hfetch(`/hospitality/bookings/${id}/decline`, jsonInit('POST', { reason }))).booking as Booking;
+export async function declineBooking(id: string, reason?: string): Promise<BookingDecision> {
+  const data = await hfetch(`/hospitality/bookings/${id}/decline`, jsonInit('POST', { reason }));
+  return { booking: data.booking as Booking, guestEmail: (data.guest_email as GuestEmailResult | null) ?? null };
 }
 export async function createBooking(input: BookingInput): Promise<Booking> {
   return (await hfetch('/hospitality/bookings', jsonInit('POST', input))).booking as Booking;

@@ -28,7 +28,7 @@ import { canAccess, requiredTier, TIERS, type Tier } from '@/lib/tiers';
 import { fmt, symbolForToken } from '@/lib/currency';
 import {
   listProperties, listUnits, listBookings, createBooking, cancelBooking,
-  confirmBooking, declineBooking, createProperty, createUnit, createGuest,
+  confirmBooking, declineBooking, createProperty, createUnit, createGuest, guestEmailOutcome,
   occupancyRate, nights, bookingSymbol, SOURCE_LABEL, isDatesTaken,
   type Property, type Unit, type Booking, type BookingStatus, type PaymentStatus,
 } from '@/lib/hospitality';
@@ -166,6 +166,9 @@ export default function HospitalityPage() {
   const [declining, setDeclining] = useState(false);
   const [declineReason, setDeclineReason] = useState('');
   const [panelNote, setPanelNote] = useState('');
+  /** What happened to the guest's email after the last answer. Not an error, so
+   *  not the red note: the owner needs to know whether to ring the guest. */
+  const [emailNote, setEmailNote] = useState<{ text: string; tone: 'good' | 'warn' } | null>(null);
 
   // First-run quick setup (no property/unit yet)
   const [setupName, setSetupName] = useState('');
@@ -253,11 +256,11 @@ export default function HospitalityPage() {
   // ── Actions ────────────────────────────────────────────────────────────────
   const openBooking = (b: Booking) => {
     setDraft(null);
-    setDeclining(false); setDeclineReason(''); setPanelNote('');
+    setDeclining(false); setDeclineReason(''); setPanelNote(''); setEmailNote(null);
     setSelected(b);
   };
   const closeBooking = () => {
-    setSelected(null); setDeclining(false); setDeclineReason(''); setPanelNote('');
+    setSelected(null); setDeclining(false); setDeclineReason(''); setPanelNote(''); setEmailNote(null);
   };
 
   const openDraft = (unitId: string, day?: Date) => {
@@ -295,9 +298,11 @@ export default function HospitalityPage() {
   };
 
   const doConfirm = async (b: Booking) => {
-    setBusy(true); setPanelNote(''); setError('');
+    setBusy(true); setPanelNote(''); setEmailNote(null); setError('');
     try {
-      applyUpdate(await confirmBooking(b.id));
+      const { booking, guestEmail } = await confirmBooking(b.id);
+      applyUpdate(booking);
+      setEmailNote(guestEmailOutcome(guestEmail, guestName(b), 'Confirmed'));
       await load(gridStart);
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
@@ -308,9 +313,11 @@ export default function HospitalityPage() {
   };
 
   const doDecline = async (b: Booking) => {
-    setBusy(true); setPanelNote(''); setError('');
+    setBusy(true); setPanelNote(''); setEmailNote(null); setError('');
     try {
-      applyUpdate(await declineBooking(b.id, declineReason.trim() || undefined));
+      const { booking, guestEmail } = await declineBooking(b.id, declineReason.trim() || undefined);
+      applyUpdate(booking);
+      setEmailNote(guestEmailOutcome(guestEmail, guestName(b), 'Turned down'));
       setDeclining(false); setDeclineReason('');
       await load(gridStart);
     } catch (e) {
@@ -562,6 +569,7 @@ export default function HospitalityPage() {
                 unitName={unitName(selected.unit_id)}
                 busy={busy}
                 note={panelNote}
+                emailNote={emailNote}
                 declining={declining}
                 declineReason={declineReason}
                 onDeclineReason={setDeclineReason}
@@ -592,6 +600,7 @@ interface PanelProps {
   unitName: string;
   busy: boolean;
   note: string;
+  emailNote: { text: string; tone: 'good' | 'warn' } | null;
   declining: boolean;
   declineReason: string;
   onDeclineReason: (v: string) => void;
@@ -604,7 +613,7 @@ interface PanelProps {
 }
 
 function BookingPanel({
-  booking: b, unitName, busy, note, declining, declineReason,
+  booking: b, unitName, busy, note, emailNote, declining, declineReason,
   onDeclineReason, onStartDecline, onStopDecline, onConfirm, onDecline, onCancel, onClose,
 }: PanelProps) {
   const g = b.guest;
@@ -707,6 +716,26 @@ function BookingPanel({
             )}
           </div>
         </PanelBlock>
+      )}
+
+      {/* EMAILS TO THE GUEST: so "did they hear from us?" never needs a phone call. */}
+      {b.guest_emails && Object.keys(b.guest_emails).length > 0 && (
+        <PanelBlock title="Emails to the guest">
+          <div style={{ display: 'grid', gap: 6 }}>
+            {b.guest_emails.received && <DecisionLine text={`Request received, sent ${stamp(b.guest_emails.received)}`} colour="var(--text-3)" />}
+            {b.guest_emails.confirmed && <DecisionLine text={`Booking confirmed, sent ${stamp(b.guest_emails.confirmed)}`} colour="var(--good)" />}
+            {b.guest_emails.declined && <DecisionLine text={`Request turned down, sent ${stamp(b.guest_emails.declined)}`} colour="var(--text-3)" />}
+          </div>
+        </PanelBlock>
+      )}
+
+      {emailNote && (
+        <div style={{
+          marginTop: 20, padding: '12px 14px', borderRadius: 10, background: 'var(--bg-badge)', fontSize: 18, lineHeight: 1.6,
+          border: `1px solid ${emailNote.tone === 'good' ? 'var(--good)' : 'var(--warn)'}`, color: 'var(--text-1)',
+        }}>
+          {emailNote.text}
+        </div>
       )}
 
       {/* Something went wrong on the last action, said plainly. */}
