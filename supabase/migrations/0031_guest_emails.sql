@@ -35,10 +35,7 @@ alter table public.properties
   add column if not exists guest_email_reply_to       text,
   add column if not exists guest_contact_phone        text,
   -- Shown in the "confirmed" email. Written by the owner, in their own words.
-  add column if not exists guest_payment_instructions text,
-  -- The property's own logo at the top of every guest email. A PNG or JPG:
-  -- most mail apps will not show an SVG. Null means the property's name in text.
-  add column if not exists guest_email_logo_url       text;
+  add column if not exists guest_payment_instructions text;
 
 -- When each email went to the guest: {"received": ts, "confirmed": ts, ...}.
 -- Also what stops the same email going twice when a button is pressed twice.
