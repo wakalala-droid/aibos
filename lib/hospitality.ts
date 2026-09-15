@@ -81,6 +81,8 @@ export interface Property {
   guest_email_reply_to?: string | null;
   guest_contact_phone?: string | null;
   guest_payment_instructions?: string | null;
+  /** The property's own logo at the top of every guest email. PNG or JPG. */
+  guest_email_logo_url?: string | null;
 }
 export type PropertyInput = Partial<Omit<Property, 'id'>> & { name: string };
 
@@ -206,6 +208,7 @@ export interface GuestEmailStatus {
   reply_to: string | null;
   phone: string | null;
   payment_instructions: string | null;
+  logo_url: string | null;
   /** RESEND_API_KEY is set on the API. */
   email_live: boolean;
   /** The From line a guest will see, e.g. "Dunslim Apartments <reservations@…>". */

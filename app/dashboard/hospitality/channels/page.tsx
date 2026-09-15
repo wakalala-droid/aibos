@@ -10,6 +10,8 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
+import { createClient } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
 import { slugFrom } from '@/lib/slug';
 import {
   listUnits, listChannels, createChannel, updateChannel, deleteChannel,
@@ -403,6 +405,8 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
   });
   const [busy, setBusy] = useState('');
   const [message, setMessage] = useState<{ text: string; tone: 'good' | 'warn' } | null>(null);
+  const [logo, setLogo] = useState(p.guest_email_logo_url || '');
+  const { user } = useAuth();
 
   const refresh = useCallback(async () => {
     try { setStatus(await getGuestEmailStatus(p.id)); } catch { /* the card still works without it */ }
@@ -420,6 +424,45 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
       setMessage({ text: done, tone: 'good' });
     } catch (e) {
       setMessage({ text: e instanceof Error ? e.message : 'Could not save.', tone: 'warn' });
+    } finally { setBusy(''); }
+  };
+
+  /* The property's logo, for its guest emails. Same public `logos` bucket and
+     own-folder rule as the business logo on the profile page. PNG or JPG only:
+     Gmail and Outlook show an SVG as a broken image. */
+  const onLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !user) return;
+    if (!/^image\/(png|jpe?g)$/.test(file.type)) {
+      setMessage({ text: 'Use a PNG or JPG logo. Most email apps cannot show other kinds.', tone: 'warn' });
+      return;
+    }
+    setBusy('logo'); setMessage(null);
+    try {
+      const supabase = createClient();
+      const ext = file.type === 'image/png' ? 'png' : 'jpg';
+      const path = `${user.id}/property-${p.id}-email-logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('logos').upload(path, file, { upsert: true, cacheControl: '3600' });
+      if (upErr) throw new Error(upErr.message);
+      const url = supabase.storage.from('logos').getPublicUrl(path).data.publicUrl;
+      await updateProperty(p.id, { guest_email_logo_url: url });
+      setLogo(url);
+      await Promise.all([onChange(), refresh()]);
+      setMessage({ text: 'Logo saved. It will be at the top of every email to your guests.', tone: 'good' });
+    } catch (err) {
+      setMessage({ text: err instanceof Error ? err.message : 'The logo could not be uploaded.', tone: 'warn' });
+    } finally { setBusy(''); }
+  };
+
+  const removeLogo = async () => {
+    setBusy('logo'); setMessage(null);
+    try {
+      await updateProperty(p.id, { guest_email_logo_url: null });
+      setLogo('');
+      await Promise.all([onChange(), refresh()]);
+    } catch (err) {
+      setMessage({ text: err instanceof Error ? err.message : 'Could not remove the logo.', tone: 'warn' });
     } finally { setBusy(''); }
   };
 
@@ -474,6 +517,31 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
         When a guest books on your website they get an email straight away. They get another when
         you confirm the booking or turn it down. When they reply, it comes to you.
       </p>
+
+      <div style={{ marginBottom: 16 }}>
+        <span style={lbl}>Your logo</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          {logo ? (
+            // The email itself is white, so the preview is too: what the guest sees.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo} alt={`${p.name} logo`} style={{ height: 56, maxWidth: 240, objectFit: 'contain', background: '#fff', borderRadius: 8, padding: 8, border: '1px solid var(--border-md)' }} />
+          ) : (
+            <span style={{ ...BODY, color: 'var(--text-3)' }}>No logo yet, so your property&rsquo;s name is shown in its place.</span>
+          )}
+          <label style={{ ...ghostBtn, fontSize: 16, minHeight: 44, display: 'inline-flex', alignItems: 'center', opacity: busy ? 0.6 : 1 }}>
+            {busy === 'logo' ? 'Uploading…' : logo ? 'Replace logo' : 'Upload logo'}
+            <input type="file" accept="image/png,image/jpeg" onChange={onLogo} disabled={Boolean(busy) || notReady} style={{ display: 'none' }} />
+          </label>
+          {logo && (
+            <button type="button" style={{ ...ghostBtn, fontSize: 16, minHeight: 44 }} disabled={Boolean(busy)} onClick={removeLogo}>
+              Remove
+            </button>
+          )}
+        </div>
+        <p style={{ ...BODY, fontSize: 16, color: 'var(--text-3)', marginTop: 6 }}>
+          Shown at the top of every email to your guests. Use a PNG or JPG on a white or clear background.
+        </p>
+      </div>
 
       <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
         <label>
