@@ -12,6 +12,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
+import { useProfile } from '@/lib/profile';
 import {
   classifyActivity, listEvents, ingestQr, ingestReceipt, transcribeAudio,
   type EventType, type EventProposal, type EventSource,
@@ -33,7 +34,7 @@ const TYPE_FIELDS: Record<EventType, Field[]> = {
   Sale:                [{ key: 'customer', label: 'Customer', kind: 'text' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank', 'credit'] }],
   Purchase:            [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank', 'credit'] }],
   Expense:             [{ key: 'category', label: 'Category', kind: 'text', placeholder: 'rent, fuel, utilities…' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank'] }, { key: 'is_fixed', label: 'Fixed cost?', kind: 'select', options: ['no', 'yes'] }],
-  InventoryReceipt:    [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'note', label: 'Items received', kind: 'text', placeholder: 'e.g. 2 crates soft drinks' }],
+  InventoryReceipt:    [{ key: 'supplier', label: 'Supplier', kind: 'text' }],
   InventoryAdjustment: [{ key: 'item', label: 'Item', kind: 'text' }, { key: 'delta_qty', label: 'Qty change (+/-)', kind: 'number' }, { key: 'reason', label: 'Reason', kind: 'select', options: ['recount', 'shrinkage', 'damage'] }],
   Salary:              [{ key: 'employee', label: 'Employee', kind: 'text' }, { key: 'period', label: 'Period', kind: 'text', placeholder: 'e.g. June 2026' }],
   SupplierPayment:     [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'invoice_ref', label: 'Invoice ref', kind: 'text' }],
@@ -47,6 +48,20 @@ const TYPE_FIELDS: Record<EventType, Field[]> = {
 
 const NO_AMOUNT: EventType[] = ['InventoryReceipt', 'InventoryAdjustment']; // amount optional
 
+/*
+  STOCK LINES. Stock moves only through a list of items and quantities on the
+  event (products.py movement_map): a receipt adds, a sale takes away. A stock
+  receipt cannot be saved without one, and this form had nowhere to enter it,
+  so "Stock received" failed for everyone with "requires payload field(s):
+  items, quantities". The AI's own list was thrown away too, so "sold 3 bags of
+  rice" moved the money and never the stock.
+*/
+type Line = { name: string; qty: string };
+const ITEM_TYPES: EventType[] = ['InventoryReceipt', 'Sale', 'Purchase'];
+const ITEMS_REQUIRED: EventType[] = ['InventoryReceipt'];
+/** Proposal fields worth keeping that the form has no box for. */
+const CARRY_KEYS = ['note', 'tax'];
+
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '10px 12px', minHeight: 44,
   background: 'var(--bg-input)', border: '1px solid var(--border-md)',
@@ -59,7 +74,13 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 6, display: 'block',
 };
 
-function todayISO() { return new Date().toISOString().slice(0, 10); }
+/** Today on the owner's own calendar. toISOString() is UTC, so between
+ *  midnight and 2am in Lusaka it said yesterday, and anything recorded then
+ *  was filed on the wrong day. */
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 // Minimal typing for the Web Speech API (not in lib.dom for all targets).
 type SpeechRec = {
@@ -76,6 +97,8 @@ function getSpeechCtor(): (new () => SpeechRec) | null {
 
 export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
   const currencySymbol = useStore(s => s.currencySymbol) || 'K';
+  const { profile } = useProfile();
+  const currency = (profile?.currency as string | null) || 'ZMW';
   const refreshTwin = useStore(s => s.refreshTwin);
   const setRecentEvents = useStore(s => s.setRecentEvents);
 
@@ -88,6 +111,8 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
   const [etype, setEtype] = useState<EventType>('Sale');
   const [amount, setAmount] = useState('');
   const [fields, setFields] = useState<Record<string, string>>({});
+  const [lines, setLines] = useState<Line[]>([]);
+  const [carry, setCarry] = useState<Record<string, unknown>>({});
   const [occurred, setOccurred] = useState(todayISO());
   const [confidence, setConfidence] = useState<number | null>(null);
   const [reasoning, setReasoning] = useState('');
@@ -129,7 +154,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     setOrigin('qr');
     setError(null); setSuccess(null); setPhase('classifying');
     try {
-      const proposal = await ingestQr(qrText, 'ZMW');
+      const proposal = await ingestQr(qrText, currency);
       if (!proposal.event_type && !proposal.payload?.amount) {
         setError("Couldn't read that QR — try the photo/manual entry."); setPhase('idle'); return;
       }
@@ -144,7 +169,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     setOrigin('receipt');
     setError(null); setSuccess(null); setPhase('classifying');
     try {
-      const proposal = await ingestReceipt(file, 'ZMW');
+      const proposal = await ingestReceipt(file, currency);
       if (!proposal.payload?.amount) {
         setError("Couldn't read a total from that photo — try a clearer shot or enter it manually.");
         setPhase('idle'); return;
@@ -166,6 +191,13 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
       if (v != null) f[fld.key] = String(v);
     }
     setFields(f);
+    const names = Array.isArray(pl.items) ? pl.items : [];
+    const qtys = Array.isArray(pl.quantities) ? pl.quantities : [];
+    setLines(names.map((n, i) => ({ name: String(n ?? ''), qty: qtys[i] != null ? String(qtys[i]) : '' }))
+      .filter(l => l.name.trim()));
+    const kept: Record<string, unknown> = {};
+    for (const k of CARRY_KEYS) if (pl[k] != null && pl[k] !== '') kept[k] = pl[k];
+    setCarry(kept);
     setConfidence(typeof p.confidence === 'number' ? p.confidence : null);
     setReasoning(p.reasoning || '');
     setPhase('review');
@@ -177,7 +209,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     setOrigin(src);
     setError(null); setSuccess(null); setPhase('classifying');
     try {
-      const proposal = await classifyActivity(t);
+      const proposal = await classifyActivity(t, currency);
       loadProposal(proposal);
     } catch (e) {
       setError((e as Error).message || 'Could not interpret that.');
@@ -254,7 +286,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
 
   function startManual() {
     setError(null); setSuccess(null); setOrigin('manual');
-    setEtype('Sale'); setAmount(''); setFields({}); setOccurred(todayISO());
+    setEtype('Sale'); setAmount(''); setFields({}); setLines([]); setCarry({}); setOccurred(todayISO());
     setConfidence(null); setReasoning('');
     setPhase('review');
   }
@@ -273,12 +305,26 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     setError(null);
     const needsAmount = !NO_AMOUNT.includes(etype);
     const amt = parseFloat(amount);
-    if (needsAmount && (!amount || isNaN(amt) || amt <= 0)) {
+    if (needsAmount && (!amount || !Number.isFinite(amt) || amt <= 0)) {
       setError('Enter a valid amount.');
       return;
     }
-    const payload: Record<string, unknown> = {};
-    if (needsAmount || amount) payload.amount = Math.abs(amt || 0);
+    const filled = ITEM_TYPES.includes(etype) ? lines.filter(l => l.name.trim() || l.qty.trim()) : [];
+    const bad = filled.find(l => !l.name.trim() || !(Number(l.qty) > 0));
+    if (bad) {
+      setError('Each item needs a name and a quantity above zero.');
+      return;
+    }
+    if (ITEMS_REQUIRED.includes(etype) && filled.length === 0) {
+      setError('Add at least one item and how many arrived.');
+      return;
+    }
+    const payload: Record<string, unknown> = { ...carry };
+    if (needsAmount || amount) payload.amount = Math.abs(Number.isFinite(amt) ? amt : 0);
+    if (filled.length) {
+      payload.items = filled.map(l => l.name.trim());
+      payload.quantities = filled.map(l => Number(l.qty));
+    }
     for (const [k, v] of Object.entries(fields)) {
       if (v === '' || v == null) continue;
       const fld = TYPE_FIELDS[etype].find(f => f.key === k);
@@ -297,11 +343,11 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
         // Network down — the outbox holds it and posts when signal returns.
         // The habit must survive the connection (Proposal risk: connectivity).
         setSuccess(`${etype} saved on your device — it will post automatically when you're back online.`);
-        setText(''); setAmount(''); setFields({}); setPhase('idle');
+        setText(''); setAmount(''); setFields({}); setLines([]); setCarry({}); setPhase('idle');
         return;
       }
       setSuccess(`${etype} recorded.`);
-      setText(''); setAmount(''); setFields({}); setPhase('idle');
+      setText(''); setAmount(''); setFields({}); setLines([]); setCarry({}); setPhase('idle');
       // Refresh the twin (lights up dashboards) and recent events.
       refreshTwin();
       listEvents({ limit: 8 }).then(setRecentEvents).catch(() => {});
@@ -535,6 +581,33 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                     style={{ ...inputStyle }} />
                 </div>
               </div>
+
+              {ITEM_TYPES.includes(etype) && (
+                <div style={{ marginTop: 14 }}>
+                  <span style={labelStyle}>
+                    {etype === 'InventoryReceipt' ? 'Items received' : 'Items (optional, keeps your stock count right)'}
+                  </span>
+                  {lines.map((l, i) => (
+                    <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 96px 44px', gap: 8, marginBottom: 8 }}>
+                      <input aria-label={`Item ${i + 1}`} value={l.name} placeholder="e.g. Coke 500ml"
+                        onChange={e => setLines(ls => ls.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
+                        style={inputStyle} />
+                      <input aria-label={`Quantity of item ${i + 1}`} type="number" inputMode="decimal" min={0} value={l.qty} placeholder="Qty"
+                        onChange={e => setLines(ls => ls.map((x, j) => j === i ? { ...x, qty: e.target.value } : x))}
+                        style={inputStyle} />
+                      <button type="button" aria-label={`Remove item ${i + 1}`} className="touch-target"
+                        onClick={() => setLines(ls => ls.filter((_, j) => j !== i))}
+                        style={{ minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer', fontSize: 'var(--fs-body)' }}>
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={() => setLines(ls => [...ls, { name: '', qty: '' }])} className="touch-target"
+                    style={{ minHeight: 40, padding: '8px 14px', borderRadius: 8, border: '1px dashed var(--border-md)', background: 'transparent', color: 'var(--cyan)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>
+                    + Add item
+                  </button>
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
                 <button

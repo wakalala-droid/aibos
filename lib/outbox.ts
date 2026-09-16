@@ -68,6 +68,13 @@ export function isNetworkError(err: unknown): boolean {
   return /failed to fetch|network|load failed|fetch failed/i.test(msg);
 }
 
+function newClientRef(): string {
+  try {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  } catch { /* insecure context */ }
+  return `cr_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
+}
+
 export function queueEvent(input: EventInput): OutboxItem {
   const item: OutboxItem = {
     id: `ob_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -85,6 +92,13 @@ export function queueEvent(input: EventInput): OutboxItem {
 export async function createEventOrQueue(
   input: EventInput,
 ): Promise<{ queued: boolean; event?: BusinessEvent }> {
+  // One reference per entry, stamped BEFORE the first attempt and kept in the
+  // queue. When the connection drops after the server saved it but before the
+  // reply arrived, the re-post carries the same reference and the server hands
+  // back the first save instead of recording the sale twice.
+  if (!input.payload?.client_ref) {
+    input = { ...input, payload: { ...(input.payload ?? {}), client_ref: newClientRef() } };
+  }
   try {
     const event = await createEvent(input);
     logUsage('event_recorded', { meta: { event_type: input.event_type } });
