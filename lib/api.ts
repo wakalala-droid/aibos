@@ -1226,7 +1226,8 @@ export async function simulate(scenario: {
 }
 
 /** Seed the twin's opening cash + currency (Setup Wizard). */
-export async function seedTwin(opening_cash: number, currency = 'ZMW'): Promise<Twin> {
+/** opening_cash null leaves the recorded starting cash as it is. */
+export async function seedTwin(opening_cash: number | null, currency = 'ZMW'): Promise<Twin> {
   const data = await spineFetch('/twin/seed', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

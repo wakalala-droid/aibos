@@ -16,7 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { createMiddlewareClient } from '@/lib/supabase-server';
-import { isAdminEmail } from '@/lib/admin';
+import { isAdminUser } from '@/lib/admin';
 
 // ─── Route Configuration ──────────────────────────────────────────────────────
 
@@ -93,7 +93,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
     const { data: verified } = await supabase.auth.getUser();
-    if (!isAdminEmail(verified.user?.email)) {
+    if (!isAdminUser(verified.user)) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }

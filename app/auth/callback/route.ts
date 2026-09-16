@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { isAdminEmail } from '@/lib/admin';
+import { isAdminUser } from '@/lib/admin';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
         full_name:         fullName,
         avatar_url:        (user.user_metadata?.avatar_url as string | undefined) ?? null,
         business_name:     fullName,
-        role:              isAdminEmail(user.email) ? 'admin' : 'member',
+        role:              isAdminUser(user) ? 'admin' : 'member',
         tier:              'free',
         tier_source:       'self',
         subscription_tier: 'free',

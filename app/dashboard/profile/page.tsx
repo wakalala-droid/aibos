@@ -374,14 +374,21 @@ function MemoryLearnedCard() {
   const [mem, setMem] = useState<import('@/lib/api').MemorySummary | null>(null);
   const [managing, setManaging] = useState(false);
   const [mappings, setMappings] = useState<import('@/lib/api').MemoryMapping[]>([]);
+  const [manageError, setManageError] = useState<string | null>(null);
   useEffect(() => { getMemorySummary().then(setMem).catch(() => {}); }, []);
 
+  // Both used to fail in silence: a list that would not load read as "Nothing
+  // learned yet", and a Forget that did not go through simply did nothing.
   async function openManage() {
     setManaging(true);
-    try { setMappings(await getMemoryMappings()); } catch { /* */ }
+    setManageError(null);
+    try { setMappings(await getMemoryMappings()); }
+    catch (e) { setManageError(`Could not load what AIBOS has learned: ${(e as Error).message}`); }
   }
   async function forget(id: string) {
-    try { await forgetMapping(id); setMappings((m) => m.filter((x) => x.id !== id)); getMemorySummary().then(setMem).catch(() => {}); } catch { /* */ }
+    setManageError(null);
+    try { await forgetMapping(id); setMappings((m) => m.filter((x) => x.id !== id)); getMemorySummary().then(setMem).catch(() => {}); }
+    catch (e) { setManageError(`That was not forgotten: ${(e as Error).message}. Please try again.`); }
   }
   const describe = (m: import('@/lib/api').MemoryMapping): string => {
     const v = m.value || {};
@@ -427,7 +434,8 @@ function MemoryLearnedCard() {
       ) : (
         <div style={{ display: 'grid', gap: 6 }}>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px' }}>Wrong? Remove it and AIBOS forgets — you correct it, not the other way round.</p>
-          {mappings.length === 0 ? (
+          {manageError && <p role="alert" style={{ color: 'var(--crit)', fontSize: 'var(--fs-label)', margin: '0 0 6px' }}>{manageError}</p>}
+          {manageError && mappings.length === 0 ? null : mappings.length === 0 ? (
             <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Nothing learned yet.</span>
           ) : mappings.map((m) => (
             <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)' }}>

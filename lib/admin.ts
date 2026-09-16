@@ -1,9 +1,9 @@
 /**
  * AIBOS — Admin identity helpers (PURE / runtime-agnostic)
  *
- * Admin is identified by an email allowlist (bootstrap) OR a durable
- * `profiles.role = 'admin'` row. The allowlist lets the first admin work before
- * any row exists; the role is the lasting source of truth.
+ * Admin is the ADMIN_EMAILS allowlist, for an address Google has proven the
+ * account owns (isAdminUser). `profiles.role` is written for the database's
+ * own policies but is never what the website trusts: a user could write it.
  *
  * This module is dependency-free on purpose so it can be imported from the Edge
  * `middleware.ts`. The session-based check that needs `next/headers` lives in
@@ -24,6 +24,31 @@ export function adminEmails(): string[] {
 export function isAdminEmail(email?: string | null): boolean {
   if (!email) return false;
   return adminEmails().includes(email.toLowerCase());
+}
+
+/** The parts of a Supabase auth user the admin check reads. */
+interface AuthUserLike {
+  email?: string | null;
+  identities?: { provider?: string; identity_data?: { email?: unknown; email_verified?: unknown } | null }[] | null;
+}
+
+/**
+ * An allowlisted address that Google has PROVEN this account owns.
+ *
+ * The address on the auth user is not proof on its own: email sign-up is
+ * switched on with auto-confirm, which also confirms an email change at once,
+ * so an allowlisted address nobody has registered yet could be claimed by
+ * anyone. AIBOS signs people in with Google only, and Google only signs someone
+ * in with an address it has checked, so a matching Google identity is the proof.
+ */
+export function isAdminUser(user?: AuthUserLike | null): boolean {
+  const email = user?.email?.toLowerCase();
+  if (!email || !isAdminEmail(email)) return false;
+  return (user?.identities ?? []).some((i) =>
+    i.provider === 'google'
+    && String(i.identity_data?.email ?? '').toLowerCase() === email
+    && i.identity_data?.email_verified !== false,
+  );
 }
 
 // ── Shared shapes for the admin API ↔ UI (types are erased at build) ──────────

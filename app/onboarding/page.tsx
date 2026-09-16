@@ -191,8 +191,18 @@ export default function OnboardingPage() {
         identity_confirmed_at: appliedMatch ? new Date().toISOString() : null,
       });
       logUsage('onboarding_completed');
-      const cash = parseFloat(form.initial_cash);
-      await seedTwin(isNaN(cash) ? 0 : cash, form.currency).catch(() => {});
+      // The starting cash is asked for here and nowhere else, so a failure
+      // cannot be swallowed: it used to vanish and every balance after it was
+      // wrong by that amount. The profile save above is safe to repeat, so the
+      // owner can press the button again. A blank field sets the currency and
+      // leaves any cash already recorded alone instead of zeroing it.
+      const raw = form.initial_cash.trim();
+      const cash = raw === '' ? null : parseFloat(raw);
+      try {
+        await seedTwin(cash !== null && !isNaN(cash) ? cash : null, form.currency);
+      } catch (e) {
+        throw new Error(`Your details are saved, but your starting cash was not: ${(e as Error).message || 'the server did not answer'}. Press the button again to retry.`);
+      }
       // 'auto': this seeds the starting symbol but keeps uploads authoritative —
       // only the universal selector (header) pins a manual override.
       setCurrency(sym, 'auto');

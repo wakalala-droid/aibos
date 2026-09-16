@@ -14,7 +14,7 @@
 import { NextResponse } from 'next/server';
 import { createServerComponentClient } from '@/lib/supabase-server';
 import { createServiceClient } from '@/lib/supabase-admin';
-import { isAdminEmail } from '@/lib/admin';
+import { isAdminUser } from '@/lib/admin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -77,9 +77,10 @@ export async function GET() {
     .eq('id', user.id)
     .maybeSingle();
 
-  // The allowlist only: profiles.role is a value a user could write for
-  // themselves until migration 0033 (see lib/admin-server.ts).
-  const isAdmin = isAdminEmail(user.email);
+  // The allowlist, proven by Google (lib/admin.ts isAdminUser). Never
+  // profiles.role, a value a user could write for themselves until migration
+  // 0033 (see lib/admin-server.ts).
+  const isAdmin = isAdminUser(user);
 
   return NextResponse.json({ profile, isAdmin });
 }

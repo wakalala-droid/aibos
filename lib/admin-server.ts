@@ -10,7 +10,7 @@
 
 import { NextResponse } from 'next/server';
 import { createServerComponentClient } from '@/lib/supabase-server';
-import { isAdminEmail } from '@/lib/admin';
+import { isAdminUser } from '@/lib/admin';
 import type { User } from '@supabase/supabase-js';
 
 export interface CallerAdmin {
@@ -36,7 +36,7 @@ export async function resolveCallerAdmin(): Promise<CallerAdmin> {
   } = await supabase.auth.getUser();
 
   if (!user) return { user: null, isAdmin: false };
-  return { user, isAdmin: isAdminEmail(user.email) };
+  return { user, isAdmin: isAdminUser(user) };
 }
 
 /**
