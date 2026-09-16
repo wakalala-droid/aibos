@@ -44,9 +44,13 @@ export async function fetchBriefExtras(): Promise<BriefExtras> {
       return t ? `${it.title} — ${t}` : it.title;
     });
 
-  const nowIso = new Date().toISOString();
+  // Overdue once the due DATE has passed on the owner's calendar, the same
+  // rule as the Invoices page. A timestamp compare called an invoice due today
+  // overdue from the middle of the day.
+  const now = new Date();
+  const localDay = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const overdue = (inv.status === 'fulfilled' ? inv.value : [])
-    .filter((i) => i.due_at && i.due_at < nowIso);
+    .filter((i) => i.due_at && i.due_at.slice(0, 10) < localDay);
 
   return {
     products: p.status === 'fulfilled' ? p.value : [],
