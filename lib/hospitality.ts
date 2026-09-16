@@ -417,6 +417,8 @@ export async function listBookings(params: {
   /** Matches a guest name, a reference, a phone number or a company. */
   search?: string;
   order?: 'check_in' | 'check_out' | 'created_at';
+  /** Newest first. The server defaults it on for created_at only. */
+  newestFirst?: boolean;
   limit?: number;
 } = {}): Promise<Booking[]> {
   const q = new URLSearchParams();
@@ -427,6 +429,7 @@ export async function listBookings(params: {
   if (params.search) q.set('search', params.search);
   if (params.order) q.set('order', params.order);
   if (params.limit) q.set('limit', String(params.limit));
+  if (params.newestFirst !== undefined) q.set('newest_first', String(params.newestFirst));
   if (params.from) q.set('from', params.from);
   if (params.to) q.set('to', params.to);
   const qs = q.toString();

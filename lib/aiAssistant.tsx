@@ -583,7 +583,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       setLoading(true);
       try {
         const cleaned = text.replace(/^(record|log)\b[:,]?\s*/i, '');
-        const proposal = await classifyActivity(cleaned);
+        const proposal = await classifyActivity(cleaned, (profileRef.current?.currency as string | null) || 'ZMW');
         if (!proposal?.event_type) {
           pushAssistant("I couldn't work out what kind of activity that is. Try phrasing it like “sold 3 bags of mealie meal for K450” — or use the **Record** page, which previews everything first.");
           return;

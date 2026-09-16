@@ -154,6 +154,10 @@ export default function BookingsPage() {
         source: source || undefined,
         search: search || undefined,
         order,
+        // Upcoming stays read soonest first. Anything already over, and the
+        // order they came in, read newest first, or a property with history
+        // only ever sees its oldest 200.
+        newestFirst: order === 'created_at' || !['pending', 'live', 'confirmed'].includes(view),
         // The server matches the search term AFTER the limit is applied, so a
         // capped read plus a search would silently skip matches further down.
         limit: search ? undefined : 200,
