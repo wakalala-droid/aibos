@@ -55,16 +55,22 @@ export async function buildNotifications(twin: Twin | null, sym: string): Promis
 
   // ── Cash runway (from the twin's own monthly burn) ──────────────────────────
   if (twin) {
+    // Runway is how long cash lasts at the rate it is SHRINKING: costs minus
+    // what comes in, over the last three months. Dividing cash by costs alone
+    // ignored every sale, so a profitable shop holding a normal float got a red
+    // "Cash runway is short" alarm it could do nothing about.
     const cash = Number(twin.cash) || 0;
-    const months = Math.max((twin.monthly?.length ?? 0), 1);
-    const burn = (Number(twin.total_costs) || 0) / months;
+    const recent = (twin.monthly ?? []).slice(-3);
+    const burn = recent.length
+      ? recent.reduce((t, m) => t + (Number(m.costs) || 0) - (Number(m.revenue) || 0), 0) / recent.length
+      : 0;
     if (burn > 0) {
       const runway = Math.max(cash, 0) / burn;
       if (runway < 1.5) {
         out.push({
           id: 'runway', severity: 'critical',
           title: 'Cash runway is short',
-          description: `About ${runway.toFixed(1)} months of cash left at your current burn.`,
+          description: `About ${runway.toFixed(1)} months of cash left at what you are spending beyond your income.`,
           href: '/dashboard/cash',
         });
       } else if (runway < 3) {
