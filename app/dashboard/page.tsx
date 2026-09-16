@@ -68,10 +68,12 @@ function OverviewPage() {
   const profSpark = safeMonthly.slice(-6).map(m =>
     (Number(m?.Revenue) || 0) - (Number(m?.Costs) || 0)
   );
+  // A month with no revenue has no margin. Dividing by a stand-in of 1 drew a
+  // month of K500 costs as a -49,900% plunge that flattened the whole line.
   const marginSpark = safeMonthly.slice(-6).map(m => {
-    const r = Number(m?.Revenue) || 1;
+    const r = Number(m?.Revenue) || 0;
     const c = Number(m?.Costs)   || 0;
-    return Math.round(((r - c) / r) * 100);
+    return r > 0 ? Math.round(((r - c) / r) * 100) : 0;
   });
   const costSpark = safeMonthly.slice(-6).map(m => Number(m?.Costs) || 0);
 
@@ -623,7 +625,7 @@ function OverviewPage() {
             feature="scheduled_brief"
             title="AI Brief"
             colour="var(--cyan)"
-            headline="Get the one number that matters — daily or weekly."
+            headline="Get the one number that matters, every morning."
             detail="A scheduled brief lands in your inbox leading with what changed: “Your cash runway dropped to 12 days.” Every line links straight back into the product."
           >
             <BriefSubscribe />
