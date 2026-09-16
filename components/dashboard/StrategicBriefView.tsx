@@ -94,6 +94,21 @@ export default function StrategicBriefView({
 
   const briefLines = (unifiedBrief || '').split('\n').filter((l) => l.trim() && /^\d+\./.test(l.trim()));
   const healthColour = scoreColor(health.score);
+
+  // Real month-on-month change, or nothing. These two cards carried the fixed
+  // numbers +8.4% and +12.1% from a demo, so every customer was shown growth,
+  // including one with a single month of records and nothing to compare.
+  const last = monthly[monthly.length - 1];
+  const prev = monthly[monthly.length - 2];
+  const change = (cur: number, before: number): number | undefined =>
+    before !== 0 && Number.isFinite(cur) && Number.isFinite(before)
+      ? ((cur - before) / Math.abs(before)) * 100
+      : undefined;
+  const revenueGrowth = last && prev ? change(Number(last.Revenue) || 0, Number(prev.Revenue) || 0) : undefined;
+  const profitGrowth = last && prev
+    ? change((Number(last.Revenue) || 0) - (Number(last.Costs) || 0), (Number(prev.Revenue) || 0) - (Number(prev.Costs) || 0))
+    : undefined;
+  const periodLabel = monthly.length === 1 ? '1 month recorded' : `${monthly.length} months`;
   const months = Math.max(monthly.length, 1);
 
   // ── Best and worst month, as facts rather than decoration ────────────────
@@ -130,10 +145,10 @@ export default function StrategicBriefView({
         <KPICard label="HEALTH SCORE" value={String(health.score)} sub={health.label}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke={healthColour} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           iconBg={`color-mix(in srgb, ${healthColour} 15%, transparent)`} sparkColor={healthColour} delay={0} />
-        <KPICard label="TOTAL REVENUE" value={fmt(kpi.totalRevenue, true, sym)} sub="FY · 12-month rolling" growth={8.4}
+        <KPICard label="TOTAL REVENUE" value={fmt(kpi.totalRevenue, true, sym)} sub={monthly.length ? `${periodLabel} · vs month before` : 'no months yet'} growth={revenueGrowth}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><polyline points="16 7 22 7 22 13" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkData={monthly.slice(-6).map((m) => Number(m.Revenue) || 0)} sparkColor="var(--good)" delay={0.06} />
-        <KPICard label="NET PROFIT" value={fmt(kpi.totalProfit, true, sym)} sub={`${kpi.avgMargin.toFixed(1)}% avg margin`} growth={12.1}
+        <KPICard label="NET PROFIT" value={fmt(kpi.totalProfit, true, sym)} sub={`${kpi.avgMargin.toFixed(1)}% avg margin`} growth={profitGrowth}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--cyan)" strokeWidth="1.5" fill="none" /><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H9m0 0h4.5a1.5 1.5 0 010 3H9" stroke="var(--cyan)" strokeWidth="1.4" strokeLinecap="round" /></svg>}
           iconBg="rgba(0,212,255,0.12)" sparkData={monthly.slice(-6).map((m) => (Number(m.Revenue) || 0) - (Number(m.Costs) || 0))} sparkColor="var(--cyan)" delay={0.12} />
         <KPICard label="RECOMMENDATIONS" value={String(recs.length)} sub="strategic action items"
