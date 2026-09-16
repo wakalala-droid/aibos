@@ -840,18 +840,45 @@ export async function excelPreview(file: File, sheet?: string): Promise<ExcelPre
   return data as unknown as ExcelPreview;
 }
 
-/** Map reviewed rows → events and bulk-import (partial import supported). */
-export async function excelCommit(
-  rows: Record<string, unknown>[],
+/** The same file was already imported into these books (HTTP 409). */
+export class AlreadyImportedError extends Error {
+  importedAt: string | null;
+  savedCount: number | null;
+  constructor(message: string, importedAt: string | null, savedCount: number | null) {
+    super(message);
+    this.name = 'AlreadyImportedError';
+    this.importedAt = importedAt;
+    this.savedCount = savedCount;
+  }
+}
+
+/** Import EVERY row of a spreadsheet, read on the server from the file itself.
+ *  excelCommit below sends back the preview's rows, which stop at 2,000.
+ *  `force` imports a file these books already have. */
+export async function excelCommitFile(
+  file: File,
   mapping: Record<string, string>,
   defaults: { event_type?: EventType; currency?: string },
-): Promise<BulkResult> {
-  const data = await spineFetch('/events/excel/commit', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ rows, mapping, defaults }),
-  });
-  return data as unknown as BulkResult;
+  opts: { sheet?: string | null; force?: boolean } = {},
+): Promise<BulkResult & { row_count: number }> {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('mapping', JSON.stringify(mapping));
+  form.append('defaults', JSON.stringify(defaults));
+  if (opts.sheet) form.append('sheet', opts.sheet);
+  if (opts.force) form.append('force', 'true');
+  const res = await fetch(`${PROXY}/events/excel/commit-file`, { method: 'POST', body: form, headers: await authHeaders() });
+  const raw = await res.text();
+  let data: Record<string, unknown> = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch { /* non-JSON */ }
+  if (res.status === 409) {
+    const d = (data.detail ?? {}) as { message?: string; imported_at?: string; saved_count?: number };
+    throw new AlreadyImportedError(d.message ?? 'This file has already been imported.', d.imported_at ?? null, d.saved_count ?? null);
+  }
+  if (!res.ok) {
+    throw new Error(typeof data.detail === 'string' ? data.detail : `Import failed (${res.status})`);
+  }
+  return data as unknown as BulkResult & { row_count: number };
 }
 
 /** Receipt photo/upload → vision-OCR → a proposed Purchase (reviewed before saving). */

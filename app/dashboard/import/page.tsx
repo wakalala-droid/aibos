@@ -9,9 +9,10 @@
 import { useCallback, useRef, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
 import { useStore } from '@/lib/store';
+import { useProfile } from '@/lib/profile';
 import PageHeader from '@/components/ui/PageHeader';
 import {
-  excelPreview, excelCommit,
+  excelPreview, excelCommitFile, AlreadyImportedError,
   type ExcelPreview, type BulkResult, type EventType,
 } from '@/lib/api';
 
@@ -34,6 +35,16 @@ const TEMPLATE_KEY = 'aibos-excel-mapping-v1';
 // the chosen Amount column: a "Revenue" column logs Sales, "Expenses" logs costs.
 const INCOME_WORDS = ['revenue', 'sales', 'income', 'turnover', 'takings', 'receipt'];
 const EXPENSE_WORDS = ['expense', 'cost', 'spend', 'outflow', 'purchase', 'payment'];
+/** The amount the server will read from a cell (ingestion.py _coerce_amount):
+ *  a number as it is, text by its first number, so "K 1,500.00" counts. */
+function cellAmount(v: unknown): number | null {
+  if (typeof v === 'number') return Number.isFinite(v) ? Math.abs(v) : null;
+  const m = String(v ?? '').match(/-?\d[\d,]*\.?\d*/);
+  if (!m) return null;
+  const n = parseFloat(m[0].replace(/,/g, ''));
+  return Number.isFinite(n) ? Math.abs(n) : null;
+}
+
 function inferTypeFromColumn(col?: string): EventType | null {
   if (!col) return null;
   const c = col.toLowerCase();
@@ -49,9 +60,13 @@ const sel: React.CSSProperties = {
 };
 
 export default function ImportPage() {
-  const sym = useStore(s => s.currencySymbol) || 'K';
   const refreshTwin = useStore(s => s.refreshTwin);
+  const { profile } = useProfile();
+  // Rows carry the business's own currency, not always Kwacha.
+  const currency = (profile?.currency as string | null) || 'ZMW';
   const fileRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [repeat, setRepeat] = useState<AlreadyImportedError | null>(null);
 
   const [phase, setPhase] = useState<'idle' | 'parsing' | 'map' | 'committing' | 'done'>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -62,10 +77,10 @@ export default function ImportPage() {
   const [typeTouched, setTypeTouched] = useState(false);
   const [result, setResult] = useState<BulkResult | null>(null);
 
-  const onPick = useCallback(async (file: File) => {
-    setError(null); setResult(null); setPhase('parsing');
+  const onPick = useCallback(async (picked: File, sheet?: string) => {
+    setError(null); setResult(null); setRepeat(null); setPhase('parsing'); setFile(picked);
     try {
-      const pv = await excelPreview(file);
+      const pv = await excelPreview(picked, sheet);
       setPreview(pv);
       // Prefer a saved template if its columns still fit; else the AI suggestion.
       let map = pv.suggestion;
@@ -85,32 +100,30 @@ export default function ImportPage() {
     }
   }, []);
 
-  const validCount = preview
-    ? preview.rows.filter(r => {
-        const a = mapping.amount ? r[mapping.amount] : null;
-        const n = typeof a === 'number' ? a : parseFloat(String(a ?? ''));
-        return !mapping.amount || (!isNaN(n) && n > 0);
-      }).length
-    : 0;
+  const sampleRows = preview?.rows.slice(0, 500) ?? [];
+  const validCount = sampleRows.filter(r => !mapping.amount || cellAmount(r[mapping.amount]) !== null).length;
 
-  async function commit() {
-    if (!preview) return;
-    setError(null); setPhase('committing');
+  async function commit(force = false) {
+    if (!preview || !file) return;
+    setError(null); setRepeat(null); setPhase('committing');
     try {
-      const res = await excelCommit(preview.rows, mapping, { event_type: defaultType, currency: 'ZMW' });
+      // The file itself goes back, so every row is imported, not only the
+      // first 2,000 the preview carries.
+      const res = await excelCommitFile(file, mapping, { event_type: defaultType, currency }, { sheet: preview.active_sheet, force });
       setResult(res);
       try { localStorage.setItem(TEMPLATE_KEY, JSON.stringify(mapping)); } catch { /* ignore */ }
       refreshTwin();
       setPhase('done');
     } catch (e) {
-      setError((e as Error).message || 'Import failed.');
+      if (e instanceof AlreadyImportedError) setRepeat(e);
+      else setError((e as Error).message || 'Import failed.');
       setPhase('map');
     }
   }
 
   function reset() {
     setPreview(null); setResult(null); setMapping({}); setPhase('idle'); setError(null);
-    setTypeTouched(false);
+    setTypeTouched(false); setFile(null); setRepeat(null);
     if (fileRef.current) fileRef.current.value = '';
   }
 
@@ -141,7 +154,18 @@ export default function ImportPage() {
       {/* Map + preview */}
       {phase !== 'done' && preview && phase !== 'idle' && phase !== 'parsing' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <SectionCard title="Map your columns" subtitle={`${preview.row_count} rows · sheet "${preview.active_sheet}"`}>
+          <SectionCard title="Map your columns" subtitle={`${preview.row_count.toLocaleString()} rows${preview.active_sheet ? ` · sheet "${preview.active_sheet}"` : ''}`}>
+            {preview.sheets.length > 1 && file && (
+              <div style={{ marginBottom: 16 }}>
+                <label htmlFor="import-sheet" style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
+                  Sheet
+                </label>
+                {/* A workbook often opens on a cover or summary page. */}
+                <select id="import-sheet" value={preview.active_sheet} onChange={e => void onPick(file, e.target.value)} style={{ ...sel, maxWidth: 320 }}>
+                  {preview.sheets.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+            )}
             {preview.summary_like && (
               <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--amber-dim, rgba(251,191,36,0.12))', border: '1px solid var(--amber)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', lineHeight: 1.5 }}>
                 This looks like a monthly <strong>summary</strong> — it has both income and expense columns.
@@ -185,7 +209,7 @@ export default function ImportPage() {
             </div>
           </SectionCard>
 
-          <SectionCard title="Preview" subtitle={`${validCount} of ${preview.rows.length} sample rows look valid`}>
+          <SectionCard title="Preview" subtitle={`${validCount} of the first ${sampleRows.length} rows have an amount`}>
             <div style={{ overflowX: 'auto' }}>
               <table className="data-table">
                 <thead>
@@ -202,10 +226,28 @@ export default function ImportPage() {
                 </tbody>
               </table>
             </div>
+            {repeat && (
+              <div role="alert" style={{ marginTop: 16, padding: '12px 14px', borderRadius: 10, border: '1px solid var(--amber)', background: 'var(--amber-dim, rgba(251,191,36,0.12))', color: 'var(--text-1)', fontSize: 'var(--fs-body)', lineHeight: 1.5 }}>
+                <strong>You have imported this file before.</strong>{' '}
+                {repeat.importedAt ? `On ${new Date(repeat.importedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}` : 'Earlier'}
+                {repeat.savedCount ? `, ${repeat.savedCount.toLocaleString()} rows were recorded` : ''}.
+                {' '}Importing it again records every row a second time and doubles those figures.
+                <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                  <button type="button" onClick={reset} className="touch-target"
+                    style={{ padding: '8px 16px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#04121a', fontWeight: 700, cursor: 'pointer', fontSize: 'var(--fs-body)' }}>
+                    Don&apos;t import it again
+                  </button>
+                  <button type="button" onClick={() => void commit(true)} className="touch-target"
+                    style={{ padding: '8px 16px', minHeight: 40, borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-body)' }}>
+                    Import it again anyway
+                  </button>
+                </div>
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
-              <button type="button" onClick={commit} disabled={phase === 'committing'} className="touch-target"
-                style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: phase === 'committing' ? 0.7 : 1 }}>
-                {phase === 'committing' ? 'Importing…' : `Import ${preview.row_count} rows`}
+              <button type="button" onClick={() => void commit()} disabled={phase === 'committing' || !!repeat} className="touch-target"
+                style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: phase === 'committing' || repeat ? 0.6 : 1 }}>
+                {phase === 'committing' ? 'Importing…' : `Import ${preview.row_count.toLocaleString()} rows`}
               </button>
               <button type="button" onClick={reset} className="touch-target"
                 style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer' }}>
@@ -237,8 +279,10 @@ export default function ImportPage() {
                 Why were {result.error_count} rows skipped?
               </summary>
               <ul style={{ margin: '8px 0 0', paddingLeft: 18, color: 'var(--text-3)', fontSize: 'var(--fs-data)' }}>
-                {result.errors.slice(0, 12).map((e, i) => (
-                  <li key={i}>Row {(e.row ?? e.index ?? 0) + 1}: {e.error}</li>
+                {result.errors.slice(0, 50).map((e, i) => (
+                  // +2: the sheet counts from 1 and its first row is the headings,
+                  // so this is the row number the owner sees in Excel.
+                  <li key={i}>{e.row != null ? `Row ${e.row + 2}` : `Entry ${(e.index ?? 0) + 1}`}: {e.error}</li>
                 ))}
               </ul>
             </details>
