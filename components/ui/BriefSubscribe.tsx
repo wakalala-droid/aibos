@@ -1,117 +1,117 @@
 'use client';
 
-// BriefSubscribe — schedules the daily/weekly AI brief to email (the retention
-// engine, per conversion_psychology.md HABIT FORMATION RULE). Uses the existing
-// Groq-backed pipeline via subscribeEmail(). WhatsApp delivery is a fast-follow.
+// BriefSubscribe — the dashboard's switch for the Morning Brief by email.
+//
+// This card used to take any address and a daily or weekly choice, write them
+// to the usage log and say "You're subscribed". Nothing reads that log. The
+// brief is sent by aibos-api dispatch_briefs, daily at 06:30, to accounts with
+// profiles.brief_email_enabled on a plan that includes it, at the business
+// contact email (else the account email). So every owner who subscribed here
+// was told a brief was coming that never could.
+//
+// Now it flips that same setting, says exactly where the brief goes, and is
+// honest when the plan or the server's email key is what stands in the way.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
-import { subscribeEmail } from '@/lib/api';
+import { useProfile } from '@/lib/profile';
+import { useStore } from '@/lib/store';
+import { briefDeliveryConfig } from '@/lib/api';
+import { canAccess, requiredTier, TIERS, type Tier } from '@/lib/tiers';
 
-type Frequency = 'daily' | 'weekly';
-type Status = 'idle' | 'saving' | 'done' | 'error';
+type Status = 'idle' | 'saving' | 'error';
 
 export default function BriefSubscribe() {
-  const [email, setEmail] = useState('');
-  const [frequency, setFrequency] = useState<Frequency>('weekly');
+  const { profile, loading, refresh, ownPlan } = useProfile();
+  const tier = useStore((s) => s.tier) as Tier;
   const [status, setStatus] = useState<Status>('idle');
-  const [error, setError] = useState('');
+  const [emailLive, setEmailLive] = useState<boolean | null>(null);
 
-  const valid = /\S+@\S+\.\S+/.test(email);
+  useEffect(() => {
+    let alive = true;
+    briefDeliveryConfig().then((c) => { if (alive) setEmailLive(c.email); });
+    return () => { alive = false; };
+  }, []);
 
-  const submit = async () => {
-    if (!valid) return;
+  if (loading || !profile) return null;
+
+  const allowed = canAccess(tier, 'scheduled_brief');
+  const on = Boolean(profile.brief_email_enabled);
+  const to = (profile.contact_email || profile.email || '').trim();
+  const needed = TIERS[requiredTier('scheduled_brief')].name;
+
+  const setOn = async (next: boolean) => {
     setStatus('saving');
-    setError('');
     try {
-      const res = await subscribeEmail({ user_id: 'default-user', email, frequency });
-      if (!res.ok) throw new Error('Could not save your subscription.');
-      setStatus('done');
-    } catch (e) {
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brief_email_enabled: next }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      await refresh();
+      setStatus('idle');
+    } catch {
       setStatus('error');
-      setError((e as Error).message || 'Something went wrong.');
     }
   };
 
+  const body: React.CSSProperties = { fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: 0, lineHeight: 1.55 };
+  const button: React.CSSProperties = {
+    padding: '11px 16px', borderRadius: 10, border: 'none', fontSize: 'var(--fs-body)', fontWeight: 700,
+    color: '#fff', background: 'var(--cyan)', cursor: status === 'saving' ? 'default' : 'pointer',
+    opacity: status === 'saving' ? 0.6 : 1, textDecoration: 'none', textAlign: 'center',
+  };
+
   return (
-    <SectionCard title="AI Brief" subtitle="Your numbers, summarised — straight to your inbox">
-      {status === 'done' ? (
-        <div role="status" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }}>
-            <path d="M20 6L9 17l-5-5" stroke="var(--good)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: 0, lineHeight: 1.5 }}>
-            You’re subscribed. Your {frequency} brief will land in {email}, leading with the one number that matters that day.
-          </p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div>
-            <label htmlFor="brief-email" style={{ display: 'block', fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 }}>
-              Email <span style={{ color: 'var(--text-4)', fontWeight: 400 }}>(required)</span>
-            </label>
-            <input
-              id="brief-email"
-              type="email"
-              inputMode="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@business.co.zm"
-              style={{
-                width: '100%', padding: '10px 12px', borderRadius: 10,
-                border: '1px solid var(--border-md)', background: 'var(--bg-input)',
-                color: 'var(--text-1)', fontSize: 'var(--fs-body)',
-                outline: 'none',
-              }}
-            />
-          </div>
-
-          <div role="group" aria-label="Delivery frequency" style={{ display: 'flex', gap: 8 }}>
-            {(['daily', 'weekly'] as Frequency[]).map((f) => (
-              <button
-                key={f}
-                type="button"
-                aria-pressed={frequency === f}
-                onClick={() => setFrequency(f)}
-                style={{
-                  flex: 1, padding: '8px 12px', borderRadius: 10, cursor: 'pointer',
-                  fontSize: 'var(--fs-data)', fontWeight: 600,
-                  textTransform: 'capitalize',
-                  border: `1px solid ${frequency === f ? 'var(--cyan)' : 'var(--border-md)'}`,
-                  background: frequency === f ? 'color-mix(in srgb, var(--cyan) 10%, transparent)' : 'var(--bg-card)',
-                  color: frequency === f ? 'var(--cyan)' : 'var(--text-2)',
-                }}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-
-          {status === 'error' && (
-            <p role="alert" style={{ fontSize: 'var(--fs-data)', color: 'var(--crit)', margin: 0 }}>
-              {error}
+    <SectionCard title="AI Brief" subtitle="Your numbers, summarised, in your inbox every morning">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {!allowed ? (
+          <>
+            <p style={body}>
+              Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today.
+              {ownPlan ? ` It comes with ${needed}.` : ' It comes with a paid plan, which the business owner manages.'}
             </p>
-          )}
-
-          <button
-            type="button"
-            onClick={submit}
-            disabled={!valid || status === 'saving'}
-            style={{
-              padding: '11px 16px', borderRadius: 10, border: 'none',
-              fontSize: 'var(--fs-body)', fontWeight: 700,
-              color: '#fff', background: 'var(--cyan)',
-              cursor: !valid || status === 'saving' ? 'not-allowed' : 'pointer',
-              opacity: !valid || status === 'saving' ? 0.55 : 1,
-            }}
-          >
-            {status === 'saving' ? 'Saving…' : 'Send me the brief'}
-          </button>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
-            WhatsApp delivery coming soon. Unsubscribe anytime from any brief.
+            {ownPlan && <Link href={`/checkout?plan=${requiredTier('scheduled_brief')}`} style={button}>See {needed}</Link>}
+          </>
+        ) : on ? (
+          <>
+            <p role="status" style={body}>
+              <strong style={{ color: 'var(--text-1)' }}>On.</strong> Your brief goes to {to || 'your account email'} every morning at 06:30.
+            </p>
+            {emailLive === false && (
+              <p style={{ ...body, color: 'var(--warn)' }}>
+                Email sending is not switched on at our end yet, so nothing is going out. Your setting is kept for when it is.
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+              <button type="button" onClick={() => void setOn(false)} disabled={status === 'saving'}
+                style={{ ...button, background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)' }}>
+                {status === 'saving' ? 'Saving…' : 'Turn it off'}
+              </button>
+              <Link href="/dashboard/profile" style={{ fontSize: 'var(--fs-data)', color: 'var(--cyan)' }}>
+                Change where it goes
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <p style={body}>
+              Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today,
+              sent to {to || 'your account email'}.
+            </p>
+            <button type="button" onClick={() => void setOn(true)} disabled={status === 'saving'} style={button}>
+              {status === 'saving' ? 'Saving…' : 'Email me the brief'}
+            </button>
+          </>
+        )}
+        {status === 'error' && (
+          <p role="alert" style={{ fontSize: 'var(--fs-data)', color: 'var(--crit)', margin: 0 }}>
+            That did not save. Please try again.
           </p>
-        </div>
-      )}
+        )}
+      </div>
     </SectionCard>
   );
 }
