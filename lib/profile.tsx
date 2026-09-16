@@ -154,7 +154,15 @@ function normaliseTier(v: unknown): Tier {
 }
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, initialized } = useAuth();
+  // Keyed on the account, not the user object. The auth library hands over a
+  // fresh copy of the same user on every session event (the initial read, the
+  // subscription's first event, each token refresh), and keying on the object
+  // re-ran the whole load for each one: four more round trips every time.
+  const userId = user?.id ?? null;
+  // Settled once a user is known, or once the session read has finished with
+  // none. Until then "no user" means "not read yet", not "signed out".
+  const authSettled = Boolean(userId) || initialized;
   const setTier = useStore((s) => s.setTier);
 
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -172,7 +180,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const loggedLoginFor = useRef<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!user) {
+    if (!userId) {
+      // Opening /admin straight from the address bar used to land here before
+      // the session had been read: loading ended with isAdmin false and the
+      // admin area sent its own admin back to the dashboard. Stay loading until
+      // auth has actually answered.
+      if (!authSettled) return;
       setProfile(null);
       setIsAdmin(false);
       setLoading(false);
@@ -182,7 +195,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     // Tenant-safety: if the persisted store belonged to a different account
     // (shared browser, or a stale cache from before logout cleared it), wipe it
     // before showing anything so this user never sees another's cabinet/tier.
-    useStore.getState().bindUser(user.id);
+    useStore.getState().bindUser(userId);
 
     // The four reads below used to run one after another, each a round trip
     // through the web proxy to the API: about eight seconds on a live account
@@ -279,16 +292,16 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     } catch { /* non-fatal — default to owner */ }
 
     // One login event per signed-in session.
-    if (loggedLoginFor.current !== user.id) {
-      loggedLoginFor.current = user.id;
+    if (loggedLoginFor.current !== userId) {
+      loggedLoginFor.current = userId;
       logUsage('login');
     }
-  }, [user, setTier]);
+  }, [userId, authSettled, setTier]);
 
   useEffect(() => {
     setLoading(true);
     void load();
-  }, [load, isAuthenticated]);
+  }, [load]);
 
   const role: Role = (profile?.role as Role) ?? 'member';
   const value: ProfileContextValue = {
