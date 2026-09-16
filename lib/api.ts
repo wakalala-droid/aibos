@@ -16,6 +16,32 @@ const PROXY = '/api/proxy';
  *  The API itself would take 15 MB. */
 export const MAX_UPLOAD_BYTES = 4_400_000;
 
+/**
+ * A phone photo made small enough to send and plenty sharp enough to read.
+ *
+ * A modern phone camera writes 3 to 8 MB per shot, over what the web proxy
+ * carries, so scanning a receipt failed on exactly the phones most likely to
+ * be used for it. Longest side 2000px as JPEG keeps a till slip legible at a
+ * few hundred KB. Anything that cannot be decoded here goes as it was.
+ */
+export async function shrinkPhoto(file: File, maxSide = 2000): Promise<File> {
+  if (typeof window === 'undefined' || !file.type.startsWith('image/') || file.size < 900_000) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close?.();
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+  } catch {
+    return file;   // e.g. HEIC where the browser cannot decode it
+  }
+}
+
 /** A plain sentence when a file is too big to send, else null. */
 export function uploadTooLarge(file: File): string | null {
   if (file.size <= MAX_UPLOAD_BYTES) return null;
@@ -898,8 +924,11 @@ export async function excelCommitFile(
 
 /** Receipt photo/upload → vision-OCR → a proposed Purchase (reviewed before saving). */
 export async function ingestReceipt(file: File, currency = 'ZMW'): Promise<EventProposal> {
+  const photo = await shrinkPhoto(file);
+  const tooBig = uploadTooLarge(photo);
+  if (tooBig) throw new Error(tooBig);
   const form = new FormData();
-  form.append('file', file);
+  form.append('file', photo);
   const data = await spineFetch(`/ingest/receipt?currency=${encodeURIComponent(currency)}`, {
     method: 'POST',
     body: form,
