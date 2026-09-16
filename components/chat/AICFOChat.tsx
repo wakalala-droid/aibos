@@ -9,12 +9,15 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAiAssistant } from '@/lib/aiAssistant';
 
+// Questions any business can ask of its own books. These used to assume facts
+// from a demo ("What drove the September cost spike?"), which every real
+// customer without a September spike was invited to ask about anyway.
 const QUICK_PROMPTS = [
-  "What drove the September cost spike?",
-  "What's our cash runway forecast?",
-  "Which months had margin compression?",
-  "What's causing Q3 underperformance?",
   "Summarise our financial health",
+  "How long will our cash last?",
+  "Where did most of our money go this month?",
+  "Which months had the best margin?",
+  "What should I watch this week?",
   "What's the revenue forecast for next quarter?",
 ];
 
@@ -29,7 +32,9 @@ function SendIcon({ size = 16 }: { size?: number }) {
 
 // Strip the lightweight **bold** markers the assistant uses, for this panel's
 // plain-text bubbles.
-const plain = (s: string) => s.replace(/\*\*(.*?)\*\*/g, '$1');
+// Links keep their words: "[upgrade to Pro+](/checkout?plan=proplus)" read as
+// raw brackets here.
+const plain = (s: string) => s.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\[([^\]]+)\]\((?:[^)]+)\)/g, '$1');
 
 export default function AICFOChat() {
   const { messages, loading, sendMessage } = useAiAssistant();
@@ -102,8 +107,8 @@ export default function AICFOChat() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
               <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2, repeat: Infinity }}
                 style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--good)' }} />
-              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--good)' }}>
-                Online · Analysing your data
+              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                Answers from your recorded figures
               </span>
             </div>
           </div>
