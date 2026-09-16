@@ -24,13 +24,22 @@ export default function CashPage() {
   // ── Null-safe: derive values from real data ──────────────────────────────
   const months      = Math.max(monthly.length, 1);
   const monthlyBurn = kpi.totalCosts / months;
+  // Runway is how long cash lasts at the rate it SHRINKS: spending beyond
+  // income over the last three months. Cash over gross spend ignored sales.
+  const recentMonths = monthly.slice(-3);
+  const netBurn = recentMonths.length
+    ? recentMonths.reduce((t, m) => t + (Number(m.Costs) || 0) - (Number(m.Revenue) || 0), 0) / recentMonths.length
+    : 0;
   // Cash position = cumulative operating cash (sum of monthly profit). Engine 1
   // returns this as cashflow.ending_cash; fall back to total profit. No hardcode.
   const currentCash =
     cashflow?.currentCash ??
     cashflow?.ending_cash ??
     (typeof kpi.totalProfit === 'number' ? kpi.totalProfit : 0);
-  const runway      = cashflow?.runway      ?? (monthlyBurn > 0 ? Math.round(currentCash / monthlyBurn) : 0);
+  // With cash not shrinking there is no runway to run out, so no number is
+  // invented for it: the card says so and the bar reads full.
+  const notShrinking = cashflow?.runway == null && netBurn <= 0;
+  const runway      = cashflow?.runway      ?? (netBurn > 0 ? Math.round(Math.max(currentCash, 0) / netBurn) : 18);
   const projections = cashflow?.projections ?? [];
   // Real cumulative-cash trajectory for the sparkline, when available.
   const cashSpark = (cashflow?.monthly ?? [])
@@ -95,7 +104,7 @@ export default function CashPage() {
           drillHref="/dashboard/timeline?type=Expense" drillLabel="See expenses"
         />
         <KPICard
-          label="CASH RUNWAY" value={`${runway}mo`} sub={`vs ${runwayTarget}mo target`}
+          label="CASH RUNWAY" value={notShrinking ? 'Not shrinking' : `${runway}mo`} sub={notShrinking ? 'income covers spending' : `vs ${runwayTarget}mo target`}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6l6 6-6 6" stroke={runwayColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg={`color-mix(in srgb, ${runwayColor} 15%, transparent)`}
           sparkColor={runwayColor} delay={0.12}
