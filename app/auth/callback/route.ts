@@ -101,10 +101,12 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Success → redirect to dashboard (or intended route) ──────────────────
-  const successUrl = new URL(
-    redirectTo.startsWith('/') ? redirectTo : '/dashboard',
-    origin
-  );
+  // Same-site paths only. `startsWith('/')` alone let "//evil.example" through,
+  // which the URL constructor reads as another host: a link to our own login
+  // page could deliver someone to any site the moment they signed in.
+  const safe = redirectTo.startsWith('/') && !redirectTo.startsWith('//') && !redirectTo.startsWith('/\\');
+  const successUrl = new URL(safe ? redirectTo : '/dashboard', origin);
+  if (successUrl.origin !== origin) successUrl.href = new URL('/dashboard', origin).href;
 
   return NextResponse.redirect(successUrl);
 }

@@ -1,11 +1,14 @@
 /**
- * GET /api/cron/briefs — scheduled trigger for Morning Brief delivery.
+ * GET /api/cron/channels — nightly pull of every Booking.com / Airbnb calendar.
  *
- * Called by Vercel Cron (see vercel.json: 04:30 UTC = 06:30 Lusaka daily).
- * Verifies Vercel's Authorization header (Bearer CRON_SECRET — Vercel adds it
- * automatically when the CRON_SECRET env var is set), then forwards to the
- * backend dispatcher with the X-Cron-Secret header the backend requires.
- * Two locks, one key: nobody can trigger a mass send from outside.
+ * The API has had the sync (POST /hospitality/sync-all) since the iCal phase,
+ * and nothing ever called it: /health/setup reported "channel_sync_cron: live"
+ * because CRON_SECRET was set, while no scheduler existed. So a stay booked on
+ * an OTA only reached the AI-BOS calendar when somebody pressed "Sync now", and
+ * the property's own website could offer nights that were already sold.
+ *
+ * Called by Vercel Cron (vercel.json). Same two locks as /api/cron/briefs:
+ * Vercel's Bearer CRON_SECRET here, X-Cron-Secret at the API.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,32 +23,26 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  /*
-    A cron that quietly posts to a dead host every morning is the worst kind of
-    broken: it reports success to the scheduler and nobody hears about it for
-    weeks. Say so instead. The address had the old Railway URL hardcoded as its
-    fallback, which is exactly that failure waiting to happen.
-  */
   const base = apiBase();
   if (!base.ok) {
-    console.error('[cron/briefs] %s', base.reason);
+    console.error('[cron/channels] %s', base.reason);
     return NextResponse.json(
       { error: 'The backend is not configured.', detail: base.reason },
       { status: 503 },
     );
   }
-  const BACKEND = base.url;
 
   try {
-    const res = await fetch(`${BACKEND}/notify/dispatch-briefs`, {
+    const res = await fetch(`${base.url}/hospitality/sync-all`, {
       method: 'POST',
       headers: { 'X-Cron-Secret': secret },
-      // Dispatch iterates every opted-in user — give it room.
       signal: AbortSignal.timeout(55_000),
     });
     const data = await res.json().catch(() => ({}));
+    if (!res.ok) console.error('[cron/channels] sync-all answered %s: %j', res.status, data);
     return NextResponse.json(data, { status: res.status });
   } catch (e) {
+    console.error('[cron/channels] %s', (e as Error).message);
     return NextResponse.json({ error: (e as Error).message }, { status: 502 });
   }
 }

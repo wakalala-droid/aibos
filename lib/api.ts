@@ -139,41 +139,9 @@ export async function uploadFile(
   return res.json();
 }
 
-// ─── Chat ─────────────────────────────────────────────────────────────────────
-
-export async function sendChatMessage(payload: {
-  question:       string;
-  user_id:        string;
-  session_label?: string;
-  pnl?:           PNL;
-  alerts?:        Alert[];
-  persist?:       boolean;
-}): Promise<{ ok: boolean; answer: string }> {
-  const res = await fetch(`${PROXY}/chat`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-    body:    JSON.stringify(payload),
-  });
-  return res.json();
-}
-
-// ─── Excel export ─────────────────────────────────────────────────────────────
-
-export async function downloadExcel(payload: Record<string, unknown>): Promise<void> {
-  const res = await fetch(`${PROXY}/export/excel`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-    body:    JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error('Excel export failed');
-  const blob = await res.blob();
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = `aibos_report_${new Date().toISOString().slice(0, 10)}.xlsx`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+// The chat lives in components/chat (streaming, with a per-question qid) and
+// the exports in downloadFile below. Two helpers that used to sit here posted
+// the wrong shape to /chat and called an /export/excel route that never existed.
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 
@@ -254,6 +222,9 @@ export async function checkPaymentStatus(reference: string): Promise<{ reference
 /** Attach the current Supabase access token so the backend can verify the user. */
 /** localStorage key for the active business id (audit #16). */
 export const ACTIVE_BUSINESS_KEY = 'aibos-active-business-v1';
+/** localStorage key for whose books someone invited elsewhere is working in:
+ *  'self' or the inviting owner's id. Unset = the server's default. */
+export const ACTING_AS_KEY = 'aibos-acting-as-v1';
 
 export async function authHeaders(): Promise<Record<string, string>> {
   const headers: Record<string, string> = {};
@@ -261,6 +232,8 @@ export async function authHeaders(): Promise<Record<string, string>> {
   try {
     const biz = window.localStorage.getItem(ACTIVE_BUSINESS_KEY);
     if (biz) headers['X-Business-Id'] = biz;
+    const actingAs = window.localStorage.getItem(ACTING_AS_KEY);
+    if (actingAs) headers['X-Acting-As'] = actingAs;
   } catch { /* SSR / private mode — no scope header, backend uses the default */ }
   try {
     const { data } = await createClient().auth.getSession();
@@ -307,13 +280,27 @@ export async function forgetMapping(id: string): Promise<void> {
  *  extension follows the response, never the caller's assumption. */
 async function downloadFile(path: string, filename: string): Promise<void> {
   const res = await fetch(`${PROXY}${path}`, { headers: await authHeaders() });
-  if (!res.ok) throw new Error(`Download failed (${res.status})`);
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({})) as { detail?: string };
+    throw new Error(data.detail || `Download failed (${res.status})`);
+  }
   const blob = await res.blob();
-  const name = blob.type === 'text/plain' ? filename.replace(/\.pdf$/, '.txt') : filename;
+  const name = blob.type.startsWith('text/plain') ? filename.replace(/\.pdf$/, '.txt') : filename;
+  saveBlob(blob, name);
+}
+
+/** Hand a file to the browser to save. The link has to be in the document for
+ *  Firefox to follow it, and revoking the URL in the same tick can cancel the
+ *  download in Safari before it starts. */
+function saveBlob(blob: Blob, name: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = name; a.click();
-  URL.revokeObjectURL(url);
+  a.href = url;
+  a.download = name;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 30_000);
 }
 export const exportEventsCsv = () => downloadFile('/export/events.csv', 'aibos_events.csv');
 export const exportPnlCsv = () => downloadFile('/export/pnl.csv', 'aibos_pnl.csv');

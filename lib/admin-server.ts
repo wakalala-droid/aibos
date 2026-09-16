@@ -19,8 +19,15 @@ export interface CallerAdmin {
 }
 
 /**
- * Read the role with the caller's own session client (RLS permits reading your
- * own row), so authorization itself doesn't need the service-role key.
+ * Admin is the ADMIN_EMAILS allowlist, and only that.
+ *
+ * `profiles.role = 'admin'` used to count too. Row-level security lets a
+ * signed-in user insert their own profiles row, the guard trigger only pinned
+ * role on UPDATE, and email sign-up is open, so anyone could create an account
+ * and insert themselves as an admin. Migration 0033 pins inserts; until it has
+ * run, and as defence in depth after, a value a user can write is not a key
+ * to the admin panel. The allowlist lives in the server environment, which no
+ * user can touch.
  */
 export async function resolveCallerAdmin(): Promise<CallerAdmin> {
   const supabase = await createServerComponentClient();
@@ -29,15 +36,7 @@ export async function resolveCallerAdmin(): Promise<CallerAdmin> {
   } = await supabase.auth.getUser();
 
   if (!user) return { user: null, isAdmin: false };
-  if (isAdminEmail(user.email)) return { user, isAdmin: true };
-
-  const { data } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  return { user, isAdmin: (data?.role as string | undefined) === 'admin' };
+  return { user, isAdmin: isAdminEmail(user.email) };
 }
 
 /**

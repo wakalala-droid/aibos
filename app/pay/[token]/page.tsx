@@ -94,28 +94,39 @@ export default function PayInvoicePage() {
     `${sym}${n.toLocaleString('en-ZM', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const poll = useCallback((reference: string, attempt: number) => {
+    // After the first ~3 minutes keep checking, just less often. Stopping left
+    // the page frozen on "Waiting for your approval…" with every control
+    // disabled, even when the money went through a minute later.
+    const delay = attempt < POLL_LIMIT ? POLL_MS : POLL_MS * 5;
     timer.current = setTimeout(async () => {
       try {
         const status = await checkPublicPaymentStatus(token, reference);
-        if (status === 'successful') { setPhase('paid'); return; }
+        if (status === 'successful') { setNotice(null); setPhase('paid'); return; }
         if (status === 'failed') {
           setPhase('failed');
           setError('The payment was not completed. You can try again.');
           return;
         }
-        if (attempt >= POLL_LIMIT) {
+        if (attempt === POLL_LIMIT) {
           // Deliberately NOT 'failed': the collection may still complete. Saying
           // "it failed" when the money later leaves their wallet is the worst
           // possible outcome for trust.
-          setNotice('Still waiting for confirmation. If you approved the prompt, the payment may still go through — check your phone.');
-          return;
+          setNotice('Still waiting for confirmation. If you approved the prompt, the payment may still go through. Keep this page open and it will update by itself.');
         }
         poll(reference, attempt + 1);
       } catch (e) {
-        setPhase('failed');
-        setError((e as Error).message);
+        // One dropped check on mobile data is not a failed payment. Only a
+        // definite answer about the payment itself ends the wait: an unknown
+        // reference or a refused link.
+        const status = e instanceof PublicApiError ? e.status : 0;
+        if (status === 404 || status === 403 || status === 400) {
+          setPhase('failed');
+          setError((e as Error).message);
+          return;
+        }
+        poll(reference, attempt + 1);
       }
-    }, POLL_MS);
+    }, delay);
   }, [token]);
 
   async function pay() {

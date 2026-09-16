@@ -19,6 +19,17 @@ import { apiBase } from "@/lib/api-base";
 // request bodies (file uploads) are handled reliably.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// A chat answer, a large Excel import or a first request to a server waking up
+// can take well over the platform's default function limit, and a request cut
+// off here reaches the owner as a bare "Proxy error".
+export const maxDuration = 60;
+
+// Response types relayed as raw bytes. Reading them as text decoded binary as
+// UTF-8 and replaced every invalid byte, so a payslip PDF downloaded through
+// here was corrupt and would not open.
+function isTextual(ct: string): boolean {
+  return /^(application\/(json|problem\+json|xml|x-www-form-urlencoded)|text\/)/i.test(ct);
+}
 
 async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
   /*
@@ -52,6 +63,16 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
   // backend resolves which venture's books this request touches.
   const biz = req.headers.get("x-business-id");
   if (biz) headers["x-business-id"] = biz;
+  // Which set of books a person invited into another business is working in.
+  const actingAs = req.headers.get("x-acting-as");
+  if (actingAs) headers["x-acting-as"] = actingAs;
+
+  // The visitor's own address. Without it the API saw every request arrive
+  // from this server, so the per-address limits on the public payment page
+  // were one limit shared by every customer paying at once. The platform sets
+  // x-real-ip itself and does not let a client choose it.
+  const clientIp = req.headers.get("x-real-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  if (clientIp) headers["x-forwarded-for"] = clientIp;
 
   const hasBody = method !== "GET" && method !== "DELETE" && req.body != null;
   const isMultipart = ct.includes("multipart/form-data");
@@ -97,6 +118,17 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
           connection: "keep-alive",
         },
       });
+    }
+
+    // Headers a download or a throttled request needs on the way back.
+    const passthrough: Record<string, string> = { "content-type": resCt };
+    for (const h of ["content-disposition", "retry-after"]) {
+      const v = res.headers.get(h);
+      if (v) passthrough[h] = v;
+    }
+
+    if (res.ok && !isTextual(resCt)) {
+      return new NextResponse(await res.arrayBuffer(), { status: res.status, headers: passthrough });
     }
 
     const text = await res.text();
@@ -151,7 +183,7 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
     // these responses through a victim's browser — remove it entirely.
     return new NextResponse(text, {
       status: res.status,
-      headers: { "content-type": resCt },
+      headers: passthrough,
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
