@@ -10,6 +10,19 @@ import type { PaidTier } from '@/lib/tiers';
 
 const PROXY = '/api/proxy';
 
+/** Largest file the web proxy can carry. Vercel refuses a request body over
+ *  4.5 MB before our code runs, with a bare "Request Entity Too Large", so a
+ *  bigger spreadsheet failed with a message that gave the owner nothing to do.
+ *  The API itself would take 15 MB. */
+export const MAX_UPLOAD_BYTES = 4_400_000;
+
+/** A plain sentence when a file is too big to send, else null. */
+export function uploadTooLarge(file: File): string | null {
+  if (file.size <= MAX_UPLOAD_BYTES) return null;
+  const mb = (file.size / 1_000_000).toFixed(1);
+  return `This file is ${mb} MB and the most we can take is 4 MB. Save just the sheet you need as a new file (CSV is smallest), then upload that.`;
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface UploadResult {
@@ -833,6 +846,8 @@ export interface BulkResult {
 
 /** Parse a spreadsheet and get columns + sample rows + a suggested mapping. */
 export async function excelPreview(file: File, sheet?: string): Promise<ExcelPreview> {
+  const tooBig = uploadTooLarge(file);
+  if (tooBig) throw new Error(tooBig);
   const form = new FormData();
   form.append('file', file);
   const q = sheet ? `?sheet=${encodeURIComponent(sheet)}` : '';

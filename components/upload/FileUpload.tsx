@@ -7,7 +7,7 @@ import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFinancialStore } from "@/lib/store";
 import { logUsage, type UsageEngine } from "@/lib/usage";
-import { authHeaders } from "@/lib/api";
+import { authHeaders, uploadTooLarge } from "@/lib/api";
 import CurrencySelector from "@/components/ui/CurrencySelector";
 
 const ACCEPTED = ".csv,.xlsx,.xlsm,.xls";
@@ -28,6 +28,11 @@ export default function FileUpload() {
 
   const doUpload = useCallback(
     async (file: File) => {
+      const tooBig = uploadTooLarge(file);
+      if (tooBig) {
+        store.setUploadError(tooBig);
+        return;
+      }
       store.setUploading(true);
       store.setUploadError(null);
 
