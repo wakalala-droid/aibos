@@ -482,7 +482,31 @@ export interface Twin {
   event_count: number;
 }
 
+/*
+  One page load asked for the same list up to five times at once: the header's
+  bell, the brief, the home cards and the store each fetch products, debtors and
+  events for themselves. Every copy is a round trip through the proxy to the API
+  on a free server. A GET already on its way for the same address and the same
+  books is shared instead of sent again. Only while it is in flight: once it
+  answers it is forgotten, so nothing can be served stale after a change.
+*/
+const inflightGets = new Map<string, Promise<Record<string, unknown>>>();
+
 async function spineFetch(path: string, init: RequestInit = {}): Promise<Record<string, unknown>> {
+  const method = (init.method ?? 'GET').toUpperCase();
+  if (method === 'GET' && !init.body) {
+    const scope = await authHeaders();
+    const key = `${path}|${scope['X-Business-Id'] ?? ''}|${scope['X-Acting-As'] ?? ''}|${scope.Authorization ?? ''}`;
+    const pending = inflightGets.get(key);
+    if (pending) return pending;
+    const req = spineFetchOnce(path, init).finally(() => inflightGets.delete(key));
+    inflightGets.set(key, req);
+    return req;
+  }
+  return spineFetchOnce(path, init);
+}
+
+async function spineFetchOnce(path: string, init: RequestInit = {}): Promise<Record<string, unknown>> {
   const headers = { ...(init.headers as Record<string, string>), ...(await authHeaders()) };
   const res = await fetch(`${PROXY}${path}`, { ...init, headers });
   const raw = await res.text();

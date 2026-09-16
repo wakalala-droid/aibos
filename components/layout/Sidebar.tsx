@@ -118,7 +118,7 @@ export default function Sidebar() {
     mobileNavOpen, setMobileNav, tier, uiMode, setUiMode,
   } = useStore();
   const { toggle, isDark } = useTheme();
-  const { isAdmin, teamRole } = useProfile();
+  const { isAdmin, teamRole, loading: planLoading } = useProfile();
   const { setOpen: setAssistantOpen } = useAiAssistant();
   const col = sidebarCollapsed;
   const simple = uiMode === 'simple';
@@ -405,11 +405,14 @@ export default function Sidebar() {
             <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Current plan
             </span>
-            <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
-              {TIERS[tier].name}
+            {/* Signing in on a new device starts from a blank cache, which reads
+                as Free, so a Growth owner was shown "Free" and "Upgrade" until the
+                plan loaded. Nothing is named until it is known. */}
+            <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: planLoading ? 'var(--text-4)' : 'var(--text-1)' }}>
+              {planLoading ? 'Checking…' : TIERS[tier].name}
             </span>
           </span>
-          {tier !== 'growth' && (
+          {!planLoading && tier !== 'growth' && (
             <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: '#fff', background: 'var(--cyan)', padding: '5px 10px', borderRadius: 8, whiteSpace: 'nowrap' }}>
               Upgrade
             </span>

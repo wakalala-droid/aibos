@@ -184,13 +184,26 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     // before showing anything so this user never sees another's cabinet/tier.
     useStore.getState().bindUser(user.id);
 
+    // The four reads below used to run one after another, each a round trip
+    // through the web proxy to the API: about eight seconds on a live account
+    // before the plan was known, while every paid screen showed its locked
+    // version. They are independent, so they start together. (Membership still
+    // accepts invites before asking for the role, inside its own chain.)
+    const headers = await authHeaders();
+    const profileReq = fetch('/api/profile', { cache: 'no-store' });
+    const entitlementsReq = fetch('/api/proxy/me/entitlements', { headers, cache: 'no-store' });
+    const membershipReq = (async () => {
+      await fetch('/api/proxy/members/accept', { method: 'POST', headers }).catch(() => {});
+      return fetch('/api/proxy/members/me', { headers });
+    })();
+
     // Resolve the row server-side: RLS on the existing `profiles` table blocks
     // the browser's self-select (role comes back null), so reading directly here
     // would never see role/tier. `/api/profile` provisions + reads with the
     // service role and returns the authoritative `isAdmin` verdict.
     let rowTier: Tier | null = null;
     try {
-      const res = await fetch('/api/profile', { cache: 'no-store' });
+      const res = await profileReq;
       if (res.ok) {
         const { profile: p, isAdmin: admin } = (await res.json()) as {
           profile: Profile | null;
@@ -217,10 +230,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     // customer over one failed request, and say plainly that we could not check.
     let server: Entitlements | null = null;
     try {
-      const r = await fetch('/api/proxy/me/entitlements', {
-        headers: await authHeaders(),
-        cache: 'no-store',
-      });
+      const r = await entitlementsReq;
       if (r.ok) server = (await r.json()) as Entitlements;
     } catch { /* offline / API asleep — handled below */ }
 
@@ -260,8 +270,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     // account, then resolve the role we're acting in. Best-effort — a plain
     // owner (no membership) stays 'owner' and nothing changes.
     try {
-      await fetch('/api/proxy/members/accept', { method: 'POST', headers: await authHeaders() }).catch(() => {});
-      const meRes = await fetch('/api/proxy/members/me', { headers: await authHeaders() });
+      const meRes = await membershipReq;
       if (meRes.ok) {
         const me = (await meRes.json()) as { role?: TeamRole; workspaces?: Workspace[] };
         setTeamRole(me.role === 'staff' || me.role === 'accountant' ? me.role : 'owner');
