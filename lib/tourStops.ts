@@ -101,7 +101,7 @@ const SCRIPT: TourChapter[] = [
       {
         feature: 'scheduled_brief',
         title: 'The brief, sent to you',
-        body: 'The same summary in your inbox, daily or weekly, without opening anything.',
+        body: 'The same summary in your inbox every morning, without opening anything.',
         href: '/dashboard/profile',
       },
     ],

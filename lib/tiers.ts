@@ -86,7 +86,7 @@ export const TIERS: Record<Tier, TierMeta> = {
       'AI CFO chat — unlimited',
       'Recurring schedule & reminders — NAPSA, ZRA, rent',
       'Payroll — PAYE, NAPSA & net pay computed for you',
-      'Daily or weekly AI brief to email — rolling out',
+      'AI brief to your email every morning — rolling out',
       'Customer & Operations intelligence (Engines 2 & 3)',
     ],
   },

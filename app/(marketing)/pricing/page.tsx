@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const FEATURE_GLOSSARY: { term: string; plain: string }[] = [
   { term: 'An engine', plain: 'A whole department’s intelligence, covering Financial, Customer or Operations, not just a single chart. Free gives you the Financial engine, and Pro unlocks the rest.' },
   { term: 'AI CFO chat', plain: 'Ask your business anything in plain words, as often as you like. It answers from your own uploaded data, in Kwacha.' },
-  { term: 'A scheduled brief', plain: 'The one number that matters, delivered daily or weekly so you don’t have to remember to check. Email and WhatsApp delivery are rolling out now.' },
+  { term: 'A scheduled brief', plain: 'The one number that matters, delivered every morning so you don’t have to remember to check. Email and WhatsApp delivery are rolling out now.' },
   { term: 'A business', plain: 'One venture with its own books. Every plan runs one beautifully; Growth lets you run several — a shop, a salon, a lodge — under one login, each with separate books.' },
 ];
 
