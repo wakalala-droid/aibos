@@ -64,7 +64,12 @@ interface FormState {
   kind: ScheduleKind; title: string; date: string; time: string; allDay: boolean;
   withWhom: string; location: string; amount: string; notes: string; repeat: RepeatChoice;
 }
-const todayISO = () => new Date().toISOString().slice(0, 10);
+// The owner's own calendar day. toISOString() is UTC, which is still yesterday
+// between midnight and 2am in Lusaka.
+const todayISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 const EMPTY: FormState = {
   kind: 'meeting', title: '', date: todayISO(), time: '09:00', allDay: false,
   withWhom: '', location: '', amount: '', notes: '', repeat: 'none',

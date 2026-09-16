@@ -28,6 +28,14 @@ export interface BriefInputs {
   overdueInvoices?: { count: number; total: number } | null;
 }
 
+/** What a delivery brings, named the way a receipt records it: items[] first
+ *  (what the server requires), then an older single `item`. */
+export function deliveryName(payload: Record<string, unknown> | undefined, fallback: string): string {
+  const items = Array.isArray(payload?.items) ? payload.items.filter(Boolean).map(String) : [];
+  if (items.length) return items.slice(0, 2).join(', ') + (items.length > 2 ? '…' : '');
+  return payload?.item ? String(payload.item) : fallback;
+}
+
 function sum(events: BusinessEvent[]): number {
   return events.reduce((t, e) => t + (Number(e.payload?.amount) || 0), 0);
 }
@@ -98,7 +106,7 @@ export function dailyFocus(inp: BriefInputs): string[] {
   if (dueToday.length > 0) {
     const first = dueToday[0];
     const from = first.payload?.supplier ? ` from ${String(first.payload.supplier)}` : '';
-    lines.push(`Arriving today: ${String(first.payload?.item ?? 'a delivery')}${from}${dueToday.length > 1 ? ` (+${dueToday.length - 1} more)` : ''} — confirm it when it lands.`);
+    lines.push(`Arriving today: ${deliveryName(first.payload, 'a delivery')}${from}${dueToday.length > 1 ? ` (+${dueToday.length - 1} more)` : ''} — confirm it when it lands.`);
   } else if (inp.expectedDeliveries.length > 0) {
     const next = inp.expectedDeliveries[0];
     lines.push(`Next delivery: ${dayLabel(new Date(next.occurred_at))}${next.payload?.supplier ? ` from ${String(next.payload.supplier)}` : ''}.`);
@@ -178,7 +186,7 @@ export function briefLines(inp: BriefInputs): BriefLine[] {
   if (dueToday.length > 0) {
     const first = dueToday[0];
     const from = first.payload?.supplier ? ` from ${String(first.payload.supplier)}` : '';
-    lines.push({ emoji: '🚚', md: `Expected today: ${String(first.payload?.item ?? 'a delivery')}${from}${dueToday.length > 1 ? ` (+${dueToday.length - 1} more)` : ''} — confirm it on **Activity** when it arrives.` });
+    lines.push({ emoji: '🚚', md: `Expected today: ${deliveryName(first.payload, 'a delivery')}${from}${dueToday.length > 1 ? ` (+${dueToday.length - 1} more)` : ''} — confirm it on **Activity** when it arrives.` });
   } else if (inp.expectedDeliveries.length > 0) {
     const next = inp.expectedDeliveries[0];
     lines.push({ emoji: '🚚', md: `Next expected delivery: ${dayLabel(new Date(next.occurred_at))}${next.payload?.supplier ? ` from ${String(next.payload.supplier)}` : ''}.` });

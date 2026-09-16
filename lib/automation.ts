@@ -157,7 +157,12 @@ export function dismissFollowUp(customerId: string): void {
  * owner confirms it when the stock physically arrives.
  */
 export async function draftReorder(p: ReorderProposal): Promise<BusinessEvent> {
+  // items[] and quantities[] are what a stock receipt IS (the server requires
+  // them, and stock moves by them when the delivery is confirmed). The single
+  // item and quantity alone were refused, so every reorder draft failed.
   const payload: Record<string, unknown> = {
+    items: [p.item],
+    quantities: [p.quantity],
     item: p.item,
     quantity: p.quantity,
     unit: p.unit,

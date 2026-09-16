@@ -25,7 +25,7 @@ import {
   type Product,
 } from '@/lib/api';
 import { canAccess } from '@/lib/tiers';
-import { composeMorningBrief, bucketSales, expectedOf } from '@/lib/brief';
+import { composeMorningBrief, bucketSales, expectedOf, deliveryName } from '@/lib/brief';
 import { reorderProposals, followUpProposals } from '@/lib/automation';
 import { industryOf } from '@/lib/industries';
 import { matchBenchmark, referenceContext } from '@/lib/industryIntel';
@@ -387,7 +387,7 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
         for (const e of dueToday.slice(0, 5)) {
           const from = e.payload?.supplier ? ` from ${String(e.payload.supplier)}` : '';
           const amt = Number(e.payload?.amount) || 0;
-          lines.push(`• ${String(e.payload?.item ?? 'Stock')}${from}${amt > 0 ? ` — ${money(amt)}` : ''}`);
+          lines.push(`• ${deliveryName(e.payload, 'Stock')}${from}${amt > 0 ? ` — ${money(amt)}` : ''}`);
         }
         lines.push('\nWhen it arrives, confirm it on **Activity** (or just tell me) and your stock and payables update instantly.');
       } else {
