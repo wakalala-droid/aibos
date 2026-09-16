@@ -164,7 +164,9 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
   };
 
   const remove = async () => {
-    if (!confirm(`Delete “${unit.unit_name}”? Its bookings keep their history.`)) return;
+    // Bookings are deleted with the unit (0015 cascades them), and the money
+    // from its stays comes out of the books. This used to promise the opposite.
+    if (!confirm(`Delete “${unit.unit_name}”? Every booking on it is deleted too, and the money from those stays is taken out of your books. This cannot be undone.`)) return;
     setBusy(true); onError('');
     try { await deleteUnit(unit.id); await onSaved(); }
     catch (e) { onError(e instanceof Error ? e.message : 'Could not delete unit.'); }

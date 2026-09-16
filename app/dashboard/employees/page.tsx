@@ -47,7 +47,12 @@ const EMPTY: FormState = {
   loan_balance: '', loan_monthly: '', napsa_number: '', tpin: '', notes: '',
 };
 
-const thisPeriod = () => new Date().toISOString().slice(0, 7);         // 'YYYY-MM'
+// 'YYYY-MM' on the owner's own calendar: in UTC the first two hours of a month
+// in Lusaka still belong to the month before.
+const thisPeriod = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
 const fmtDue = (iso: string) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString([], { day: 'numeric', month: 'short' });
 
@@ -149,6 +154,10 @@ export default function EmployeesPage() {
   }
 
   async function removeEmployee(id: string) {
+    // Deleting is permanent: the register entry, pay details and loan balance
+    // go. Past payslips keep the name, but nothing can be run for them again.
+    const who = employees.find(e => e.id === id)?.name || 'this employee';
+    if (!window.confirm(`Delete ${who}? Their pay details and loan balance are removed for good. Past payslips stay.`)) return;
     try { await deleteEmployee(id); if (editId === id) cancelEdit(); setPreview(null); await load(); }
     catch (e) { setError((e as Error).message); }
   }

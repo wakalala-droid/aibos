@@ -65,6 +65,8 @@ export default function InventoryPage() {
   }
 
   async function remove(id: string) {
+    const name = items.find(p => p.id === id)?.name || "this product";
+    if (!window.confirm(`Delete ${name} from your catalog? Sales already recorded stay in your books.`)) return;
     try { await deleteProduct(id); await load(); }
     catch (e) { setError((e as Error).message); }
   }

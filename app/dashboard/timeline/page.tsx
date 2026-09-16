@@ -82,6 +82,8 @@ function TimelineInner() {
   }
 
   async function handleVoid(id: string) {
+    // Voiding takes the entry out of every figure. It stays listed as void.
+    if (!window.confirm('Void this entry? It is taken out of your figures and stays listed as void.')) return;
     setBusyId(id);
     try { await voidEvent(id); await load(); refreshTwin(); }
     catch (e) { setError((e as Error).message); }

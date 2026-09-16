@@ -210,6 +210,7 @@ export default function SchedulePage() {
   }
 
   async function remove(id: string) {
+    if (!window.confirm('Delete this from your schedule? If it repeats, the repeats stop too.')) return;
     try { await deleteScheduleItem(id); if (editId === id) cancelEdit(); await load(); }
     catch (e) { setError((e as Error).message); }
   }

@@ -326,6 +326,8 @@ export default function HospitalityPage() {
   };
 
   const doCancel = async (b: Booking) => {
+    // A confirmed stay is money in the books and a guest expecting a room.
+    if (!window.confirm(`Cancel ${guestName(b)}'s stay? The nights are freed and the money from it comes out of your books.`)) return;
     setBusy(true); setPanelNote(''); setError('');
     try {
       applyUpdate(await cancelBooking(b.id));
