@@ -14,7 +14,7 @@ import {
 } from 'recharts';
 
 export default function CashPage() {
-  const { cashflow, monthly, kpi, currencySymbol, dataShape } = useStore();
+  const { cashflow, monthly, kpi, currencySymbol, dataShape, twin, uploadedFile } = useStore();
   const sym = currencySymbol || 'K';
 
   if (dataShape === 'cross_sectional') {
@@ -32,10 +32,18 @@ export default function CashPage() {
     : 0;
   // Cash position = cumulative operating cash (sum of monthly profit). Engine 1
   // returns this as cashflow.ending_cash; fall back to total profit. No hardcode.
-  const currentCash =
-    cashflow?.currentCash ??
-    cashflow?.ending_cash ??
-    (typeof kpi.totalProfit === 'number' ? kpi.totalProfit : 0);
+  //
+  // When the figures come from recorded books, the books already know the cash
+  // balance: opening cash plus every movement. Profit to date is not cash (it
+  // ignores the opening balance, stock bought, loans and money still owed), and
+  // this card showed it anyway, so a live account read K30,871 here while the
+  // summary above it said the business was holding K17.9K.
+  const fromBooks = !uploadedFile && !!twin && Number(twin.event_count) > 0;
+  const currentCash = fromBooks
+    ? Number(twin?.cash) || 0
+    : cashflow?.currentCash ??
+      cashflow?.ending_cash ??
+      (typeof kpi.totalProfit === 'number' ? kpi.totalProfit : 0);
   // With cash not shrinking there is no runway to run out, so no number is
   // invented for it: the card says so and the bar reads full.
   const notShrinking = cashflow?.runway == null && netBurn <= 0;
