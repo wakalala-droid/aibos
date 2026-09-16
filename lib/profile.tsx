@@ -62,14 +62,33 @@ export interface Profile {
  *  Everyone is 'owner' of their own tenant until an owner invites them. */
 export type TeamRole = 'owner' | 'staff' | 'accountant';
 
+/** One set of books this person can open: their own, or a business that
+ *  invited them. From aibos-api GET /members/me. */
+export interface Workspace {
+  tenant: string;
+  role: TeamRole;
+  /** What to send as X-Acting-As to work here ('self' for their own books). */
+  acting_as: string;
+  name: string;
+  current: boolean;
+}
+
 /** What the API says it will honour for this account — the tiebreaker.
  *  See aibos-api GET /me/entitlements. */
 interface Entitlements {
   tier: Tier;
-  reason: 'ok' | 'provisioned' | 'unreadable';
+  reason: 'ok' | 'provisioned' | 'unreadable' | 'expired';
   plan_readable: boolean;
   features: string[];
   note: string;
+  /** False when this person works in someone else's business: the plan is
+   *  that business's, not the one on their own account record. */
+  own_plan?: boolean;
+  /** When a plan bought with mobile money runs out (migration 0033). */
+  paid_until?: string | null;
+  expired?: boolean;
+  /** The plan that lapsed, when `expired`. */
+  paid_tier?: string | null;
 }
 
 interface ProfileContextValue {
@@ -90,6 +109,17 @@ interface ProfileContextValue {
   planNote: string;
   /** The plan the API will actually enforce, when it could say. */
   serverTier: Tier | null;
+  /** True when the plan in force is this person's own, false when it belongs
+   *  to a business that invited them. */
+  ownPlan: boolean;
+  /** When the paid period ends (ISO), for plans bought for a period. */
+  paidUntil: string | null;
+  /** The paid period and its grace are over: paid features are off. */
+  planExpired: boolean;
+  /** The plan that lapsed, when planExpired. */
+  paidTier: Tier | null;
+  /** Every set of books this person can open. One entry for most people. */
+  workspaces: Workspace[];
 }
 
 const DEFAULT: ProfileContextValue = {
@@ -102,6 +132,11 @@ const DEFAULT: ProfileContextValue = {
   planConfirmed: true,
   planNote: '',
   serverTier: null,
+  ownPlan: true,
+  paidUntil: null,
+  planExpired: false,
+  paidTier: null,
+  workspaces: [],
 };
 
 const ProfileContext = createContext<ProfileContextValue>(DEFAULT);
@@ -129,6 +164,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [planConfirmed, setPlanConfirmed] = useState(true);
   const [planNote, setPlanNote] = useState('');
   const [serverTier, setServerTier] = useState<Tier | null>(null);
+  const [ownPlan, setOwnPlan] = useState(true);
+  const [paidUntil, setPaidUntil] = useState<string | null>(null);
+  const [planExpired, setPlanExpired] = useState(false);
+  const [paidTier, setPaidTier] = useState<Tier | null>(null);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const loggedLoginFor = useRef<string | null>(null);
 
   const load = useCallback(async () => {
@@ -185,14 +225,22 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     } catch { /* offline / API asleep — handled below */ }
 
     if (server && server.plan_readable && isTier(server.tier)) {
+      const own = server.own_plan !== false;
       setServerTier(server.tier);
       setTier(server.tier);
       setPlanConfirmed(true);
+      setOwnPlan(own);
+      setPaidUntil(server.paid_until ?? null);
+      setPlanExpired(Boolean(server.expired));
+      setPaidTier(isTier(server.paid_tier) ? server.paid_tier : null);
+      // A mismatch only means something when the plan in force is this
+      // account's own. Staff work under the business's plan, and a lapsed plan
+      // is explained by its own notice, so neither is a fault to report.
       setPlanNote(
-        rowTier && rowTier !== server.tier
+        own && !server.expired && rowTier && rowTier !== server.tier
           ? `Your account record says ${rowTier}, but the app is granting ${server.tier}. ` +
             'Sign out and back in; if it stays this way it needs looking at.'
-          : '',
+          : server.expired ? server.note : '',
       );
     } else {
       setServerTier(null);
@@ -215,8 +263,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       await fetch('/api/proxy/members/accept', { method: 'POST', headers: await authHeaders() }).catch(() => {});
       const meRes = await fetch('/api/proxy/members/me', { headers: await authHeaders() });
       if (meRes.ok) {
-        const me = (await meRes.json()) as { role?: TeamRole };
+        const me = (await meRes.json()) as { role?: TeamRole; workspaces?: Workspace[] };
         setTeamRole(me.role === 'staff' || me.role === 'accountant' ? me.role : 'owner');
+        setWorkspaces(Array.isArray(me.workspaces) ? me.workspaces : []);
       }
     } catch { /* non-fatal — default to owner */ }
 
@@ -243,6 +292,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     planConfirmed,
     planNote,
     serverTier,
+    ownPlan,
+    paidUntil,
+    planExpired,
+    paidTier,
+    workspaces,
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

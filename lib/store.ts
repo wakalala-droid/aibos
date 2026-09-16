@@ -9,7 +9,19 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { setCurrencyGlobal, symbolForToken } from "./currency";
 import type { Tier } from "./tiers";
-import { getTwin, getTwinFinancials, authHeaders, type Twin, type BusinessEvent } from "./api";
+import { getTwin, getTwinFinancials, authHeaders, ACTIVE_BUSINESS_KEY, ACTING_AS_KEY, type Twin, type BusinessEvent } from "./api";
+
+/** Which business and whose books this browser last opened. They sit outside
+ *  the persisted store, so a wipe of the store alone left them behind: the next
+ *  account on a shared device sent the last person's business id and workspace
+ *  on every call. The API refuses a business that is not theirs, but the
+ *  choice itself belongs to the person who made it. */
+function forgetBooksChoice() {
+  try {
+    window.localStorage.removeItem(ACTIVE_BUSINESS_KEY);
+    window.localStorage.removeItem(ACTING_AS_KEY);
+  } catch { /* SSR / private mode */ }
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -882,6 +894,7 @@ const _store = create<FinancialState & FinancialActions>()(
       // cabinet/files/tier. bindUser wipes the cache whenever the owner changes.
       bindUser: (userId) => {
         if (get().ownerId === userId) return;   // same owner — keep the cache
+        forgetBooksChoice();
         setCurrencyGlobal(INITIAL.currencySymbol);
         set({
           ...INITIAL,
@@ -892,6 +905,7 @@ const _store = create<FinancialState & FinancialActions>()(
         });
       },
       clearTenant: () => {
+        forgetBooksChoice();
         setCurrencyGlobal(INITIAL.currencySymbol);
         set({
           ...INITIAL,

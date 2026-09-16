@@ -202,13 +202,17 @@ export async function initiatePayment(payload: InitiatePaymentPayload): Promise<
   return data as unknown as InitiatePaymentResult;
 }
 
-/** Poll a collection's status until it resolves. */
-export async function checkPaymentStatus(reference: string): Promise<{ reference: string; status: PaymentStatus; plan: string; billing: string }> {
+/** Poll a collection's status until it resolves. `unknown` means the server has
+ *  no record of this reference (it was kept in memory and the server restarted),
+ *  which is not the same as still waiting. Anything else that goes wrong, a
+ *  sleeping server or a dropped connection, reads as still pending. */
+export async function checkPaymentStatus(reference: string): Promise<{ reference: string; status: PaymentStatus | 'unknown'; plan: string; billing: string }> {
   const res = await fetch(`${PROXY}/payments/status/${encodeURIComponent(reference)}`, {
     headers: await authHeaders(),
   });
+  if (res.status === 404) return { reference, status: 'unknown', plan: '', billing: '' };
   const data = (await res.json().catch(() => ({ status: 'pending' }))) as { reference?: string; status?: PaymentStatus; plan?: string; billing?: string };
-  return { reference, status: (data.status ?? 'pending'), plan: data.plan ?? '', billing: data.billing ?? 'monthly' };
+  return { reference, status: (res.ok ? data.status : undefined) ?? 'pending', plan: data.plan ?? '', billing: data.billing ?? 'monthly' };
 }
 
 // ─── Subscribe ────────────────────────────────────────────────────────────────
