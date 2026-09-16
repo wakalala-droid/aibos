@@ -482,7 +482,12 @@ function TeamCard() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = () => { listMembers().then(setMembers).catch(() => {}); };
+  // A roster that failed to load used to read "it's just you", which is the
+  // one wrong answer an owner checking who can see their books must not get.
+  const [loadError, setLoadError] = useState(false);
+  const load = () => {
+    listMembers().then((m) => { setMembers(m); setLoadError(false); }).catch(() => setLoadError(true));
+  };
   useEffect(() => { load(); }, []);
 
   async function invite() {
@@ -495,8 +500,10 @@ function TeamCard() {
   async function changeRole(id: string, r: TeamMemberRole) {
     try { await updateMemberRole(id, r); load(); } catch (e) { setError((e as Error).message); }
   }
-  async function remove(id: string) {
-    try { await revokeMember(id); load(); } catch (e) { setError((e as Error).message); }
+  async function remove(m: TeamMember) {
+    // One tap used to remove someone's access with no way to see it coming.
+    if (!window.confirm(`Remove ${m.email}? They lose access to your books straight away.`)) return;
+    try { await revokeMember(m.id); load(); } catch (e) { setError((e as Error).message); }
   }
 
   const cardInput: React.CSSProperties = { minHeight: 40, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
@@ -523,7 +530,12 @@ function TeamCard() {
         </button>
       </div>
 
-      {members.length === 0 ? (
+      {loadError && members.length === 0 ? (
+        <p role="alert" style={{ fontSize: 'var(--fs-label)', color: 'var(--crit)', margin: 0 }}>
+          Your team could not be loaded just now.{' '}
+          <button type="button" onClick={load} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--cyan)', textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>Try again</button>
+        </p>
+      ) : members.length === 0 ? (
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>No team members yet — it&apos;s just you.</p>
       ) : (
         <div style={{ display: 'grid', gap: 8 }}>
@@ -540,7 +552,7 @@ function TeamCard() {
                   <option value="staff">Staff</option>
                   <option value="accountant">Accountant</option>
                 </select>
-                <button type="button" style={cardBtn} onClick={() => void remove(m.id)}>Remove</button>
+                <button type="button" style={cardBtn} onClick={() => void remove(m)}>Remove</button>
               </span>
             </div>
           ))}

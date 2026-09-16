@@ -38,6 +38,18 @@ const btn: React.CSSProperties = { minHeight: 36, padding: '7px 14px', borderRad
 
 const EMPTY_LINE: InvoiceLine = { description: '', qty: 1, unit_price: 0 };
 
+/** Today on the owner's own calendar, as YYYY-MM-DD. */
+function localToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** Past due means the due DATE has gone by. Comparing timestamps counted an
+ *  invoice due today as overdue from two in the morning. */
+function isOverdue(i: Invoice): boolean {
+  return i.status === 'sent' && !!i.due_at && i.due_at.slice(0, 10) < localToday();
+}
+
 export default function InvoicesPage() {
   const currencySymbol = useStore((s) => s.currencySymbol);
   const sym = currencySymbol || 'K';
@@ -70,10 +82,7 @@ export default function InvoicesPage() {
   const outstanding = useMemo(
     () => invoices.filter(i => i.status === 'sent').reduce((a, i) => a + i.total, 0),
     [invoices]);
-  const overdue = useMemo(() => {
-    const now = new Date().toISOString();
-    return invoices.filter(i => i.status === 'sent' && i.due_at && i.due_at < now).length;
-  }, [invoices]);
+  const overdue = useMemo(() => invoices.filter(isOverdue).length, [invoices]);
   const paidTotal = useMemo(
     () => invoices.filter(i => i.status === 'paid').reduce((a, i) => a + i.total, 0),
     [invoices]);
@@ -89,7 +98,8 @@ export default function InvoicesPage() {
       await createInvoice({
         customer_name: customer.trim(),
         lines: clean.map(l => ({ ...l, qty: Number(l.qty), unit_price: Number(l.unit_price) })),
-        due_at: dueAt ? new Date(dueAt).toISOString() : null,
+        // Noon, not midnight UTC, so the date survives the trip in any timezone.
+        due_at: dueAt ? `${dueAt}T12:00:00Z` : null,
       });
       setCustomer(''); setDueAt(''); setLines([{ ...EMPTY_LINE }]); setShowForm(false);
       await load();
@@ -97,14 +107,24 @@ export default function InvoicesPage() {
     finally { setSaving(false); }
   }
 
-  async function act(id: string, fn: (id: string) => Promise<unknown>) {
+  /** Run an invoice action. `confirmText` asks first: sending, marking paid,
+   *  cancelling and deleting all change the books or the customer's view, and
+   *  a paid invoice has no undo on this screen. `onDone` runs only when the
+   *  action went through, so usage is not logged for a refusal. */
+  async function act(id: string, fn: (id: string) => Promise<unknown>, confirmText?: string, onDone?: () => void) {
+    if (confirmText && !window.confirm(confirmText)) return;
     setBusyId(id); setError(null);
-    try { await fn(id); await load(); }
+    try { await fn(id); onDone?.(); await load(); }
     catch (e) { setError((e as Error).message); }
     finally { setBusyId(null); }
   }
 
   async function share(inv: Invoice) {
+    // Open the tab while the tap still counts as the owner's own action.
+    // Opened after waiting on the server, Safari and most phone browsers
+    // treat it as a popup and silently block it.
+    const tab = window.open('', '_blank');
+    if (tab) tab.opener = null;
     setBusyId(inv.id); setError(null);
     try {
       // The message carries the tap-to-pay link; the manual momo number stays
@@ -114,8 +134,13 @@ export default function InvoicesPage() {
         (profile?.business_name as string | null) ?? null,
         (profile?.whatsapp as string | null) ? `Mobile money to ${profile?.whatsapp}` : null,
       );
-      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-    } catch (e) { setError((e as Error).message); }
+      const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      if (tab) tab.location.href = url;
+      else window.location.href = url;
+    } catch (e) {
+      tab?.close();
+      setError((e as Error).message);
+    }
     finally { setBusyId(null); }
   }
 
@@ -145,7 +170,9 @@ export default function InvoicesPage() {
     { key: 'total', label: 'Total', sortValue: i => i.total,
       render: i => <span style={{ fontWeight: 600 }}>{fmt(i.total, false, sym)}</span> },
     { key: 'due_at', label: 'Due', sortValue: i => i.due_at ?? '',
-      render: i => i.due_at ? i.due_at.slice(0, 10) : '—' },
+      render: i => i.due_at
+        ? <span style={{ color: isOverdue(i) ? 'var(--crit)' : undefined, fontWeight: isOverdue(i) ? 600 : undefined }}>{i.due_at.slice(0, 10)}{isOverdue(i) ? ' · overdue' : ''}</span>
+        : '—' },
     { key: 'status', label: 'Status', sortValue: i => i.status,
       render: i => (
         <span className="badge" style={{ color: STATUS_COLOUR[i.status], borderColor: 'var(--border)', textTransform: 'capitalize' }}>
@@ -160,10 +187,12 @@ export default function InvoicesPage() {
             {i.status === 'draft' && (
               <>
                 <button type="button" style={{ ...btn, color: 'var(--cyan)' }} disabled={busy}
-                  onClick={() => { void act(i.id, sendInvoice); logUsage('event_recorded', { meta: { event_type: 'Sale', via: 'invoice_send' } }); }}>
+                  onClick={() => void act(i.id, sendInvoice,
+                    `Send ${i.number}? ${fmt(i.total, false, sym)} is recorded as a sale owed by ${i.customer_name}, and the invoice can no longer be edited.`,
+                    () => logUsage('event_recorded', { meta: { event_type: 'Sale', via: 'invoice_send' } }))}>
                   Send
                 </button>
-                <button type="button" style={btn} disabled={busy} onClick={() => void act(i.id, deleteInvoice)}>Delete</button>
+                <button type="button" style={btn} disabled={busy} onClick={() => void act(i.id, deleteInvoice, `Delete draft ${i.number}? This cannot be undone.`)}>Delete</button>
               </>
             )}
             {i.status === 'sent' && (
@@ -173,10 +202,15 @@ export default function InvoicesPage() {
                   {copiedId === i.id ? 'Link copied' : 'Payment link'}
                 </button>
                 <button type="button" style={{ ...btn, color: 'var(--good)' }} disabled={busy}
-                  onClick={() => { void act(i.id, markInvoicePaid); logUsage('event_recorded', { meta: { event_type: 'CustomerPayment', via: 'invoice_paid' } }); }}>
+                  onClick={() => void act(i.id, markInvoicePaid,
+                    `Mark ${i.number} as paid? ${fmt(i.total, false, sym)} from ${i.customer_name} is recorded as money received today.`,
+                    () => logUsage('event_recorded', { meta: { event_type: 'CustomerPayment', via: 'invoice_paid' } }))}>
                   Mark paid
                 </button>
-                <button type="button" style={btn} disabled={busy} onClick={() => void act(i.id, cancelInvoice)}>Cancel</button>
+                <button type="button" style={btn} disabled={busy}
+                  onClick={() => void act(i.id, cancelInvoice, `Cancel ${i.number}? The sale is taken back out of your books and the payment link stops working.`)}>
+                  Cancel
+                </button>
               </>
             )}
             {i.status === 'paid' && i.paid_at && (

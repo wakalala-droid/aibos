@@ -137,6 +137,8 @@ interface FeedRow {
 const FEED_SEVERITY: Record<string, NotifySeverity> = {
   booking_request: 'success',
   booking_cancelled: 'warning',
+  // A customer's money arrived for an invoice already paid or cancelled.
+  invoice_payment_unmatched: 'warning',
 };
 
 function toNotification(row: FeedRow): Notification {
