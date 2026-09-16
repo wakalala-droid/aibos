@@ -317,6 +317,9 @@ export interface FinancialState {
   twin: Twin | null;
   recentEvents: BusinessEvent[];
   twinLoading: boolean;
+  /** The books have been asked at least once this visit (whatever the answer).
+   *  Until then an empty chart means "not loaded yet", not "no data". */
+  twinChecked: boolean;
 }
 
 interface FinancialActions {
@@ -431,6 +434,7 @@ const INITIAL: FinancialState = {
   twin: null,
   recentEvents: [],
   twinLoading: false,
+  twinChecked: false,
 };
 
 // ── Helpers: derive kpi/health from monthly[] when backend doesn't supply them ─
@@ -862,7 +866,7 @@ const _store = create<FinancialState & FinancialActions>()(
         } catch {
           // Spine may be unconfigured (503) or the user signed out — stay silent.
         } finally {
-          set({ twinLoading: false });
+          set({ twinLoading: false, twinChecked: true });
         }
       },
 

@@ -87,7 +87,11 @@ function trendModel(ys: number[]): {
 interface Row { month: string; hist?: number; fcast?: number; lower?: number; upper?: number; }
 
 export default function ForecastPage() {
-  const { monthly, kpi, currencySymbol, dataShape } = useStore();
+  const { monthly, kpi, currencySymbol, dataShape, twinLoading, twinChecked, uploadedFile } = useStore();
+  // For the first seconds of every visit the recorded books are still on their
+  // way, and this page said "Upload a financial file" to owners who record
+  // every day. It waits for the books before calling anything empty.
+  const figuresLoading = twinLoading || (!twinChecked && !uploadedFile);
   const sym = currencySymbol || 'K';
 
   // No time axis → never fabricate a forecast over item rows (SAFEGUARD).
@@ -202,11 +206,13 @@ export default function ForecastPage() {
                 strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 4" fill="none" />
             </svg>
             <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-2)', margin: 0 }}>
-              No historical data yet
+              {figuresLoading ? 'Loading your figures…' : 'No history yet'}
             </p>
-            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
-              Upload a financial file on the dashboard to generate a forecast.
-            </p>
+            {!figuresLoading && (
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
+                Record your sales and costs as they happen, or upload a financial file on the dashboard, and a forecast appears here.
+              </p>
+            )}
           </div>
         </SectionCard>
       ) : (

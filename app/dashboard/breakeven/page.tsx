@@ -14,7 +14,9 @@ import {
 } from 'recharts';
 
 export default function BreakevenPage() {
-  const { breakeven, monthly, currencySymbol, dataShape } = useStore();
+  const { breakeven, monthly, currencySymbol, dataShape, twinLoading, twinChecked, uploadedFile } = useStore();
+  // Wait for the recorded books before calling the page empty (see forecast).
+  const figuresLoading = twinLoading || (!twinChecked && !uploadedFile);
   const sym = currencySymbol || 'K';
 
   if (dataShape === 'cross_sectional') {
@@ -85,11 +87,13 @@ export default function BreakevenPage() {
               <path d="M5 19L19 5" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4" />
             </svg>
             <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>
-              No revenue or cost data yet
+              {figuresLoading ? 'Loading your figures…' : 'No revenue or cost data yet'}
             </p>
-            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0, lineHeight: 1.6, maxWidth: 420 }}>
-              Upload a financial file with <strong>Month</strong>, <strong>Revenue</strong> and <strong>Costs</strong> columns on the dashboard, and AIBOS will compute your fixed/variable split, contribution margin and the exact revenue you need to break even.
-            </p>
+            {!figuresLoading && (
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0, lineHeight: 1.6, maxWidth: 420 }}>
+                Record your sales and costs as they happen, or upload a financial file with <strong>Month</strong>, <strong>Revenue</strong> and <strong>Costs</strong> columns on the dashboard, and AIBOS will compute your fixed/variable split, contribution margin and the exact revenue you need to break even.
+              </p>
+            )}
           </div>
         </SectionCard>
       ) : (
