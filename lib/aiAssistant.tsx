@@ -511,8 +511,11 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         const line = frame.trim();
         if (!line.startsWith('data:')) continue;
         try {
-          const msg = JSON.parse(line.slice(5).trim()) as { t?: string; tool?: string; error?: string; done?: boolean };
+          const msg = JSON.parse(line.slice(5).trim()) as { t?: string; tool?: string; error?: string; done?: boolean; retry?: boolean };
           if (msg.t) { append(msg.t); got = true; sawText = true; setLoading(false); }
+          // retry:false (a spent AI quota): the buffered path would only spend
+          // another request against the same limit, so say it here and stop.
+          else if (msg.error && msg.retry === false) { append(msg.error); got = true; sawText = true; setLoading(false); }
           // Mid-answer: keep what was written and say why it stopped. Before a
           // single word: say nothing here and let the buffered path try.
           else if (msg.error && sawText) { append(`\n\n${msg.error}`); got = true; }
