@@ -22,6 +22,7 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useTheme } from '@/lib/theme';
 
 const DISMISSED_KEY = 'aibos-install-dismissed-at';
 const INSTALLED_KEY = 'aibos-installed';
@@ -89,6 +90,7 @@ export default function InstallPrompt() {
   const pathname = usePathname() || '';
   const [mode, setMode] = useState<Mode>(null);
   const [busy, setBusy] = useState(false);
+  const { isDark } = useTheme();
   const phone = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|Mobile/.test(navigator.userAgent);
 
   useEffect(() => {
@@ -155,8 +157,16 @@ export default function InstallPrompt() {
         background: 'color-mix(in srgb, var(--cyan) 9%, transparent)',
       }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed 48px app icon, nothing to optimise */}
-      <img src="/icons/icon-192.png" alt="" width={48} height={48} style={{ borderRadius: 12, flexShrink: 0 }} />
+      {/* The logo itself, no tile: white on the dark theme, navy on the light one,
+          where a white logo would vanish. */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed 48px logo, nothing to optimise */}
+      <img
+        src={isDark ? '/brand/aibos-mark-white-glyph.png' : '/brand/aibos-mark.png'}
+        alt=""
+        width={48}
+        height={48}
+        style={{ flexShrink: 0, objectFit: 'contain' }}
+      />
       <div style={{ flex: '1 1 280px', minWidth: 0 }}>
         <p style={{ margin: 0, fontSize: 18, lineHeight: 1.5, fontWeight: 700, color: 'var(--text-1)' }}>{title}</p>
         {mode === 'native' && (

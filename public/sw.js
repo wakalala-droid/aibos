@@ -9,9 +9,11 @@
  *    in lib/outbox.ts handles data writes — the SW never buffers API traffic.
  */
 
-const VERSION = 'aibos-sw-v1';
+// Bumped whenever a cached asset changes in place (v2: the icons became the
+// white logo), so installed apps drop the old copies.
+const VERSION = 'aibos-sw-v2';
 const OFFLINE_URL = '/offline.html';
-const PRECACHE = [OFFLINE_URL, '/icons/icon-192.png', '/icons/icon-512.png'];
+const PRECACHE = [OFFLINE_URL, '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

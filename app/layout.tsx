@@ -9,10 +9,13 @@ export const metadata: Metadata = {
   description: 'Financial · Customer · Operations intelligence for Zambian SMEs',
   manifest: '/manifest.webmanifest',
   icons: {
-    // Tab favicon: the bare mark on transparency — no badge shape. Apple/PWA
-    // icons keep the opaque tile (iOS and maskable icons require full bleed).
+    // The white logo on its own, no box: the tab, and the installed app on a
+    // computer (/icons/icon-*.png). A phone always puts an icon on a tile, so
+    // the iPhone and Android icons carry the same logo on the app's own dark
+    // colour; left transparent, iOS fills it black and Android white, which
+    // would swallow a white logo.
     icon: '/brand/aibos-mark-white-glyph.png',
-    apple: '/icons/icon-192.png',
+    apple: '/icons/apple-touch-icon.png',
   },
   appleWebApp: {
     capable: true,
