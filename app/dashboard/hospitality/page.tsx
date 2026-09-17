@@ -27,7 +27,7 @@ import { useStore } from '@/lib/store';
 import { canAccess, requiredTier, TIERS, type Tier } from '@/lib/tiers';
 import { fmt, symbolForToken } from '@/lib/currency';
 import {
-  listProperties, listUnits, listBookings, createBooking, cancelBooking,
+  listProperties, listUnits, listBookings, createBooking, cancelBooking, updateBooking,
   confirmBooking, declineBooking, createProperty, createUnit, createGuest, guestEmailOutcome,
   occupancyRate, nights, bookingSymbol, SOURCE_LABEL, isDatesTaken,
   type Property, type Unit, type Booking, type BookingStatus, type PaymentStatus,
@@ -139,10 +139,10 @@ const quietBtn: React.CSSProperties = {
   ...primaryBtn, background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)',
 };
 
-interface Draft { unit_id: string; guest: string; check_in: string; check_out: string; guests: string; amount: string; status: BookingStatus; }
+interface Draft { unit_id: string; guest: string; check_in: string; check_out: string; guests: string; amount: string; status: BookingStatus; paid: PaymentStatus; }
 const emptyDraft = (unitId = '', checkIn = iso(new Date())): Draft => ({
   unit_id: unitId, guest: '', check_in: checkIn, check_out: iso(addDays(parseISO(checkIn), 1)),
-  guests: '1', amount: '', status: 'confirmed',
+  guests: '1', amount: '', status: 'confirmed', paid: 'unpaid',
 });
 
 export default function HospitalityPage() {
@@ -282,6 +282,7 @@ export default function HospitalityPage() {
         guests_count: Number(draft.guests) || 1,
         total_amount: Number(draft.amount) || 0,
         status: draft.status,
+        payment_status: draft.paid,
       });
       setDraft(null);
       await load(gridStart);
@@ -334,6 +335,23 @@ export default function HospitalityPage() {
       await load(gridStart);
     } catch (e) {
       setPanelNote(e instanceof Error ? e.message : 'Could not cancel this booking.');
+    } finally { setBusy(false); }
+  };
+
+  /** Say what the guest has paid. Until then the stay is money owed to the
+   *  owner, not money in their bank, so this is what moves it into cash. */
+  const doPayment = async (b: Booking, status: PaymentStatus, deposit?: number) => {
+    if (status === 'refunded' && !window.confirm(`Mark ${guestName(b)}'s stay as refunded? The money from it comes out of your books.`)) return false;
+    setBusy(true); setPanelNote(''); setEmailNote(null); setError('');
+    try {
+      applyUpdate(await updateBooking(b.id, deposit === undefined
+        ? { payment_status: status }
+        : { payment_status: status, deposit_amount: deposit }));
+      await load(gridStart);
+      return true;
+    } catch (e) {
+      setPanelNote(e instanceof Error ? e.message : 'Could not save what the guest paid. Try again in a moment.');
+      return false;
     } finally { setBusy(false); }
   };
 
@@ -536,7 +554,7 @@ export default function HospitalityPage() {
 
           {/* New-booking form */}
           {draft && (
-            <SectionCard title="New booking" subtitle="A confirmed booking with an amount records a Sale in your books.">
+            <SectionCard title="New booking" subtitle="A confirmed booking with an amount records a Sale in your books. It counts as money owed to you until the guest pays.">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12, alignItems: 'end' }}>
                 <div>
                   <label style={lbl}>Unit</label>
@@ -555,6 +573,12 @@ export default function HospitalityPage() {
                     {(['confirmed', 'pending'] as BookingStatus[]).map(s => <option key={s} value={s}>{statusLabel(s)}</option>)}
                   </select>
                 </div>
+                <div>
+                  <label style={lbl}>Paid?</label>
+                  <select style={input} value={draft.paid} onChange={e => setDraft({ ...draft, paid: e.target.value as PaymentStatus })}>
+                    {(['unpaid', 'paid'] as PaymentStatus[]).map(s => <option key={s} value={s}>{PAYMENT_LABEL[s]}</option>)}
+                  </select>
+                </div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
                 <button style={{ ...primaryBtn, opacity: busy ? 0.7 : 1 }} disabled={busy || !draft.unit_id} onClick={submitBooking}>{busy ? 'Saving…' : 'Save booking'}</button>
@@ -567,6 +591,7 @@ export default function HospitalityPage() {
           {selected && (
             <div id="booking-detail">
               <BookingPanel
+                key={selected.id}
                 booking={selected}
                 unitName={unitName(selected.unit_id)}
                 busy={busy}
@@ -580,6 +605,7 @@ export default function HospitalityPage() {
                 onConfirm={() => doConfirm(selected)}
                 onDecline={() => doDecline(selected)}
                 onCancel={() => doCancel(selected)}
+                onPayment={(status, deposit) => doPayment(selected, status, deposit)}
                 onClose={closeBooking}
               />
             </div>
@@ -611,12 +637,13 @@ interface PanelProps {
   onConfirm: () => void;
   onDecline: () => void;
   onCancel: () => void;
+  onPayment: (status: PaymentStatus, deposit?: number) => Promise<boolean>;
   onClose: () => void;
 }
 
 function BookingPanel({
   booking: b, unitName, busy, note, emailNote, declining, declineReason,
-  onDeclineReason, onStartDecline, onStopDecline, onConfirm, onDecline, onCancel, onClose,
+  onDeclineReason, onStartDecline, onStopDecline, onConfirm, onDecline, onCancel, onPayment, onClose,
 }: PanelProps) {
   const g = b.guest;
   const name = guestName(b);
@@ -633,6 +660,33 @@ function BookingPanel({
   const quoted = b.quoted_total ?? null;
   const showQuoted = quoted !== null && quoted !== (b.total_amount || 0);
   const myNote = (g?.notes ?? '').trim();
+
+  // A stay that is income: what the guest has paid decides whether that income
+  // is money in the bank or money still owed.
+  const total = b.total_amount || 0;
+  const earns = (b.status === 'confirmed' || b.status === 'completed') && total > 0;
+  const payment: PaymentStatus = b.payment_status || 'unpaid';
+  const [takingDeposit, setTakingDeposit] = useState(false);
+  const [deposit, setDeposit] = useState(b.deposit_amount ? String(b.deposit_amount) : '');
+  const depositValue = Number(deposit);
+  const depositOk = deposit.trim() !== '' && depositValue > 0 && depositValue < total;
+  const paidSoFar = payment === 'paid' ? total : payment === 'partial' ? Math.min(b.deposit_amount || 0, total) : 0;
+  const moneySummary = payment === 'refunded'
+    ? 'Refunded. This stay no longer counts as income.'
+    : payment === 'paid'
+      ? `Paid in full. All ${fmt(total, false, symbol)} is in your cash.`
+      : payment === 'partial'
+        ? `${fmt(paidSoFar, false, symbol)} paid. ${fmt(total - paidSoFar, false, symbol)} is still owed to you.`
+        : `Not paid yet. ${fmt(total, false, symbol)} is owed to you and is not in your cash until you mark it paid.`;
+  const choose = async (status: PaymentStatus) => {
+    if (status === 'partial') { setTakingDeposit(true); return; }
+    setTakingDeposit(false);
+    await onPayment(status);
+  };
+  const saveDeposit = async () => {
+    if (!depositOk) return;
+    if (await onPayment('partial', Math.round(depositValue * 100) / 100)) setTakingDeposit(false);
+  };
 
   return (
     <SectionCard
@@ -681,7 +735,7 @@ function BookingPanel({
           <Field label="People staying" value={`${b.guests_count} guest${b.guests_count === 1 ? '' : 's'}`} />
           <Field label="Amount" value={fmt(b.total_amount || 0, false, symbol)} />
           {showQuoted && <Field label="You quoted" value={fmt(quoted || 0, false, symbol)} hint="Different from the amount above" />}
-          <Field label="Payment" value={PAYMENT_LABEL[b.payment_status] ?? sentence(b.payment_status)} colour={PAYMENT_COLOUR[b.payment_status]} hint={sentence(b.payment_method) || undefined} />
+          {!earns && <Field label="Payment" value={PAYMENT_LABEL[b.payment_status] ?? sentence(b.payment_status)} colour={PAYMENT_COLOUR[b.payment_status]} hint={sentence(b.payment_method) || undefined} />}
           {b.reference && <Field label="Their reference" value={b.reference} hint="The code the guest was given" />}
           <Field label="Came from" value={sourceLabel(b)} />
           {b.purpose && <Field label="Reason for the stay" value={sentence(b.purpose)} />}
@@ -692,6 +746,66 @@ function BookingPanel({
           />
         </FieldGrid>
       </PanelBlock>
+
+      {/* WHAT THEY HAVE PAID */}
+      {earns && (
+        <PanelBlock title="Money from this stay" tone={PAYMENT_COLOUR[payment]}>
+          <p style={{ margin: '0 0 12px', fontSize: 18, lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)' }}>{moneySummary}</p>
+          {b.payment_method && (
+            <p style={{ margin: '0 0 12px', fontSize: 15, lineHeight: 1.6, color: 'var(--text-4)' }}>
+              The guest said they would pay by {sentence(b.payment_method).toLowerCase()}.
+            </p>
+          )}
+          <div role="group" aria-label="What the guest has paid" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {(['unpaid', 'partial', 'paid', 'refunded'] as PaymentStatus[]).map(s => {
+              const on = takingDeposit ? s === 'partial' : payment === s;
+              return (
+                <button
+                  key={s}
+                  aria-pressed={on}
+                  disabled={busy}
+                  onClick={() => choose(s)}
+                  style={{
+                    ...quietBtn, fontSize: 16, padding: '8px 14px', opacity: busy ? 0.7 : 1,
+                    color: on ? 'var(--text-1)' : 'var(--text-2)',
+                    background: on ? `color-mix(in srgb, ${PAYMENT_COLOUR[s]} 16%, transparent)` : 'transparent',
+                    border: `1px solid ${on ? PAYMENT_COLOUR[s] : 'var(--border-md)'}`,
+                  }}
+                >
+                  {s === 'partial' ? 'Deposit paid' : PAYMENT_LABEL[s]}
+                </button>
+              );
+            })}
+          </div>
+          {takingDeposit && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'end', marginTop: 12, maxWidth: 520 }}>
+              <div style={{ flex: '1 1 200px' }}>
+                <label style={lbl} htmlFor="deposit-amount">Deposit received ({symbol})</label>
+                <input
+                  id="deposit-amount"
+                  style={input}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={deposit}
+                  onChange={e => setDeposit(e.target.value)}
+                  placeholder={`Less than ${fmt(total, false, symbol)}`}
+                />
+              </div>
+              <button style={{ ...primaryBtn, opacity: busy || !depositOk ? 0.7 : 1 }} disabled={busy || !depositOk} onClick={saveDeposit}>
+                {busy ? 'Saving…' : 'Save deposit'}
+              </button>
+              <button style={quietBtn} disabled={busy} onClick={() => setTakingDeposit(false)}>Never mind</button>
+              {deposit.trim() !== '' && !depositOk && (
+                <p style={{ flexBasis: '100%', margin: 0, fontSize: 15, lineHeight: 1.6, color: 'var(--warn)' }}>
+                  A deposit is more than nothing and less than the whole {fmt(total, false, symbol)}. If they paid it all, choose Paid in full.
+                </p>
+              )}
+            </div>
+          )}
+        </PanelBlock>
+      )}
 
       {/* THEIR WORDS */}
       {(b.guest_notes || '').trim() && (
