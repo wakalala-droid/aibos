@@ -808,6 +808,11 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0 && e.pointerType === 'mouse') return;
+      // Never on something the owner is using. A card is explainable as a
+      // whole, and a long press inside one of its text boxes (the phone's way
+      // to paste) opened the explainer and moved the cursor into the chat, so
+      // what they typed next landed in the assistant instead of the form.
+      if ((e.target as HTMLElement | null)?.closest('input, textarea, select, button, a, label, [contenteditable="true"]')) return;
       const target = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-ai-explain]');
       if (!target) return;
 
