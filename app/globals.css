@@ -360,6 +360,7 @@ body {
    accent colour comes from --card-glow, which KPICard sets per card so each
    tile glows in its own colour. */
 .kpi-card {
+  container-type: inline-size;   /* lets .kpi-value size itself to the card */
   background:
     radial-gradient(115% 75% at 100% 0%, var(--card-glow), transparent 60%),
     linear-gradient(180deg, var(--card-sheen), transparent 38%),
@@ -395,6 +396,10 @@ body {
 .kpi-card .kpi-value {
   font-family: 'Geist', sans-serif;
   font-size: var(--fs-display);
+  /* Full amounts ("K999,999.99") are longer than the old "K1.0M"-style
+     shorthand, and the card clips what overflows. Shrink to the card instead:
+     never below 20px, never above the display size. */
+  font-size: clamp(1.25rem, 11cqi, var(--fs-display));
   font-weight: 800;
   color: var(--text-1);
   letter-spacing: -0.03em;

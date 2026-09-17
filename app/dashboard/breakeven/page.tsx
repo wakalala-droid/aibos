@@ -140,7 +140,7 @@ export default function BreakevenPage() {
               <Bar dataKey="FixedCosts"  stackId="a" fill="var(--warn)"    fillOpacity={0.6} name="Fixed Costs"    radius={[0,0,0,0]} />
               <Bar dataKey="VarCosts"    stackId="a" fill="var(--purple)"  fillOpacity={0.6} name="Variable Costs" radius={[4,4,0,0]} />
               <Line type="monotone" dataKey="Revenue"   stroke="var(--good)" strokeWidth={2.2} dot={{ r: 4, fill: 'var(--good)', strokeWidth: 0 }} name="Revenue" />
-              <ReferenceLine y={bepRevenue} stroke="var(--cyan)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: `BEP: ${sym}${(bepRevenue/1000).toFixed(0)}k`, fill: 'var(--cyan)', fontSize: 12, position: 'insideTopRight' }} />
+              <ReferenceLine y={bepRevenue} stroke="var(--cyan)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: `Break-even: ${fmt(bepRevenue, true, sym)}`, fill: 'var(--cyan)', fontSize: 12, position: 'insideTopRight' }} />
             </ComposedChart>
           </ResponsiveContainer>
         </SectionCard>

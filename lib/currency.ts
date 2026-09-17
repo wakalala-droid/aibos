@@ -58,11 +58,29 @@ export function getCurrencySymbol(): string {
   return _sym;
 }
 
+/** A full amount: thousands separated, ngwee shown only when there are some. */
+function fullAmount(abs: number): string {
+  const cents = Math.round(abs * 100) % 100 !== 0;
+  return abs.toLocaleString("en-ZM", {
+    minimumFractionDigits: cents ? 2 : 0,
+    maximumFractionDigits: cents ? 2 : 0,
+  });
+}
+
+/** Millions as "1.25M", "12.5M", "120M": never more than two decimals, no trailing zeros. */
+function millions(abs: number): string {
+  const m = abs / 1_000_000;
+  return `${(m < 100 ? m.toFixed(2) : m.toFixed(0)).replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "")}M`;
+}
+
 /**
  * formatCurrency(value, compact?, symbolOverride?)
- * - compact=true  → abbreviate large numbers (1.2M, 450K)
- * - compact=false/omitted → full formatted number
+ * - compact=true  → millions shorten to "K1.25M"; anything below a million is the full amount
+ * - compact=false/omitted → always the full amount
  * - symbolOverride → use this symbol instead of the global one (pages pass `sym` explicitly)
+ *
+ * Owners asked for "K11,630.50", not "K11.6K": a thousand-shorthand reads as
+ * a second currency sign and hides the ngwee they are reconciling against.
  */
 export function formatCurrency(
   value: number | null | undefined,
@@ -70,26 +88,22 @@ export function formatCurrency(
   symbolOverride?: string
 ): string {
   const sym = symbolOverride || _sym || "K";
-  const num = value ?? 0;
+  const num = Number(value) || 0;
   const sign = num < 0 ? "-" : "";
   const abs = Math.abs(num);
 
-  if (compact) {
-    if (abs >= 1_000_000) return `${sign}${sym}${(abs / 1_000_000).toFixed(2)}M`;
-    if (abs >= 1_000) return `${sign}${sym}${(abs / 1_000).toFixed(1)}K`;
-    return `${sign}${sym}${abs.toFixed(0)}`;
-  }
-
-  return `${sign}${sym}${abs.toLocaleString("en-ZM", { maximumFractionDigits: 0 })}`;
+  if (compact && abs >= 1_000_000) return `${sign}${sym}${millions(abs)}`;
+  return `${sign}${sym}${fullAmount(abs)}`;
 }
 
 /** Alias used by every page: import { fmt } from '@/lib/utils' */
 export const fmt = formatCurrency;
 
 /**
- * formatAxis(value) — compact tick label for chart axes.
+ * formatAxis(value) — tick label for chart axes.
  * No currency symbol (the axis already lives in a currency context and the
- * tooltip shows the full amount). Thousands → "80k", "450k"; millions → "1.2M".
+ * tooltip shows the full amount). Whole amounts below a million ("80,000"),
+ * millions as "1.2M".
  */
 export function formatAxis(value: number | null | undefined): string {
   const num = Number(value) || 0;
@@ -100,8 +114,5 @@ export function formatAxis(value: number | null | undefined): string {
     const m = abs / 1_000_000;
     return `${sign}${(m < 10 ? m.toFixed(1) : m.toFixed(0)).replace(/\.0$/, "")}M`;
   }
-  if (abs >= 1_000) {
-    return `${sign}${Math.round(abs / 1_000)}k`;
-  }
-  return `${sign}${Math.round(abs)}`;
+  return `${sign}${Math.round(abs).toLocaleString("en-ZM")}`;
 }
