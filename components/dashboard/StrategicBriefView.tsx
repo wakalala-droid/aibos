@@ -145,7 +145,7 @@ export default function StrategicBriefView({
         <KPICard label="HEALTH SCORE" value={String(health.score)} sub={health.label}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke={healthColour} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           iconBg={`color-mix(in srgb, ${healthColour} 15%, transparent)`} sparkColor={healthColour} delay={0} />
-        <KPICard label="TOTAL REVENUE" value={fmt(kpi.totalRevenue, true, sym)} sub={monthly.length ? `${periodLabel} · vs month before` : 'no months yet'} growth={revenueGrowth}
+        <KPICard label="TOTAL REVENUE" value={fmt(kpi.totalRevenue, true, sym)} sub={monthly.length > 1 ? `${periodLabel} · change vs month before` : monthly.length ? periodLabel : 'no months yet'} growth={revenueGrowth}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><polyline points="16 7 22 7 22 13" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkData={monthly.slice(-6).map((m) => Number(m.Revenue) || 0)} sparkColor="var(--good)" delay={0.06} />
         <KPICard label="NET PROFIT" value={fmt(kpi.totalProfit, true, sym)} sub={`${kpi.avgMargin.toFixed(1)}% avg margin`} growth={profitGrowth}

@@ -221,7 +221,7 @@ export default function DataStudio() {
         eyebrowColour="var(--cyan)"
         title="Data Studio"
         subtitle={hasData
-          ? `${filename ?? "file"}${activeSheet ? ` · ${activeSheet}` : ""} · ${rows.length} periods · Excel-style + AI formulas`
+          ? `${filename ?? "Your recorded books"}${activeSheet ? ` · ${activeSheet}` : ""} · ${rows.length} ${rows.length === 1 ? "month" : "months"} · Excel-style + AI formulas`
           : "Excel-style formula engine + plain-English AI formulas"}
       />
 
@@ -539,7 +539,7 @@ export default function DataStudio() {
 
       {/* ── DATA GRID TAB ──────────────────────────────────────────────── */}
       {tab === "grid" && (
-        <SectionCard title="Data Grid" subtitle={hasData ? `${rows.length} periods` : undefined} delay={0.04} style={{ padding: 0, overflow: "hidden" }}>
+        <SectionCard title="Data Grid" subtitle={hasData ? `${rows.length} ${rows.length === 1 ? "month" : "months"}` : undefined} delay={0.04} style={{ padding: 0, overflow: "hidden" }}>
           {!hasData ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 260, gap: 10, padding: 24 }}>
               <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
