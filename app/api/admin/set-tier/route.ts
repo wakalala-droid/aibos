@@ -1,6 +1,7 @@
 /**
  * POST /api/admin/set-tier — promote/demote any account's tier.
- * Body: { targetUserId: string, tier: Tier, source?: string, billing?: 'monthly' | 'annual' }
+ * Body: { targetUserId: string, tier: Tier, source?: string, billing?: 'monthly' | 'annual',
+ *         schedule?: 'join_date' }
  * `tier` is validated against the ladder in lib/tiers.ts, not a list kept here.
  *
  * Admin-verified; writes `profiles` (tier, tier_source, tier_granted_by/at,
@@ -14,6 +15,11 @@
  * were demo grants that never end, so a customer who paid for one month kept
  * the plan for ever, and a lapsed customer who paid again still read as lapsed
  * because their old end date was left behind.
+ *
+ * schedule 'join_date' (with source 'payment') puts an account on billing
+ * without recording money: the plan runs to the next date on the day of the
+ * month they joined, and from then the renewal run (aibos-api billing.py)
+ * reminds them and asks for payment on that day every period.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,9 +32,28 @@ import { createServiceClient } from '@/lib/supabase-admin';
 import { isTier } from '@/lib/tiers';
 
 const SOURCES = ['self', 'payment', 'admin_demo'] as const;
-/** Days a paid period lasts. Keep in step with aibos-api main.PERIOD_DAYS. */
-const PERIOD_DAYS = { monthly: 31, annual: 366 } as const;
 const DAY = 86_400_000;
+/** Paid features keep working this long after a period ends (entitlements.py GRACE_DAYS). */
+const GRACE_DAYS = 7;
+
+/** One period on, on the anchor day of the month. A month without that day
+ *  ends on its last day. Keep in step with aibos-api billing.add_period. */
+function addPeriod(start: Date, billing: 'monthly' | 'annual', anchorDay?: number): Date {
+  const day = anchorDay ?? start.getUTCDate();
+  const year = billing === 'annual' ? start.getUTCFullYear() + 1 : start.getUTCFullYear() + Math.floor((start.getUTCMonth() + 1) / 12);
+  const month = billing === 'annual' ? start.getUTCMonth() : (start.getUTCMonth() + 1) % 12;
+  const last = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(year, month, Math.min(day, last), start.getUTCHours(),
+    start.getUTCMinutes(), start.getUTCSeconds(), start.getUTCMilliseconds()));
+}
+
+/** The day a renewal lands on: the end date's, unless a short month cut it
+ *  and the join day is later. Keep in step with aibos-api billing.anchor_for. */
+function anchorFor(until: Date, joined: Date | null): number {
+  const day = until.getUTCDate();
+  const last = new Date(Date.UTC(until.getUTCFullYear(), until.getUTCMonth() + 1, 0)).getUTCDate();
+  return day === last && joined && joined.getUTCDate() > day ? joined.getUTCDate() : day;
+}
 
 export async function POST(req: NextRequest) {
   const auth = await requireAdmin();
@@ -39,6 +64,7 @@ export async function POST(req: NextRequest) {
     tier?: string;
     source?: string;
     billing?: string;
+    schedule?: string;
   };
 
   const targetUserId = body.targetUserId;
@@ -47,12 +73,16 @@ export async function POST(req: NextRequest) {
     ? (body.source as string)
     : 'admin_demo';
   const billing = body.billing === 'annual' ? 'annual' : 'monthly';
+  const fromJoin = body.schedule === 'join_date';
 
   if (!targetUserId || !isTier(tier)) {
     return NextResponse.json({ error: 'targetUserId and a valid tier are required.' }, { status: 400 });
   }
   if (source === 'payment' && tier === 'free') {
     return NextResponse.json({ error: 'A payment is for a paid plan.' }, { status: 400 });
+  }
+  if (fromJoin && source !== 'payment') {
+    return NextResponse.json({ error: 'Billing from the join date is for a paid plan.' }, { status: 400 });
   }
 
   try {
@@ -73,13 +103,25 @@ export async function POST(req: NextRequest) {
     if (source === 'payment') {
       const { data: current } = await admin
         .from('profiles')
-        .select('tier, tier_source, paid_until')
+        .select('tier, tier_source, paid_until, created_at')
         .eq('id', targetUserId)
         .maybeSingle();
-      const until = current?.tier_source === 'payment' && current?.paid_until ? new Date(current.paid_until as string) : null;
-      const extend = until && current?.tier === tier && until.getTime() > now.getTime();
-      const start = extend ? (until as Date) : now;
-      patch.paid_until = new Date(start.getTime() + PERIOD_DAYS[billing] * DAY).toISOString();
+      const joined = current?.created_at ? new Date(current.created_at as string) : null;
+      if (fromJoin) {
+        if (!joined) return NextResponse.json({ error: 'This account has no join date.' }, { status: 400 });
+        // The next date on the day they joined that is still to come.
+        let next = joined;
+        while (next.getTime() <= now.getTime()) next = addPeriod(next, billing, joined.getUTCDate());
+        patch.paid_until = next.toISOString();
+      } else {
+        // The same plan paid before it ends, or in the week of grace after,
+        // runs on from the old end date so the billing day never moves.
+        const until = current?.tier_source === 'payment' && current?.paid_until ? new Date(current.paid_until as string) : null;
+        const extend = until && current?.tier === tier && now.getTime() < until.getTime() + GRACE_DAYS * DAY;
+        patch.paid_until = (extend
+          ? addPeriod(until as Date, billing, anchorFor(until as Date, joined))
+          : addPeriod(now, billing)).toISOString();
+      }
     }
 
     let result = await admin
@@ -111,7 +153,11 @@ export async function POST(req: NextRequest) {
       admin_email: auth.user.email,
       target_user_id: targetUserId,
       action: 'set_tier',
-      detail: { tier, source, ...(source === 'payment' ? { billing, paid_until: patch.paid_until ?? null } : {}) },
+      detail: {
+        tier, source,
+        ...(source === 'payment' ? { billing, paid_until: patch.paid_until ?? null } : {}),
+        ...(fromJoin ? { schedule: 'join_date' } : {}),
+      },
     });
 
     return NextResponse.json({

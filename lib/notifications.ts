@@ -145,6 +145,10 @@ const FEED_SEVERITY: Record<string, NotifySeverity> = {
   booking_cancelled: 'warning',
   // A customer's money arrived for an invoice already paid or cancelled.
   invoice_payment_unmatched: 'warning',
+  // The plan's renewal: a heads-up, the day itself, then the last call.
+  plan_renews_soon: 'info',
+  plan_renews_today: 'warning',
+  plan_renewal_last_call: 'critical',
 };
 
 function toNotification(row: FeedRow): Notification {

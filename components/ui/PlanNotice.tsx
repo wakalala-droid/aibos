@@ -13,8 +13,8 @@
  *    offers to try again.
  *
  * 2. When a paid plan has ended or is about to.
- *    A plan bought with mobile money is bought for a month or a year and nothing
- *    renews by itself. Without this, the first sign of a lapsed plan was every
+ *    A plan bought with mobile money is bought for a month or a year, and nothing
+ *    is taken without the owner approving it. Without this, the first sign of a lapsed plan was every
  *    paid screen asking to "upgrade" to the plan the owner had already bought.
  *    Someone working in a business that invited them is told to ask the owner,
  *    because only the owner can pay.
@@ -88,7 +88,7 @@ export default function PlanNotice() {
           title={ended ? `Your ${name} plan ended on ${longDate(paidUntil)}` : `Your ${name} plan ends on ${longDate(paidUntil)}`}
           body={ended
             ? `Everything stays on until ${off}. Renew before then to keep ${name} without a break.`
-            : `Nothing renews by itself. Renew now and the new period starts when this one ends, so you lose no days.`}
+            : `Pay now and the new period starts when this one ends, so you lose no days. Nothing is taken until you approve it.`}
           action={<Link href={`/checkout?plan=${serverTier}`} style={actionStyle}>Renew {name}</Link>}
         />
       );

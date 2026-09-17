@@ -25,7 +25,11 @@ function fmtDateTime(v: string | null | undefined): string {
 /** Plain English for an audit row. Without this the new hospitality actions
  *  render as raw ids next to a sentence, which reads as a bug in the log. */
 function describeAudit(action: string, detail: unknown): string {
-  const d = (detail ?? {}) as { tier?: string; source?: string; billing?: string; paid_until?: string | null; property?: string; units?: string[]; result?: string };
+  const d = (detail ?? {}) as { tier?: string; source?: string; billing?: string; paid_until?: string | null; schedule?: string; property?: string; units?: string[]; result?: string };
+  if (action === 'set_tier' && d.schedule === 'join_date') {
+    const name = isTier(d.tier) ? TIERS[d.tier].name : String(d.tier ?? '');
+    return `Put on ${name}, billed ${d.billing === 'annual' ? 'yearly' : 'monthly'} from the day they joined${d.paid_until ? `. First renewal ${fmtDate(d.paid_until)}` : ''}`;
+  }
   if (action === 'set_tier' && d.source === 'payment') {
     const name = isTier(d.tier) ? TIERS[d.tier].name : String(d.tier ?? '');
     return `Recorded a ${d.billing === 'annual' ? 'yearly' : 'monthly'} ${name} payment${d.paid_until ? `, paid until ${fmtDate(d.paid_until)}` : ''}`;
@@ -107,6 +111,103 @@ function ManualPayment({ userId, currentTier, onSaved }: { userId: string; curre
         <button type="button" onClick={() => void save()} disabled={busy}
           style={{ alignSelf: 'flex-end', minHeight: 40, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#fff', fontWeight: 700, fontSize: 'var(--fs-body)', cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
           {busy ? 'Saving…' : 'Record payment'}
+        </button>
+      </div>
+      {msg && (
+        <p role={msg.ok ? 'status' : 'alert'} style={{ margin: '12px 0 0', fontSize: 'var(--fs-body)', color: msg.ok ? 'var(--good)' : 'var(--crit)' }}>{msg.text}</p>
+      )}
+    </div>
+  );
+}
+
+/** The next date on the day of the month they joined. Mirrors set-tier. */
+function nextOnJoinDay(joined: Date, billing: 'monthly' | 'annual'): Date {
+  const day = joined.getUTCDate();
+  let next = joined;
+  while (next.getTime() <= Date.now()) {
+    const year = billing === 'annual' ? next.getUTCFullYear() + 1 : next.getUTCFullYear() + Math.floor((next.getUTCMonth() + 1) / 12);
+    const month = billing === 'annual' ? next.getUTCMonth() : (next.getUTCMonth() + 1) % 12;
+    const last = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+    next = new Date(Date.UTC(year, month, Math.min(day, last), next.getUTCHours(), next.getUTCMinutes(), next.getUTCSeconds()));
+  }
+  return next;
+}
+
+function ordinal(n: number): string {
+  const s = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th';
+  return `${n}${s}`;
+}
+
+/**
+ * Put an account on billing that renews on the day they joined. Nothing is
+ * charged here: the plan runs to that date, and from then the renewal run
+ * reminds the customer (in the app and by email) and asks their phone for the
+ * money on that day each period, once mobile money is switched on.
+ */
+function BillingFromJoin({ userId, currentTier, joinedAt, scheduledUntil, onSaved }: {
+  userId: string; currentTier: string; joinedAt: string | null; scheduledUntil: string | null; onSaved: () => void;
+}) {
+  const paid = TIER_ORDER.filter((t): t is Exclude<Tier, 'free'> => t !== 'free');
+  const [plan, setPlan] = useState<Tier>(isTier(currentTier) && currentTier !== 'free' ? currentTier : 'growth');
+  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
+  const joined = joinedAt ? new Date(joinedAt) : null;
+  if (!joined || Number.isNaN(joined.getTime())) return null;
+  const next = nextOnJoinDay(joined, billing);
+  const price = billing === 'annual' ? TIERS[plan].priceAnnual : TIERS[plan].priceMonthly;
+  const every = billing === 'annual'
+    ? `every year on ${joined.toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}`
+    : `on the ${ordinal(joined.getUTCDate())} of every month`;
+
+  async function start() {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const r = await fetch('/api/admin/set-tier', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: userId, tier: plan, source: 'payment', billing, schedule: 'join_date' }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || `Could not start billing (${r.status})`);
+      const until = j.profile?.paid_until as string | null | undefined;
+      setMsg({ ok: true, text: j.note || `Billing started. ${TIERS[plan].name} renews on ${fmtDate(until)}, then ${every}.` });
+      onSaved();
+    } catch (e) {
+      setMsg({ ok: false, text: (e as Error).message });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const field: React.CSSProperties = { minHeight: 40, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
+  return (
+    <div className="section-card" style={{ marginBottom: 16 }}>
+      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Bill from the day they joined</p>
+      <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 14px', lineHeight: 1.55 }}>
+        They joined on {fmtDate(joinedAt)}. The plan runs until {fmtDate(next.toISOString())} and renews {every} for K{price.toLocaleString()}.
+        AIBOS reminds them three days before, asks for payment on the day and warns them before it switches off. Nothing is charged now.
+        {scheduledUntil ? ` Right now it renews on ${fmtDate(scheduledUntil)}.` : ''}
+      </p>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+          Plan
+          <select value={plan} onChange={(e) => setPlan(e.target.value as Tier)} style={field}>
+            {paid.map((t) => <option key={t} value={t}>{TIERS[t].name}</option>)}
+          </select>
+        </label>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+          Every
+          <select value={billing} onChange={(e) => setBilling(e.target.value === 'annual' ? 'annual' : 'monthly')} style={field}>
+            <option value="monthly">Month (K{TIERS[plan].priceMonthly.toLocaleString()})</option>
+            <option value="annual">Year (K{TIERS[plan].priceAnnual.toLocaleString()})</option>
+          </select>
+        </label>
+        <button type="button" onClick={() => void start()} disabled={busy}
+          style={{ alignSelf: 'flex-end', minHeight: 40, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#fff', fontWeight: 700, fontSize: 'var(--fs-body)', cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+          {busy ? 'Saving…' : 'Start billing'}
         </button>
       </div>
       {msg && (
@@ -219,6 +320,16 @@ export default function AdminAccountDetailPage() {
           <Fact label="Last active" value={fmtDateTime(p.last_active_at)} />
         </div>
       </div>
+
+      {userId && (
+        <BillingFromJoin
+          userId={userId}
+          currentTier={tier}
+          joinedAt={p.created_at}
+          scheduledUntil={p.tier_source === 'payment' ? p.paid_until : null}
+          onSaved={() => void load(true)}
+        />
+      )}
 
       {userId && <ManualPayment userId={userId} currentTier={tier} onSaved={() => void load(true)} />}
 

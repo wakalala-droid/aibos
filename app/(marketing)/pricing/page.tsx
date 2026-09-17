@@ -25,7 +25,7 @@ const TIMELINE: { when: string; what: string }[] = [
 ];
 
 const TRUST: [string, string][] = [
-  ['Nothing renews by itself', 'Each payment covers a month or a year. Nothing is taken automatically, so there is nothing to cancel: when it ends you choose whether to pay again.'],
+  ['You approve every payment', 'Each payment covers a month or a year. On your renewal day AIBOS reminds you in the app and by email. Nothing is taken until you approve it, so there is nothing to cancel: stop paying and the plan simply ends.'],
   ['Your data is yours', 'Export your full history on any plan, including after you cancel. We never hold it hostage.'],
   ['No surprise fees', 'The price you see is the price you pay. No drip pricing, no pre-ticked add-ons at checkout.'],
   ['Fair price changes', 'We give advance notice before any plan or price change. No silent increases.'],

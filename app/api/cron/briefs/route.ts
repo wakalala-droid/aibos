@@ -44,7 +44,14 @@ export async function GET(req: NextRequest) {
       signal: AbortSignal.timeout(55_000),
     });
     const data = await res.json().catch(() => ({}));
-    return NextResponse.json(data, { status: res.status });
+    // Plan renewals ride on the same daily trigger. The API also runs them
+    // every hour on its own; this covers a day it spent asleep.
+    const renewals = await fetch(`${BACKEND}/payments/renewals`, {
+      method: 'POST',
+      headers: { 'X-Cron-Secret': secret },
+      signal: AbortSignal.timeout(20_000),
+    }).then(r => r.json()).catch((e: Error) => ({ error: e.message }));
+    return NextResponse.json({ ...data, renewals }, { status: res.status });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 502 });
   }

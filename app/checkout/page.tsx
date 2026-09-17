@@ -205,7 +205,7 @@ function CheckoutInner() {
         <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 24px', lineHeight: 1.55 }}>
           Payment confirmed. Everything in {meta.name} is switched on
           {paidUntil && serverTier === planParam ? ` until ${longDate(paidUntil)}` : ''}.
-          Nothing renews by itself, and the app reminds you a few days before it ends.
+          It renews on the same day each {billing === 'annual' ? 'year' : 'month'}. AIBOS reminds you before then, and nothing is taken until you approve it.
         </p>
         <Link href="/dashboard" style={btnPrimary}>Go to dashboard →</Link>
       </div>
@@ -274,7 +274,7 @@ function CheckoutInner() {
           })}
         </div>
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '12px 0 0', lineHeight: 1.5 }}>
-          Total today: <strong style={{ color: 'var(--text-2)' }}>K{amount.toLocaleString()}</strong> for {period}. No setup fees or add-ons. Nothing renews by itself.
+          Total today: <strong style={{ color: 'var(--text-2)' }}>K{amount.toLocaleString()}</strong> for {period}. No setup fees or add-ons. Nothing is taken without your approval.
         </p>
       </div>
 
