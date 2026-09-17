@@ -5,7 +5,7 @@
 // with lowercase fallback, then computes profit/margin — so it works regardless of
 // the casing the backend returns.
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFinancialStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/currency";
@@ -102,6 +102,15 @@ export default function DataStudio() {
   const filename     = store.filename ?? null;
   const monthly      = useMemo(() => store.monthly ?? [], [store.monthly]);
   const activeSheet  = store.activeSheet ?? null;
+
+  // The data studio sits outside /dashboard, and only the dashboard layout
+  // loads the recorded books into the store. Opened directly, it showed
+  // "No data loaded" to every owner who records instead of uploading.
+  const { refreshTwin, twinLoading, twinChecked, uploadedFile } = store;
+  useEffect(() => {
+    if (!uploadedFile && !twinChecked) void refreshTwin();
+  }, [uploadedFile, twinChecked, refreshTwin]);
+  const figuresLoading = twinLoading || (!twinChecked && !uploadedFile);
 
   const [formula,  setFormula]  = useState("");
   const [loading,  setLoading]  = useState(false);
@@ -515,11 +524,13 @@ export default function DataStudio() {
                     stroke="var(--warn)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <p style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: "var(--warn)", margin: "0 0 4px" }}>
-                  No data loaded
+                  {figuresLoading ? "Loading your figures…" : "No data loaded"}
                 </p>
-                <p style={{ fontSize: 'var(--fs-label)', color: "var(--text-3)", margin: 0 }}>
-                  Upload a financial file on the dashboard to run formulas on real data.
-                </p>
+                {!figuresLoading && (
+                  <p style={{ fontSize: 'var(--fs-label)', color: "var(--text-3)", margin: 0 }}>
+                    Record sales and costs as they happen, or upload a financial file on the dashboard, to run formulas on real data.
+                  </p>
+                )}
               </div>
             )}
           </div>
