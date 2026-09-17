@@ -292,9 +292,15 @@ export default function SchedulePage() {
         <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
           {fmtDay(when)}{it.all_day ? '' : ` · ${fmtTime(when)}`}
           {it.with_whom ? ` · ${it.with_whom}` : ''}{it.location ? ` · ${it.location}` : ''}
-          {it.recurrence && it.next_occurrences && it.next_occurrences.length > 1 && (
-            <span> · ↻ next {it.next_occurrences.slice(1, 3).map(o => new Date(o).toLocaleDateString([], { day: 'numeric', month: 'short' })).join(', ')}</span>
-          )}
+          {/* Only dates still ahead. An overdue monthly deadline listed
+              "next 10 Aug, 10 Sept" when both had already gone by. */}
+          {(() => {
+            const ahead = (it.recurrence && it.next_occurrences ? it.next_occurrences.slice(1) : [])
+              .filter(o => new Date(o).getTime() > Date.now()).slice(0, 2);
+            return ahead.length > 0 && (
+              <span> · ↻ next {ahead.map(o => new Date(o).toLocaleDateString([], { day: 'numeric', month: 'short' })).join(', ')}</span>
+            );
+          })()}
           {finished && ` · ${it.status === 'done' ? 'done' : 'missed'}`}
           {it.linked_event_id && ' · recorded ✓'}
         </div>
