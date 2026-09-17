@@ -160,12 +160,12 @@ export default function InstallPrompt() {
       <div style={{ flex: '1 1 280px', minWidth: 0 }}>
         <p style={{ margin: 0, fontSize: 18, lineHeight: 1.5, fontWeight: 700, color: 'var(--text-1)' }}>{title}</p>
         {mode === 'native' && (
-          <p style={{ margin: '4px 0 0', fontSize: 16, lineHeight: 1.6, color: 'var(--text-2)' }}>
+          <p style={{ margin: '4px 0 0', fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)' }}>
             Open it with one {phone ? 'tap' : 'click'}, like any other app. It opens straight to your business, full screen and without the browser around it.
           </p>
         )}
         {mode === 'ios' && (
-          <ol style={{ margin: '6px 0 0', paddingLeft: 22, fontSize: 16, lineHeight: 1.7, color: 'var(--text-2)' }}>
+          <ol style={{ margin: '6px 0 0', paddingLeft: 22, fontSize: 18, lineHeight: 1.7, color: 'var(--text-2)' }}>
             <li>
               Tap the Share button <ShareIcon /> {/iPad/.test(navigator.userAgent) ? 'at the top of the screen' : 'at the bottom of the screen'}.
             </li>
@@ -173,7 +173,7 @@ export default function InstallPrompt() {
           </ol>
         )}
         {mode === 'mac-safari' && (
-          <p style={{ margin: '4px 0 0', fontSize: 16, lineHeight: 1.6, color: 'var(--text-2)' }}>
+          <p style={{ margin: '4px 0 0', fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)' }}>
             In the menu bar choose <strong style={{ color: 'var(--text-1)' }}>File</strong>, then <strong style={{ color: 'var(--text-1)' }}>Add to Dock</strong>. AIBOS then opens from your Dock like any other app.
           </p>
         )}
