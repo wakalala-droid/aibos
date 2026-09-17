@@ -17,7 +17,7 @@ import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/currency';
 import {
-  listBookings, listUnits, confirmBooking, declineBooking, guestEmailOutcome,
+  listBookings, listUnits, confirmBooking, declineBooking, updateBooking, guestEmailOutcome,
   nights, bookingSymbol, SOURCE_LABEL,
   type Booking, type BookingStatus, type BookingSource, type Unit,
 } from '@/lib/hospitality';
@@ -54,11 +54,24 @@ const statusMeta = (s: string) => STATUS_META[s as RowStatus] ?? { label: s, col
 const VIEWS: { key: string; label: string; statuses: RowStatus[] }[] = [
   { key: 'pending',   label: 'Waiting on you', statuses: ['pending'] },
   { key: 'live',      label: 'Live bookings',  statuses: ['pending', 'confirmed'] },
+  { key: 'owed',      label: 'Still owed',     statuses: ['confirmed', 'completed'] },
   { key: 'confirmed', label: 'Confirmed',      statuses: ['confirmed'] },
   { key: 'stayed',    label: 'Stayed',         statuses: ['completed'] },
   { key: 'off',       label: 'Did not happen', statuses: ['declined', 'cancelled', 'no_show'] },
   { key: 'all',       label: 'Everything',     statuses: [] },
 ];
+
+/** A stay that is income, and how much of it the guest has not paid. The server
+ *  counts an unpaid stay as money owed, not cash, until it is marked paid. */
+const earns = (b: Booking) =>
+  (b.status === 'confirmed' || b.status === 'completed') && (b.total_amount || 0) > 0 && b.payment_status !== 'refunded';
+const owedOn = (b: Booking) => {
+  if (!earns(b)) return 0;
+  const total = b.total_amount || 0;
+  if (b.payment_status === 'paid') return 0;
+  if (b.payment_status === 'partial') return Math.max(0, total - Math.min(b.deposit_amount || 0, total));
+  return total;
+};
 
 const SORTS: { key: 'check_in' | 'created_at'; label: string }[] = [
   { key: 'check_in',   label: 'By arrival date' },
@@ -157,7 +170,7 @@ export default function BookingsPage() {
         // Upcoming stays read soonest first. Anything already over, and the
         // order they came in, read newest first, or a property with history
         // only ever sees its oldest 200.
-        newestFirst: order === 'created_at' || !['pending', 'live', 'confirmed'].includes(view),
+        newestFirst: order === 'created_at' || !['pending', 'live', 'confirmed', 'owed'].includes(view),
         // The server matches the search term AFTER the limit is applied, so a
         // capped read plus a search would silently skip matches further down.
         limit: search ? undefined : 200,
@@ -180,9 +193,12 @@ export default function BookingsPage() {
    *  only row on this page where waiting costs the owner a booking. Sort is
    *  stable, so the chosen order still holds inside each group. */
   const rows = useMemo(
-    () => [...bookings].sort((a, b) => Number(b.status === 'pending') - Number(a.status === 'pending')),
-    [bookings],
+    () => [...bookings]
+      .filter(b => view !== 'owed' || owedOn(b) > 0)
+      .sort((a, b) => Number(b.status === 'pending') - Number(a.status === 'pending')),
+    [bookings, view],
   );
+  const owedTotal = useMemo(() => rows.reduce((sum, b) => sum + owedOn(b), 0), [rows]);
   const waiting = useMemo(() => rows.filter(b => b.status === 'pending').length, [rows]);
 
   const answer = async (id: string, yes: boolean) => {
@@ -202,9 +218,29 @@ export default function BookingsPage() {
     }
   };
 
+  /** The guest has paid in full: the stay's money moves from owed into cash. */
+  const markPaid = async (id: string) => {
+    setBusyId(id); setError(''); setEmailNote(null);
+    try {
+      await updateBooking(id, { payment_status: 'paid' });
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not mark that booking paid.');
+    } finally {
+      setBusyId('');
+    }
+  };
+
   const subtitle = loading
     ? 'Loading…'
-    : waiting > 0
+    : view === 'owed'
+      ? !rows.length
+        ? 'Every stay is paid'
+        : new Set(rows.map(r => r.currency)).size === 1
+          ? `${fmt(owedTotal, false, bookingSymbol(rows[0]))} still owed on ${rows.length} stay${rows.length === 1 ? '' : 's'}`
+          // Kwacha and dollars do not add up to one figure.
+          : `${rows.length} stays not fully paid`
+      : waiting > 0
       ? `${waiting} request${waiting === 1 ? '' : 's'} waiting on your answer`
       : `${rows.length} booking${rows.length === 1 ? '' : 's'}`;
 
@@ -355,12 +391,35 @@ export default function BookingsPage() {
 
                     {/* The booking's OWN symbol. One unit priced in dollars and
                         another in kwacha is normal here. */}
-                    <div style={{ fontSize: FS_BODY, lineHeight: 1.6, fontWeight: 700, color: 'var(--text-1)', textAlign: 'right' }}>
-                      {fmt(b.total_amount || 0, false, bookingSymbol(b))}
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: FS_BODY, lineHeight: 1.6, fontWeight: 700, color: 'var(--text-1)' }}>
+                        {fmt(b.total_amount || 0, false, bookingSymbol(b))}
+                      </div>
+                      {earns(b) && (
+                        <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, fontWeight: 600, color: owedOn(b) > 0 ? 'var(--warn)' : 'var(--good)' }}>
+                          {b.payment_status === 'paid'
+                            ? 'Paid'
+                            : b.payment_status === 'partial'
+                              ? `${fmt(owedOn(b), false, bookingSymbol(b))} still owed`
+                              : 'Not paid yet'}
+                        </div>
+                      )}
+                      {b.payment_status === 'refunded' && (
+                        <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, color: 'var(--text-4)' }}>Refunded</div>
+                      )}
                     </div>
 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                       <StatusBadge status={b.status} />
+                      {owedOn(b) > 0 && (
+                        <button
+                          style={{ ...ghostBtn, padding: '8px 14px', minHeight: 40, color: 'var(--good)', borderColor: 'var(--good)', opacity: busyId === b.id ? 0.6 : 1 }}
+                          disabled={busyId === b.id}
+                          onClick={() => markPaid(b.id)}
+                        >
+                          {busyId === b.id ? 'Saving…' : 'Mark paid'}
+                        </button>
+                      )}
                       {b.status === 'pending' && (
                         <>
                           <button
@@ -428,9 +487,11 @@ export default function BookingsPage() {
         )}
 
         <p style={{ fontSize: FS_SMALL, lineHeight: 1.6, color: 'var(--text-4)', marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-          Confirming a booking records the sale in your books. You can see it in{' '}
+          Confirming a booking records the sale in your books. It counts as money owed to you until you mark it paid,
+          then it moves into your cash. You can see both in{' '}
           <Link href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Cash Intel</Link>.
           Turning one down changes nothing in the books: the dates simply go free again.
+          A deposit or a refund is recorded on the booking itself, on the calendar.
         </p>
       </SectionCard>
     </>
