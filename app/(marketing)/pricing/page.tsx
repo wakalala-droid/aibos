@@ -25,7 +25,7 @@ const TIMELINE: { when: string; what: string }[] = [
 ];
 
 const TRUST: [string, string][] = [
-  ['Cancel anytime', 'The cancel button is never hidden. Stop whenever you like, with no phone call and no retention maze.'],
+  ['Nothing renews by itself', 'Each payment covers a month or a year. Nothing is taken automatically, so there is nothing to cancel: when it ends you choose whether to pay again.'],
   ['Your data is yours', 'Export your full history on any plan, including after you cancel. We never hold it hostage.'],
   ['No surprise fees', 'The price you see is the price you pay. No drip pricing, no pre-ticked add-ons at checkout.'],
   ['Fair price changes', 'We give advance notice before any plan or price change. No silent increases.'],
