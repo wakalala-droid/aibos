@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
-import { TIERS, isTier, usdApprox, type PaidTier, type Tier } from '@/lib/tiers';
+import { TIERS, TIER_ORDER, isTier, usdApprox, type PaidTier, type Tier } from '@/lib/tiers';
 import { initiatePayment, checkPaymentStatus } from '@/lib/api';
 
 // Merchant mobile-money accounts payments are sent to.
@@ -184,6 +184,11 @@ function CheckoutInner() {
   // (aibos-api paid_period_end), so say so rather than selling it as new.
   const renewing = ownPlan && serverTier === planParam && Boolean(paidUntil) && new Date(paidUntil ?? 0).getTime() > Date.now();
   const lapsedSame = ownPlan && planExpired && paidTier === planParam;
+  // Paying for a smaller plan than the one in force switches the account DOWN
+  // to it (the payment sets the plan). A Growth owner could land here from a
+  // pricing link and pay to lose features, with nothing on the page saying so.
+  const downgradeFrom = ownPlan && serverTier && !planExpired
+    && TIER_ORDER.indexOf(serverTier) > TIER_ORDER.indexOf(planParam) ? TIERS[serverTier].name : null;
   const period = billing === 'annual' ? 'a year' : 'a month';
 
   if (status === 'done') {
@@ -214,6 +219,12 @@ function CheckoutInner() {
       <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 20px', letterSpacing: '-0.02em' }}>
         {renewing || lapsedSame ? `Renew ${meta.name}` : 'Checkout'}
       </h1>
+
+      {downgradeFrom && (
+        <p role="alert" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', margin: '0 0 16px', lineHeight: 1.55, padding: '12px 14px', borderRadius: 10, border: '1px solid var(--amber)', background: 'color-mix(in srgb, var(--amber) 10%, transparent)' }}>
+          You are on {downgradeFrom}. Paying for {meta.name} switches this account to {meta.name}, and everything {downgradeFrom} adds is switched off. <Link href="/pricing" style={{ color: 'var(--cyan)' }}>Compare plans</Link>
+        </p>
+      )}
 
       {(renewing || lapsedSame || !ownPlan) && (
         <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: '0 0 16px', lineHeight: 1.55 }}>
