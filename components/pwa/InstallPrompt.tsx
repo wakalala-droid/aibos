@@ -161,7 +161,7 @@ export default function InstallPrompt() {
         <p style={{ margin: 0, fontSize: 18, lineHeight: 1.5, fontWeight: 700, color: 'var(--text-1)' }}>{title}</p>
         {mode === 'native' && (
           <p style={{ margin: '4px 0 0', fontSize: 16, lineHeight: 1.6, color: 'var(--text-2)' }}>
-            Open it with one tap, like any other app. It opens straight to your business, full screen and without the browser around it.
+            Open it with one {phone ? 'tap' : 'click'}, like any other app. It opens straight to your business, full screen and without the browser around it.
           </p>
         )}
         {mode === 'ios' && (

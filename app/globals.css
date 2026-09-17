@@ -396,10 +396,11 @@ body {
 .kpi-card .kpi-value {
   font-family: 'Geist', sans-serif;
   font-size: var(--fs-display);
-  /* Full amounts ("K999,999.99") are longer than the old "K1.0M"-style
-     shorthand, and the card clips what overflows. Shrink to the card instead:
-     never below 20px, never above the display size. */
-  font-size: clamp(1.25rem, 11cqi, var(--fs-display));
+  /* Full amounts are longer than the old "K11.6K" shorthand, and the card
+     clips what overflows. The widest below a million, "-K999,999.99", measures
+     6.44em in Geist bold, so 15% of the card's width always fits it: full size
+     on a roomy card, a little smaller on a narrow one, never below 20px. */
+  font-size: clamp(1.25rem, 15cqi, var(--fs-display));
   font-weight: 800;
   color: var(--text-1);
   letter-spacing: -0.03em;
