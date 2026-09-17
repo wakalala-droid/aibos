@@ -14,6 +14,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { useStore } from '@/lib/store';
 import { subscribeOutbox, outboxCount, flushOutbox } from '@/lib/outbox';
+import { captureInstallPrompt } from './InstallPrompt';
 
 export function OfflineSync() {
   useEffect(() => {
@@ -32,7 +33,10 @@ export function OfflineSync() {
     void flush();
     const onOnline = () => { void flush(); };
     window.addEventListener('online', onOnline);
-    return () => { cancelled = true; window.removeEventListener('online', onOnline); };
+    // The browser offers installation on whichever page loads first; keep the
+    // offer until the dashboard asks (components/pwa/InstallPrompt.tsx).
+    const releaseInstall = captureInstallPrompt();
+    return () => { cancelled = true; window.removeEventListener('online', onOnline); releaseInstall(); };
   }, []);
   return null;
 }

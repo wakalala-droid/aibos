@@ -1,12 +1,11 @@
 {
-  "name": "AIBOS — The brain behind every business",
+  "name": "AIBOS",
   "short_name": "AIBOS",
-  "description": "Record what happens, ask anything, and let AIBOS run the numbers — built for African SMEs.",
+  "description": "Record what happens, ask anything and let AIBOS run the numbers. Built for African businesses.",
   "id": "/dashboard",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#0a0e1a",
   "theme_color": "#0a0e1a",
   "icons": [
