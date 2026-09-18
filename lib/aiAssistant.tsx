@@ -95,26 +95,48 @@ const API = IS_LOCAL ? 'http://localhost:8000' : '/api/proxy';
   website host stops any request there at 60 seconds. A question that needed
   a few lookups while the AI thought, or one asked while the API was waking
   up, ran past that and the owner saw the dots for a minute and then "504".
-  Straight to the API there is no such limit. If the browser cannot reach it
-  that way (a network that blocks it, say) the relay is still tried.
+  Straight to the API there is no such limit.
+
+  Some browsers and networks cannot reach the API directly (a blocking
+  extension, a VPN, an ISP): the request neither connects nor fails for
+  twenty seconds or more. The API now answers within a second of receiving a
+  question, so no answer in DIRECT_CONNECT_MS means it never arrived: the relay
+  is used instead, and for the rest of the visit the direct route is skipped.
 */
 const DIRECT = (() => {
   const raw = (process.env.NEXT_PUBLIC_API_URL || '').trim().replace(/\/+$/, '');
   return !IS_LOCAL && /^https?:\/\//i.test(raw) ? raw : '';
 })();
+const DIRECT_CONNECT_MS = 12_000;
+const DIRECT_OFF_KEY = 'aibos-chat-direct-off';
 
-async function postChat(path: '/chat/stream' | '/chat', body: string, signal: AbortSignal): Promise<Response> {
+function directUsable(): boolean {
+  if (!DIRECT) return false;
+  try { return window.sessionStorage.getItem(DIRECT_OFF_KEY) !== '1'; } catch { return true; }
+}
+
+async function postChat(path: '/chat/stream' | '/chat', body: string, signal: AbortSignal,
+                        connectMs?: number): Promise<Response> {
   // authHeaders from lib/api carries WHICH books: the active business and,
   // for invited staff, whose. The chat used to send the login only, so an
   // owner with two businesses and every invited member of staff were answered
   // from the wrong set of books.
   const headers = { 'Content-Type': 'application/json', ...(await authHeaders()) };
-  if (DIRECT) {
+  if (directUsable()) {
+    const direct = new AbortController();
+    const follow = () => direct.abort();
+    signal.addEventListener('abort', follow);
+    const timer = connectMs ? window.setTimeout(() => direct.abort(), connectMs) : null;
     try {
-      return await fetch(`${DIRECT}${path}`, { method: 'POST', headers, body, signal });
+      // `follow` stays attached on success: when the caller gives up on the
+      // answer, the direct request is closed with it.
+      return await fetch(`${DIRECT}${path}`, { method: 'POST', headers, body, signal: direct.signal });
     } catch (err) {
+      signal.removeEventListener('abort', follow);
       if (signal.aborted) throw err;
-      /* not reachable directly: fall through to the relay */
+      try { window.sessionStorage.setItem(DIRECT_OFF_KEY, '1'); } catch { /* private mode */ }
+    } finally {
+      if (timer) window.clearTimeout(timer);
     }
   }
   return fetch(`${API}${path}`, { method: 'POST', headers, body, signal });
@@ -127,9 +149,11 @@ function deadlineSignal(ms: number): { signal: AbortSignal; clear: () => void } 
   return { signal: ctrl.signal, clear: () => window.clearTimeout(t) };
 }
 
-// Silence this long (not even a heartbeat) means the answer is not coming.
-const STREAM_IDLE_MS = 45_000;
-const BUFFERED_MS = 75_000;
+// Silence this long means the answer is not coming. The API sends a line
+// every 8 seconds while it works, so only a dead connection is this quiet;
+// the margin is for a busy phone or computer that reads the line late.
+const STREAM_IDLE_MS = 90_000;
+const BUFFERED_MS = 90_000;
 
 /** Plain words for a failure. Never a raw status line or a host's error page. */
 function failureText(status: number | null, raw = ''): string {
@@ -698,7 +722,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     try {
       let res: Response;
       try {
-        res = await postChat('/chat/stream', payload, ctrl.signal);
+        res = await postChat('/chat/stream', payload, ctrl.signal, DIRECT_CONNECT_MS);
       } catch (err) {
         if (ctrl.signal.aborted) { pushAssistant(failureText(504), true); setOnline(false); return 'failed'; }
         throw err;
@@ -745,6 +769,9 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         }
       };
       let stopped: string | null = null;
+      // A refusal (no plan, no AI key, a bad request) now arrives as a frame,
+      // because the API opens the answer before it checks anything.
+      let gate: { code: number; detail: string } | null = null;
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -759,8 +786,10 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
           try {
             const msg = JSON.parse(line.slice(5).trim()) as {
               t?: string; tool?: string; status?: string; error?: string; done?: boolean; retry?: boolean;
+              gate?: number; detail?: unknown;
             };
-            if (msg.t) { write(msg.t); setStatus(null); }
+            if (msg.gate) gate = { code: msg.gate, detail: typeof msg.detail === 'string' ? msg.detail : '' };
+            else if (msg.t) { write(msg.t); setStatus(null); }
             else if (msg.tool) setStatus(TOOL_STATUS[msg.tool] ?? 'Looking that up…');
             else if (msg.status === 'thinking') setStatus((s) => s ?? 'Thinking…');
             // retry:false is a spent allowance: the buffered path would only
@@ -769,6 +798,13 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
             else if (msg.error) stopped = stopped ?? msg.error;
           } catch { /* ignore a malformed frame rather than kill the answer */ }
         }
+      }
+      if (gate) {
+        setOnline(true);
+        pushAssistant(gate.code === 402
+          ? `${gate.detail || 'The AI CFO chat is a Pro feature.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`
+          : (gate.detail || 'The chat is unavailable right now. This is a fault on our side.'), true);
+        return 'answered';
       }
       if (bubble.id) {
         if (stopped) write(`\n\n${stopped}`);
