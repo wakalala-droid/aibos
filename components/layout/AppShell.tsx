@@ -9,6 +9,7 @@ import { useTheme } from '@/lib/theme';
 import { ProfileProvider } from '@/lib/profile';
 import { AiAssistantProvider } from '@/lib/aiAssistant';
 import { FloatingAiAssistant } from '@/components/ui/glowing-ai-chat-assistant';
+import BootSplash from '@/components/brand/BootSplash';
 
 // Routes that render full-screen WITHOUT the app chrome (sidebar + padded
 // main area). The login/auth screens are standalone and must not show the
@@ -73,6 +74,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <ProfileProvider>
     <AiAssistantProvider>
     <MotionConfig reducedMotion="user">
+      {/* The opening screen, until the account has been read. */}
+      <BootSplash />
       <a href="#main" className="skip-link">Skip to main content</a>
 
       {/* data-uimode lets CSS give Simple mode its mobile tab bar clearance. */}

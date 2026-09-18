@@ -1122,3 +1122,24 @@ html, body {
   30%, 50%, 70%  { transform: translateX(-4px); }
   40%, 60%       { transform: translateX(4px);  }
 }
+
+/* ── Opening screen (components/brand/BootSplash.tsx) ─────────────────────
+   The mark rises in, the brass rules draw outward from the words, and the
+   whole screen fades once the account is read. If the page's scripts never
+   run, the failsafe lifts it after eight seconds so the app is never stuck
+   behind it. */
+.boot-splash { animation: boot-splash-failsafe 0.4s ease 8s forwards; }
+.boot-splash--leaving { opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
+@keyframes boot-splash-failsafe { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+
+.boot-splash .brand-lockup img { animation: brand-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.boot-splash .brand-rule { animation: brand-rule-draw 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both; }
+.boot-splash .brand-rule:first-child { transform-origin: right center; }
+.boot-splash .brand-rule:last-child { transform-origin: left center; }
+@keyframes brand-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes brand-rule-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-splash * { animation: none !important; }
+  .boot-splash--leaving { transition: none; }
+}

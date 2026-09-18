@@ -33,6 +33,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
+        {/* The opening screen's mark, fetched with the page rather than after it. */}
+        <link rel="preload" as="image" href="/brand/aibos-mark-white-glyph.png" />
       </head>
       <body>
         <ThemeProvider>

@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase';
+import { BrandLockup } from '@/components/brand/BootSplash';
 
 // ─── Google Icon ───────────────────────────────────────────────────
 
@@ -245,14 +246,13 @@ export default function LoginPage() {
         aria-hidden="true"
         style={{ backgroundImage: 'linear-gradient(rgba(99,179,237,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(99,179,237,0.03) 1px,transparent 1px)', backgroundSize: '64px 64px' }}
       />
-      <Suspense fallback={
-        <div style={{ color: '#4a6285', fontSize: 'var(--fs-data)' }}>Loading…</div>
-      }>
+      <Suspense fallback={<BrandLockup markSize={150} />}>
         <LoginForm />
       </Suspense>
       <div className="absolute bottom-6 left-0 right-0 flex justify-center">
-        <p style={{ fontSize: 'var(--fs-label)', color: '#2d4a70', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          AIBOS v2.0 · Next.js + Supabase
+        {/* The name in full. This used to print the tech stack to customers. */}
+        <p style={{ fontSize: 'var(--fs-label)', color: '#5b7196', letterSpacing: '0.18em', textTransform: 'uppercase', textAlign: 'center', padding: '0 16px' }}>
+          Artificial Intelligence Business Operating System
         </p>
       </div>
     </div>
