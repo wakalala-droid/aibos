@@ -1245,6 +1245,21 @@ export async function previewPayroll(period: string, payDate?: string): Promise<
   return data.preview as PayrollPreview;
 }
 
+export interface PayrollRunDeleted {
+  period: string;
+  wages_voided: number;
+  tax_drafts_voided: number;
+  tax_payments_kept: number;
+  loans_restored: number;
+}
+
+/** Undo a run made by mistake: wages voided in the books, unpaid tax drafts
+ *  voided, loan instalments given back, the month free to run again. */
+export async function deletePayrollRun(id: string): Promise<PayrollRunDeleted> {
+  const data = await spineFetch(`/payroll/runs/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  return data as unknown as PayrollRunDeleted;
+}
+
 /** Commit a pay period — posts a Salary event per employee (Pro). */
 export async function runPayroll(period: string, payDate?: string): Promise<PayrollRun> {
   const data = await spineFetch('/payroll/run', {

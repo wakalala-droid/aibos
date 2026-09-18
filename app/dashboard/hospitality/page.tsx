@@ -27,7 +27,7 @@ import { useStore } from '@/lib/store';
 import { canAccess, requiredTier, TIERS, type Tier } from '@/lib/tiers';
 import { fmt, symbolForToken } from '@/lib/currency';
 import {
-  listProperties, listUnits, listBookings, createBooking, cancelBooking, updateBooking,
+  listProperties, listUnits, listBookings, getBooking, createBooking, cancelBooking, updateBooking,
   confirmBooking, declineBooking, createProperty, createUnit, createGuest, guestEmailOutcome,
   occupancyRate, nights, bookingSymbol, SOURCE_LABEL, isDatesTaken,
   type Property, type Unit, type Booking, type BookingStatus, type PaymentStatus,
@@ -210,6 +210,27 @@ export default function HospitalityPage() {
 
   useEffect(() => { if (entitled) load(gridStart); }, [entitled, gridStart, load]);
 
+  // A booking named in the address (?booking=<id>) opens straight away, with
+  // the calendar moved to its dates. The bookings list links here, so any
+  // stay, however far away, opens in the same panel with the same buttons as a
+  // click on the calendar. Read from window rather than useSearchParams so the
+  // page needs no Suspense boundary to build.
+  useEffect(() => {
+    if (!entitled) return;
+    const id = new URLSearchParams(window.location.search).get('booking');
+    if (!id) return;
+    let cancelled = false;
+    getBooking(id)
+      .then(b => {
+        if (cancelled) return;
+        setGridStart(addDays(startOfDay(parseISO(b.check_in)), -1));
+        openBooking(b);
+      })
+      .catch(() => { if (!cancelled) setError('That booking could not be opened. It may have been removed.'); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entitled]);
+
   // Opening a request from the band has to land the owner on the panel: the panel
   // sits below a full-height calendar, so without this the click looks like nothing
   // happened.
@@ -261,6 +282,10 @@ export default function HospitalityPage() {
   };
   const closeBooking = () => {
     setSelected(null); setDeclining(false); setDeclineReason(''); setPanelNote(''); setEmailNote(null);
+    // Closed means closed: a reload should not open it again.
+    if (new URLSearchParams(window.location.search).has('booking')) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
   };
 
   const openDraft = (unitId: string, day?: Date) => {
@@ -477,6 +502,18 @@ export default function HospitalityPage() {
                 <button aria-label="Previous week" onClick={() => setGridStart(addDays(gridStart, -7))} style={navBtn}>‹</button>
                 <button onClick={() => setGridStart(startOfDay(new Date()))} style={{ ...navBtn, width: 'auto', padding: '0 12px', fontSize: 15, fontWeight: 700 }}>Today</button>
                 <button aria-label="Next week" onClick={() => setGridStart(addDays(gridStart, 7))} style={navBtn}>›</button>
+                {/* Any date in one step. A stay months away used to take a press
+                    of Next week for every week in between. */}
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 15, fontWeight: 700, color: 'var(--text-3)' }}>
+                  Go to
+                  <input
+                    type="date"
+                    aria-label="Show the calendar from this date"
+                    value={iso(gridStart)}
+                    onChange={e => { if (e.target.value) setGridStart(parseISO(e.target.value)); }}
+                    style={{ height: 34, padding: '0 8px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontSize: 16 }}
+                  />
+                </label>
                 <button onClick={() => openDraft('')} style={primaryBtn}>+ Booking</button>
               </div>
             }

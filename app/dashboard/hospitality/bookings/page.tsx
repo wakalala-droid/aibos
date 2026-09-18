@@ -355,9 +355,16 @@ export default function BookingsPage() {
                     alignItems: 'center',
                   }}>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: FS_BODY, lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)' }}>
+                      {/* Opens the booking in the calendar's panel: deposit,
+                          refund, cancel and the guest's details. The list used to
+                          be a dead end, so a stay months away meant paging the
+                          calendar forward week by week to find it. */}
+                      <Link
+                        href={`/dashboard/hospitality?booking=${encodeURIComponent(b.id)}`}
+                        style={{ fontSize: FS_BODY, lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)', textDecoration: 'underline', textDecorationColor: 'var(--border-md)', textUnderlineOffset: 3 }}
+                      >
                         {guestName(b)}
-                      </div>
+                      </Link>
                       <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, color: 'var(--text-3)' }}>
                         {[
                           b.reference ? `Ref ${b.reference}` : null,
@@ -411,6 +418,13 @@ export default function BookingsPage() {
 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                       <StatusBadge status={b.status} />
+                      <Link
+                        href={`/dashboard/hospitality?booking=${encodeURIComponent(b.id)}`}
+                        aria-label={`Open ${guestName(b)}'s booking`}
+                        style={{ ...ghostBtn, padding: '8px 14px', minHeight: 40, display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+                      >
+                        Open
+                      </Link>
                       {owedOn(b) > 0 && (
                         <button
                           style={{ ...ghostBtn, padding: '8px 14px', minHeight: 40, color: 'var(--good)', borderColor: 'var(--good)', opacity: busyId === b.id ? 0.6 : 1 }}

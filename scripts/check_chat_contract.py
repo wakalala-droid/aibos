@@ -19,6 +19,17 @@ two places where lib/aiAssistant.tsx must hold up its end of a server contract.
 
 2. BOTH HOPS SEND THE SAME PAYLOAD OBJECT.
 
+3. THE CONVERSATION GOES WITH THE QUESTION (`messages`).
+   The backend has always accepted the conversation so far and fed it to the
+   model (main._clean_history). The client sent only `message`, so every
+   question reached the AI on its own and it could not remember the one before:
+   a server capability with no client, the pattern this file exists to catch.
+
+4. THE CHAT SAYS WHICH BOOKS.
+   The chat must send the active business and acting-as headers (lib/api
+   authHeaders). It had its own login-only header helper, so invited staff and
+   owners with two businesses were answered from the wrong books.
+
 Stdlib only, no build step — runs in seconds in CI.
 """
 import pathlib
@@ -45,6 +56,11 @@ if not m:
     )
 else:
     body = m.group(1)
+    if not re.search(r"\bmessages:\s*\[", body):
+        problems.append(
+            "the chat payload does not send `messages` (the conversation so "
+            "far). Without it the AI forgets every earlier question."
+        )
     if not re.search(r"\bqid\b", body):
         problems.append(
             "the chat payload does not include `qid`. The backend charges the "
@@ -65,10 +81,20 @@ if built > 1:
 if "const qid" not in text:
     problems.append("no per-question `const qid` — it must be generated inside sendMessage.")
 
-# Both endpoints must still be called (the fallback is the resilience story).
-for ep in ("/chat/stream", "/chat`"):
-    if ep not in text:
-        problems.append(f"expected a call to {ep!r} in aiAssistant.tsx")
+# Both endpoints must still be called (the fallback is the resilience story),
+# each with the one payload.
+for ep in ("'/chat/stream'", "'/chat'"):
+    if not re.search(r"postChat\(" + re.escape(ep) + r",\s*payload\b", text):
+        problems.append(f"expected postChat({ep}, payload, ...) in aiAssistant.tsx")
+
+# The chat's headers come from lib/api, which carries the business scope.
+if re.search(r"async function authHeaders\(", text):
+    problems.append(
+        "aiAssistant.tsx defines its own authHeaders again. Use the one from "
+        "lib/api: it sends X-Business-Id and X-Acting-As."
+    )
+if not re.search(r"import \{[^}]*\bauthHeaders\b[^}]*\} from '@/lib/api'", text, re.S):
+    problems.append("aiAssistant.tsx must import authHeaders from '@/lib/api'.")
 
 if problems:
     print("CHAT CONTRACT BROKEN — lib/aiAssistant.tsx and the backend disagree.\n")
@@ -81,4 +107,5 @@ if problems:
     )
     sys.exit(1)
 
-print("Chat contract OK — one qid per question, shared by /chat/stream and /chat.")
+print("Chat contract OK: one qid per question, the conversation sent with it, "
+      "the business scope on every call, shared by /chat/stream and /chat.")

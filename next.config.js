@@ -1,3 +1,19 @@
+/*
+  The API's own origin, allowed for the browser to call. The AI chat streams
+  straight from the browser to the API (lib/aiAssistant.tsx): the website's
+  relay stops any request at 60 seconds, which is how long questions ended in
+  "504". Everything else still goes through /api/proxy. Read at build time,
+  like every NEXT_PUBLIC_* value.
+*/
+const API_ORIGIN = (() => {
+  try {
+    const raw = (process.env.NEXT_PUBLIC_API_URL || '').trim();
+    return raw ? new URL(raw).origin : '';
+  } catch {
+    return '';
+  }
+})();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Overridable build dir so `next build` can run while a dev server holds
@@ -63,7 +79,8 @@ const nextConfig = {
             // Conservative CSP (audit #82). Next.js needs 'unsafe-inline' +
             // 'unsafe-eval' for its runtime and the app's pervasive inline
             // styles; a nonce-based tightening is a dedicated follow-up. connect
-            // is same-origin (the API is reached via /api/proxy) plus Supabase.
+            // is same-origin (the API is reached via /api/proxy), Supabase, and
+            // the API itself for the chat's direct stream (API_ORIGIN above).
             // frame-ancestors 'none' backs up X-Frame-Options against clickjacking.
             key: 'Content-Security-Policy',
             value: [
@@ -72,7 +89,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co",
+              `connect-src 'self' https://*.supabase.co${API_ORIGIN ? ` ${API_ORIGIN}` : ''}`,
               "media-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",

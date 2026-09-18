@@ -20,6 +20,14 @@ function forgetBooksChoice() {
   try {
     window.localStorage.removeItem(ACTIVE_BUSINESS_KEY);
     window.localStorage.removeItem(ACTING_AS_KEY);
+    // The device copy of the AI chat (lib/aiAssistant.tsx). It is keyed by
+    // person already, but a conversation about someone's books has no business
+    // staying on a shared device after they leave. Their saved copy on the
+    // server comes back when they sign in again.
+    for (let i = window.localStorage.length - 1; i >= 0; i--) {
+      const k = window.localStorage.key(i);
+      if (k && k.startsWith('aibos-chat-v1:')) window.localStorage.removeItem(k);
+    }
   } catch { /* SSR / private mode */ }
 }
 

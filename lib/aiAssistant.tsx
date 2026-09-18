@@ -22,6 +22,7 @@ import { logUsage } from '@/lib/usage';
 import { createClient } from '@/lib/supabase';
 import {
   listProducts, listEvents, classifyActivity, createEvent, confirmEvent, voidEvent,
+  authHeaders, ACTIVE_BUSINESS_KEY, ACTING_AS_KEY,
   type Product,
 } from '@/lib/api';
 import { canAccess } from '@/lib/tiers';
@@ -42,6 +43,10 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  /** Shown once, never remembered or sent back to the AI: a failure, an
+   *  upgrade prompt, "the AI is resting". Remembering them would make the AI
+   *  read its own error messages as part of the conversation. */
+  ephemeral?: boolean;
 }
 
 interface ExplainTarget {
@@ -57,7 +62,11 @@ interface AiAssistantCtx {
   toggle: () => void;
   // Shared conversation
   messages: ChatMessage[];
+  /** True for the whole of a turn, from the question until the answer is complete. */
   loading: boolean;
+  /** What the assistant is doing right now ("Checking your bookings…"), or
+   *  null once the answer itself is being written out. */
+  status: string | null;
   online: boolean;
   suggestions: string[];
   setSuggestions: (s: string[]) => void;
@@ -76,24 +85,151 @@ export function useAiAssistant(): AiAssistantCtx {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const API =
-  typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:8000'
-    : '/api/proxy';
+const IS_LOCAL = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+const API = IS_LOCAL ? 'http://localhost:8000' : '/api/proxy';
 
-/** Attach the Supabase JWT so the backend can verify the user (/chat is auth'd). */
-async function authHeaders(): Promise<Record<string, string>> {
-  try {
-    const { data } = await createClient().auth.getSession();
-    const token = data.session?.access_token;
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  } catch {
-    return {};
+/*
+  THE CHAT TALKS TO THE API DIRECTLY.
+
+  Everything else goes through the website's relay (/api/proxy), and the
+  website host stops any request there at 60 seconds. A question that needed
+  a few lookups while the AI thought, or one asked while the API was waking
+  up, ran past that and the owner saw the dots for a minute and then "504".
+  Straight to the API there is no such limit. If the browser cannot reach it
+  that way (a network that blocks it, say) the relay is still tried.
+*/
+const DIRECT = (() => {
+  const raw = (process.env.NEXT_PUBLIC_API_URL || '').trim().replace(/\/+$/, '');
+  return !IS_LOCAL && /^https?:\/\//i.test(raw) ? raw : '';
+})();
+
+async function postChat(path: '/chat/stream' | '/chat', body: string, signal: AbortSignal): Promise<Response> {
+  // authHeaders from lib/api carries WHICH books: the active business and,
+  // for invited staff, whose. The chat used to send the login only, so an
+  // owner with two businesses and every invited member of staff were answered
+  // from the wrong set of books.
+  const headers = { 'Content-Type': 'application/json', ...(await authHeaders()) };
+  if (DIRECT) {
+    try {
+      return await fetch(`${DIRECT}${path}`, { method: 'POST', headers, body, signal });
+    } catch (err) {
+      if (signal.aborted) throw err;
+      /* not reachable directly: fall through to the relay */
+    }
   }
+  return fetch(`${API}${path}`, { method: 'POST', headers, body, signal });
 }
+
+/** A request that gives up on its own after `ms`, so nobody waits on dots forever. */
+function deadlineSignal(ms: number): { signal: AbortSignal; clear: () => void } {
+  const ctrl = new AbortController();
+  const t = window.setTimeout(() => ctrl.abort(), ms);
+  return { signal: ctrl.signal, clear: () => window.clearTimeout(t) };
+}
+
+// Silence this long (not even a heartbeat) means the answer is not coming.
+const STREAM_IDLE_MS = 45_000;
+const BUFFERED_MS = 75_000;
+
+/** Plain words for a failure. Never a raw status line or a host's error page. */
+function failureText(status: number | null, raw = ''): string {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return "You're offline, so I can't reach the AI right now. Everything you record still saves on this device and posts when the signal returns.";
+  }
+  if (status === 504 || status === 408 || /TIMEOUT|timed? ?out|abort/i.test(raw)) {
+    return 'That question took too long to answer, so I stopped waiting. Please ask it again. Your records are all safe.';
+  }
+  return "I couldn't reach the AI just now. Please ask again in a moment. Your records are all safe.";
+}
+
+/** What the assistant is doing while a lookup runs, in the owner's words. */
+const TOOL_STATUS: Record<string, string> = {
+  get_business_snapshot: 'Checking your cash and totals…',
+  query_events: 'Looking through your records…',
+  list_products: 'Checking your stock…',
+  upcoming_schedule: 'Checking your diary…',
+  list_invoices: 'Checking your invoices…',
+  simulate_scenario: 'Working out the numbers…',
+  cash_forecast: 'Working out your cash ahead…',
+  who_owes_me: 'Checking who owes you…',
+  investigate_month: 'Finding what changed…',
+  customer_summary: 'Looking at your customers…',
+};
 
 const nowTime = () =>
   new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+// ── Memory ────────────────────────────────────────────────────────────────────
+// The conversation is kept per person and per business: on this device at
+// once (localStorage), and on the server for every other device (migration
+// 0034; without it the device copy is the memory). The recent part of it goes
+// with every question so the AI answers in context and nobody repeats
+// themselves.
+
+const CHAT_STORE = 'aibos-chat-v1';
+const LOCAL_KEEP = 120;          // messages kept on this device
+const MODEL_HISTORY = 29;        // earlier messages sent with a question (+ the question = 30)
+const MODEL_HISTORY_CHARS = 4000;
+
+async function chatScope(): Promise<string | null> {
+  try {
+    const { data } = await createClient().auth.getSession();
+    const uid = data.session?.user?.id;
+    if (!uid) return null;
+    let biz = '';
+    let actingAs = '';
+    try {
+      biz = window.localStorage.getItem(ACTIVE_BUSINESS_KEY) || '';
+      actingAs = window.localStorage.getItem(ACTING_AS_KEY) || '';
+    } catch { /* private mode */ }
+    return `${CHAT_STORE}:${uid}:${actingAs || 'self'}:${biz || 'default'}`;
+  } catch {
+    return null;
+  }
+}
+
+function readLocal(scope: string): ChatMessage[] {
+  try {
+    const raw = window.localStorage.getItem(scope);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list)
+      ? list.filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.id)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeLocal(scope: string, messages: ChatMessage[]): void {
+  try {
+    const keep = messages.filter((m) => !m.ephemeral && m.content.trim()).slice(-LOCAL_KEEP);
+    if (keep.length) window.localStorage.setItem(scope, JSON.stringify(keep));
+    else window.localStorage.removeItem(scope);
+  } catch { /* storage full or private mode: the server copy still stands */ }
+}
+
+function stampOf(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  return d.toDateString() === new Date().toDateString()
+    ? time
+    : `${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, ${time}`;
+}
+
+/** Earlier messages first, then anything already on screen that they lack. */
+function mergeMessages(earlier: ChatMessage[], current: ChatMessage[]): ChatMessage[] {
+  const seen = new Set(earlier.map((m) => m.id));
+  return [...earlier, ...current.filter((m) => !seen.has(m.id))];
+}
+
+/** The conversation so far, as the AI is sent it with the next question. */
+function historyForModel(messages: ChatMessage[]): { role: 'user' | 'assistant'; content: string }[] {
+  return messages
+    .filter((m) => !m.ephemeral && m.content.trim())
+    .slice(-MODEL_HISTORY)
+    .map((m) => ({ role: m.role, content: m.content.slice(0, MODEL_HISTORY_CHARS) }));
+}
 
 type StoreState = ReturnType<typeof useStore.getState>;
 
@@ -429,12 +565,19 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
   const [open, setOpenState] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  // True while an answer's words are arriving: the dots give way to the text.
+  const [streaming, setStreaming] = useState(false);
   const [online, setOnline] = useState(true);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [explainTarget, setExplainTarget] = useState<ExplainTarget | null>(null);
 
   const loadingRef = useRef(false);
   useEffect(() => { loadingRef.current = loading; }, [loading]);
+  // The conversation as it stands, readable at send time without making
+  // sendMessage depend on (and re-create with) every new message.
+  const messagesRef = useRef<ChatMessage[]>([]);
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
 
   // Business identity for the model context — read through a ref so sendMessage
   // stays referentially stable (this provider never re-renders per keystroke).
@@ -445,97 +588,222 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
   // A chat-drafted spine event awaiting the owner's "confirm"/"cancel".
   const pendingChatEventRef = useRef<{ id: string; summary: string } | null>(null);
 
+  // ── Memory: load this person's conversation for this business ──────────────
+  const scopeRef = useRef<string | null>(null);
+  const savedIdsRef = useRef<Set<string>>(new Set());
+  const serverMemoryRef = useRef(false);
+  const [historyReady, setHistoryReady] = useState(false);
+  const signedIn = !!profile;
+
+  useEffect(() => {
+    if (!signedIn) return;
+    let cancelled = false;
+    (async () => {
+      const scope = await chatScope();
+      if (cancelled || !scope || scope === scopeRef.current) return;
+      scopeRef.current = scope;
+      savedIdsRef.current = new Set();
+      // This device's copy, at once.
+      const local = readLocal(scope);
+      if (local.length) setMessages((p) => mergeMessages(local, p));
+      // The saved conversation, from any device.
+      try {
+        const res = await fetch(`${API}/chat/history?limit=100`, { headers: await authHeaders() });
+        const d = res.ok ? await res.json() : null;
+        if (!cancelled && d?.available) {
+          serverMemoryRef.current = true;
+          const saved: ChatMessage[] = (Array.isArray(d.messages) ? d.messages : [])
+            .filter((m: { role?: string; content?: string }) => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+            .map((m: { id: string; client_id?: string | null; role: 'user' | 'assistant'; content: string; created_at: string }) => ({
+              id: m.client_id || m.id, role: m.role, content: m.content, timestamp: stampOf(m.created_at),
+            }));
+          saved.forEach((m) => savedIdsRef.current.add(m.id));
+          if (saved.length) setMessages((p) => mergeMessages(saved, p));
+        }
+      } catch { /* offline or the API asleep: the device copy is the memory */ }
+      if (!cancelled) setHistoryReady(true);
+    })();
+    return () => { cancelled = true; };
+  }, [signedIn]);
+
+  // ── Memory: keep it, once each answer is complete ──────────────────────────
+  useEffect(() => {
+    const scope = scopeRef.current;
+    if (!scope || loading) return;          // mid-answer: wait for the whole of it
+    writeLocal(scope, messages);
+    if (!historyReady || !serverMemoryRef.current) return;
+    const unsaved = messages.filter((m) => !m.ephemeral && m.content.trim() && !savedIdsRef.current.has(m.id));
+    if (!unsaved.length) return;
+    unsaved.forEach((m) => savedIdsRef.current.add(m.id));
+    (async () => {
+      try {
+        const res = await fetch(`${API}/chat/history`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+          body: JSON.stringify({ messages: unsaved.map((m) => ({ role: m.role, content: m.content, client_id: m.id })) }),
+        });
+        const d = res.ok ? await res.json() : null;
+        if (!d) throw new Error('not saved');
+        if (d.available === false) serverMemoryRef.current = false;
+      } catch {
+        // Try again with the next message.
+        unsaved.forEach((m) => savedIdsRef.current.delete(m.id));
+      }
+    })();
+  }, [messages, loading, historyReady]);
+
   const setOpen = useCallback((v: boolean) => setOpenState(v), []);
   const toggle = useCallback(() => setOpenState((v) => !v), []);
-  const clearConversation = useCallback(() => { setMessages([]); setSuggestions([]); }, []);
+  const clearConversation = useCallback(() => {
+    setMessages([]);
+    setSuggestions([]);
+    pendingChatEventRef.current = null;
+    savedIdsRef.current = new Set();
+    const scope = scopeRef.current;
+    if (scope) { try { window.localStorage.removeItem(scope); } catch { /* private mode */ } }
+    if (serverMemoryRef.current) {
+      (async () => {
+        try { await fetch(`${API}/chat/history`, { method: 'DELETE', headers: await authHeaders() }); }
+        catch { /* the next load shows it again; nothing is lost */ }
+      })();
+    }
+  }, []);
 
-  const pushAssistant = useCallback((content: string) => {
-    setMessages((p) => [...p, { id: `a-${Date.now()}-${p.length}`, role: 'assistant', content, timestamp: nowTime() }]);
+  const pushAssistant = useCallback((content: string, ephemeral = false) => {
+    setMessages((p) => [...p, {
+      id: `a-${Date.now()}-${p.length}`, role: 'assistant', content, timestamp: nowTime(),
+      ...(ephemeral ? { ephemeral: true } : {}),
+    }]);
   }, []);
 
   /**
-   * Streamed answer (audit #21). POSTs to /chat/stream and appends each token
-   * to a live assistant bubble as it arrives. Returns true when it handled the
-   * turn (streamed an answer, or showed the upgrade gate); false/throws to let
-   * the caller fall back to the buffered /chat.
+   * Streamed answer (audit #21). POSTs to /chat/stream and writes each piece
+   * into a live bubble as it arrives.
+   *
+   *   'answered' — the turn is dealt with (an answer, a gate, or a message
+   *                saying why not); nothing more to do
+   *   'retry'    — it failed quickly before a word; the buffered /chat may
+   *                still answer
+   *   'failed'   — it failed after a long wait; a second attempt would only
+   *                make the owner wait as long again, so it has been said
    */
-  const streamChat = useCallback(async (payload: string): Promise<boolean> => {
-    const res = await fetch(`${API}/chat/stream`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-      body: payload,
-    });
+  const streamChat = useCallback(async (payload: string): Promise<'answered' | 'retry' | 'failed'> => {
+    const ctrl = new AbortController();
+    let idle = window.setTimeout(() => ctrl.abort(), STREAM_IDLE_MS);
+    const alive = () => { window.clearTimeout(idle); idle = window.setTimeout(() => ctrl.abort(), STREAM_IDLE_MS); };
+    const started = Date.now();
+    const slow = () => Date.now() - started > 20_000;
 
-    // 402 = tier gate. Raised before the stream opens, so it's plain JSON.
-    if (res.status === 402) {
-      const d = await res.json().catch(() => ({} as Record<string, unknown>));
-      setOnline(true);
-      pushAssistant(`${typeof d.detail === 'string' ? d.detail : 'The AI CFO chat is a Pro feature.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`);
-      return true;
-    }
-    // 503 = we could not establish the plan (or no AI key). Not a reason to
-    // sell an upgrade, and not worth a second attempt down the buffered path —
-    // it will fail identically. Say what happened.
-    if (res.status === 503) {
-      const d = await res.json().catch(() => ({} as Record<string, unknown>));
-      setOnline(true);
-      pushAssistant(typeof d.detail === 'string' ? d.detail
-        : 'The chat is unavailable right now. This is a fault on our side.');
-      return true;
-    }
-    const ct = res.headers.get('content-type') ?? '';
-    if (!res.ok || !ct.includes('text/event-stream') || !res.body) return false;
-
-    const id = `a-${Date.now()}-stream`;
-    setMessages((p) => [...p, { id, role: 'assistant', content: '', timestamp: nowTime() }]);
-    const append = (chunk: string) =>
-      setMessages((p) => p.map((m) => (m.id === id ? { ...m, content: m.content + chunk } : m)));
-
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buf = '';
-    let got = false;
-    // Tracked apart from `got` because an error frame that arrives BEFORE any
-    // words is not an answer: the buffered path deserves a go at it. Marking
-    // it as received is why every failure ended at the error text and the
-    // fallback that exists for exactly this case never ran.
-    let sawText = false;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += decoder.decode(value, { stream: true });
-      // SSE frames are separated by a blank line; keep any partial tail.
-      const frames = buf.split('\n\n');
-      buf = frames.pop() ?? '';
-      for (const frame of frames) {
-        const line = frame.trim();
-        if (!line.startsWith('data:')) continue;
-        try {
-          const msg = JSON.parse(line.slice(5).trim()) as { t?: string; tool?: string; error?: string; done?: boolean; retry?: boolean };
-          if (msg.t) { append(msg.t); got = true; sawText = true; setLoading(false); }
-          // retry:false (a spent AI quota): the buffered path would only spend
-          // another request against the same limit, so say it here and stop.
-          else if (msg.error && msg.retry === false) { append(msg.error); got = true; sawText = true; setLoading(false); }
-          // Mid-answer: keep what was written and say why it stopped. Before a
-          // single word: say nothing here and let the buffered path try.
-          else if (msg.error && sawText) { append(`\n\n${msg.error}`); got = true; }
-        } catch { /* ignore a malformed frame rather than kill the answer */ }
+    const bubble: { id: string | null } = { id: null };
+    try {
+      let res: Response;
+      try {
+        res = await postChat('/chat/stream', payload, ctrl.signal);
+      } catch (err) {
+        if (ctrl.signal.aborted) { pushAssistant(failureText(504), true); setOnline(false); return 'failed'; }
+        throw err;
       }
+      alive();
+
+      // 402 = tier gate. Raised before the stream opens, so it's plain JSON.
+      if (res.status === 402) {
+        const d = await res.json().catch(() => ({} as Record<string, unknown>));
+        setOnline(true);
+        pushAssistant(`${typeof d.detail === 'string' ? d.detail : 'The AI CFO chat is a Pro feature.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`, true);
+        return 'answered';
+      }
+      // 503 = we could not establish the plan, no AI key, or the AI is
+      // resting. Not a reason to sell an upgrade, and not worth a second
+      // attempt down the buffered path: it will fail identically.
+      if (res.status === 503) {
+        const d = await res.json().catch(() => ({} as Record<string, unknown>));
+        setOnline(true);
+        pushAssistant(typeof d.detail === 'string' ? d.detail
+          : 'The chat is unavailable right now. This is a fault on our side.', true);
+        return 'answered';
+      }
+      const ct = res.headers.get('content-type') ?? '';
+      if (!res.ok || !ct.includes('text/event-stream') || !res.body) {
+        if (slow()) { pushAssistant(failureText(res.status), true); setOnline(false); return 'failed'; }
+        return 'retry';
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      // The bubble appears with the first word, not before: an empty bubble
+      // under the typing dots read as an answer that had stalled.
+      const write = (chunk: string) => {
+        if (!bubble.id) {
+          const newId = `a-${Date.now()}-stream`;
+          bubble.id = newId;
+          setStreaming(true);
+          setMessages((p) => [...p, { id: newId, role: 'assistant', content: chunk, timestamp: nowTime() }]);
+        } else {
+          const cur = bubble.id;
+          setMessages((p) => p.map((m) => (m.id === cur ? { ...m, content: m.content + chunk } : m)));
+        }
+      };
+      let stopped: string | null = null;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        alive();
+        buf += decoder.decode(value, { stream: true });
+        // SSE frames are separated by a blank line; keep any partial tail.
+        const frames = buf.split('\n\n');
+        buf = frames.pop() ?? '';
+        for (const frame of frames) {
+          const line = frame.trim();
+          if (!line.startsWith('data:')) continue;        // ": still working" heartbeats
+          try {
+            const msg = JSON.parse(line.slice(5).trim()) as {
+              t?: string; tool?: string; status?: string; error?: string; done?: boolean; retry?: boolean;
+            };
+            if (msg.t) { write(msg.t); setStatus(null); }
+            else if (msg.tool) setStatus(TOOL_STATUS[msg.tool] ?? 'Looking that up…');
+            else if (msg.status === 'thinking') setStatus((s) => s ?? 'Thinking…');
+            // retry:false is a spent allowance: the buffered path would only
+            // spend another request against the same limit.
+            else if (msg.error && (msg.retry === false || bubble.id)) stopped = msg.error;
+            else if (msg.error) stopped = stopped ?? msg.error;
+          } catch { /* ignore a malformed frame rather than kill the answer */ }
+        }
+      }
+      if (bubble.id) {
+        if (stopped) write(`\n\n${stopped}`);
+        setOnline(true);
+        return 'answered';
+      }
+      if (stopped && (/limit|allowance|resting/i.test(stopped) || slow())) {
+        pushAssistant(stopped, true);
+        setOnline(true);
+        return 'failed';
+      }
+      return slow() ? (pushAssistant(failureText(null, stopped ?? ''), true), 'failed') : 'retry';
+    } catch (err) {
+      const aborted = ctrl.signal.aborted;
+      if (bubble.id) {
+        // Words already on screen: keep them and say it stopped.
+        const cur = bubble.id;
+        setMessages((p) => p.map((m) => (m.id === cur
+          ? { ...m, content: `${m.content}\n\n(The answer stopped here. Please ask again for the rest.)` } : m)));
+        return 'answered';
+      }
+      if (aborted || slow()) { pushAssistant(failureText(aborted ? 504 : null, String(err)), true); setOnline(false); return 'failed'; }
+      return 'retry';
+    } finally {
+      window.clearTimeout(idle);
+      setStreaming(false);
     }
-    if (!got || !sawText) {
-      // Nothing came through — drop the empty bubble and let the caller retry
-      // on the buffered path rather than leaving a blank message.
-      setMessages((p) => p.filter((m) => m.id !== id));
-      return false;
-    }
-    setOnline(true);
-    return true;
   }, [pushAssistant]);
 
   const sendMessage = useCallback(async (raw: string) => {
     const text = raw.trim().slice(0, MAX_CHARS);
     if (!text || loadingRef.current) return;
 
+    // The conversation before this question, for the AI's memory below.
+    const earlier = historyForModel(messagesRef.current);
     setMessages((p) => [...p, { id: `u-${Date.now()}`, role: 'user', content: text, timestamp: nowTime() }]);
     setSuggestions([]);
 
@@ -695,6 +963,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     //    Any streaming failure falls back to the buffered /chat below, so the
     //    chat can never be worse than it was before streaming existed.
     setLoading(true);
+    setStatus('Thinking…');
     logUsage('chat');
     // ONE id for this question, sent on BOTH hops below. A Free owner's daily
     // taster is charged server-side per question, not per request — without
@@ -703,8 +972,12 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     const qid = typeof crypto !== 'undefined' && crypto.randomUUID
       ? crypto.randomUUID()
       : `q-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    // `messages` is the conversation so far plus this question: the AI's
+    // memory. Only `message` was sent before, so every question arrived on
+    // its own and "and last month?" meant nothing.
     const payload = JSON.stringify({
       message: text,
+      messages: [...earlier, { role: 'user', content: text }],
       qid,
       context: buildContext(s, lv, {
         name: profileRef.current?.business_name,
@@ -715,23 +988,36 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     });
 
     try {
-      const streamed = await streamChat(payload);
-      if (streamed) { setLoading(false); return; }   // handled (answer or gate)
-    } catch {
-      /* fall through to the buffered path */
-    }
+      let outcome: 'answered' | 'retry' | 'failed' = 'retry';
+      try {
+        outcome = await streamChat(payload);
+      } catch {
+        outcome = 'retry';
+      }
+      if (outcome !== 'retry') return;
 
-    try {
-      const res = await fetch(`${API}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-        body: payload,
-      });
-      const body = await res.text();
+      // The buffered answer: the whole reply at once, for when streaming is
+      // not getting through.
+      setStatus('Thinking…');
+      const limit = deadlineSignal(BUFFERED_MS);
+      let res: Response;
+      let body = '';
+      try {
+        res = await postChat('/chat', payload, limit.signal);
+        body = await res.text();
+      } catch (err) {
+        setOnline(false);
+        pushAssistant(failureText(limit.signal.aborted ? 504 : null, String(err)), true);
+        return;
+      } finally {
+        limit.clear();
+      }
       let data: Record<string, unknown> = {};
       try { data = body ? JSON.parse(body) : {}; } catch {
-        const snippet = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
-        throw new Error(res.ok ? `Non-JSON response. ${snippet}` : `Server error ${res.status}. ${snippet || 'The AI service may be offline.'}`);
+        // A host's error page, not our API. Never show it to the owner.
+        setOnline(false);
+        pushAssistant(failureText(res.status, body.slice(0, 300)), true);
+        return;
       }
       // 402 = tier gate. The AI CFO chat is Pro+ — show a clean upgrade nudge,
       // not an error, and stop (this isn't a service failure).
@@ -740,27 +1026,30 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         const msg = typeof data.detail === 'string'
           ? data.detail
           : 'The AI CFO chat is a Pro feature.';
-        pushAssistant(`${msg}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`);
-        setLoading(false);
+        pushAssistant(`${msg}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`, true);
         return;
       }
-      // 503 = the service is at fault (no AI key, or the plan could not be
-      // read). Show what it said rather than dressing it up as a network error.
+      // 503 = the service is at fault (no AI key, the plan could not be read,
+      // the AI resting). Show what it said: those messages are written for
+      // the owner.
       if (res.status === 503) {
         setOnline(true);
         pushAssistant(typeof data.detail === 'string' ? data.detail
-          : 'The chat is unavailable right now. This is a fault on our side.');
-        setLoading(false);
+          : 'The chat is unavailable right now. This is a fault on our side.', true);
         return;
       }
-      if (!res.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `HTTP ${res.status}`);
+      if (!res.ok) {
+        setOnline(false);
+        pushAssistant(failureText(res.status, typeof data.detail === 'string' ? data.detail : ''), true);
+        return;
+      }
       setOnline(true);
-      pushAssistant((data.reply as string) ?? (data.response as string) ?? 'No response received.');
-    } catch (err) {
-      setOnline(false);
-      pushAssistant(`Sorry, I hit an error reaching the AI service: ${(err as Error).message}`);
+      const reply = (data.reply as string) ?? (data.response as string) ?? '';
+      if (reply.trim()) pushAssistant(reply);
+      else pushAssistant(failureText(null), true);
     } finally {
       setLoading(false);
+      setStatus(null);
     }
   }, [pushAssistant, streamChat]);
 
@@ -876,6 +1165,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     <Ctx.Provider value={{
       open, setOpen, toggle,
       messages, loading, online, suggestions, setSuggestions,
+      status: loading && !streaming ? (status ?? 'Working on it…') : null,
       sendMessage, pushAssistant, clearConversation,
     }}>
       {children}

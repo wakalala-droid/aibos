@@ -19,7 +19,7 @@ import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
 import PageHeader from '@/components/ui/PageHeader';
 import {
   listEmployees, createEmployee, updateEmployee, deleteEmployee,
-  previewPayroll, runPayroll, listPayrollRuns, getPayrollRates,
+  previewPayroll, runPayroll, listPayrollRuns, getPayrollRates, deletePayrollRun,
   downloadPayslipPdf, downloadCompliancePdf,
   type Employee, type EmployeeInput, type EmploymentType,
   type PayrollPreview, type PayrollRun, type PayrollRates, type RemittanceDraft,
@@ -89,6 +89,27 @@ export default function EmployeesPage() {
   // nothing calling them, so the owner could never obtain a payslip PDF.
   const [docBusy, setDocBusy] = useState<string | null>(null);
   const [docError, setDocError] = useState<string | null>(null);
+
+  async function removeRun(runId: string, runPeriod: string) {
+    if (!window.confirm(
+      `Delete the payroll run for ${runPeriod}? Its wages come out of your books, ` +
+      'tax payments it drafted that you have not paid are removed and any staff loan ' +
+      'instalment it took is given back. You can then run that month again.',
+    )) return;
+    setDocBusy(runId); setDocError(null); setRunOk(null);
+    try {
+      const out = await deletePayrollRun(runId);
+      setRuns(rs => rs.filter(r => r.id !== runId));
+      setRunOk(`Deleted the ${out.period} run.` + (out.tax_payments_kept > 0
+        ? ` ${out.tax_payments_kept} tax payment${out.tax_payments_kept === 1 ? ' was' : 's were'} already marked paid, so ${out.tax_payments_kept === 1 ? 'it stays' : 'they stay'} in your books. Void ${out.tax_payments_kept === 1 ? 'it' : 'them'} on Activity if that was a mistake too.`
+        : ''));
+      void useStore.getState().refreshTwin();
+    } catch (e) {
+      setDocError(e instanceof Error ? e.message : 'Could not delete that run.');
+    } finally {
+      setDocBusy(null);
+    }
+  }
 
   async function getDoc(runId: string, runPeriod: string, employeeId?: string) {
     const key = employeeId ? `${runId}:${employeeId}` : runId;
@@ -418,6 +439,13 @@ export default function EmployeesPage() {
                     <button type="button" onClick={() => void getDoc(r.id, r.period)} disabled={docBusy === r.id} className="touch-target"
                       style={{ padding: '5px 10px', minHeight: 32, borderRadius: 7, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: docBusy === r.id ? 'wait' : 'pointer' }}>
                       {docBusy === r.id ? 'Preparing…' : 'Statutory PDF'}
+                    </button>
+                    {/* A run can only be made once a month, so one made by
+                        mistake (the wrong month, a test) used to stay for good
+                        with its wages in the books. */}
+                    <button type="button" onClick={() => void removeRun(r.id, r.period)} disabled={docBusy === r.id} className="touch-target"
+                      style={{ padding: '5px 10px', minHeight: 32, borderRadius: 7, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--red)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: docBusy === r.id ? 'wait' : 'pointer' }}>
+                      {docBusy === r.id ? 'Working…' : 'Delete run'}
                     </button>
                   </span>
                 </div>

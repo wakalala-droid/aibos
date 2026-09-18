@@ -21,6 +21,7 @@ import { useTheme } from '@/lib/theme';
 import { TIERS } from '@/lib/tiers';
 import { useAiAssistant, MAX_CHARS } from '@/lib/aiAssistant';
 import { DEFAULT_PROMPTS } from '@/lib/aiKnowledge';
+import RichText from '@/components/chat/RichText';
 
 // ── Minimal stroke icons (2px, per visual_language_system.md) ────────────────
 const Icon = {
@@ -54,34 +55,11 @@ const Icon = {
   ),
 };
 
-// ── Tiny markdown-ish renderer for **bold** + bullet lines ───────────────────
-function RichText({ text }: { text: string }) {
-  return (
-    <>
-      {text.split('\n').map((line, i) => {
-        if (line.trim() === '') return <div key={i} style={{ height: 6 }} />;
-        const parts = line.split(/(\*\*[^*]+\*\*)/g);
-        return (
-          <p key={i} style={{ margin: '0 0 2px', lineHeight: 1.55, color: 'var(--text-2)' }}>
-            {parts.map((p, j) =>
-              p.startsWith('**') && p.endsWith('**') ? (
-                <strong key={j} style={{ fontWeight: 700, color: 'var(--text-1)' }}>{p.slice(2, -2)}</strong>
-              ) : (
-                <span key={j}>{p}</span>
-              )
-            )}
-          </p>
-        );
-      })}
-    </>
-  );
-}
-
 export function FloatingAiAssistant() {
   const {
     open, setOpen, toggle,
-    messages, loading, online, suggestions, setSuggestions,
-    sendMessage, pushAssistant,
+    messages, loading, status, online, suggestions, setSuggestions,
+    sendMessage, pushAssistant, clearConversation,
   } = useAiAssistant();
   const { isDark } = useTheme();
   const tier = useStore((s) => s.tier);
@@ -107,7 +85,7 @@ export function FloatingAiAssistant() {
     if (messages.length && atBottomRef.current) {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-  }, [messages, loading]);
+  }, [messages, status]);
 
   const onBodyScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -210,6 +188,13 @@ export function FloatingAiAssistant() {
                 }}>
                   {tierMeta.name}
                 </span>
+                {messages.length > 0 && (
+                  <button type="button" onClick={clearConversation} disabled={loading}
+                    title="Start a new conversation. The AI forgets this one."
+                    style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-2)', border: '1px solid var(--border-md)', borderRadius: 6, padding: '3px 8px', background: 'transparent', cursor: loading ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: loading ? 0.5 : 1 }}>
+                    New chat
+                  </button>
+                )}
                 <button type="button" onClick={() => setOpen(false)} aria-label="Close assistant"
                   style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: 'none', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer' }}>
                   {Icon.close}
@@ -227,7 +212,7 @@ export function FloatingAiAssistant() {
                     What would you like to explore today?
                   </p>
                   <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.55, color: 'var(--text-4)', margin: 0 }}>
-                    Ask about any number on your dashboard — or <strong style={{ color: 'var(--cyan)', fontWeight: 600 }}>long-press any card</strong> and I&apos;ll explain what it is and why it matters.
+                    Ask about any number on your dashboard, or <strong style={{ color: 'var(--cyan)', fontWeight: 600 }}>long-press any card</strong> and I&apos;ll explain what it is and why it matters.
                   </p>
                 </div>
               )}
@@ -255,13 +240,16 @@ export function FloatingAiAssistant() {
                 ))}
               </AnimatePresence>
 
-              {loading && (
+              {status && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                  <div style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: '14px 14px 14px 4px', padding: '12px 16px', display: 'flex', gap: 5 }}>
-                    {[0, 1, 2].map((i) => (
-                      <motion.div key={i} animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
-                        style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-4)' }} />
-                    ))}
+                  <div role="status" style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: '14px 14px 14px 4px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ display: 'flex', gap: 5 }} aria-hidden="true">
+                      {[0, 1, 2].map((i) => (
+                        <motion.span key={i} animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+                          style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-4)', display: 'block' }} />
+                      ))}
+                    </span>
+                    <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>{status}</span>
                   </div>
                 </motion.div>
               )}

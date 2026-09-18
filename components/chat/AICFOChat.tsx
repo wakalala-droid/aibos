@@ -8,6 +8,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAiAssistant } from '@/lib/aiAssistant';
+import RichText from '@/components/chat/RichText';
 
 // Questions any business can ask of its own books. These used to assume facts
 // from a demo ("What drove the September cost spike?"), which every real
@@ -30,14 +31,8 @@ function SendIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-// Strip the lightweight **bold** markers the assistant uses, for this panel's
-// plain-text bubbles.
-// Links keep their words: "[upgrade to Pro+](/checkout?plan=proplus)" read as
-// raw brackets here.
-const plain = (s: string) => s.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\[([^\]]+)\]\((?:[^)]+)\)/g, '$1');
-
 export default function AICFOChat() {
-  const { messages, loading, sendMessage } = useAiAssistant();
+  const { messages, loading, status, sendMessage, clearConversation } = useAiAssistant();
 
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -58,7 +53,7 @@ export default function AICFOChat() {
     if (messages.length && atBottomRef.current) {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-  }, [messages, loading]);
+  }, [messages, status]);
 
   const onBodyScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -82,9 +77,18 @@ export default function AICFOChat() {
     >
       {/* Header */}
       <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
-          AI CFO Assistant
-        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+            AI CFO Assistant
+          </h2>
+          {messages.length > 0 && (
+            <button type="button" onClick={clearConversation} disabled={loading}
+              title="Start a new conversation. The AI forgets this one."
+              style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-2)', border: '1px solid var(--border-md)', borderRadius: 8, padding: '5px 10px', background: 'transparent', cursor: loading ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: loading ? 0.5 : 1 }}>
+              New chat
+            </button>
+          )}
+        </div>
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
           Ask anything about your financial data
         </p>
@@ -142,9 +146,11 @@ export default function AICFOChat() {
                 borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                 padding: '12px 16px',
               }}>
-                <p style={{ fontSize: 'var(--fs-body)', color: msg.role === 'user' ? '#fff' : 'var(--text-2)', lineHeight: 1.55, margin: '0 0 6px', whiteSpace: 'pre-wrap' }}>
-                  {msg.role === 'assistant' ? plain(msg.content) : msg.content}
-                </p>
+                <div style={{ fontSize: 'var(--fs-body)', margin: '0 0 6px' }}>
+                  {msg.role === 'assistant'
+                    ? <RichText text={msg.content} />
+                    : <p style={{ margin: 0, color: '#fff', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{msg.content}</p>}
+                </div>
                 <p style={{ fontSize: 'var(--fs-label)', color: msg.role === 'user' ? 'rgba(255,255,255,0.55)' : 'var(--text-4)', margin: 0, textAlign: msg.role === 'user' ? 'right' : 'left' }}>
                   {msg.timestamp}
                 </p>
@@ -155,14 +161,17 @@ export default function AICFOChat() {
 
         {/* Typing indicator */}
         <AnimatePresence>
-          {loading && (
+          {status && (
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.2 }}
               style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 8 }}>
-              <div style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: '16px 16px 16px 4px', padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 5 }}>
-                {[0, 1, 2].map((i) => (
-                  <motion.div key={i} animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
-                    style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-4)' }} />
-                ))}
+              <div role="status" style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: '16px 16px 16px 4px', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ display: 'flex', gap: 5 }} aria-hidden="true">
+                  {[0, 1, 2].map((i) => (
+                    <motion.span key={i} animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+                      style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-4)', display: 'block' }} />
+                  ))}
+                </span>
+                <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>{status}</span>
               </div>
             </motion.div>
           )}
