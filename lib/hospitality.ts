@@ -133,6 +133,9 @@ export interface Booking {
   currency: string;
   deposit_amount?: number | null;
   payment_status: PaymentStatus;
+  /** Money the owner kept when the stay was called off (migration 0035). It
+   *  stays in the books as income. */
+  kept_amount?: number | null;
   source_notes?: string | null;
   linked_event_id?: string | null;
   external_uid?: string | null;
@@ -492,8 +495,10 @@ export async function removeStayPayment(id: string, paymentId: string):
   return { booking: data.booking as Booking, payments: (data.payments as StayPayment[]) ?? [] };
 }
 
-export async function cancelBooking(id: string): Promise<Booking> {
-  return (await hfetch(`/hospitality/bookings/${id}/cancel`, { method: 'POST' })).booking as Booking;
+/** Call off a stay. Money already paid is KEPT as income unless `refund` is
+ *  true (a non-refundable deposit is the owner's; upgrade 5). */
+export async function cancelBooking(id: string, refund = false): Promise<Booking> {
+  return (await hfetch(`/hospitality/bookings/${id}/cancel`, jsonInit('POST', { refund }))).booking as Booking;
 }
 export async function getAvailability(unitId: string, from?: string, to?: string): Promise<Availability> {
   const q = new URLSearchParams({ unit_id: unitId });

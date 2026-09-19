@@ -414,6 +414,11 @@ export default function BookingsPage() {
                       {b.payment_status === 'refunded' && (
                         <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, color: 'var(--text-4)' }}>Refunded</div>
                       )}
+                      {(b.status === 'cancelled' || b.status === 'no_show') && (b.kept_amount || 0) > 0 && b.payment_status !== 'refunded' && (
+                        <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, fontWeight: 600, color: 'var(--good)' }}>
+                          {fmt(b.kept_amount || 0, false, bookingSymbol(b))} kept
+                        </div>
+                      )}
                     </div>
 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>

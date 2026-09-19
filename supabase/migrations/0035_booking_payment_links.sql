@@ -1,5 +1,5 @@
 -- ════════════════════════════════════════════════════════════════════════════
--- AI-BOS: payment links for bookings  (migration 0035)
+-- AI-BOS: payment links for bookings, and deposits kept on a cancelled stay  (migration 0035)
 -- ────────────────────────────────────────────────────────────────────────────
 -- A guest who booked a stay had no way to pay from their phone. The owner had
 -- to chase the deposit on WhatsApp, wait for a mobile money SMS, then open the
@@ -25,6 +25,11 @@
 
 alter table public.bookings add column if not exists pay_token   text;
 alter table public.bookings add column if not exists pay_request numeric;
+
+-- Money the owner KEPT when a stay was called off (a non-refundable deposit).
+-- Cancelling used to void the stay's income and every payment on it, so a
+-- deposit the owner kept vanished from their cash. Now it stays as income.
+alter table public.bookings add column if not exists kept_amount numeric;
 
 create unique index if not exists bookings_pay_token_idx
   on public.bookings(pay_token) where pay_token is not null;

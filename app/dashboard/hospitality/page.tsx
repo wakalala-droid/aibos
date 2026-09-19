@@ -353,12 +353,20 @@ export default function HospitalityPage() {
     } finally { setBusy(false); }
   };
 
-  const doCancel = async (b: Booking) => {
+  const doCancel = async (b: Booking, refund = false) => {
     // A confirmed stay is money in the books and a guest expecting a room.
-    if (!window.confirm(`Cancel ${guestName(b)}'s stay? The nights are freed and the money from it comes out of your books.`)) return;
+    // Money already paid is kept as income unless the owner refunds it.
+    const paid = b.payment_status === 'paid' ? (b.total_amount || 0)
+      : b.payment_status === 'partial' ? Math.min(b.deposit_amount || 0, b.total_amount || 0) : 0;
+    const what = paid <= 0
+      ? 'The nights are freed and the stay comes out of your books.'
+      : refund
+        ? `The nights are freed, and the ${fmt(paid, false, bookingSymbol(b))} paid comes out of your books as refunded.`
+        : `The nights are freed. The ${fmt(paid, false, bookingSymbol(b))} already paid stays in your books as income you kept.`;
+    if (!window.confirm(`Cancel ${guestName(b)}'s stay? ${what}`)) return;
     setBusy(true); setPanelNote(''); setError('');
     try {
-      applyUpdate(await cancelBooking(b.id));
+      applyUpdate(await cancelBooking(b.id, refund));
       await load(gridStart);
     } catch (e) {
       setPanelNote(e instanceof Error ? e.message : 'Could not cancel this booking.');
@@ -643,7 +651,7 @@ export default function HospitalityPage() {
                 onStopDecline={() => { setDeclining(false); setDeclineReason(''); }}
                 onConfirm={() => doConfirm(selected)}
                 onDecline={() => doDecline(selected)}
-                onCancel={() => doCancel(selected)}
+                onCancel={(refund) => doCancel(selected, refund)}
                 onPayment={(status, deposit) => doPayment(selected, status, deposit)}
                 onSaved={(b) => { applyUpdate(b); void load(gridStart); }}
                 onClose={closeBooking}
@@ -676,7 +684,7 @@ interface PanelProps {
   onStopDecline: () => void;
   onConfirm: () => void;
   onDecline: () => void;
-  onCancel: () => void;
+  onCancel: (refund?: boolean) => void;
   onPayment: (status: PaymentStatus, deposit?: number) => Promise<boolean>;
   onSaved: (b: Booking) => void;
   onClose: () => void;
@@ -849,6 +857,15 @@ function BookingPanel({
         </PanelBlock>
       )}
 
+      {/* KEPT WHEN CALLED OFF (upgrade 5) */}
+      {(b.status === 'cancelled' || b.status === 'no_show') && (b.kept_amount || 0) > 0 && b.payment_status !== 'refunded' && (
+        <PanelBlock title="Money from this stay" tone="var(--good)">
+          <p style={{ margin: 0, fontSize: 18, lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)' }}>
+            You kept {fmt(b.kept_amount || 0, false, symbol)} when this stay was called off. It stays in your books as income.
+          </p>
+        </PanelBlock>
+      )}
+
       {/* A LINK THE GUEST PAYS FROM (upgrade 3) */}
       {earns && payment !== 'paid' && payment !== 'refunded' && (
         <PayLinkBlock booking={b} owed={total - paidSoFar} symbol={symbol} unitName={unitName} phone={phone} name={name} />
@@ -957,14 +974,22 @@ function BookingPanel({
           <>
             <p style={{ margin: '0 0 12px', fontSize: 18, lineHeight: 1.6, color: 'var(--text-3)' }}>
               This stay is booked. Cancelling frees the nights for somebody else.
+              {paidSoFar > 0 && ` The guest has paid ${fmt(paidSoFar, false, symbol)}: keep it (a deposit they lose) or refund it.`}
             </p>
-            <button
-              style={{ ...primaryBtn, background: 'var(--red-dim)', color: 'var(--crit)', border: '1px solid var(--crit)', opacity: busy ? 0.7 : 1 }}
-              disabled={busy}
-              onClick={onCancel}
-            >
-              {busy ? 'Cancelling…' : 'Cancel this booking'}
-            </button>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <button
+                style={{ ...primaryBtn, background: 'var(--red-dim)', color: 'var(--crit)', border: '1px solid var(--crit)', opacity: busy ? 0.7 : 1 }}
+                disabled={busy}
+                onClick={() => onCancel(false)}
+              >
+                {busy ? 'Cancelling…' : paidSoFar > 0 ? `Cancel and keep the ${fmt(paidSoFar, false, symbol)}` : 'Cancel this booking'}
+              </button>
+              {paidSoFar > 0 && (
+                <button style={{ ...quietBtn, opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={() => onCancel(true)}>
+                  Cancel and refund it
+                </button>
+              )}
+            </div>
           </>
         )}
 
