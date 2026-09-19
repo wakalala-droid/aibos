@@ -1,5 +1,8 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
+import { authHeaders } from '@/lib/api';
+import CashForecastFan from '@/components/dashboard/CashForecastFan';
 import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SimpleSummary from '@/components/dashboard/SimpleSummary';
@@ -13,9 +16,35 @@ import {
   Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 
+/** "2026-07" as an owner reads it: "Jul 2026". Anything else is shown as given. */
+function monthName(m: unknown): string {
+  const s = String(m ?? '');
+  const hit = s.match(/^(\d{4})-(\d{2})$/);
+  if (!hit) return s;
+  return new Date(Number(hit[1]), Number(hit[2]) - 1, 1)
+    .toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+}
+
+interface Outlook { ok: boolean; reason?: string; bands?: { month_ahead: number; p50: number }[] }
+
 export default function CashPage() {
   const { cashflow, monthly, kpi, currencySymbol, dataShape, twin, uploadedFile } = useStore();
   const sym = currencySymbol || 'K';
+
+  // The honest forecast from the recorded books (the same one the AI uses). It
+  // declines until there are four completed months, and says so.
+  const [outlook, setOutlook] = useState<Outlook | null>(null);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/proxy/forecast/cash', { headers: await authHeaders() });
+        const data = await res.json();
+        if (alive && res.ok) setOutlook(data.forecast as Outlook);
+      } catch { /* the page stands without it */ }
+    })();
+    return () => { alive = false; };
+  }, []);
 
   if (dataShape === 'cross_sectional') {
     return <TimeSeriesUnavailable title="Cash Position" feature="Cash flow projection" />;
@@ -54,33 +83,36 @@ export default function CashPage() {
     .map((m) => Number(m?.cumulative_cash) || 0)
     .filter((v) => v !== 0);
 
-  // Build projection chart from monthly or stored projections
-  const chartData = projections.length > 0
-    ? projections.map((p: any, i: number) => ({
-        label: `Month +${p.month_ahead ?? i + 1}`,
-        cash:  Math.round(Number(p.projected_cash) || 0),
-        inflow:  Math.round(Number(p.inflow)  || 0),
-        outflow: Math.round(Number(p.outflow) || 0),
-      }))
-    : monthly.slice(-6).map((m, i) => {
-        const rev  = Number(m.Revenue) || 0;
-        const cost = Number(m.Costs)   || 0;
-        const runningCash = currentCash + (rev - cost) * (i + 1);
-        return {
-          label:   String(m.Month),
-          cash:    Math.round(Math.max(runningCash, 0)),
-          inflow:  Math.round(rev),
-          outflow: Math.round(cost),
-        };
-      });
+  // Forward projections, only when something actually projected them (the
+  // analysis of an uploaded file). There used to be a fallback here that took
+  // today's cash and added each PAST month's profit times its place in the
+  // list, then showed the result as that month's "cash position": a live
+  // account read K77,373 for September while it held K11,630.50.
+  const chartData = projections.map((p: any, i: number) => ({
+    label: `Month +${p.month_ahead ?? i + 1}`,
+    cash:  Math.round(Number(p.projected_cash) || 0),
+    inflow:  Math.round(Number(p.inflow)  || 0),
+    outflow: Math.round(Number(p.outflow) || 0),
+  }));
+  // What was recorded, month by month: nothing projected, nothing invented.
+  const history = monthly.slice(-12).map((m) => {
+    const income = Number(m.Revenue) || 0;
+    const costs = Number(m.Costs) || 0;
+    return { label: monthName(m.Month), income, costs, profit: income - costs };
+  });
+  const lastBand = outlook?.ok ? outlook.bands?.[outlook.bands.length - 1] : undefined;
 
   // Runway bar config
   const runwayTarget = 18;
   const runwayPct    = Math.min((runway / runwayTarget) * 100, 100);
   const runwayColor  = runway >= 12 ? 'var(--good)' : runway >= 6 ? 'var(--warn)' : 'var(--crit)';
 
-  // 6-month projection total
-  const projTotal = chartData.length > 0 ? chartData[chartData.length - 1].cash : currentCash;
+  // The outlook card: a real projection or an honest "not yet".
+  const outlookCard = chartData.length > 0
+    ? { label: '6M PROJECTION', value: fmt(chartData[chartData.length - 1].cash, false, sym), sub: 'projected cash position' }
+    : lastBand
+      ? { label: `${lastBand.month_ahead}-MONTH OUTLOOK`, value: fmt(lastBand.p50, false, sym), sub: 'middle path, from your own history' }
+      : { label: 'CASH OUTLOOK', value: 'Not yet', sub: 'needs 4 full months of records' };
 
   return (
     <>
@@ -118,10 +150,10 @@ export default function CashPage() {
           sparkColor={runwayColor} delay={0.12}
         />
         <KPICard
-          label="6M PROJECTION" value={fmt(projTotal, false, sym)} sub="projected cash position"
+          label={outlookCard.label} value={outlookCard.value} sub={outlookCard.sub}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12l4-4 4 4 4-6 4 4" stroke="var(--purple)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
           iconBg="rgba(167,139,250,0.15)"
-          sparkData={chartData.slice(-6).map(d => d.cash)}
+          sparkData={chartData.length ? chartData.slice(-6).map(d => d.cash) : undefined}
           sparkColor="var(--purple)" delay={0.18}
         />
       </div>
@@ -133,11 +165,15 @@ export default function CashPage() {
           <div>
             <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
             <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
-              {runway}mo remaining · {runway < runwayTarget ? `⚠ Below ${runwayTarget}mo target` : `✓ Above ${runwayTarget}mo target`}
+              {/* The card above says "not shrinking"; this line used to say
+                  "18mo remaining" at the same time. */}
+              {notShrinking
+                ? 'Your income covers your spending, so your cash is not running down.'
+                : `${runway}mo remaining · ${runway < runwayTarget ? `⚠ Below ${runwayTarget}mo target` : `✓ Above ${runwayTarget}mo target`}`}
             </p>
           </div>
           <span style={{ fontSize: '1.5rem', fontWeight: 800, color: runwayColor }}>
-            {runway}mo <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontWeight: 400 }}>/ {runwayTarget}mo</span>
+            {notShrinking ? 'Safe' : <>{runway}mo <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontWeight: 400 }}>/ {runwayTarget}mo</span></>}
           </span>
         </div>
         {/* Runway bar */}
@@ -180,7 +216,36 @@ export default function CashPage() {
         </SectionCard>
       )}
 
-      {/* Monthly inflow/outflow table */}
+      {/* The honest forecast from the recorded books (4+ full months). */}
+      {chartData.length === 0 && <CashForecastFan />}
+
+      {/* Month by month, as recorded */}
+      {chartData.length === 0 && history.length > 0 && (
+        <SectionCard title="Month by month" subtitle="Income, costs and profit as recorded in your books" delay={0.22}>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="data-table">
+              <thead><tr><th>Month</th><th>Income</th><th>Costs</th><th>Profit</th></tr></thead>
+              <tbody>
+                {history.map((row) => (
+                  <tr key={row.label}>
+                    <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{row.label}</td>
+                    <td style={{ color: 'var(--good)' }}>{fmt(row.income, false, sym)}</td>
+                    <td style={{ color: 'var(--e2)' }}>{fmt(row.costs, false, sym)}</td>
+                    <td style={{ color: row.profit >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 700 }}>
+                      {row.profit >= 0 ? '+' : ''}{fmt(row.profit, false, sym)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '10px 0 0', lineHeight: 1.5 }}>
+            Months with nothing recorded are left out. A booking or invoice counts as income in the month it was made, and as cash when it is paid.
+          </p>
+        </SectionCard>
+      )}
+
+      {/* Projected inflow/outflow table */}
       {chartData.length > 0 && (
         <SectionCard title="Cash Flow Details" subtitle="Monthly inflow, outflow and net position" delay={0.22}>
           <table className="data-table">

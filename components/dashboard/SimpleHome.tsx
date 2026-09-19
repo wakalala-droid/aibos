@@ -207,7 +207,7 @@ export default function SimpleHome() {
 
   // "AIBOS is handling this" — honest automation receipts from real data.
   const handled: string[] = [];
-  if (eventCount > 0) handled.push(`Your books: ${eventCount} event${eventCount === 1 ? '' : 's'} recorded — cash, ${ind.stockWord} and money owed update themselves.`);
+  if (eventCount > 0) handled.push(`Your books: ${eventCount} event${eventCount === 1 ? '' : 's'} recorded. Cash, ${ind.stockWord} and money owed update themselves.`);
   if (products && products.length > 0) {
     handled.push(lowStock.length > 0
       ? `Watching your ${ind.stockWord}: ${lowStock.length} item${lowStock.length === 1 ? '' : 's'} at or below reorder level.`
@@ -237,8 +237,8 @@ export default function SimpleHome() {
         </h1>
         <p style={{ ...subStyle, marginTop: 6, fontSize: 'var(--fs-body)' }}>
           {twinActive
-            ? `Here's where your ${ind.label} stands. Ask me anything — I'm keeping the books.`
-            : `Let's get your ${ind.label} set up — record what happens and I'll do the rest.`}
+            ? `Here's where your ${ind.label} stands. Ask me anything. I'm keeping the books.`
+            : `Let's get your ${ind.label} set up. Record what happens and I'll do the rest.`}
         </p>
         <OutboxChip style={{ marginTop: 10 }} />
       </motion.div>
@@ -280,7 +280,7 @@ export default function SimpleHome() {
             id="simple-ask"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder={`Ask about your ${ind.label} — “${ind.prompts[0]}”`}
+            placeholder={`Ask about your ${ind.label}, like “${ind.prompts[0]}”`}
             style={{
               flex: 1, height: 46, padding: '0 16px', borderRadius: 10,
               border: '1px solid var(--border-md)', background: 'var(--bg-card)',
@@ -426,7 +426,7 @@ export default function SimpleHome() {
                 </div>
                 {st === 'done' ? (
                   <span style={{ ...subStyle, color: 'var(--green)', fontWeight: 600 }}>
-                    Drafted — confirm when it arrives
+                    Drafted. Confirm when it arrives
                   </span>
                 ) : canAutomate ? (
                   <button

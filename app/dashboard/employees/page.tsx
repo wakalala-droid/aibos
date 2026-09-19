@@ -198,7 +198,12 @@ export default function EmployeesPage() {
       const remLine = rem.length
         ? ` ${rem.map(r => `${r.tax_type} ${money(r.amount)}`).join(', ')} drafted as pending remittances${rem[0]?.due_date ? ` (due ${fmtDue(rem[0].due_date)})` : ''}.`
         : '';
-      setRunOk(`Payroll for ${period} run — ${run.totals.headcount} paid, ${money(run.totals.net)} net paid to staff.${remLine}`);
+      // Run before payday, the wages wait for it (payroll.confirm_due_wages).
+      const payday = run.pay_date ? new Date(`${run.pay_date}T00:00:00`) : null;
+      const ahead = payday && payday > new Date();
+      setRunOk(`Payroll for ${period} run: ${run.totals.headcount} paid, ${money(run.totals.net)} net to staff.` +
+        (ahead ? ` The wages leave your cash on payday, ${payday.toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}.` : '') +
+        remLine);
       setPreview(null); await load();
     } catch (e) { setRunError((e as Error).message); }
     finally { setBusy(false); }
@@ -306,7 +311,7 @@ export default function EmployeesPage() {
 
         {/* ── Run payroll ──────────────────────────────────────────────────── */}
         <SectionCard title="Run payroll" explainId="payroll.run"
-          subtitle="Preview is free. Running posts each salary to your books."
+          subtitle="Preview is free. Running records each salary; the wages leave your cash on payday."
           action={pro ? undefined : (
             <span className="badge" style={{ background: 'color-mix(in srgb, var(--cyan) 12%, transparent)', color: 'var(--cyan)' }}>{needTier}</span>
           )}>

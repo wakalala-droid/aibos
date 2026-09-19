@@ -36,6 +36,14 @@ function recordingStreak(events: BusinessEvent[]): number {
   return streak;
 }
 
+/** "2026-09" as an owner says it: "September 2026". It was shown as the code. */
+function monthWords(month: string): string {
+  const hit = /^(\d{4})-(\d{2})$/.exec(month || '');
+  return hit
+    ? new Date(Number(hit[1]), Number(hit[2]) - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+    : month;
+}
+
 /** The most impressive current milestone, or null. `sym` is the currency symbol. */
 export function topMilestone(twin: Twin | null, events: BusinessEvent[], sym: string): Milestone | null {
   const out: Milestone[] = [];
@@ -50,7 +58,7 @@ export function topMilestone(twin: Twin | null, events: BusinessEvent[], sym: st
       out.push({
         id: `best-month-${best.month}`, emoji: '🏆',
         title: 'Best month yet',
-        detail: `${best.month} is your strongest month on record — ${fmt(best.profit, true, sym)} profit.`,
+        detail: `${monthWords(best.month)} is your strongest month on record: ${fmt(best.profit, true, sym)} profit.`,
       });
     }
   }

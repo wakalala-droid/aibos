@@ -83,7 +83,7 @@ function oneThing(inp: BriefInputs, money: (n: number) => string): string | null
     return `check in with ${inp.topFollowUp}`;
   }
   if (inp.salesToday.length === 0 && inp.salesYesterday.length === 0) {
-    return 'record today\'s sales as they happen — everything else flows from that';
+    return 'record today\'s sales as they happen. Everything else flows from that';
   }
   return null;
 }
