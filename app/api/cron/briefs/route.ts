@@ -44,12 +44,13 @@ export async function GET(req: NextRequest) {
       signal: AbortSignal.timeout(55_000),
     });
     const data = await res.json().catch(() => ({}));
-    // Plan renewals ride on the same daily trigger. The API also runs them
-    // every hour on its own; this covers a day it spent asleep.
-    const renewals = await fetch(`${BACKEND}/payments/renewals`, {
+    // The hourly jobs (plan renewals, wages on payday, payment reminders to
+    // guests, settling mobile money) ride on the same daily trigger. The API
+    // also runs them every hour while awake; this covers a day it spent asleep.
+    const renewals = await fetch(`${BACKEND}/cron/hourly`, {
       method: 'POST',
       headers: { 'X-Cron-Secret': secret },
-      signal: AbortSignal.timeout(20_000),
+      signal: AbortSignal.timeout(40_000),
     }).then(r => r.json()).catch((e: Error) => ({ error: e.message }));
     return NextResponse.json({ ...data, renewals }, { status: res.status });
   } catch (e) {
