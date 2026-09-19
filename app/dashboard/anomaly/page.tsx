@@ -217,6 +217,21 @@ export default function AnomalyPage() {
           </div>
         </SectionCard>
       ) : (
+        // Under four months there is no baseline to be unusual against, so
+        // "All clear" would be a claim the arithmetic cannot make (the API's
+        // own investigation refuses below four months for the same reason).
+        monthly.length < 4 ? (
+          <SectionCard title="Anomaly Detection" subtitle="Not enough months yet" delay={0.16} style={{ marginBottom: 20 }}>
+            <div style={{ textAlign: 'center', padding: '24px 0' }}>
+              <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-2)', margin: '0 0 4px' }}>
+                {monthly.length} month{monthly.length === 1 ? '' : 's'} recorded so far
+              </p>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
+                Spotting an unusual month needs at least 4 months to compare against. Keep recording and this checks itself.
+              </p>
+            </div>
+          </SectionCard>
+        ) : (
         <SectionCard title="Anomaly Detection" subtitle="No anomalies detected in current data" delay={0.16} style={{ marginBottom: 20 }}>
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style={{ margin: '0 auto 12px', display: 'block', color: 'var(--good)' }}>
@@ -228,6 +243,7 @@ export default function AnomalyPage() {
             </p>
           </div>
         </SectionCard>
+        )
       )}
 
       {/* Monthly data table */}

@@ -102,15 +102,25 @@ export async function GET() {
 
   const apiKeyOk = api.reachable === true ? api.db_service_role === true : null;
   const healthy = web.service_role && apiKeyOk === true;
+  // Wired up is not the same as up to date. A migration the owner has not run
+  // yet leaves a feature quietly half-working (the chat's memory without 0034),
+  // and this panel said "wired up correctly" all the same.
+  const missing = Array.isArray(api.migrations_missing) ? (api.migrations_missing as number[]) : [];
+  const missingLine = missing.length
+    ? ` One thing left: the database is missing migration${missing.length === 1 ? '' : 's'} ` +
+      `${missing.map((n) => String(n).padStart(4, '0')).join(', ')}. Paste ` +
+      `${missing.length === 1 ? 'that file' : 'those files'} from supabase/migrations into the Supabase SQL editor and run ${missing.length === 1 ? 'it' : 'them'}.`
+    : '';
 
   return NextResponse.json(
     {
       healthy,
       web,
       api,
+      migrations_missing: missing,
       // The one sentence to read when healthy is false.
       verdict: healthy
-        ? 'Both halves are wired up correctly.'
+        ? `Both halves are wired up correctly.${missingLine}`
         : !web.service_role
           ? `Web host: ${web.note}`
           : apiKeyOk === false
