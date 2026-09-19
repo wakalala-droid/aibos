@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import SectionCard from '@/components/ui/SectionCard';
 import EventList from '@/components/spine/EventList';
 import StartFresh from '@/components/spine/StartFresh';
+import TidyUp from '@/components/spine/TidyUp';
 import { ALL_TYPES, typeLabel } from '@/components/spine/eventMeta';
 import { useStore } from '@/lib/store';
 import PageHeader from '@/components/ui/PageHeader';
@@ -37,8 +38,11 @@ function TimelineInner() {
   // so "the events behind this number" is one click from wherever it's shown.
   const initType = params.get('type');
   const initStatus = params.get('status');
-  const [status, setStatus] = useState<EventStatus | 'all'>(
-    (['confirmed', 'pending', 'void'] as string[]).includes(initStatus ?? '') ? (initStatus as EventStatus) : 'all');
+  // 'active' (the default) is everything still in the books: confirmed and
+  // pending. Voided records are kept for the audit trail but no longer fill
+  // the list; the Voided chip shows them.
+  const [status, setStatus] = useState<EventStatus | 'all' | 'active'>(
+    (['confirmed', 'pending', 'void', 'all'] as string[]).includes(initStatus ?? '') ? (initStatus as EventStatus | 'all') : 'active');
   const [type, setType] = useState<EventType | 'all'>(
     (ALL_TYPES as string[]).includes(initType ?? '') ? (initType as EventType) : 'all');
 
@@ -47,21 +51,22 @@ function TimelineInner() {
   const [q, setQ] = useState('');
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    if (!needle) return events;
-    return events.filter((e) => {
+    const inView = status === 'active' ? events.filter((e) => e.status !== 'void') : events;
+    if (!needle) return inView;
+    return inView.filter((e) => {
       const p = e.payload ?? {};
       const hay = [e.event_type, p.customer, p.supplier, p.category, p.note, p.item,
                    ...(Array.isArray(p.items) ? (p.items as unknown[]) : []), p.amount]
         .map((v) => String(v ?? '')).join(' ').toLowerCase();
       return hay.includes(needle);
     });
-  }, [events, q]);
+  }, [events, q, status]);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
       setEvents(await listEvents({
-        status: status === 'all' ? undefined : status,
+        status: status === 'all' || status === 'active' ? undefined : status,
         event_type: type === 'all' ? undefined : type,
         limit: 500,
       }));
@@ -93,13 +98,13 @@ function TimelineInner() {
   return (
     <>
       <PageHeader
-        title="Timeline"
-        subtitle="Every recorded business event — one unified record."
+        title="Activity"
+        subtitle="Every record in your books, newest first."
       />
 
       <SectionCard
         title="Activity"
-        subtitle={loading ? 'Loading…' : q.trim() ? `${shown.length} of ${events.length} match “${q.trim()}”` : `${events.length} event${events.length === 1 ? '' : 's'}`}
+        subtitle={loading ? 'Loading…' : q.trim() ? `${shown.length} match “${q.trim()}”` : `${shown.length} record${shown.length === 1 ? '' : 's'}`}
         action={
           <button type="button" onClick={load} className="touch-target"
             style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
@@ -110,16 +115,16 @@ function TimelineInner() {
         {/* Search (audit #38) */}
         <input
           type="search" value={q} onChange={(e) => setQ(e.target.value)}
-          placeholder="Search — e.g. fuel, Chanda, 450"
+          placeholder="Search, like fuel, Chanda or 450"
           aria-label="Search events"
           style={{ width: '100%', minHeight: 40, padding: '8px 12px', marginBottom: 10, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
         />
 
         {/* Filters */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
-          {(['all', 'confirmed', 'pending', 'void'] as const).map(s => (
+          {(['active', 'confirmed', 'pending', 'void', 'all'] as const).map(s => (
             <button key={s} type="button" onClick={() => setStatus(s)} style={chip(status === s)}>
-              {s === 'all' ? 'All status' : s === 'void' ? 'Voided' : s.charAt(0).toUpperCase() + s.slice(1)}
+              {s === 'active' ? 'In your books' : s === 'all' ? 'Everything' : s === 'void' ? 'Voided' : s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
         </div>
@@ -150,6 +155,8 @@ function TimelineInner() {
           />
         )}
       </SectionCard>
+
+      <TidyUp onDone={() => { void load(); refreshTwin(); }} />
 
       <StartFresh onDone={load} />
     </>

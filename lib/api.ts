@@ -345,6 +345,26 @@ function saveBlob(blob: Blob, name: string): void {
   a.click();
   setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 30_000);
 }
+// ── Tidy up test and mistaken entries (upgrade 16) ───────────────────────────
+export type TidyKind = 'zero_records' | 'undone_invoices' | 'empty_bookings' | 'undone_payroll';
+export type TidyFound = Record<TidyKind, { id: string; label: string }[]>;
+
+export async function findTidyUp(): Promise<TidyFound> {
+  const data = await spineFetch('/cleanup');
+  return {
+    zero_records: (data.zero_records as TidyFound['zero_records']) ?? [],
+    undone_invoices: (data.undone_invoices as TidyFound['undone_invoices']) ?? [],
+    empty_bookings: (data.empty_bookings as TidyFound['empty_bookings']) ?? [],
+    undone_payroll: (data.undone_payroll as TidyFound['undone_payroll']) ?? [],
+  };
+}
+export async function applyTidyUp(kinds: TidyKind[]): Promise<Partial<Record<TidyKind, number>>> {
+  const data = await spineFetch('/cleanup', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kinds }),
+  });
+  return (data.done as Partial<Record<TidyKind, number>>) ?? {};
+}
+
 // ── Where the cash is (upgrade 9) ─────────────────────────────────────────────
 export interface CashByMethod {
   cash: number; mobile_money: number; bank: number; unsaid: number; opening: number; total: number;
