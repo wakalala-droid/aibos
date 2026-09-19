@@ -212,6 +212,20 @@ export default function HospitalityPage() {
 
   useEffect(() => { if (entitled) load(gridStart); }, [entitled, gridStart, load]);
 
+  // The "New booking" shortcut on the installed app's icon lands on ?new=1:
+  // the new-booking form opens once the units are known.
+  useEffect(() => {
+    if (!entitled || loading || units.length === 0) return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('new') !== '1') return;
+    url.searchParams.delete('new');
+    window.history.replaceState(null, '', url.pathname + url.search);
+    openDraft('');
+    // The form sits under the calendar: bring it into view.
+    window.setTimeout(() => document.getElementById('new-booking')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entitled, loading, units.length]);
+
   // A booking named in the address (?booking=<id>) opens straight away, with
   // the calendar moved to its dates. The bookings list links here, so any
   // stay, however far away, opens in the same panel with the same buttons as a
@@ -601,6 +615,7 @@ export default function HospitalityPage() {
 
           {/* New-booking form */}
           {draft && (
+            <div id="new-booking">
             <SectionCard title="New booking" subtitle="A confirmed booking with an amount records a Sale in your books. It counts as money owed to you until the guest pays.">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12, alignItems: 'end' }}>
                 <div>
@@ -632,6 +647,7 @@ export default function HospitalityPage() {
                 <button style={quietBtn} onClick={() => setDraft(null)}>Discard</button>
               </div>
             </SectionCard>
+            </div>
           )}
 
           {/* Booking detail: the whole booking plus the decision it is waiting for. */}

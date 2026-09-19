@@ -678,6 +678,20 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
 
   const setOpen = useCallback((v: boolean) => setOpenState(v), []);
   const toggle = useCallback(() => setOpenState((v) => !v), []);
+
+  // The "Ask AIBOS" shortcut on the installed app's icon lands on ?ask=1: open
+  // the assistant straight away, then tidy the address so a reload does not
+  // open it again.
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('ask') === '1') {
+        setOpenState(true);
+        url.searchParams.delete('ask');
+        window.history.replaceState(null, '', url.pathname + (url.search || '') + url.hash);
+      }
+    } catch { /* no window: nothing to do */ }
+  }, []);
   const clearConversation = useCallback(() => {
     setMessages([]);
     setSuggestions([]);
