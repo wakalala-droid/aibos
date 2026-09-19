@@ -10,7 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import SectionCard from '@/components/ui/SectionCard';
 import EventList from '@/components/spine/EventList';
 import StartFresh from '@/components/spine/StartFresh';
-import { ALL_TYPES } from '@/components/spine/eventMeta';
+import { ALL_TYPES, typeLabel } from '@/components/spine/eventMeta';
 import { useStore } from '@/lib/store';
 import PageHeader from '@/components/ui/PageHeader';
 import {
@@ -119,14 +119,14 @@ function TimelineInner() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
           {(['all', 'confirmed', 'pending', 'void'] as const).map(s => (
             <button key={s} type="button" onClick={() => setStatus(s)} style={chip(status === s)}>
-              {s === 'all' ? 'All status' : s}
+              {s === 'all' ? 'All status' : s === 'void' ? 'Voided' : s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
           <button type="button" onClick={() => setType('all')} style={chip(type === 'all')}>All types</button>
           {ALL_TYPES.map(t => (
-            <button key={t} type="button" onClick={() => setType(t)} style={chip(type === t)}>{t}</button>
+            <button key={t} type="button" onClick={() => setType(t)} style={chip(type === t)}>{typeLabel(t)}</button>
           ))}
         </div>
 
