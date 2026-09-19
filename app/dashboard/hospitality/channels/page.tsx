@@ -515,7 +515,8 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
 
       <p style={{ ...BODY, marginBottom: 16 }}>
         When a guest books on your website they get an email straight away. They get another when
-        you confirm the booking or turn it down. When they reply, it comes to you.
+        you confirm the booking or turn it down, and a reminder 3 days before they arrive if money is
+        still owed, with a link to pay. When they reply, it comes to you.
       </p>
 
       <div style={{ marginBottom: 16 }}>
