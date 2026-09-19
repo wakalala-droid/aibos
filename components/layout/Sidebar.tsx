@@ -392,9 +392,11 @@ export default function Sidebar() {
       {/* Plan chip — current tier + upgrade CTA (expanded rail only) */}
       {!col && (
         <Link
-          href="/pricing"
+          // A paid plan opens Plan & billing: when it renews, what it costs,
+          // every payment and its receipt. Free still goes to the plans.
+          href={tier === 'free' ? '/pricing' : '/dashboard/billing'}
           onClick={() => setMobileNav(false)}
-          aria-label={tier === 'growth' ? 'Growth plan — view plans' : `${TIERS[tier].name} plan — upgrade`}
+          aria-label={tier === 'free' ? 'Free plan. See the plans' : `${TIERS[tier].name} plan. Open plan and billing`}
           style={{
             margin: '4px 12px 8px', padding: '10px 12px', borderRadius: 10,
             border: '1px solid var(--border)', background: 'var(--bg-badge)',

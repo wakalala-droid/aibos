@@ -345,6 +345,49 @@ function saveBlob(blob: Blob, name: string): void {
   a.click();
   setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 30_000);
 }
+// ── Plan & billing (upgrades 1 and 2) ─────────────────────────────────────────
+export type PlanState = 'free' | 'included' | 'active' | 'grace' | 'expired';
+
+export interface PlanPayment {
+  id: string;
+  date: string;
+  plan: string;
+  plan_name: string;
+  billing: 'monthly' | 'annual';
+  amount: number;
+  currency: string;
+  method: string;
+  phone_tail: string | null;
+  status: 'pending' | 'successful' | 'failed';
+  receipt: boolean;
+  paid_until?: string | null;
+}
+
+export interface MyBilling {
+  own_plan: boolean;
+  note?: string;
+  plan?: string;
+  plan_name?: string;
+  billing?: 'monthly' | 'annual';
+  price?: number | null;
+  state?: PlanState;
+  sentence?: string;
+  paid_until?: string | null;
+  renews_on?: string | null;
+  switches_off_on?: string | null;
+  days_left?: number | null;
+  pay_link?: string;
+  payments?: PlanPayment[];
+  collections_live?: boolean;
+}
+
+export async function getMyBilling(): Promise<MyBilling> {
+  return (await spineFetch('/me/billing')) as unknown as MyBilling;
+}
+
+export const downloadPlanReceipt = (paymentId: string, number: string) =>
+  downloadFile(`/me/billing/receipts/${encodeURIComponent(paymentId)}.pdf`, `${number}.pdf`);
+
 export const exportEventsCsv = () => downloadFile('/export/events.csv', 'aibos_events.csv');
 export const exportPnlCsv = () => downloadFile('/export/pnl.csv', 'aibos_pnl.csv');
 
