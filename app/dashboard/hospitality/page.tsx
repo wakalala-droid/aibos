@@ -29,6 +29,7 @@ import { fmt, symbolForToken } from '@/lib/currency';
 import {
   listProperties, listUnits, listBookings, getBooking, createBooking, cancelBooking, updateBooking,
   confirmBooking, declineBooking, createProperty, createUnit, createGuest, guestEmailOutcome,
+  createStayPayLink,
   occupancyRate, nights, bookingSymbol, SOURCE_LABEL, isDatesTaken,
   type Property, type Unit, type Booking, type BookingStatus, type PaymentStatus,
 } from '@/lib/hospitality';
@@ -844,6 +845,11 @@ function BookingPanel({
         </PanelBlock>
       )}
 
+      {/* A LINK THE GUEST PAYS FROM (upgrade 3) */}
+      {earns && payment !== 'paid' && payment !== 'refunded' && (
+        <PayLinkBlock booking={b} owed={total - paidSoFar} symbol={symbol} unitName={unitName} phone={phone} name={name} />
+      )}
+
       {/* THEIR WORDS */}
       {(b.guest_notes || '').trim() && (
         <PanelBlock title="What the guest wrote" tone="var(--info)">
@@ -972,6 +978,113 @@ function BookingPanel({
 
 /** A named group with the 2px line indicator the design system uses to bind a
  *  block of facts together without drawing another card inside a card. */
+/**
+ * A payment link for the guest: everything still owed, or a deposit. The guest
+ * pays by mobile money from the link and the booking marks itself paid, with
+ * the money in the books once. The owner used to chase the deposit on
+ * WhatsApp and press "Deposit paid" by hand when an SMS came in.
+ */
+function PayLinkBlock({ booking: b, owed, symbol, unitName, phone, name }: {
+  booking: Booking; owed: number; symbol: string; unitName: string; phone: string; name: string;
+}) {
+  const [mode, setMode] = useState<'all' | 'deposit'>('all');
+  const [deposit, setDeposit] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [link, setLink] = useState<{ url: string; requested: number } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const depositValue = Number(deposit);
+  const depositOk = deposit.trim() !== '' && depositValue > 0 && depositValue < owed;
+
+  const make = async () => {
+    setBusy(true); setError(''); setCopied(false);
+    try {
+      const out = await createStayPayLink(b.id, mode === 'deposit' ? Math.round(depositValue * 100) / 100 : null);
+      setLink({ url: out.url, requested: out.requested });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not make the link.');
+    } finally { setBusy(false); }
+  };
+
+  const copy = async () => {
+    if (!link) return;
+    try { await navigator.clipboard.writeText(link.url); setCopied(true); } catch { setCopied(false); }
+  };
+
+  // A Zambian number as WhatsApp wants it: 0977… becomes 260977….
+  const waNumber = (() => {
+    const d = phone.replace(/\D/g, '');
+    if (!d) return '';
+    return d.startsWith('0') ? `260${d.slice(1)}` : d;
+  })();
+  const first = (name || '').trim().split(/\s+/)[0];
+  const message = link
+    ? `Hello${first ? ` ${first}` : ''}, here is the link to pay ${fmt(link.requested, false, symbol)} for your stay` +
+      `${unitName ? ` at ${unitName}` : ''}, ${shortDate(b.check_in)} to ${shortDate(b.check_out)}. ` +
+      `You pay by MTN or Airtel mobile money and it confirms by itself: ${link.url}`
+    : '';
+
+  return (
+    <PanelBlock title="Payment link for the guest" tone="var(--cyan)">
+      <p style={{ margin: '0 0 12px', fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)' }}>
+        Send the guest a link. They pay by mobile money from their phone, and this booking marks itself paid.
+      </p>
+      <div role="group" aria-label="How much the link asks for" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+        {(['all', 'deposit'] as const).map(m => (
+          <button
+            key={m}
+            aria-pressed={mode === m}
+            onClick={() => { setMode(m); setLink(null); }}
+            style={{
+              ...quietBtn, fontSize: 16, padding: '8px 14px',
+              color: mode === m ? 'var(--text-1)' : 'var(--text-2)',
+              background: mode === m ? 'color-mix(in srgb, var(--cyan) 16%, transparent)' : 'transparent',
+              border: `1px solid ${mode === m ? 'var(--cyan)' : 'var(--border-md)'}`,
+            }}
+          >
+            {m === 'all' ? `Everything owed (${fmt(owed, false, symbol)})` : 'A deposit'}
+          </button>
+        ))}
+      </div>
+      {mode === 'deposit' && (
+        <div style={{ maxWidth: 320, marginBottom: 12 }}>
+          <label style={lbl} htmlFor="link-deposit">Deposit to ask for ({symbol})</label>
+          <input id="link-deposit" style={input} type="number" min="0" step="0.01" inputMode="decimal"
+            value={deposit} onChange={e => { setDeposit(e.target.value); setLink(null); }}
+            placeholder={`Less than ${fmt(owed, false, symbol)}`} />
+        </div>
+      )}
+      <button
+        style={{ ...primaryBtn, opacity: busy || (mode === 'deposit' && !depositOk) ? 0.7 : 1 }}
+        disabled={busy || (mode === 'deposit' && !depositOk)}
+        onClick={make}
+      >
+        {busy ? 'Making the link…' : link ? 'Make it again' : 'Make the link'}
+      </button>
+      {error && <p role="alert" style={{ margin: '10px 0 0', fontSize: 16, lineHeight: 1.6, color: 'var(--crit)' }}>{error}</p>}
+      {link && (
+        <div style={{ marginTop: 14, padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-3)', marginBottom: 4 }}>
+            Asks for {fmt(link.requested, false, symbol)}
+          </div>
+          <div style={{ fontSize: 16, lineHeight: 1.5, color: 'var(--text-1)', wordBreak: 'break-all', marginBottom: 10 }}>{link.url}</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <button style={{ ...quietBtn, fontSize: 16, padding: '8px 14px' }} onClick={copy}>{copied ? 'Copied' : 'Copy link'}</button>
+            <a
+              href={`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ ...primaryBtn, fontSize: 16, padding: '8px 14px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+            >
+              {waNumber ? 'Send on WhatsApp' : 'Share on WhatsApp'}
+            </a>
+          </div>
+        </div>
+      )}
+    </PanelBlock>
+  );
+}
+
 function PanelBlock({ title, children, tone = 'var(--border-md)' }: { title: string; children: React.ReactNode; tone?: string }) {
   return (
     <section style={{ marginTop: 24, paddingLeft: 14, borderLeft: `2px solid ${tone}` }}>

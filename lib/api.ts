@@ -819,6 +819,53 @@ export async function checkPublicPaymentStatus(
   return data.status as 'pending' | 'successful' | 'failed';
 }
 
+// ── Payment links for stays (upgrade 3) ──────────────────────────────────────
+// The guest's half: the same public routes and error handling as invoices.
+export interface PublicStay {
+  business_name: string | null;
+  business_logo_url: string | null;
+  unit: string | null;
+  reference: string | null;
+  guest_first_name: string | null;
+  check_in: string;
+  check_out: string;
+  nights: number | null;
+  currency: string;
+  total: number;
+  paid: number;
+  owed: number;
+  amount_due: number;
+  is_deposit: boolean;
+  payable: boolean;
+  paid_in_full: boolean;
+}
+
+export async function getPublicStay(token: string): Promise<{
+  stay: PublicStay; networks: Record<PayNetwork, boolean>;
+}> {
+  const data = await publicFetch(`/pay/stay/${encodeURIComponent(token)}`);
+  return { stay: data.stay as unknown as PublicStay, networks: data.networks as Record<PayNetwork, boolean> };
+}
+
+export async function initiateStayPayment(
+  token: string, network: PayNetwork, payerPhone: string,
+): Promise<{ reference: string; status: string; amount: number }> {
+  const data = await publicFetch(`/pay/stay/${encodeURIComponent(token)}/initiate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ network, payer_phone: payerPhone }),
+  });
+  return { reference: data.reference as string, status: data.status as string, amount: Number(data.amount) || 0 };
+}
+
+export async function checkStayPaymentStatus(
+  token: string, reference: string,
+): Promise<'pending' | 'successful' | 'failed'> {
+  const data = await publicFetch(
+    `/pay/stay/${encodeURIComponent(token)}/status/${encodeURIComponent(reference)}`);
+  return data.status as 'pending' | 'successful' | 'failed';
+}
+
 // ── Live customer intelligence (Engine 2 over the spine — audit #5) ──────────
 
 export interface LiveCustomerIntel {

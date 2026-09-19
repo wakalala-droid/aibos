@@ -466,6 +466,14 @@ export async function createBooking(input: BookingInput): Promise<Booking> {
 export async function updateBooking(id: string, patch: Partial<BookingInput>): Promise<Booking> {
   return (await hfetch(`/hospitality/bookings/${id}`, jsonInit('PATCH', patch))).booking as Booking;
 }
+/** The link a guest opens to pay for their stay by mobile money. `amount`
+ *  omitted asks for everything still owed; a number asks for a deposit. */
+export async function createStayPayLink(id: string, amount?: number | null):
+    Promise<{ url: string; owed: number; requested: number }> {
+  const data = await hfetch(`/hospitality/bookings/${id}/pay-link`,
+    jsonInit('POST', { amount: amount && amount > 0 ? amount : null }));
+  return { url: data.url as string, owed: Number(data.owed) || 0, requested: Number(data.requested) || 0 };
+}
 export async function cancelBooking(id: string): Promise<Booking> {
   return (await hfetch(`/hospitality/bookings/${id}/cancel`, { method: 'POST' })).booking as Booking;
 }
