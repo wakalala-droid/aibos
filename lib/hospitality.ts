@@ -474,6 +474,24 @@ export async function createStayPayLink(id: string, amount?: number | null):
     jsonInit('POST', { amount: amount && amount > 0 ? amount : null }));
   return { url: data.url as string, owed: Number(data.owed) || 0, requested: Number(data.requested) || 0 };
 }
+// ── Instalments (upgrades 4 and 9): each payment with its own day and method ──
+export type StayPaymentMethod = 'cash' | 'mobile_money' | 'card' | 'bank';
+export interface StayPayment { id: string; date: string; amount: number; method: StayPaymentMethod }
+
+export async function listStayPayments(id: string): Promise<StayPayment[]> {
+  return ((await hfetch(`/hospitality/bookings/${id}/payments`)).payments as StayPayment[]) ?? [];
+}
+export async function addStayPayment(id: string, input: { amount: number; paid_on?: string; method: StayPaymentMethod }):
+    Promise<{ booking: Booking; payments: StayPayment[] }> {
+  const data = await hfetch(`/hospitality/bookings/${id}/payments`, jsonInit('POST', input));
+  return { booking: data.booking as Booking, payments: (data.payments as StayPayment[]) ?? [] };
+}
+export async function removeStayPayment(id: string, paymentId: string):
+    Promise<{ booking: Booking; payments: StayPayment[] }> {
+  const data = await hfetch(`/hospitality/bookings/${id}/payments/${encodeURIComponent(paymentId)}`, { method: 'DELETE' });
+  return { booking: data.booking as Booking, payments: (data.payments as StayPayment[]) ?? [] };
+}
+
 export async function cancelBooking(id: string): Promise<Booking> {
   return (await hfetch(`/hospitality/bookings/${id}/cancel`, { method: 'POST' })).booking as Booking;
 }

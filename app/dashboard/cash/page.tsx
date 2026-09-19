@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
-import { authHeaders } from '@/lib/api';
+import { authHeaders, getCashByMethod, type CashByMethod } from '@/lib/api';
 import CashForecastFan from '@/components/dashboard/CashForecastFan';
 import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
@@ -34,6 +34,13 @@ export default function CashPage() {
   // The honest forecast from the recorded books (the same one the AI uses). It
   // declines until there are four completed months, and says so.
   const [outlook, setOutlook] = useState<Outlook | null>(null);
+  // Where the cash sits: the drawer, the mobile money wallet, the bank.
+  const [split, setSplit] = useState<CashByMethod | null>(null);
+  useEffect(() => {
+    let alive = true;
+    getCashByMethod().then((d) => { if (alive) setSplit(d); }).catch(() => { /* optional */ });
+    return () => { alive = false; };
+  }, []);
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -157,6 +164,36 @@ export default function CashPage() {
           sparkColor="var(--purple)" delay={0.18}
         />
       </div>
+
+      {/* Where the money is (upgrade 9): the one cash figure, split by how each
+          payment was made. Shown for recorded books only. */}
+      {fromBooks && split && (
+        <SectionCard title="Where your money is" subtitle="Your cash, split by how each payment was made" delay={0.08} style={{ marginBottom: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12 }}>
+            {([
+              ['Cash', split.cash],
+              ['Mobile money', split.mobile_money],
+              ['Bank and card', split.bank],
+              ...(Math.abs(split.unsaid) > 0.005 ? [['Not said how', split.unsaid] as [string, number]] : []),
+              ...(Math.abs(split.opening) > 0.005 ? [['Starting balance', split.opening] as [string, number]] : []),
+            ] as [string, number][]).map(([label, value]) => (
+              <div key={label} style={{ padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-badge)' }}>
+                <div style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: value < 0 ? 'var(--crit)' : 'var(--text-1)', marginTop: 2 }}>
+                  {fmt(value, false, sym)}
+                </div>
+              </div>
+            ))}
+          </div>
+          {(split.cash < 0 || split.mobile_money < 0 || split.bank < 0 || Math.abs(split.unsaid) > 0.005) && (
+            <p style={{ fontSize: 'var(--fs-label)', lineHeight: 1.6, color: 'var(--text-4)', margin: '12px 0 0' }}>
+              A figure below zero means more was recorded going out that way than coming in. Record money you move
+              between them (for example, cash taken to the bank) and say how each payment was made, and these even out.
+              Together they always add up to your {fmt(split.total, false, sym)}.
+            </p>
+          )}
+        </SectionCard>
+      )}
 
       {/* Runway status bar */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}

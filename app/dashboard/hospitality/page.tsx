@@ -29,7 +29,8 @@ import { fmt, symbolForToken } from '@/lib/currency';
 import {
   listProperties, listUnits, listBookings, getBooking, createBooking, cancelBooking, updateBooking,
   confirmBooking, declineBooking, createProperty, createUnit, createGuest, guestEmailOutcome,
-  createStayPayLink,
+  createStayPayLink, listStayPayments, addStayPayment, removeStayPayment,
+  type StayPayment, type StayPaymentMethod,
   occupancyRate, nights, bookingSymbol, SOURCE_LABEL, isDatesTaken,
   type Property, type Unit, type Booking, type BookingStatus, type PaymentStatus,
 } from '@/lib/hospitality';
@@ -644,6 +645,7 @@ export default function HospitalityPage() {
                 onDecline={() => doDecline(selected)}
                 onCancel={() => doCancel(selected)}
                 onPayment={(status, deposit) => doPayment(selected, status, deposit)}
+                onSaved={(b) => { applyUpdate(b); void load(gridStart); }}
                 onClose={closeBooking}
               />
             </div>
@@ -676,12 +678,13 @@ interface PanelProps {
   onDecline: () => void;
   onCancel: () => void;
   onPayment: (status: PaymentStatus, deposit?: number) => Promise<boolean>;
+  onSaved: (b: Booking) => void;
   onClose: () => void;
 }
 
 function BookingPanel({
   booking: b, unitName, busy, note, emailNote, declining, declineReason,
-  onDeclineReason, onStartDecline, onStopDecline, onConfirm, onDecline, onCancel, onPayment, onClose,
+  onDeclineReason, onStartDecline, onStopDecline, onConfirm, onDecline, onCancel, onPayment, onSaved, onClose,
 }: PanelProps) {
   const g = b.guest;
   const name = guestName(b);
@@ -815,6 +818,7 @@ function BookingPanel({
               );
             })}
           </div>
+          <Instalments booking={b} symbol={symbol} owed={total - paidSoFar} onSaved={onSaved} />
           {takingDeposit && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'end', marginTop: 12, maxWidth: 520 }}>
               <div style={{ flex: '1 1 200px' }}>
@@ -978,6 +982,121 @@ function BookingPanel({
 
 /** A named group with the 2px line indicator the design system uses to bind a
  *  block of facts together without drawing another card inside a card. */
+const METHOD_LABEL: Record<StayPaymentMethod, string> = {
+  cash: 'Cash', mobile_money: 'Mobile money', card: 'Card', bank: 'Bank',
+};
+
+/**
+ * Every payment on the stay, each with its own day and how it was paid, and a
+ * way to add the next one (upgrades 4 and 9). A stay used to hold one deposit
+ * and then "the rest", all under the one method the guest mentioned when they
+ * booked, so the cash drawer and the mobile money wallet could not be told
+ * apart and nothing said what came in when.
+ */
+function Instalments({ booking: b, symbol, owed, onSaved }: {
+  booking: Booking; symbol: string; owed: number; onSaved: (b: Booking) => void;
+}) {
+  const today = iso(new Date());
+  const [list, setList] = useState<StayPayment[] | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [day, setDay] = useState(today);
+  const [method, setMethod] = useState<StayPaymentMethod>(
+    (['cash', 'mobile_money', 'card', 'bank'] as const).includes(b.payment_method as StayPaymentMethod)
+      ? (b.payment_method as StayPaymentMethod) : 'cash');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let alive = true;
+    listStayPayments(b.id).then((p) => { if (alive) setList(p); }).catch(() => { if (alive) setList([]); });
+    return () => { alive = false; };
+  }, [b.id, b.payment_status, b.deposit_amount]);
+
+  const value = Number(amount);
+  const ok = amount.trim() !== '' && value > 0 && value <= owed + 0.005 && !!day && day <= today;
+
+  const add = async () => {
+    if (!ok) return;
+    setBusy(true); setError('');
+    try {
+      const out = await addStayPayment(b.id, { amount: Math.round(value * 100) / 100, paid_on: day, method });
+      setList(out.payments); setAdding(false); setAmount(''); setDay(today);
+      onSaved(out.booking);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not save the payment.');
+    } finally { setBusy(false); }
+  };
+
+  const remove = async (p: StayPayment) => {
+    if (!window.confirm(`Take the ${fmt(p.amount, false, symbol)} payment of ${shortDate(p.date)} off this stay? It comes out of your books.`)) return;
+    setBusy(true); setError('');
+    try {
+      const out = await removeStayPayment(b.id, p.id);
+      setList(out.payments);
+      onSaved(out.booking);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not remove the payment.');
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <div style={{ marginTop: 14 }}>
+      {list && list.length > 0 && (
+        <div style={{ display: 'grid', gap: 6, marginBottom: 10 }}>
+          <div style={{ ...lbl, marginBottom: 0 }}>Payments received</div>
+          {list.map((p) => (
+            <div key={p.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 14px', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-1)' }}>{fmt(p.amount, false, symbol)}</span>
+              <span style={{ fontSize: 16, color: 'var(--text-3)' }}>{shortDate(p.date)} · {METHOD_LABEL[p.method] ?? p.method}</span>
+              <button onClick={() => remove(p)} disabled={busy}
+                style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--text-3)', textDecoration: 'underline', fontSize: 15, cursor: 'pointer', padding: 4 }}>
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      {owed > 0.005 && !adding && (
+        <button style={{ ...quietBtn, fontSize: 16, padding: '8px 14px' }} disabled={busy} onClick={() => setAdding(true)}>
+          + Add a payment
+        </button>
+      )}
+      {adding && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, alignItems: 'end', maxWidth: 640 }}>
+          <div>
+            <label style={lbl} htmlFor="inst-amount">Amount ({symbol})</label>
+            <input id="inst-amount" style={input} type="number" min="0" step="0.01" inputMode="decimal"
+              value={amount} onChange={e => setAmount(e.target.value)} placeholder={`Up to ${fmt(owed, false, symbol)}`} />
+          </div>
+          <div>
+            <label style={lbl} htmlFor="inst-day">Paid on</label>
+            <input id="inst-day" style={input} type="date" max={today} value={day} onChange={e => setDay(e.target.value)} />
+          </div>
+          <div>
+            <label style={lbl} htmlFor="inst-method">How</label>
+            <select id="inst-method" style={input} value={method} onChange={e => setMethod(e.target.value as StayPaymentMethod)}>
+              {(Object.keys(METHOD_LABEL) as StayPaymentMethod[]).map(m => <option key={m} value={m}>{METHOD_LABEL[m]}</option>)}
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button style={{ ...primaryBtn, opacity: busy || !ok ? 0.7 : 1 }} disabled={busy || !ok} onClick={add}>
+              {busy ? 'Saving…' : 'Save'}
+            </button>
+            <button style={quietBtn} disabled={busy} onClick={() => { setAdding(false); setError(''); }}>Cancel</button>
+          </div>
+        </div>
+      )}
+      {amount.trim() !== '' && value > owed + 0.005 && (
+        <p style={{ margin: '8px 0 0', fontSize: 15, lineHeight: 1.6, color: 'var(--warn)' }}>
+          That is more than the {fmt(owed, false, symbol)} still owed.
+        </p>
+      )}
+      {error && <p role="alert" style={{ margin: '8px 0 0', fontSize: 16, lineHeight: 1.6, color: 'var(--crit)' }}>{error}</p>}
+    </div>
+  );
+}
+
 /**
  * A payment link for the guest: everything still owed, or a deposit. The guest
  * pays by mobile money from the link and the booking marks itself paid, with

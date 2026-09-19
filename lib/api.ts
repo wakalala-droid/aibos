@@ -345,6 +345,14 @@ function saveBlob(blob: Blob, name: string): void {
   a.click();
   setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 30_000);
 }
+// ── Where the cash is (upgrade 9) ─────────────────────────────────────────────
+export interface CashByMethod {
+  cash: number; mobile_money: number; bank: number; unsaid: number; opening: number; total: number;
+}
+export async function getCashByMethod(): Promise<CashByMethod> {
+  return (await spineFetch('/twin/cash-by-method')) as unknown as CashByMethod;
+}
+
 // ── Plan & billing (upgrades 1 and 2) ─────────────────────────────────────────
 export type PlanState = 'free' | 'included' | 'active' | 'grace' | 'expired';
 
