@@ -345,6 +345,27 @@ function saveBlob(blob: Blob, name: string): void {
   a.click();
   setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 30_000);
 }
+// ── Notifications on the phone (upgrade 10) ──────────────────────────────────
+export async function getPushKey(): Promise<{ configured: boolean; key: string | null }> {
+  const data = await spineFetch('/push/key');
+  return { configured: Boolean(data.configured), key: (data.key as string) ?? null };
+}
+export async function subscribePush(sub: PushSubscriptionJSON): Promise<void> {
+  await spineFetch('/push/subscribe', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.keys }),
+  });
+}
+export async function unsubscribePush(endpoint: string): Promise<void> {
+  await spineFetch('/push/subscribe', {
+    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ endpoint, keys: {} }),
+  });
+}
+export async function sendTestPush(): Promise<{ sent?: number }> {
+  return (await spineFetch('/push/test', { method: 'POST' })) as unknown as { sent?: number };
+}
+
 // ── Tidy up test and mistaken entries (upgrade 16) ───────────────────────────
 export type TidyKind = 'zero_records' | 'undone_invoices' | 'empty_bookings' | 'undone_payroll';
 export type TidyFound = Record<TidyKind, { id: string; label: string }[]>;

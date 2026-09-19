@@ -18,6 +18,7 @@ import {
   buildNotifications, fetchHappenedNotifications, markNotificationRead,
   mergeNotifications, timeAgo, type Notification as LiveNotification,
 } from '@/lib/notifications';
+import PhoneAlerts from '@/components/pwa/PhoneAlerts';
 import CurrencySelector from '@/components/ui/CurrencySelector';
 import BusinessSwitcher from '@/components/layout/BusinessSwitcher';
 
@@ -519,6 +520,8 @@ export default function DashboardHeader() {
                 return <div key={i}>{body}</div>;
               })}
             </div>
+            {/* Alerts on the phone, with AIBOS closed (upgrade 10). */}
+            <PhoneAlerts />
             <Link href="/dashboard/anomaly" onClick={() => setOpen(null)} style={{ display: 'block', textAlign: 'center', padding: '16px', borderTop: '1px solid var(--border)', fontSize: 18, lineHeight: 1.6, fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
               View anomaly intelligence →
             </Link>

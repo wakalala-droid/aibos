@@ -69,3 +69,40 @@ self.addEventListener('fetch', (event) => {
   }
   // All other requests (API, auth, data): pass through untouched.
 });
+
+/* ── Notifications on the phone (upgrade 10) ───────────────────────────────
+ * The API sends an encrypted message; the browser hands it here and this
+ * shows it, even with AIBOS closed. Tapping it opens the page the alert is
+ * about, reusing an open AIBOS window when there is one.
+ */
+self.addEventListener('push', (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch { data = {}; }
+  const title = data.title || 'AIBOS';
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || '',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      tag: data.link || 'aibos',
+      renotify: true,
+      data: { link: data.link || '/dashboard' },
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  const link = (event.notification.data && event.notification.data.link) || '/dashboard';
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+      for (const client of windows) {
+        if (client.url.includes(self.location.origin)) {
+          client.navigate(link);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(link);
+    })
+  );
+});
