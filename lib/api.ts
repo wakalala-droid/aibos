@@ -407,9 +407,22 @@ export interface PlanPayment {
   currency: string;
   method: string;
   phone_tail: string | null;
-  status: 'pending' | 'successful' | 'failed';
+  status: 'pending' | 'successful' | 'failed' | 'refunded';
   receipt: boolean;
+  /** A card payment: Paddle's invoice is its receipt (getCardInvoiceUrl). */
+  invoice?: boolean;
   paid_until?: string | null;
+}
+
+/** A plan paid by card: Paddle charges it every period until it is cancelled. */
+export interface CardPlan {
+  status: 'active' | 'trialing' | 'past_due' | 'paused' | 'canceled';
+  plan: string;
+  billing: 'monthly' | 'annual';
+  amount: number | null;
+  currency: string;
+  renews_on: string | null;
+  cancel_at: string | null;
 }
 
 export interface MyBilling {
@@ -419,6 +432,8 @@ export interface MyBilling {
   plan_name?: string;
   billing?: 'monthly' | 'annual';
   price?: number | null;
+  /** The currency of `price`: ZMW, or USD for a card plan. */
+  currency?: string;
   state?: PlanState;
   sentence?: string;
   paid_until?: string | null;
@@ -428,6 +443,11 @@ export interface MyBilling {
   pay_link?: string;
   payments?: PlanPayment[];
   collections_live?: boolean;
+  card?: CardPlan | null;
+  /** Whether card payments are switched on at all. */
+  card_payments?: boolean;
+  /** Whether Paddle's own page (change card, invoices) can be opened. */
+  card_manageable?: boolean;
 }
 
 export async function getMyBilling(): Promise<MyBilling> {
@@ -436,6 +456,91 @@ export async function getMyBilling(): Promise<MyBilling> {
 
 export const downloadPlanReceipt = (paymentId: string, number: string) =>
   downloadFile(`/me/billing/receipts/${encodeURIComponent(paymentId)}.pdf`, `${number}.pdf`);
+
+// ── Card payments, through Paddle (lib/paddle.ts opens the checkout) ─────────
+export interface CardPrice { amount: number; currency: string }
+export type CardPrices = Partial<Record<string, Partial<Record<'monthly' | 'annual', CardPrice>>>>;
+
+export interface CardConfig {
+  enabled: boolean;
+  environment: 'live' | 'sandbox' | null;
+  client_token?: string | null;
+  prices: CardPrices;
+  /** Sandbox: test cards work, so only the people testing may use it. */
+  testers_only: boolean;
+}
+
+const NO_CARDS: CardConfig = { enabled: false, environment: null, prices: {}, testers_only: false };
+
+/** Whether cards are on, and the card prices. Public; never throws. */
+export async function getCardConfig(): Promise<CardConfig> {
+  try {
+    const res = await fetch(`${PROXY}/payments/paddle/config`);
+    if (!res.ok) return NO_CARDS;
+    const d = (await res.json()) as Partial<CardConfig>;
+    return { ...NO_CARDS, ...d, prices: d.prices ?? {} };
+  } catch {
+    return NO_CARDS;
+  }
+}
+
+export interface CardCheckout {
+  transaction_id: string;
+  amount: number;
+  currency: string;
+  client_token: string;
+  environment: 'live' | 'sandbox';
+  plan: string;
+  billing: 'monthly' | 'annual';
+}
+
+const post = (path: string, body?: unknown) =>
+  spineFetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body ?? {}),
+  });
+
+/** The API makes the Paddle transaction; the page only opens it. */
+export async function startCardCheckout(plan: PaidTier, billing: 'monthly' | 'annual'): Promise<CardCheckout> {
+  return (await post('/payments/paddle/checkout', { plan, billing })) as unknown as CardCheckout;
+}
+
+export interface CardChangePreview {
+  action: 'charge' | 'credit';
+  amount: number;
+  currency: string;
+  next_billed_at: string | null;
+  next_amount: number | null;
+}
+
+export async function previewCardChange(plan: PaidTier, billing: 'monthly' | 'annual'): Promise<CardChangePreview> {
+  const d = await post('/payments/paddle/change', { plan, billing, confirm: false });
+  return d.preview as CardChangePreview;
+}
+
+export async function confirmCardChange(plan: PaidTier, billing: 'monthly' | 'annual'): Promise<void> {
+  await post('/payments/paddle/change', { plan, billing, confirm: true });
+}
+
+/** Stop the card plan renewing; it stays on to the end of what is paid. */
+export async function cancelCardPlan(): Promise<string | null> {
+  return ((await post('/payments/paddle/cancel')).ends_on as string | null) ?? null;
+}
+
+/** Undo a cancelled renewal before it takes effect. */
+export async function keepCardPlan(): Promise<void> {
+  await post('/payments/paddle/keep');
+}
+
+/** A short-lived link to Paddle's own page: change the card, every invoice. */
+export async function getCardPortalUrl(): Promise<string> {
+  return (await post('/payments/paddle/portal')).url as string;
+}
+
+export async function getCardInvoiceUrl(paymentId: string): Promise<string> {
+  return (await spineFetch(`/me/billing/invoices/${encodeURIComponent(paymentId)}`)).url as string;
+}
 
 export const exportEventsCsv = () => downloadFile('/export/events.csv', 'aibos_events.csv');
 export const exportPnlCsv = () => downloadFile('/export/pnl.csv', 'aibos_pnl.csv');

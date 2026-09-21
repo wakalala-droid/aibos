@@ -6,16 +6,21 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { useAuth } from '@/hooks/useAuth';
 import { TIERS, TIER_ORDER, usdApprox, type Tier } from '@/lib/tiers';
+import { formatMoney } from '@/lib/paddle';
+import type { CardPrice, CardPrices } from '@/lib/api';
 
 type Billing = 'monthly' | 'annual';
 
-function priceLabel(tier: Tier, billing: Billing): { big: string; small: string } {
+/** With card prices on the page, the rough "≈ $" beside the Kwacha price is
+ *  left off: a card is charged the card price, and two dollar figures that
+ *  disagree would read as a trick. */
+function priceLabel(tier: Tier, billing: Billing, byCard: boolean): { big: string; small: string } {
   const meta = TIERS[tier];
   if (meta.priceMonthly === 0) return { big: 'Free', small: 'forever' };
   if (billing === 'annual') {
-    return { big: `K${meta.priceAnnual.toLocaleString()}`, small: `/year · ≈ $${usdApprox(meta.priceAnnual)}` };
+    return { big: `K${meta.priceAnnual.toLocaleString()}`, small: byCard ? '/year' : `/year · ≈ $${usdApprox(meta.priceAnnual)}` };
   }
-  return { big: `K${meta.priceMonthly.toLocaleString()}`, small: `/month · ≈ $${usdApprox(meta.priceMonthly)}` };
+  return { big: `K${meta.priceMonthly.toLocaleString()}`, small: byCard ? '/month' : `/month · ≈ $${usdApprox(meta.priceMonthly)}` };
 }
 
 function Check({ colour }: { colour: string }) {
@@ -26,7 +31,7 @@ function Check({ colour }: { colour: string }) {
   );
 }
 
-export default function PricingTiers() {
+export default function PricingTiers({ cardPrices = null }: { cardPrices?: CardPrices | null }) {
   const reduce = useReducedMotion();
   const currentTier = useStore((s) => s.tier);
   const { isAuthenticated } = useAuth();
@@ -86,7 +91,8 @@ export default function PricingTiers() {
           const meta = TIERS[tier];
           // Pro+ is the flagship — "AIBOS runs your day" is the story we lead with.
           const popular = tier === 'proplus';
-          const { big, small } = priceLabel(tier, billing);
+          const card: CardPrice | undefined = cardPrices?.[tier]?.[billing];
+          const { big, small } = priceLabel(tier, billing, Boolean(cardPrices));
           const action = cta(tier);
 
           return (
@@ -118,7 +124,7 @@ export default function PricingTiers() {
                 {meta.tagline}
               </p>
 
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: card ? 6 : 20 }}>
                 <span style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>
                   {big}
                 </span>
@@ -126,6 +132,11 @@ export default function PricingTiers() {
                   {small}
                 </span>
               </div>
+              {card && (
+                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 20px' }}>
+                  or {formatMoney(card.amount, card.currency)} a {billing === 'annual' ? 'year' : 'month'} by card
+                </p>
+              )}
 
               <ul style={{ listStyle: 'none', margin: '0 0 22px', padding: 0, display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
                 {meta.inclusions.map((inc) => (
@@ -158,7 +169,8 @@ export default function PricingTiers() {
         })}
       </div>
 
-      {/* Mobile money — first-class, not an afterthought (conversion_psychology.md). */}
+      {/* Mobile money — first-class, not an afterthought (conversion_psychology.md).
+          Cards come second, through Paddle, for owners who would rather. */}
       <div className="mkt-card" style={{ marginTop: 22, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div>
           <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 3px' }}>
@@ -177,6 +189,20 @@ export default function PricingTiers() {
           </span>
         </div>
       </div>
+
+      {cardPrices && (
+        <div className="mkt-card" style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <div style={{ flex: '1 1 320px' }}>
+            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 3px' }}>
+              Or pay by card
+            </p>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0, lineHeight: 1.55 }}>
+              Visa, Mastercard, American Express, PayPal, Apple Pay and Google Pay, in US dollars. Our online reseller Paddle.com takes the payment. A card plan renews by itself until you cancel. Every card payment has a{' '}
+              <Link href="/refunds" style={{ color: 'var(--cyan)' }}>30-day money-back guarantee</Link>.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

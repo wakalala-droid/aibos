@@ -82,14 +82,19 @@ const nextConfig = {
             // is same-origin (the API is reached via /api/proxy), Supabase, and
             // the API itself for the chat's direct stream (API_ORIGIN above).
             // frame-ancestors 'none' backs up X-Frame-Options against clickjacking.
+            // Paddle (card payments): Paddle.js comes from cdn.paddle.com and
+            // opens its card form in a frame from buy.paddle.com (or
+            // sandbox-buy.paddle.com while testing). Without frame-src the
+            // form falls back to default-src 'self' and never appears.
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.paddle.com",
+              "style-src 'self' 'unsafe-inline' https://*.paddle.com",
+              "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com https://*.paddle.com",
               "font-src 'self' data:",
-              `connect-src 'self' https://*.supabase.co${API_ORIGIN ? ` ${API_ORIGIN}` : ''}`,
+              "frame-src 'self' https://*.paddle.com",
+              `connect-src 'self' https://*.supabase.co https://*.paddle.com${API_ORIGIN ? ` ${API_ORIGIN}` : ''}`,
               "media-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",

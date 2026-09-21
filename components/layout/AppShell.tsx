@@ -21,8 +21,9 @@ const BARE_ROUTES = ['/login', '/auth', '/onboarding', '/pay'];
 
 // Public marketing surface. These live in app/(marketing)/ and bring their own
 // chrome (MarketingNav / MarketingFooter) + warm-light skin, so AppShell must
-// render them bare too.
-const MARKETING_ROUTES = ['/', '/pricing', '/trust', '/about'];
+// render them bare too. Every folder in app/(marketing)/ belongs here: /privacy
+// was missing, so the privacy policy opened inside the app's sidebar.
+const MARKETING_ROUTES = ['/', '/pricing', '/trust', '/about', '/privacy', '/terms', '/refunds'];
 
 function HamburgerIcon() {
   return (

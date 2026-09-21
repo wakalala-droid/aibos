@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { LEGAL } from '@/lib/legal';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -28,7 +29,7 @@ const SECTIONS: { h: string; body: string[] }[] = [
     h: 'How we use it',
     body: [
       'To run the product for you: compute your P&L, cashflow, forecasts, briefs and recommendations from your own recorded data.',
-      'To answer your questions: when you use the AI chat, the relevant figures are sent to our AI provider (Groq) solely to generate your answer. They are not used to train any model.',
+      'To answer your questions: when you use the AI chat, the relevant figures are sent to our AI provider (Google Gemini) solely to generate your answer. They are not used to train any model.',
       'To keep you informed: deliver the brief you asked for, by email or WhatsApp, if you opt in.',
       'We do NOT sell your data, and we do NOT use your business records to train AI models or to advertise to you.',
     ],
@@ -66,7 +67,8 @@ const SECTIONS: { h: string; body: string[] }[] = [
   {
     h: 'Third parties we rely on',
     body: [
-      'Supabase (authentication and database), Groq (AI question answering), Resend (email brief delivery, if enabled), and Meta WhatsApp Cloud API (WhatsApp brief and recording, if enabled). Each receives only what is needed to perform its function.',
+      'Supabase (authentication and database), Google Gemini (AI question answering), Resend (email delivery, if enabled) and Meta WhatsApp Cloud API (WhatsApp brief and recording, if enabled). Each receives only what is needed to perform its function.',
+      'Paddle.com, our online reseller, if you pay by card. Paddle is the Merchant of Record for card payments: it collects your card details, billing address and email on its own secure form, charges any sales tax and keeps its own records under its own privacy notice (paddle.com/legal/privacy). AIBOS never sees or stores your card number. Paddle tells us which plan you paid for, the amount, the date and whether it renews.',
     ],
   },
   {
@@ -87,7 +89,7 @@ const SECTIONS: { h: string; body: string[] }[] = [
   {
     h: 'Changes and contact',
     body: [
-      'We will give notice before any material change to this policy. Questions or requests: reach us at the support address shown in the app, or via the business you signed up with.',
+      `We will give notice before any material change to this policy. Questions or requests: email ${LEGAL.email} or call ${LEGAL.phoneDisplay}.`,
     ],
   },
 ];
@@ -99,10 +101,10 @@ export default function PrivacyPage() {
         <p className="mkt-eyebrow">Legal</p>
         <h1 className="mkt-h1" style={{ fontSize: 'clamp(1.9rem, 4vw, 2.8rem)', marginBottom: 10 }}>Privacy Policy</h1>
         <p className="mkt-lead" style={{ marginBottom: 8 }}>
-          Plain language, because you should be able to read it. Last updated 14 July 2026.
+          Plain language, because you should be able to read it. Last updated {LEGAL.termsUpdated}.
         </p>
         <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', marginBottom: 40 }}>
-          See also our <Link href="/trust" style={{ color: 'var(--cyan)' }}>Trust Center</Link> for the promises behind these mechanics.
+          See also our <Link href="/trust" style={{ color: 'var(--cyan)' }}>Trust Center</Link> for the promises behind these mechanics. The rules for using AIBOS are in our <Link href="/terms" style={{ color: 'var(--cyan)' }}>Terms of Service</Link>.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>

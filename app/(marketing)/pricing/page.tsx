@@ -3,16 +3,22 @@ import Link from 'next/link';
 import Reveal from '@/components/marketing/Reveal';
 import PricingTiers from '@/components/marketing/PricingTiers';
 import ROICalculator from '@/components/marketing/ROICalculator';
+import PaddleLinkHandler from '@/components/marketing/PaddleLinkHandler';
+import { getCardPricesForPage } from '@/lib/card-prices';
+
+// Card prices come from Paddle through the API (lib/card-prices.ts); the page
+// is rebuilt every ten minutes so a price changed there shows here.
+export const revalidate = 600;
 
 export const metadata: Metadata = {
   title: 'Pricing',
   description:
-    'Simple plans priced in Kwacha, paid by MTN or Airtel Money. Start free on your own numbers and upgrade only when the value is obvious. No card, no lock-in, no surprises.',
+    'Simple plans priced in Kwacha and paid by MTN or Airtel Money, or by card in US dollars. Start free on your own numbers and upgrade only when the value is obvious. No lock-in, no surprises.',
   alternates: { canonical: '/pricing' },
 };
 
 const FEATURE_GLOSSARY: { term: string; plain: string }[] = [
-  { term: 'An engine', plain: 'A whole department’s intelligence, covering Financial, Customer or Operations, not just a single chart. Free gives you the Financial engine, and Pro unlocks the rest.' },
+  { term: 'An engine', plain: 'A whole department’s intelligence, covering Financial, Customer or Operations, not just a single chart. Free gives you the Financial engine and Pro unlocks the rest.' },
   { term: 'AI CFO chat', plain: 'Ask your business anything in plain words, as often as you like. It answers from your own uploaded data, in Kwacha.' },
   { term: 'A scheduled brief', plain: 'The one number that matters, delivered every morning so you don’t have to remember to check. Email and WhatsApp delivery are rolling out now.' },
   { term: 'A business', plain: 'One venture with its own books. Every plan runs one beautifully; Growth lets you run several — a shop, a salon, a lodge — under one login, each with separate books.' },
@@ -25,20 +31,23 @@ const TIMELINE: { when: string; what: string }[] = [
 ];
 
 const TRUST: [string, string][] = [
-  ['You approve every payment', 'Each payment covers a month or a year. On your renewal day AIBOS reminds you in the app and by email. Nothing is taken until you approve it, so there is nothing to cancel: stop paying and the plan simply ends.'],
+  ['You choose how you pay', 'Mobile money: each payment covers a month or a year. AIBOS reminds you on your renewal day and nothing is taken until you approve it. Card: the plan renews by itself until you cancel (two clicks on Plan & billing) and it stays on to the end of what you paid.'],
+  ['Your money back if it is not right', 'Every card payment has a 30-day money-back guarantee, no reason needed. Our refund policy has the details.'],
   ['Your data is yours', 'Export your full history on any plan, including after you cancel. We never hold it hostage.'],
   ['No surprise fees', 'The price you see is the price you pay. No drip pricing, no pre-ticked add-ons at checkout.'],
   ['Fair price changes', 'We give advance notice before any plan or price change. No silent increases.'],
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const cardPrices = await getCardPricesForPage();
   return (
     <>
+      <PaddleLinkHandler />
       {/* Header */}
       <section className="mkt-section mkt-section--tight" style={{ paddingBottom: 0 }}>
         <div className="mkt-wrap" style={{ textAlign: 'center' }}>
           <Reveal>
-            <p className="mkt-eyebrow">Pricing · Priced in Kwacha</p>
+            <p className="mkt-eyebrow">Pricing · Priced in Kwacha{cardPrices ? ' · Cards welcome' : ''}</p>
             <h1 className="mkt-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', maxWidth: 760, marginInline: 'auto' }}>
               One CFO for your business. Pay in ZMW.
             </h1>
@@ -52,7 +61,7 @@ export default function PricingPage() {
       {/* Tiers + mobile money */}
       <section className="mkt-section mkt-section--tight">
         <div className="mkt-wrap">
-          <PricingTiers />
+          <PricingTiers cardPrices={cardPrices} />
         </div>
       </section>
 
@@ -153,7 +162,7 @@ export default function PricingPage() {
         <div className="mkt-wrap">
           <Reveal>
             <h2 id="ptrust-h" className="mkt-h2" style={{ textAlign: 'center', maxWidth: 600, marginInline: 'auto' }}>
-              Priced to be fair, and built to stay that way
+              Priced to be fair and built to stay that way
             </h2>
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 14, marginTop: 28 }}>
@@ -178,7 +187,7 @@ export default function PricingPage() {
               <div style={{ position: 'relative', zIndex: 1 }}>
                 <h2 className="mkt-h2" style={{ maxWidth: 560, marginInline: 'auto' }}>Start free. Decide with proof.</h2>
                 <p className="mkt-lead" style={{ marginTop: 16, marginInline: 'auto', maxWidth: 460 }}>
-                  Upload your numbers, see it work, and only pay when it’s obvious. That’s the whole pitch.
+                  Upload your numbers, see it work and only pay when it’s obvious. That’s the whole pitch.
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 30 }}>
                   <Link href="/login" className="mkt-btn mkt-btn-primary">Start free with your data</Link>

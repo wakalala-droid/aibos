@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { LEGAL } from '@/lib/legal';
 
 const COLS: { title: string; links: { href: string; label: string }[] }[] = [
   {
@@ -16,8 +17,17 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
     links: [
       { href: '/about', label: 'Our story' },
       { href: '/trust', label: 'Trust & security' },
-      { href: '/privacy', label: 'Privacy' },
-      { href: 'mailto:hello@ai-bos.website', label: 'Contact' },
+      { href: `mailto:${LEGAL.email}`, label: 'Contact' },
+      { href: LEGAL.phoneHref, label: LEGAL.phoneDisplay },
+    ],
+  },
+  {
+    // Paddle's review asks for these to be reachable from every page.
+    title: 'Legal',
+    links: [
+      { href: '/terms', label: 'Terms of Service' },
+      { href: '/refunds', label: 'Refund Policy' },
+      { href: '/privacy', label: 'Privacy Policy' },
     ],
   },
 ];
@@ -29,7 +39,7 @@ export default function MarketingFooter() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'minmax(220px, 1.4fr) repeat(2, minmax(140px, 1fr))',
+            gridTemplateColumns: 'minmax(220px, 1.4fr) repeat(3, minmax(140px, 1fr))',
             gap: 'clamp(28px, 5vw, 64px)',
           }}
           className="mkt-footer-grid"

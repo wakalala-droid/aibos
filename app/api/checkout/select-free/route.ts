@@ -26,6 +26,20 @@ export async function POST() {
 
   try {
     const svc = createServiceClient();
+    // A card plan renews by itself (Paddle). Switching to Free here would leave
+    // the card being charged for a plan the account no longer has, so the
+    // renewal is cancelled first, on Plan & billing. Before migration 0037
+    // there is no such table and nothing to stop.
+    const { data: cards, error: cardErr } = await svc
+      .from('card_subscriptions')
+      .select('status,cancel_at')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'trialing', 'past_due', 'paused']);
+    if (!cardErr && (cards ?? []).some((c: { cancel_at: string | null }) => !c.cancel_at)) {
+      return NextResponse.json({
+        error: 'Your plan renews by itself on your card. Cancel the renewal on Plan & billing first, so the card is not charged for a plan you no longer have.',
+      }, { status: 409 });
+    }
     const { data, error } = await svc
       .from('profiles')
       .update({
