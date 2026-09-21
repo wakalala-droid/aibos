@@ -15,10 +15,16 @@
  * Lives in the bell, where the alerts it carries already are. Also on the
  * Schedule page (`embedded`), where an owner sets the reminders it carries.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getPushKey, subscribePush, unsubscribePush, sendTestPush } from '@/lib/api';
 
 type State = 'checking' | 'unsupported' | 'needs_install' | 'off' | 'on' | 'blocked' | 'unavailable';
+
+// Once per page load, a device that has notifications on tells the server so
+// again: the server names the device from that request ("Chrome on an Android
+// phone"), and a copy the server lost comes back instead of silently getting
+// nothing.
+let reintroduced = false;
 
 /** base64url (what the server sends) to the bytes the browser wants. */
 function keyBytes(base64url: string): Uint8Array {
@@ -36,6 +42,9 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
   const [state, setState] = useState<State>('checking');
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
+  // Read through a ref so a parent's new callback each render does not re-run the check.
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   const check = useCallback(async () => {
     if (typeof window === 'undefined') return;
@@ -51,7 +60,12 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
       const { configured } = await getPushKey();
       if (!configured) { setState('unavailable'); return; }
       const reg = await navigator.serviceWorker.ready;
-      setState((await reg.pushManager.getSubscription()) ? 'on' : 'off');
+      const sub = await reg.pushManager.getSubscription();
+      setState(sub ? 'on' : 'off');
+      if (sub && !reintroduced) {
+        reintroduced = true;
+        void subscribePush(sub.toJSON()).then(() => onChangeRef.current?.(true)).catch(() => { /* next load tries again */ });
+      }
     } catch {
       setState('unavailable');
     }

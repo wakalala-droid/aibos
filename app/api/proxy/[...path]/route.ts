@@ -10,7 +10,7 @@
 // Handles:
 //   - multipart/form-data (file uploads) — preserves boundary
 //   - application/json (chat, data-studio) — preserves body + content-type
-//   - GET / DELETE (no body)
+//   - GET (no body), DELETE (with or without a JSON body)
 
 import { NextRequest, NextResponse } from "next/server";
 import { apiBase } from "@/lib/api-base";
@@ -74,7 +74,15 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
   const clientIp = req.headers.get("x-real-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   if (clientIp) headers["x-forwarded-for"] = clientIp;
 
-  const hasBody = method !== "GET" && method !== "DELETE" && req.body != null;
+  // The visitor's own browser. Without it every phone and computer that turned
+  // notifications on was saved as this server ("a browser"), so an owner could
+  // not tell whether their phone was one of them.
+  const agent = req.headers.get("user-agent");
+  if (agent) headers["user-agent"] = agent;
+
+  // A DELETE can carry a body too: turning notifications off names the device
+  // in one. Dropping it made "Turn off here" fail every time.
+  const hasBody = method !== "GET" && req.body != null;
   const isMultipart = ct.includes("multipart/form-data");
 
   if (hasBody && ct) {
