@@ -365,6 +365,13 @@ export async function unsubscribePush(endpoint: string): Promise<void> {
 export async function sendTestPush(): Promise<{ sent?: number }> {
   return (await spineFetch('/push/test', { method: 'POST' })) as unknown as { sent?: number };
 }
+/** One phone or computer that has notifications on, in plain words
+ *  ("Chrome on an Android phone"). Reminders and alerts reach only these. */
+export interface PushDevice { id: string; device: string; since: string | null }
+export async function getPushDevices(): Promise<PushDevice[]> {
+  const data = await spineFetch('/push/devices');
+  return (data.devices as PushDevice[]) ?? [];
+}
 
 // ── Tidy up test and mistaken entries (upgrade 16) ───────────────────────────
 export type TidyKind = 'zero_records' | 'undone_invoices' | 'empty_bookings' | 'undone_payroll';

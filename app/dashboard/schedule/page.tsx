@@ -9,10 +9,17 @@
  * Agenda is the primary view (mobile-first — month grids are desktop thinking);
  * the month grid is secondary. Recurrence + reminders are the Pro layer; core
  * scheduling is free, like recording.
+ *
+ * Reminders go out from the API (schedule_reminders.py) to the bell, an
+ * on-screen card and every phone and computer with notifications on, or by
+ * email when none of those got it. "Remind me" sets when; the panel under the form
+ * says where, so an owner can see their phone is set up before relying on it.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Bell } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
+import PhoneAlerts from '@/components/pwa/PhoneAlerts';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import { logUsage } from '@/lib/usage';
@@ -20,8 +27,8 @@ import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
 import PageHeader from '@/components/ui/PageHeader';
 import {
   listSchedule, createScheduleItem, updateScheduleItem, setScheduleStatus,
-  deleteScheduleItem, createEvent, seedStatutorySchedule,
-  type ScheduleItem, type ScheduleKind,
+  deleteScheduleItem, createEvent, seedStatutorySchedule, getPushDevices,
+  type ScheduleItem, type ScheduleKind, type PushDevice,
   type Recurrence, type EventType,
 } from '@/lib/api';
 
@@ -60,9 +67,54 @@ const REPEAT_RULES: Record<Exclude<RepeatChoice, 'none'>, Recurrence> = {
   monthly:  { freq: 'monthly', interval: 1 },
 };
 
+// Reminders: minutes before the item. Unset on the server means at the time,
+// -1 means none (aibos-api schedule_items.REMIND_OFF). An all-day item stands
+// at 09:00, so its choices are days, not minutes.
+const REMIND_OFF = -1;
+const TIMED_REMINDERS: Array<[number, string]> = [
+  [0, 'At the time'], [15, '15 minutes before'], [30, '30 minutes before'],
+  [60, '1 hour before'], [1440, '1 day before'], [REMIND_OFF, 'No reminder'],
+];
+const ALL_DAY_REMINDERS: Array<[number, string]> = [
+  [0, 'On the day, at 09:00'], [1440, 'The day before, at 09:00'],
+  [10080, 'A week before'], [REMIND_OFF, 'No reminder'],
+];
+// What each kind usually wants: a meeting needs time to get there, a deadline
+// needs a day to prepare, a plain reminder is for the moment itself.
+const DEFAULT_REMIND: Record<ScheduleKind, number> = {
+  meeting: 30, pickup: 30, delivery: 30, deadline: 1440, payment_due: 1440, reminder: 0, other: 0,
+};
+function remindChoices(allDay: boolean) { return allDay ? ALL_DAY_REMINDERS : TIMED_REMINDERS; }
+/** Keep a reminder that still makes sense after All day is switched. */
+function fitRemind(minutes: number, allDay: boolean): number {
+  if (remindChoices(allDay).some(([m]) => m === minutes)) return minutes;
+  return minutes >= 1440 ? 1440 : 0;
+}
+/** "30 min before" for the agenda line; null when the item has no reminder. */
+function remindShort(it: ScheduleItem): string | null {
+  const m = it.remind_minutes_before ?? 0;
+  if (m < 0) return null;
+  if (m === 0) return it.all_day ? 'on the day, 09:00' : 'at the time';
+  if (m === 10080) return 'a week before';
+  if (m % 1440 === 0) return m === 1440 ? 'a day before' : `${m / 1440} days before`;
+  if (m % 60 === 0) return m === 60 ? '1 hour before' : `${m / 60} hours before`;
+  return `${m} min before`;
+}
+
+/** "Chrome on an Android phone and Edge on a Windows computer". */
+function deviceList(devices: PushDevice[]): string {
+  const names = Array.from(new Set(devices.map(d => (d.device === 'A browser' ? 'a browser' : d.device))));
+  return names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
+const isPhone = (d: PushDevice) => /phone|iphone|ipad/i.test(d.device);
+
 interface FormState {
   kind: ScheduleKind; title: string; date: string; time: string; allDay: boolean;
   withWhom: string; location: string; amount: string; notes: string; repeat: RepeatChoice;
+  /** Minutes before; REMIND_OFF for none. */
+  remind: number;
+  /** Chosen by hand, so picking a kind no longer changes it. */
+  remindTouched: boolean;
 }
 // The owner's own calendar day. toISOString() is UTC, which is still yesterday
 // between midnight and 2am in Lusaka.
@@ -73,6 +125,7 @@ const todayISO = () => {
 const EMPTY: FormState = {
   kind: 'meeting', title: '', date: todayISO(), time: '09:00', allDay: false,
   withWhom: '', location: '', amount: '', notes: '', repeat: 'none',
+  remind: DEFAULT_REMIND.meeting, remindTouched: false,
 };
 
 // ── Date helpers (rendered in the browser's zone — CAT for Zambian owners) ───
@@ -118,6 +171,13 @@ export default function SchedulePage() {
   const [bridgeType, setBridgeType] = useState<EventType>('Sale');
   const [bridgeBusy, setBridgeBusy] = useState(false);
   const [statutoryBusy, setStatutoryBusy] = useState(false);
+  // Where reminders will arrive: this person's phones and computers with
+  // notifications on. null while unknown, so nothing says "no phone" too early.
+  const [devices, setDevices] = useState<PushDevice[] | null>(null);
+  const loadDevices = useCallback(async () => {
+    try { setDevices(await getPushDevices()); } catch { setDevices(null); }
+  }, []);
+  useEffect(() => { if (pro) void loadDevices(); }, [pro, loadDevices]);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -136,6 +196,11 @@ export default function SchedulePage() {
   }
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm(p => ({ ...p, [k]: v }));
+  // Picking a kind brings its usual reminder, until the owner picks one by hand.
+  const pickKind = (k: ScheduleKind) => setForm(p => ({
+    ...p, kind: k, remind: p.remindTouched ? p.remind : fitRemind(DEFAULT_REMIND[k], p.allDay),
+  }));
+  const setAllDay = (allDay: boolean) => setForm(p => ({ ...p, allDay, remind: fitRemind(p.remind, allDay) }));
 
   function edit(it: ScheduleItem) {
     const d = new Date(it.starts_at);
@@ -150,6 +215,8 @@ export default function SchedulePage() {
         : it.recurrence.freq === 'daily' ? 'daily'
         : it.recurrence.freq === 'monthly' ? 'monthly'
         : (it.recurrence.interval ?? 1) === 2 ? 'biweekly' : 'weekly',
+      // Unset on the server means at the time.
+      remind: fitRemind(it.remind_minutes_before ?? 0, it.all_day), remindTouched: true,
     });
   }
   function cancelEdit() { setEditId(null); setForm(EMPTY); setMoreOpen(false); }
@@ -168,7 +235,10 @@ export default function SchedulePage() {
         amount: form.amount ? Number(form.amount) : null,
         notes: form.notes.trim() || null,
         // Only Pro sends the paid keys — the backend enforces this server-side too.
-        ...(pro ? { recurrence: form.repeat === 'none' ? null : REPEAT_RULES[form.repeat] } : {}),
+        ...(pro ? {
+          recurrence: form.repeat === 'none' ? null : REPEAT_RULES[form.repeat],
+          remind_minutes_before: form.remind,
+        } : {}),
       };
       if (editId) await updateScheduleItem(editId, body);
       else await createScheduleItem(body);
@@ -221,8 +291,9 @@ export default function SchedulePage() {
       await createScheduleItem({
         title: seed.title, kind: seed.kind, all_day: true,
         starts_at: nextMonthly(seed.day).toISOString(),
-        // Free gets the next due date; Pro makes it repeat every month.
-        ...(pro ? { recurrence: { freq: 'monthly', interval: 1 } } : {}),
+        // Free gets the next due date; Pro makes it repeat every month and
+        // reminds the day before, like a deadline made by hand.
+        ...(pro ? { recurrence: { freq: 'monthly', interval: 1 }, remind_minutes_before: DEFAULT_REMIND[seed.kind] } : {}),
       });
       await load();
     } catch (e) { setError((e as Error).message); }
@@ -292,6 +363,13 @@ export default function SchedulePage() {
         <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
           {fmtDay(when)}{it.all_day ? '' : ` · ${fmtTime(when)}`}
           {it.with_whom ? ` · ${it.with_whom}` : ''}{it.location ? ` · ${it.location}` : ''}
+          {/* When its reminder goes out. Only on plans that send them. */}
+          {pro && !finished && it.status === 'scheduled' && remindShort(it) && (
+            <span style={{ whiteSpace: 'nowrap' }}>
+              {' · '}<Bell size={12} strokeWidth={2} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: '-1px' }} />
+              <span className="sr-only">Reminder</span> {remindShort(it)}
+            </span>
+          )}
           {/* Only dates still ahead. An overdue monthly deadline listed
               "next 10 Aug, 10 Sept" when both had already gone by. */}
           {(() => {
@@ -471,7 +549,7 @@ export default function SchedulePage() {
               const on = form.kind === k;
               const m = KIND_META[k];
               return (
-                <button key={k} type="button" onClick={() => set('kind', k)} aria-pressed={on}
+                <button key={k} type="button" onClick={() => pickKind(k)} aria-pressed={on}
                   style={{
                     padding: '6px 12px', minHeight: 32, borderRadius: 8, cursor: 'pointer',
                     fontSize: 'var(--fs-label)', fontWeight: 700,
@@ -496,11 +574,28 @@ export default function SchedulePage() {
               <input type="time" value={form.time} onChange={e => set('time', e.target.value)} disabled={form.allDay} style={{ ...input, opacity: form.allDay ? 0.5 : 1 }} />
             </div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input id="sched-allday" type="checkbox" checked={form.allDay} onChange={e => set('allDay', e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--cyan)' }} />
+              <input id="sched-allday" type="checkbox" checked={form.allDay} onChange={e => setAllDay(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--cyan)' }} />
               <label htmlFor="sched-allday" style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', cursor: 'pointer' }}>All day</label>
               <button type="button" onClick={() => setMoreOpen(o => !o)} style={{ ...ghostBtn, color: 'var(--cyan)', marginLeft: 'auto', fontSize: 'var(--fs-label)' }}>
                 {moreOpen ? 'Fewer options' : 'More options'}
               </button>
+            </div>
+
+            {/* When the reminder goes out. In the main form, not under More
+                options: a reminder nobody knew they could set never arrives. */}
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label htmlFor="sched-remind" style={lbl}>Remind me {pro ? '' : `· ${needTier}`}</label>
+              {pro ? (
+                <select id="sched-remind" value={form.remind}
+                  onChange={e => setForm(p => ({ ...p, remind: Number(e.target.value), remindTouched: true }))}
+                  style={input}>
+                  {remindChoices(form.allDay).map(([m, label]) => <option key={m} value={m}>{label}</option>)}
+                </select>
+              ) : (
+                <Link href="/pricing" style={{ ...input, display: 'flex', alignItems: 'center', color: 'var(--text-4)', textDecoration: 'none' }}>
+                  Reminders on your phone come with {needTier}. See plans
+                </Link>
+              )}
             </div>
 
             {moreOpen && (
@@ -536,6 +631,23 @@ export default function SchedulePage() {
             </button>
             {editId && <button type="button" onClick={cancelEdit} className="touch-target" style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>}
           </div>
+
+          {/* Where reminders arrive, so an owner knows before relying on it
+              whether their phone is one of the places. */}
+          {pro && (
+            <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+              <p style={{ margin: '0 0 8px', fontSize: 16, lineHeight: 1.6, fontWeight: 700, color: 'var(--text-1)' }}>
+                Where your reminders arrive
+              </p>
+              <p style={{ margin: '0 0 12px', fontSize: 16, lineHeight: 1.6, color: 'var(--text-3)' }}>
+                In the bell and on screen while AIBOS is open.
+                {devices && devices.length > 0 && ` Also as a notification on ${deviceList(devices)}.`}
+                {devices && devices.length === 0 && ' No phone or computer has notifications on yet, so each reminder is emailed to you as well.'}
+                {devices && !devices.some(isPhone) && ' To get them on your phone, open AIBOS on the phone, tap the bell, then tap Turn on.'}
+              </p>
+              <PhoneAlerts embedded onChange={() => void loadDevices()} />
+            </div>
+          )}
         </SectionCard>
       </div>
     </>

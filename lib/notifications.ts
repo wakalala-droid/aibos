@@ -44,6 +44,9 @@ export interface Notification {
   serverId?: string;
   /** ISO moment the thing happened. Derived alerts have none, on purpose. */
   happenedAt?: string;
+  /** The server row's kind (feed items only), e.g. 'schedule_reminder', which
+   *  the dashboard also pops up on screen. */
+  kind?: string;
 }
 
 const RANK: Record<NotifySeverity, number> = { critical: 0, warning: 1, info: 2, success: 3 };
@@ -149,6 +152,8 @@ const FEED_SEVERITY: Record<string, NotifySeverity> = {
   plan_renews_soon: 'info',
   plan_renews_today: 'warning',
   plan_renewal_last_call: 'critical',
+  // Something on the owner's schedule is due (aibos-api schedule_reminders.py).
+  schedule_reminder: 'warning',
 };
 
 function toNotification(row: FeedRow): Notification {
@@ -166,6 +171,7 @@ function toNotification(row: FeedRow): Notification {
     description,
     href: row.link || undefined,
     happenedAt: row.created_at,
+    kind: row.kind,
   };
 }
 

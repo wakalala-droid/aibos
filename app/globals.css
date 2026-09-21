@@ -1143,3 +1143,67 @@ html, body {
   .boot-splash * { animation: none !important; }
   .boot-splash--leaving { transition: none; }
 }
+
+/* ── Schedule reminder on screen (components/schedule/ReminderPopup.tsx) ───
+   Anchored top right, just below the search, bell and profile row so it never
+   hides the bell (on phones, below the top bar and that row too), above the
+   tab bar and the bell's tray. Sized for an older eye: 18px name and body.
+   Enters from its edge (200ms) and only fades where motion is reduced. */
+.reminder-stack {
+  position: fixed; z-index: 70;
+  top: calc(env(safe-area-inset-top, 0px) + 80px); right: 24px;
+  width: min(380px, calc(100vw - 32px));
+  display: flex; flex-direction: column; gap: 12px;
+  pointer-events: none;
+}
+@media (max-width: 1023px) {
+  .reminder-stack { top: calc(env(safe-area-inset-top, 0px) + 124px); right: 16px; }
+  /* One at a time on a phone; the next shows once this one is dealt with. */
+  .reminder-stack .reminder-card:nth-child(n+2) { display: none; }
+}
+.reminder-card {
+  pointer-events: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-md);
+  border-left: 2px solid var(--amber);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  padding: 16px;
+  animation: reminder-in 200ms ease-out both;
+}
+.reminder-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.reminder-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--amber);
+}
+/* Light amber on white reads at about 3:1; deepened toward the ink it clears 6.5:1. */
+[data-theme="light"] .reminder-label { color: color-mix(in srgb, var(--amber) 55%, var(--text-1)); }
+.reminder-close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; margin: -8px -8px -8px 0;
+  border: none; border-radius: 10px; background: transparent;
+  color: var(--text-3); cursor: pointer;
+}
+.reminder-close:hover { background: var(--bg-badge); color: var(--text-1); }
+.reminder-name { margin: 8px 0 0; font-size: 18px; line-height: 1.4; font-weight: 700; color: var(--text-1); overflow-wrap: anywhere; }
+.reminder-body { margin: 4px 0 0; font-size: 18px; line-height: 1.6; color: var(--text-2); }
+.reminder-age { margin: 4px 0 0; font-size: 15px; line-height: 1.5; color: var(--text-3); }
+.reminder-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.reminder-open, .reminder-dismiss {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 16px; border-radius: 10px;
+  font-size: 16px; font-weight: 700; text-decoration: none; cursor: pointer;
+}
+.reminder-open { background: var(--text-1); color: var(--bg-card); border: 1px solid var(--text-1); }
+.reminder-open:hover { opacity: 0.9; }
+.reminder-dismiss { background: transparent; color: var(--text-2); border: 1px solid var(--border-md); }
+.reminder-dismiss:hover { background: var(--bg-badge); color: var(--text-1); }
+.reminder-open:focus-visible, .reminder-dismiss:focus-visible, .reminder-close:focus-visible {
+  outline: 2px solid var(--cyan); outline-offset: 2px;
+}
+@keyframes reminder-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes reminder-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .reminder-card { animation-name: reminder-fade; }
+}

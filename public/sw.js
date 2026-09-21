@@ -10,10 +10,12 @@
  */
 
 // Bumped whenever a cached asset changes in place (v2: the icons became the
-// white logo), so installed apps drop the old copies.
-const VERSION = 'aibos-sw-v2';
+// white logo; v3: notifications got their own picture and badge), so
+// installed apps drop the old copies.
+const VERSION = 'aibos-sw-v3';
 const OFFLINE_URL = '/offline.html';
-const PRECACHE = [OFFLINE_URL, '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png'];
+const PRECACHE = [OFFLINE_URL, '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png',
+  '/icons/notify-192.png', '/icons/badge-96.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -74,6 +76,12 @@ self.addEventListener('fetch', (event) => {
  * The API sends an encrypted message; the browser hands it here and this
  * shows it, even with AIBOS closed. Tapping it opens the page the alert is
  * about, reusing an open AIBOS window when there is one.
+ *
+ * The picture is the logo on its dark tile (the plain app icon is white on
+ * clear and vanished on a light notification shade). The badge is the mark's
+ * white outline, because Android draws a badge from its shape alone. A
+ * message's own `tag` keeps two reminders from replacing each other, and
+ * `sticky` (schedule reminders) keeps it on screen until it is dealt with.
  */
 self.addEventListener('push', (event) => {
   let data = {};
@@ -82,10 +90,12 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(title, {
       body: data.body || '',
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
-      tag: data.link || 'aibos',
+      icon: '/icons/notify-192.png',
+      badge: '/icons/badge-96.png',
+      tag: data.tag || data.link || 'aibos',
       renotify: true,
+      requireInteraction: Boolean(data.sticky),
+      vibrate: data.sticky ? [200, 100, 200] : undefined,
       data: { link: data.link || '/dashboard' },
     })
   );

@@ -12,7 +12,8 @@
  *   · a browser that does not do this at all is told so plainly
  *   · a refused permission is the person's choice; it says how to change it
  *
- * Lives in the bell, where the alerts it carries already are.
+ * Lives in the bell, where the alerts it carries already are. Also on the
+ * Schedule page (`embedded`), where an owner sets the reminders it carries.
  */
 import { useCallback, useEffect, useState } from 'react';
 import { getPushKey, subscribePush, unsubscribePush, sendTestPush } from '@/lib/api';
@@ -26,7 +27,12 @@ function keyBytes(base64url: string): Uint8Array {
   return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
 }
 
-export default function PhoneAlerts() {
+export default function PhoneAlerts({ embedded = false, onChange }: {
+  /** Inside a page card rather than at the foot of the bell's tray. */
+  embedded?: boolean;
+  /** Told after this device is turned on or off, so a list can refresh. */
+  onChange?: (on: boolean) => void;
+} = {}) {
   const [state, setState] = useState<State>('checking');
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
@@ -66,6 +72,7 @@ export default function PhoneAlerts() {
       });
       await subscribePush(sub.toJSON());
       setState('on');
+      onChange?.(true);
       await sendTestPush();
       setNote('Turned on. A test notification is on its way to this device.');
     } catch (e) {
@@ -80,6 +87,7 @@ export default function PhoneAlerts() {
       const sub = await reg.pushManager.getSubscription();
       if (sub) { await unsubscribePush(sub.endpoint); await sub.unsubscribe(); }
       setState('off');
+      onChange?.(false);
       setNote('Off on this device. The bell still shows everything.');
     } catch (e) {
       setNote(e instanceof Error ? e.message : 'Could not turn them off here.');
@@ -96,8 +104,11 @@ export default function PhoneAlerts() {
             : 'Get these on your phone, even with AIBOS closed.';
 
   return (
-    <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-      <span style={{ flex: '1 1 180px', fontSize: 'var(--fs-label)', lineHeight: 1.5, color: 'var(--text-3)' }}>
+    <div style={{
+      padding: embedded ? 0 : '12px 16px', borderTop: embedded ? 'none' : '1px solid var(--border)',
+      display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+    }}>
+      <span style={{ flex: '1 1 180px', fontSize: 16, lineHeight: 1.6, color: 'var(--text-3)' }}>
         {note || line}
       </span>
       {(state === 'off' || state === 'on') && (
@@ -106,11 +117,11 @@ export default function PhoneAlerts() {
           onClick={() => void (state === 'on' ? turnOff() : turnOn())}
           disabled={busy}
           style={{
-            padding: '8px 14px', minHeight: 40, borderRadius: 8, cursor: busy ? 'wait' : 'pointer',
-            border: state === 'on' ? '1px solid var(--border-md)' : 'none',
-            background: state === 'on' ? 'transparent' : 'var(--cyan)',
-            color: state === 'on' ? 'var(--text-2)' : '#fff',
-            fontSize: 'var(--fs-label)', fontWeight: 700, whiteSpace: 'nowrap',
+            padding: '8px 16px', minHeight: 44, borderRadius: 10, cursor: busy ? 'wait' : 'pointer',
+            border: state === 'on' ? '1px solid var(--border-md)' : '1px solid var(--text-1)',
+            background: state === 'on' ? 'transparent' : 'var(--text-1)',
+            color: state === 'on' ? 'var(--text-2)' : 'var(--bg-card)',
+            fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap',
           }}
         >
           {busy ? 'Working…' : state === 'on' ? 'Turn off here' : 'Turn on'}

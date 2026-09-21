@@ -19,6 +19,7 @@ import {
   mergeNotifications, timeAgo, type Notification as LiveNotification,
 } from '@/lib/notifications';
 import PhoneAlerts from '@/components/pwa/PhoneAlerts';
+import ReminderPopup from '@/components/schedule/ReminderPopup';
 import CurrencySelector from '@/components/ui/CurrencySelector';
 import BusinessSwitcher from '@/components/layout/BusinessSwitcher';
 
@@ -206,6 +207,12 @@ export default function DashboardHeader() {
     setFeedNotifs((rows) => rows.filter((r) => r.serverId !== serverId));
     void markNotificationRead(serverId);
   };
+  // A reminder dealt with from its on-screen card settles the same way, without
+  // touching whatever tray the owner has open.
+  const settleReminder = (serverId: string) => {
+    setFeedNotifs((rows) => rows.filter((r) => r.serverId !== serverId));
+    void markNotificationRead(serverId);
+  };
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -309,6 +316,8 @@ export default function DashboardHeader() {
 
   return (
     <div ref={wrapRef} className="dash-header">
+      {/* A schedule reminder pops up here as it arrives, not only in the bell. */}
+      <ReminderPopup items={feedNotifs} onSettle={settleReminder} />
       {/* Search — a visible command bar on desktop (audit F-07: for a product
           whose thesis is "ask anything about your business", search is the
           command centre, not the smallest control). Icon-only below lg. */}
