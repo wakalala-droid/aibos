@@ -8,7 +8,8 @@
  *
  * The page is regenerated every ten minutes (ISR). If the API is asleep or
  * down, the card line is simply left off; the Kwacha prices never depend on it.
- * Only a LIVE Paddle account is advertised: sandbox prices are for testing.
+ * Only a LIVE Paddle account that customers can use is advertised: sandbox
+ * prices are for testing, and a live one waits for its first real payment.
  */
 import { apiBase } from '@/lib/api-base';
 import type { CardPrices } from '@/lib/api';
@@ -24,8 +25,10 @@ export async function getCardPricesForPage(): Promise<CardPrices | null> {
       next: { revalidate: 600 },
     });
     if (!res.ok) return null;
-    const cfg = (await res.json()) as { enabled?: boolean; environment?: string; prices?: CardPrices };
-    if (!cfg.enabled || cfg.environment !== 'live' || !cfg.prices) return null;
+    const cfg = (await res.json()) as { enabled?: boolean; environment?: string; testers_only?: boolean; prices?: CardPrices };
+    // Only once every customer can pay by card: before the owner's first real
+    // card payment the option is shown to admins only (the API's go-live switch).
+    if (!cfg.enabled || cfg.environment !== 'live' || cfg.testers_only || !cfg.prices) return null;
     return Object.keys(cfg.prices).length ? cfg.prices : null;
   } catch {
     return null;

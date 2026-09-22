@@ -57,6 +57,15 @@ renewal and ends the plan at once.
 6. **Make sure hello@ai-bos.website receives mail.** It is on the Terms and
    Refund Policy. Paddle's reviewers and card customers write to it.
 
+## Going live
+
+On a live key the card option is shown to admins only, because Paddle refuses
+every checkout until it has approved the account and its API cannot say
+whether it has. Your own first real card payment is the switch: buy a plan by
+card as the admin (refund it afterwards if you like) and from then on every
+customer sees the card option and the card prices on the pricing page. To
+skip that, set `PADDLE_OPEN=1` on Render.
+
 ## Testing before going live
 
 Paddle's sandbox is a separate account at sandbox-vendors.paddle.com. Put a

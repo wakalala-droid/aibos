@@ -446,7 +446,7 @@ function CheckoutInner() {
         <div role="radiogroup" aria-label="How to pay" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
           {([
             ['mobile', 'Mobile money', 'MTN or Airtel, in Kwacha'],
-            ['card', 'Card', `Visa, Mastercard and more${cards?.testers_only ? ' · test mode' : ''}`],
+            ['card', 'Card', `Visa, Mastercard and more${cards?.stage === 'sandbox' ? ' · test mode' : cards?.testers_only ? ' · only admins see this yet' : ''}`],
           ] as const).map(([key, label, sub]) => {
             const on = payBy === key;
             return (
