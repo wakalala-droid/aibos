@@ -10,12 +10,15 @@
  */
 
 // Bumped whenever a cached asset changes in place (v2: the icons became the
-// white logo; v3: notifications got their own picture and badge), so
-// installed apps drop the old copies.
-const VERSION = 'aibos-sw-v3';
+// white logo; v3: notifications got their own picture and badge; v4: the
+// reminder tone is kept at install time), so installed apps drop the old
+// copies.
+const VERSION = 'aibos-sw-v4';
 const OFFLINE_URL = '/offline.html';
+// Taken when AIBOS is added to a Home Screen, so the tone belongs to the
+// installed app and plays with no signal.
 const PRECACHE = [OFFLINE_URL, '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png',
-  '/icons/notify-192.png', '/icons/badge-96.png'];
+  '/icons/notify-192.png', '/icons/badge-96.png', '/sounds/reminder.mp3'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -83,12 +86,29 @@ self.addEventListener('fetch', (event) => {
  * white outline, because Android draws a badge from its shape alone. A
  * message's own `tag` keeps two reminders from replacing each other, and
  * `sticky` (schedule reminders) keeps it on screen until it is dealt with.
+ *
+ * THE SOUND. A notification is played by the phone or computer itself, with
+ * whatever sound its owner chose: the Notification API's `sound` was never
+ * built by any browser, so nothing here can set AIBOS's own tone on a locked
+ * phone. What this can do is tell an AIBOS window that is open, even behind
+ * other windows, so the app plays the owner's tone itself (lib/sound.ts). One
+ * window is told, the one in front where there is one, so two tabs never play
+ * it twice.
  */
+function tellOneWindow(message) {
+  return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+    const target = windows.find((c) => c.focused)
+      || windows.find((c) => c.visibilityState === 'visible')
+      || windows[0];
+    if (target) target.postMessage(message);
+  }).catch(() => { /* no window open: the device's own sound is all there is */ });
+}
+
 self.addEventListener('push', (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch { data = {}; }
   const title = data.title || 'AIBOS';
-  event.waitUntil(
+  event.waitUntil(Promise.all([
     self.registration.showNotification(title, {
       body: data.body || '',
       icon: '/icons/notify-192.png',
@@ -98,8 +118,9 @@ self.addEventListener('push', (event) => {
       requireInteraction: Boolean(data.sticky),
       vibrate: data.sticky ? [200, 100, 200] : undefined,
       data: { link: data.link || '/dashboard' },
-    })
-  );
+    }),
+    tellOneWindow({ type: 'aibos-notification', title, tag: data.tag || '', link: data.link || '/dashboard' }),
+  ]));
 });
 
 self.addEventListener('notificationclick', (event) => {

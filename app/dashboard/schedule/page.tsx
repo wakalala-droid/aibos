@@ -653,12 +653,16 @@ export default function SchedulePage() {
               <PhoneAlerts embedded onChange={() => void loadDevices()} />
               <label htmlFor="sched-sound" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 16, lineHeight: 1.6, color: 'var(--text-2)', cursor: 'pointer' }}>
                 <input id="sched-sound" type="checkbox" checked={sound}
-                  onChange={e => { const on = e.target.checked; setSound(on); setSoundOn(on); if (on) playReminderSound(); }}
+                  onChange={e => { const on = e.target.checked; setSound(on); setSoundOn(on); if (on) playReminderSound(true); }}
                   style={{ width: 18, height: 18, accentColor: 'var(--cyan)' }} />
-                Play a sound when a reminder appears here
+                Play a sound when a notification arrives
               </label>
               <p style={{ margin: '4px 0 0 26px', fontSize: 15, lineHeight: 1.6, color: 'var(--text-4)' }}>
-                On a phone or a locked computer the notification uses that device&apos;s own notification sound, which no website can change.
+                It plays wherever AIBOS is open, the installed app included, even behind other windows.
+                With AIBOS closed your phone uses its own notification sound, because no website can choose that one.
+                Once AIBOS is on your Home Screen you can give it this tone yourself:{' '}
+                <a href="/sounds/reminder.mp3" download="AIBOS reminder.mp3" style={{ color: 'var(--cyan)', textDecoration: 'underline' }}>save the tone</a>
+                , then open Settings, Apps, AIBOS, Notifications and choose it as the sound.
               </p>
             </div>
           )}

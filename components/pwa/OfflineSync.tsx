@@ -14,6 +14,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { useStore } from '@/lib/store';
 import { subscribeOutbox, outboxCount, flushOutbox } from '@/lib/outbox';
+import { listenForNotifications } from '@/lib/sound';
 import { captureInstallPrompt } from './InstallPrompt';
 
 export function OfflineSync() {
@@ -36,7 +37,15 @@ export function OfflineSync() {
     // The browser offers installation on whichever page loads first; keep the
     // offer until the dashboard asks (components/pwa/InstallPrompt.tsx).
     const releaseInstall = captureInstallPrompt();
-    return () => { cancelled = true; window.removeEventListener('online', onOnline); releaseInstall(); };
+    // A notification that lands while AIBOS is open plays the owner's own tone
+    // (lib/sound.ts), on the installed app as well as in a tab.
+    const stopSound = listenForNotifications();
+    return () => {
+      cancelled = true;
+      window.removeEventListener('online', onOnline);
+      releaseInstall();
+      stopSound();
+    };
   }, []);
   return null;
 }
