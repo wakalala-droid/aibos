@@ -365,6 +365,22 @@ export async function unsubscribePush(endpoint: string): Promise<void> {
 export async function sendTestPush(): Promise<{ sent?: number }> {
   return (await spineFetch('/push/test', { method: 'POST' })) as unknown as { sent?: number };
 }
+/** What one announcement did, or would do (dry_run). Admin only: the API
+ *  checks the caller against an address Google has proven they own. */
+export interface AnnounceResult {
+  key: string; people: number; with_devices: number;
+  told: number; already: number; pushed: number; not_pushed: number; errors: number;
+  dry_run?: boolean;
+}
+export async function announce(input: {
+  title: string; body?: string; link?: string; key?: string; dry_run?: boolean;
+}): Promise<AnnounceResult> {
+  const data = await spineFetch('/admin/announce', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  });
+  return data as unknown as AnnounceResult;
+}
+
 /** One phone or computer that has notifications on, in plain words
  *  ("Chrome on an Android phone"). Reminders and alerts reach only these. */
 export interface PushDevice { id: string; device: string; since: string | null }

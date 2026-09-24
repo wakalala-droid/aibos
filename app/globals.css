@@ -1202,6 +1202,39 @@ html, body {
 .reminder-open:focus-visible, .reminder-dismiss:focus-visible, .reminder-close:focus-visible {
   outline: 2px solid var(--cyan); outline-offset: 2px;
 }
+/* ── A new version is ready (components/pwa/UpdatePrompt.tsx) ──────────────
+   A quiet bar at the foot of the screen, above the phone's tab bar, in the
+   same sizes as the reminder card. It rises in once and waits. */
+.update-bar {
+  position: fixed; z-index: 69;
+  left: 50%; transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+  width: min(560px, calc(100vw - 32px));
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 12px 16px; border-radius: 10px;
+  background: var(--bg-card); border: 1px solid var(--border-md);
+  border-left: 2px solid var(--cyan); box-shadow: var(--shadow-lg);
+  animation: update-in 200ms ease-out both;
+}
+@media (max-width: 1023px) {
+  .update-bar { bottom: calc(env(safe-area-inset-bottom, 0px) + 76px); }
+}
+.update-words { flex: 1 1 200px; font-size: 18px; line-height: 1.6; color: var(--text-1); }
+.update-button, .update-later {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 16px; border-radius: 10px;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.update-button { background: var(--text-1); color: var(--bg-card); border: 1px solid var(--text-1); }
+.update-button:hover { opacity: 0.9; }
+.update-later { background: transparent; color: var(--text-3); border: 1px solid var(--border-md); }
+.update-later:hover { background: var(--bg-badge); color: var(--text-1); }
+.update-button:focus-visible, .update-later:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+@keyframes update-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .update-bar { animation-name: reminder-fade; }
+}
+
 @keyframes reminder-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 @keyframes reminder-fade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {

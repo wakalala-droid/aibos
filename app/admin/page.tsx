@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import SystemHealth from '@/components/admin/SystemHealth';
+import AnnounceCard from '@/components/admin/AnnounceCard';
 import type { AccountOverview } from '@/lib/admin';
 import { TIERS, TIER_ORDER, type Tier } from '@/lib/tiers';
 
@@ -338,6 +339,9 @@ export default function AdminAccountsPage() {
         <Link href="/admin/proposals" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Proposals</Link>
       </nav>
       <SystemHealth />
+      {/* One message to every account, when something changes that customers
+          should know about. */}
+      <AnnounceCard />
       {controls}
       {toastEl}
       {body}
