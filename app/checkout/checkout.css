@@ -1,0 +1,542 @@
+/* ── CHECKOUT ────────────────────────────────────────────────────
+   A focused payment page in the manner of a Stripe or Linear checkout:
+   what you are buying on one side, how you pay on the other (stacked on a
+   phone, summary first). Type is sized to be read easily by anyone: 18px
+   body, nothing under 15px. Colours come only from the theme tokens. */
+
+.co-page {
+  min-height: 100dvh;
+  background: var(--bg-page);
+  color: var(--text-1);
+}
+
+.co-wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 12px 16px 48px;
+}
+
+/* Top bar: back, logo, "Secure checkout". */
+.co-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  margin-bottom: 16px;
+}
+.co-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.co-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-right: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border-md);
+  background: var(--bg-card);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color 0.15s ease-out;
+}
+.co-back:hover { border-color: var(--border-strong); }
+.co-back:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.co-secure {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.co-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+/* The cards. BorderGlow draws the border; these set the inner padding. */
+.section-card.co-card { padding: 16px; }
+
+.co-eyebrow {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+.co-h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+}
+.co-h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+}
+.co-price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+}
+.co-price-fig {
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+.co-price-per {
+  font-size: 18px;
+  color: var(--text-3);
+}
+.co-tagline {
+  margin: 8px 0 0;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+/* Monthly / Yearly: a two-way switch. */
+.co-seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 24px 0 0;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--bg-badge);
+  border: 1px solid var(--border);
+}
+.co-seg button {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out;
+}
+.co-seg button:hover { color: var(--text-1); }
+.co-seg button[aria-checked="true"] {
+  background: var(--bg-card);
+  border-color: var(--border-md);
+  color: var(--text-1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.co-seg button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.co-seg button:disabled,
+.co-opt:disabled { opacity: 0.5; cursor: not-allowed; }
+.co-save {
+  margin: 12px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.co-save strong { color: var(--text-1); font-weight: 600; }
+
+/* The receipt: item, subtotal, tax, total. */
+.co-lines { margin: 24px 0 0; }
+.co-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 12px 0;
+  font-size: 18px;
+  color: var(--text-2);
+  border-top: 1px solid var(--border);
+}
+.co-line dt { flex-shrink: 0; }
+.co-line dd {
+  margin: 0;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+}
+.co-line-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 16px;
+  color: var(--text-3);
+}
+.co-line .co-pending {
+  font-size: 16px;
+  color: var(--text-3);
+  white-space: normal;
+}
+.co-line.co-total {
+  border-top: 1px solid var(--border-strong);
+  font-weight: 700;
+  color: var(--text-1);
+}
+.co-line.co-total dd { font-size: 20px; font-weight: 700; }
+.co-after {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-3);
+}
+
+/* Reassurance under the receipt. */
+.co-trust {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  margin: 24px 0 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--border);
+}
+.co-trust li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.co-trust svg { flex-shrink: 0; margin-top: 3px; color: var(--good); }
+
+/* "What's included" disclosure. */
+.co-incl { margin: 16px 0 0; }
+.co-incl summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  list-style: none;
+  border-radius: 6px;
+}
+.co-incl summary::-webkit-details-marker { display: none; }
+.co-incl summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.co-incl summary svg { transition: transform 0.2s ease-out; color: var(--text-3); }
+.co-incl[open] summary svg { transform: rotate(90deg); }
+.co-incl ul {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+}
+.co-incl li {
+  display: flex;
+  gap: 12px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.co-incl li svg { flex-shrink: 0; margin-top: 3px; color: var(--cyan); }
+
+/* Choice tiles: how to pay, and which network. */
+.co-opts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.co-opt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border-md);
+  background: var(--bg-card);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.co-opt:hover { border-color: var(--border-strong); }
+.co-opt[aria-checked="true"] {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 1px var(--cyan);
+  color: var(--text-1);
+}
+.co-opt:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.co-opt-icon { color: var(--text-3); }
+.co-opt[aria-checked="true"] .co-opt-icon { color: var(--cyan); }
+.co-opt-tick {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: var(--cyan);
+}
+.co-opt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.co-chip {
+  font-size: 15px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.co-method-sub {
+  margin: 12px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+/* Paddle's card form sits in .co-frame; the cover shows until it has loaded. */
+.co-frame-wrap {
+  position: relative;
+  margin-top: 24px;
+}
+.co-frame-wrap[data-state="opening"],
+.co-frame-wrap[data-state="idle"] { min-height: 450px; }
+/* Could not load: just the message and "Try again", no empty form space. */
+.co-frame-wrap[data-state="failed"] .co-frame { display: none; }
+.co-frame-wrap[data-state="failed"] .co-frame-cover { position: static; }
+.co-frame { width: 100%; }
+.co-frame-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  background: var(--bg-card);
+}
+.co-skel-label { height: 16px; width: 35%; }
+.co-skel-field { height: 52px; width: 100%; border-radius: 10px; }
+.co-skel-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.co-skel-btn { height: 52px; width: 100%; border-radius: 10px; margin-top: 8px; }
+
+/* Inputs. */
+.co-label {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.co-label span { font-weight: 400; color: var(--text-3); }
+.co-input {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--text-3) 75%, transparent);
+  background: var(--bg-input);
+  color: var(--text-1);
+  font: inherit;
+  font-size: 18px;
+  transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.co-input::placeholder { color: var(--text-3); opacity: 0.8; }
+.co-input:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 30%, transparent);
+}
+
+/* Buttons. Dark ink on bright cyan in the dark theme, white on a deeper
+   cyan in the light theme: both clear 4.5:1. */
+.co-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  background: var(--cyan);
+  color: var(--bg-page);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.15s ease-out, transform 0.12s ease-out;
+}
+[data-theme="light"] .co-btn {
+  background: color-mix(in srgb, var(--cyan) 82%, #000);
+  color: var(--bg-card);
+}
+.co-btn:hover:not(:disabled) { filter: brightness(1.07); }
+.co-btn:active:not(:disabled) { transform: translateY(1px); }
+.co-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.co-btn[aria-busy="true"] { cursor: wait; }
+.co-btn:focus-visible { outline: 2px solid var(--text-1); outline-offset: 3px; }
+.co-btn.co-btn-quiet {
+  background: transparent;
+  color: var(--text-1);
+  border: 1px solid var(--border-strong);
+}
+.co-btn.co-btn-inline { display: inline-flex; width: auto; }
+
+/* Notes and alerts. State is always said in words, never colour alone. */
+.co-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border-md);
+  background: var(--bg-badge);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.co-note > svg, .co-note > .co-spin { flex-shrink: 0; margin-top: 3px; }
+.co-note p { margin: 0; }
+.co-note p + p { margin-top: 8px; }
+.co-note.co-warn {
+  border-color: color-mix(in srgb, var(--amber) 55%, transparent);
+  background: color-mix(in srgb, var(--amber) 10%, transparent);
+  color: var(--text-1);
+}
+.co-note.co-warn > svg { color: var(--amber); }
+.co-note.co-info {
+  border-color: color-mix(in srgb, var(--cyan) 35%, transparent);
+  background: var(--cyan-dim);
+  color: var(--text-1);
+}
+.co-note.co-err {
+  border-color: color-mix(in srgb, var(--crit) 45%, transparent);
+  background: color-mix(in srgb, var(--crit) 8%, transparent);
+  color: var(--text-1);
+}
+.co-note.co-err > svg { color: var(--crit); }
+.co-note.co-good {
+  border-color: color-mix(in srgb, var(--good) 40%, transparent);
+  background: var(--green-dim);
+  color: var(--text-1);
+}
+
+.co-spin {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--cyan);
+  border-top-color: transparent;
+  animation: spin 0.8s linear infinite;
+}
+
+.co-fine {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 16px 0 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-3);
+}
+.co-fine svg { flex-shrink: 0; margin-top: 3px; }
+
+.co-link {
+  color: var(--text-1);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--text-1) 40%, transparent);
+}
+.co-link:hover { text-decoration-color: var(--text-1); }
+
+.co-foot {
+  margin: 24px 0 0;
+  font-size: 16px;
+  line-height: 1.55;
+  text-align: center;
+  color: var(--text-3);
+}
+
+.co-stack > * + * { margin-top: 16px; }
+
+/* Centred single-card screens: done, the Free plan. */
+.co-solo {
+  max-width: 560px;
+  margin: 16px auto 0;
+  text-align: center;
+}
+.co-solo .co-tagline { margin-bottom: 24px; }
+.co-done-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin: 8px auto 16px;
+  border-radius: 50%;
+  background: var(--green-dim);
+  color: var(--good);
+}
+
+.co-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* A very narrow phone: give Paddle's form the width it needs (286px). */
+@media (max-width: 359px) {
+  .co-wrap { padding-left: 12px; padding-right: 12px; }
+  .co-frame { margin-left: -8px; width: calc(100% + 16px); }
+  .co-secure-word { display: none; }
+}
+
+@media (min-width: 640px) {
+  .section-card.co-card { padding: 24px; }
+  .co-wrap { padding-top: 24px; }
+}
+
+/* Laptop and up: summary on the left, payment on the right. */
+@media (min-width: 1024px) {
+  .co-wrap { padding: 32px 32px 64px; }
+  .co-top { margin-bottom: 32px; }
+  .co-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+  .co-grid > .co-span { grid-column: 1 / -1; }
+  .co-summary { position: sticky; top: 32px; }
+  .section-card.co-card { padding: 32px; }
+  .co-price-fig { font-size: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .co-spin { animation: none; border-top-color: var(--cyan); opacity: 0.6; }
+  .co-seg button, .co-opt, .co-btn, .co-input, .co-back, .co-incl summary svg { transition: none; }
+}

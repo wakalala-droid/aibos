@@ -17,7 +17,9 @@ import BootSplash from '@/components/brand/BootSplash';
 // '/pay' is the customer-facing invoice payment page (migration 0025). The
 // person on it has no AIBOS account and never will — showing them the product
 // sidebar would be nonsense.
-const BARE_ROUTES = ['/login', '/auth', '/onboarding', '/pay'];
+// '/checkout' is a focused payment page, like a Stripe or Linear checkout: no
+// sidebar, bottom tabs or floating assistant sitting over the card form.
+const BARE_ROUTES = ['/login', '/auth', '/onboarding', '/pay', '/checkout'];
 
 // Public marketing surface. These live in app/(marketing)/ and bring their own
 // chrome (MarketingNav / MarketingFooter) + warm-light skin, so AppShell must
