@@ -36,6 +36,7 @@ function isImmutableAsset(url) {
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/icons/') ||
     url.pathname.startsWith('/brand/') ||
+    url.pathname.startsWith('/sounds/') ||
     url.pathname.startsWith('/fonts/')
   );
 }

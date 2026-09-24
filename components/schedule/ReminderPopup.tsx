@@ -9,10 +9,11 @@
  * in AIBOS sees it without opening the bell. It stays until it is opened or
  * dismissed. Either one settles it in the bell as well.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { BellRing, X } from 'lucide-react';
 import { timeAgo, type Notification } from '@/lib/notifications';
+import { playReminderSound } from '@/lib/sound';
 
 const DISMISSED_KEY = 'aibos-reminders-dismissed-v1';
 // An unread reminder older than this waits in the bell instead of popping up.
@@ -51,6 +52,17 @@ export default function ReminderPopup({ items, onSettle }: {
       .filter((n) => now - (Date.parse(n.happenedAt ?? '') || 0) < FRESH_MS)
       .slice(0, MAX_ON_SCREEN);
   }, [items, dismissed]);
+
+  // A sound the first time each card appears, so a reminder is noticed by
+  // someone looking at another part of the screen. Not once per render, and
+  // never again for a card that is already up.
+  const heard = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const fresh = visible.filter((n) => !heard.current.has(n.id));
+    if (fresh.length === 0) return;
+    fresh.forEach((n) => heard.current.add(n.id));
+    playReminderSound();
+  }, [visible]);
 
   const settle = (serverId: string) => {
     const next = [...(dismissed ?? []), serverId].slice(-100);

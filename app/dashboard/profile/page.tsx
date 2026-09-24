@@ -627,8 +627,8 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
         Morning Brief, delivered
       </p>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 16px' }}>
-        Your cash, sales, stock and one thing to do — in your inbox or on WhatsApp every morning at 06:30,
-        before the day starts. Composed from your real numbers only.
+        Your cash, sales, stock and one thing to do, every morning at 06:30, before the day starts: in your
+        inbox, on your phone where notifications are on and on WhatsApp. Composed from your real numbers only.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

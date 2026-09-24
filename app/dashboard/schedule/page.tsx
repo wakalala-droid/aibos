@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
 import PhoneAlerts from '@/components/pwa/PhoneAlerts';
+import { playReminderSound, setSoundOn, soundOn } from '@/lib/sound';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import { logUsage } from '@/lib/usage';
@@ -178,6 +179,10 @@ export default function SchedulePage() {
     try { setDevices(await getPushDevices()); } catch { setDevices(null); }
   }, []);
   useEffect(() => { if (pro) void loadDevices(); }, [pro, loadDevices]);
+  // The sound a reminder makes here. Read after mount: the setting lives on
+  // this device, and the server render cannot see it.
+  const [sound, setSound] = useState(true);
+  useEffect(() => { setSound(soundOn()); }, []);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -646,6 +651,15 @@ export default function SchedulePage() {
                 {devices && !devices.some(isPhone) && ' To get them on your phone, open AIBOS on the phone, tap the bell, then tap Turn on.'}
               </p>
               <PhoneAlerts embedded onChange={() => void loadDevices()} />
+              <label htmlFor="sched-sound" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 16, lineHeight: 1.6, color: 'var(--text-2)', cursor: 'pointer' }}>
+                <input id="sched-sound" type="checkbox" checked={sound}
+                  onChange={e => { const on = e.target.checked; setSound(on); setSoundOn(on); if (on) playReminderSound(); }}
+                  style={{ width: 18, height: 18, accentColor: 'var(--cyan)' }} />
+                Play a sound when a reminder appears here
+              </label>
+              <p style={{ margin: '4px 0 0 26px', fontSize: 15, lineHeight: 1.6, color: 'var(--text-4)' }}>
+                On a phone or a locked computer the notification uses that device&apos;s own notification sound, which no website can change.
+              </p>
             </div>
           )}
         </SectionCard>

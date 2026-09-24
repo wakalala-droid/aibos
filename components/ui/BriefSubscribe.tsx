@@ -65,12 +65,13 @@ export default function BriefSubscribe() {
   };
 
   return (
-    <SectionCard title="AI Brief" subtitle="Your numbers, summarised, in your inbox every morning">
+    <SectionCard title="AI Brief" subtitle="Your numbers, summarised, every morning by email and on your phone">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {!allowed ? (
           <>
             <p style={body}>
-              Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today.
+              Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today,
+              by email and as a notification on any phone or computer where you turned them on.
               {ownPlan ? ` It comes with ${needed}.` : ' It comes with a paid plan, which the business owner manages.'}
             </p>
             {ownPlan && <Link href={`/checkout?plan=${requiredTier('scheduled_brief')}`} style={button}>See {needed}</Link>}
@@ -78,7 +79,8 @@ export default function BriefSubscribe() {
         ) : on ? (
           <>
             <p role="status" style={body}>
-              <strong style={{ color: 'var(--text-1)' }}>On.</strong> Your brief goes to {to || 'your account email'} every morning at 06:30.
+              <strong style={{ color: 'var(--text-1)' }}>On.</strong> Your brief goes to {to || 'your account email'} every morning at 06:30
+              and to every phone or computer where you turned notifications on.
             </p>
             {emailLive === false && (
               <p style={{ ...body, color: 'var(--warn)' }}>
@@ -99,7 +101,7 @@ export default function BriefSubscribe() {
           <>
             <p style={body}>
               Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today,
-              sent to {to || 'your account email'}.
+              sent to {to || 'your account email'} and to your phone if notifications are on there.
             </p>
             <button type="button" onClick={() => void setOn(true)} disabled={status === 'saving'} style={button}>
               {status === 'saving' ? 'Saving…' : 'Email me the brief'}
