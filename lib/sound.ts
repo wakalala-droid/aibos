@@ -30,12 +30,13 @@ export function setSoundOn(on: boolean): void {
   try { window.localStorage.setItem(KEY, on ? 'on' : 'off'); } catch { /* private mode */ }
 }
 
-/** Play the reminder sound, unless it is switched off here or one has just
- *  played. `force` is the switch itself, which always plays. Never throws. */
-export function playReminderSound(force = false): void {
-  if (typeof window === 'undefined' || !soundOn()) return;
-  if (!force && Date.now() - lastPlayed < QUIET_MS) return;
-  lastPlayed = Date.now();
+/** Play the reminder sound and say whether it was heard. `force` is a real new
+ *  notification (or the switch itself); without it a tone that has just played
+ *  is not repeated. Never throws: false simply means the device stayed quiet,
+ *  and the service worker then lets the notification make its own sound. */
+export async function playReminderSound(force = false): Promise<boolean> {
+  if (typeof window === 'undefined' || !soundOn()) return false;
+  if (!force && Date.now() - lastPlayed < QUIET_MS) return false;
   try {
     if (!element) {
       element = new Audio(SRC);
@@ -43,19 +44,32 @@ export function playReminderSound(force = false): void {
       element.volume = 0.7;
     }
     element.currentTime = 0;
-    void element.play().catch(() => { /* no click in the page yet, or no audio */ });
-  } catch { /* a device with no audio at all */ }
+    await element.play();
+    lastPlayed = Date.now();
+    return true;
+  } catch {
+    return false;   // no click in the page yet, no audio, or a frozen tab
+  }
 }
 
 /** Play the tone the moment a notification lands, for as long as AIBOS is
- *  open: on the installed app, in another tab, or behind other windows. The
- *  service worker names one window to tell, so it is never played twice.
+ *  open: on the installed app, in another tab, or behind other windows.
+ *
+ *  The service worker asks ONE window first and waits for the answer. Saying
+ *  yes makes the notification itself silent, so the owner hears AIBOS's own
+ *  tone and nothing else; saying no (the sound is switched off here, the tab
+ *  is frozen, or the browser will not play yet) leaves the notification to
+ *  make the device's usual sound. Either way something is heard, once.
  *  Returns the function that stops listening. */
 export function listenForNotifications(): () => void {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return () => { /* nothing to stop */ };
   const onMessage = (event: MessageEvent) => {
     const data = event.data as { type?: string } | null;
-    if (data && data.type === 'aibos-notification') playReminderSound();
+    if (!data || data.type !== 'aibos-notification') return;
+    const reply = event.ports && event.ports[0];
+    void playReminderSound(true).then((played) => {
+      try { reply?.postMessage({ played }); } catch { /* the worker moved on */ }
+    });
   };
   navigator.serviceWorker.addEventListener('message', onMessage);
   return () => navigator.serviceWorker.removeEventListener('message', onMessage);

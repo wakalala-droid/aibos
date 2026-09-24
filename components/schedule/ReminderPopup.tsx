@@ -61,7 +61,7 @@ export default function ReminderPopup({ items, onSettle }: {
     const fresh = visible.filter((n) => !heard.current.has(n.id));
     if (fresh.length === 0) return;
     fresh.forEach((n) => heard.current.add(n.id));
-    playReminderSound();
+    void playReminderSound();
   }, [visible]);
 
   const settle = (serverId: string) => {
