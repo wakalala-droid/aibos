@@ -64,12 +64,17 @@ renewal and ends the plan at once.
 
 ## Going live
 
-On a live key the card option is shown to admins only, because Paddle refuses
-every checkout until it has approved the account and its API cannot say
-whether it has. Your own first real card payment is the switch: buy a plan by
-card as the admin (refund it afterwards if you like) and from then on every
-customer sees the card option and the card prices on the pricing page. To
-skip that, set `PADDLE_OPEN=1` on Render.
+Paddle refuses every checkout on a website it has not approved, so until it
+has, the card option is shown to admins only and customers are never handed a
+button that cannot work. The server asks Paddle itself (`GET /checkout-domains`,
+cached ten minutes) and opens cards to everyone the moment `ai-bos.website` is
+approved. `GET /health/setup` shows the answer as `website_approval`, and says
+in words what Paddle is waiting for.
+
+If the API key cannot read that (the checkout domain permission is missing),
+the older signal is used instead: cards open once a real card payment has gone
+through, which proves the checkout works. `PADDLE_OPEN=1` on Render opens them
+either way.
 
 ## Testing before going live
 

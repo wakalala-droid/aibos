@@ -707,6 +707,8 @@ function CheckoutInner() {
               <Note tone="warn" icon="info">
                 {cards.stage === 'sandbox'
                   ? 'Test mode: use a Paddle test card. No real money moves.'
+                  : cards.stage === 'waiting_for_website_approval'
+                  ? 'Only admins can see card payments until Paddle has approved ai-bos.website. It opens to customers by itself then.'
                   : 'Only admins can see card payments until the first real one goes through.'}
               </Note>
             </div>

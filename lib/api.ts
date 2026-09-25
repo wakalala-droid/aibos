@@ -441,7 +441,8 @@ export interface CardConfig {
   /** Only admins are shown cards: a sandbox key (test cards work for anyone)
    *  or a live one before its first real payment. `stage` says which. */
   testers_only: boolean;
-  stage?: 'off' | 'setting_up' | 'sandbox' | 'admins_until_first_payment' | 'open';
+  stage?: 'off' | 'setting_up' | 'sandbox' | 'waiting_for_website_approval'
+    | 'admins_until_first_payment' | 'open';
 }
 
 const NO_CARDS: CardConfig = { enabled: false, environment: null, prices: {}, testers_only: false };
