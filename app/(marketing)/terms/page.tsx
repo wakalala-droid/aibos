@@ -5,7 +5,7 @@ import { LEGAL } from '@/lib/legal';
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description:
-    'The terms for using AIBOS: plans and prices, paying by mobile money or by card through our reseller Paddle, refunds, your data and what we each promise.',
+    'The terms for using AIBOS: plans and prices, paying by card through our reseller Paddle, automatic renewal, refunds, your data and what we each promise.',
   alternates: { canonical: '/terms' },
 };
 
@@ -35,30 +35,30 @@ const SECTIONS: { h: string; body: Part[][] }[] = [
     h: 'Plans and prices',
     body: [
       ['AIBOS has a Free plan and three paid plans: Pro, Pro+ and Growth. What each one includes and what it costs is on our ', { text: 'pricing page', href: '/pricing', after: '.' }],
-      ['Paid by mobile money, prices are in Zambian Kwacha. Paid by card, prices are in US dollars, plus any sales tax that applies where you live. The price you see at checkout is the price you pay.'],
+      ['Prices are in US dollars, plus any sales tax that applies where you live. We may also show an amount in Kwacha as a guide, converted at a recent exchange rate. You are charged in US dollars, so your bank or card sets the exact Kwacha amount. The price you see at checkout is the price you pay.'],
       ['We tell you in advance before a price change affects a plan you already pay for.'],
     ],
   },
   {
-    h: 'Paying by mobile money',
+    h: 'Paying and automatic renewal',
     body: [
-      ['Each MTN Mobile Money or Airtel Money payment covers one month or one year. Nothing is taken automatically. Before your renewal day we remind you in the app and by email. You choose whether to pay again.'],
-      ['If you do not pay, everything keeps working for a week after the renewal day. The account then moves to the Free plan. Your records stay.'],
+      ['Our order process is conducted by our online reseller Paddle.com. Paddle.com is the Merchant of Record for all our orders. Paddle provides all customer service inquiries and handles returns.'],
+      ['You pay by card, PayPal, Apple Pay or Google Pay. Every paid plan is a subscription. It renews automatically at the end of each month or year, at the price you bought it for, until you cancel. Your card statement shows PADDLE.NET.'],
+      ['You can cancel any time on Plan & billing in your account. The plan then stays on until the end of the period you have paid for and you are not charged again.'],
+      ['Your purchase is also covered by ', { text: 'Paddle’s buyer terms', href: 'https://www.paddle.com/legal/checkout-buyer-terms', after: '.' }],
     ],
   },
   {
-    h: 'Paying by card',
+    h: 'Plans paid before 25 September 2026',
     body: [
-      ['Our order process is conducted by our online reseller Paddle.com. Paddle.com is the Merchant of Record for all our orders. Paddle provides all customer service inquiries and handles returns.'],
-      ['A card plan is a subscription. It renews by itself at the end of each month or year, at the price you bought it for, until you cancel. Your card statement shows PADDLE.NET.'],
-      ['You can cancel any time on Plan & billing in your account. The plan then stays on until the end of the period you have paid for and your card is not charged again.'],
-      ['Your purchase is also covered by ', { text: 'Paddle’s buyer terms', href: 'https://www.paddle.com/legal/checkout-buyer-terms', after: '.' }],
+      ['A plan paid by mobile money, or paid to us directly, before 25 September 2026 runs to the end of the period it paid for. It does not renew by itself. To keep it, set up card payment on Plan & billing and it renews automatically from then on.'],
+      ['If you do not, everything keeps working for a week after that date. The account then moves to the Free plan. Your records stay.'],
     ],
   },
   {
     h: 'Refunds',
     body: [
-      ['Every card payment comes with a 30-day money-back guarantee. The details are in our ', { text: 'Refund Policy', href: '/refunds', after: '.' }],
+      ['Every payment comes with a 30-day money-back guarantee. The details are in our ', { text: 'Refund Policy', href: '/refunds', after: '.' }],
     ],
   },
   {
@@ -92,7 +92,7 @@ const SECTIONS: { h: string; body: Part[][] }[] = [
   {
     h: 'Ending',
     body: [
-      ['You can stop using AIBOS whenever you like. Cancel a card plan on Plan & billing. A mobile money plan simply ends when you stop paying.'],
+      ['You can stop using AIBOS whenever you like. Cancel your plan’s renewal on Plan & billing and it ends at the end of the period you paid for.'],
       ['You can ask us to delete your account and your data at any time.'],
     ],
   },

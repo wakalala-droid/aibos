@@ -8,6 +8,7 @@
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { canAccess, requiredTier, tasterLimit, TIERS, type Feature } from '@/lib/tiers';
+import { usePlanPricing } from '@/lib/planPrice';
 import LockedPreviewCard, { type PreviewState } from './LockedPreviewCard';
 
 interface FeatureGateProps {
@@ -24,6 +25,8 @@ export default function FeatureGate({
   feature, title, headline, detail, colour, state, children,
 }: FeatureGateProps) {
   const tier = useStore((s) => s.tier);
+  // In US dollars, or in Kwacha if the owner chose that on the pricing page.
+  const { perMonth } = usePlanPricing(undefined, false);
 
   if (canAccess(tier, feature)) return <>{children}</>;
 
@@ -52,7 +55,7 @@ export default function FeatureGate({
             fontSize: 'var(--fs-label)', color: 'var(--cyan)', fontWeight: 600,
             marginLeft: 'auto', textDecoration: 'none',
           }}>
-            Unlimited with {meta.name} — K{meta.priceMonthly.toLocaleString()}/mo →
+            Unlimited with {meta.name}: {perMonth(meta.priceMonthly)} →
           </Link>
         </div>
         {children}
@@ -65,7 +68,7 @@ export default function FeatureGate({
       title={title}
       headline={headline}
       detail={detail}
-      ctaLabel={`Unlock with ${meta.name} — K${meta.priceMonthly.toLocaleString()}/mo`}
+      ctaLabel={`Unlock with ${meta.name}: ${perMonth(meta.priceMonthly)}`}
       ctaHref={`/checkout?plan=${need}`}
       colour={colour}
       badge={meta.name.toUpperCase()}

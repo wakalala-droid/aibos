@@ -5,17 +5,19 @@
  * Only the admin could see when a customer's plan ends and what they had paid.
  * An owner learned their plan was ending from a reminder, had nowhere to check
  * a payment and nothing to hand their accountant. This page is theirs: the
- * plan in plain words, when it renews and for how much, a Pay now button, and
- * every payment with a receipt to download.
+ * plan in plain words, when it renews and for how much, and every payment with
+ * a receipt to download.
  *
  * Everything shown comes from GET /me/billing, which reads the same records
  * the renewal run and the admin page use. Staff working in someone else's
  * business are told the owner manages it, and see none of the payments.
  *
- * A plan paid by card (Paddle) renews by itself, so it gets different buttons:
- * cancel the renewal (it stays on to the end of what is paid), keep it after
- * all, and Paddle's own page to change the card and download invoices. Paddle
- * sold the plan, so its invoice is the receipt for a card payment.
+ * Every plan is paid by card (Paddle) and renews automatically (25 September
+ * 2026): cancel the renewal (it stays on to the end of what is paid), keep it
+ * after all, and Paddle's own page to change the card and download invoices.
+ * Paddle sold the plan, so its invoice is the receipt for a card payment. A
+ * plan paid for a fixed period before the switch (by mobile money, or recorded
+ * by hand) gets one button instead: set up card payment.
  */
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -137,7 +139,7 @@ export default function BillingPage() {
   const state = data?.state ? STATE[data.state] : null;
   const payments = data?.payments ?? [];
   const period = data?.billing === 'annual' ? 'year' : 'month';
-  // A card plan that is still going renews by itself: no "Pay now" for it.
+  // A card plan that is still going renews automatically: nothing to pay here.
   const card = data?.card ?? null;
   const cardPeriod = card?.billing === 'annual' ? 'year' : 'month';
   const price = data?.price != null ? formatMoney(data.price, data.currency) : '';
@@ -191,13 +193,13 @@ export default function BillingPage() {
                   ? <Fact label="Ends on" value={day(card.cancel_at)} />
                   : card.status === 'past_due'
                   ? <Fact label="Switches off if unpaid" value={day(data.switches_off_on)} />
-                  : <Fact label="Renews by itself on" value={day(card.renews_on)} />}
+                  : <Fact label="Renews automatically on" value={day(card.renews_on)} />}
               </div>
             ) : (data.state === 'active' || data.state === 'grace' || data.state === 'expired') && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 18 }}>
-                <Fact label="Price" value={price ? `${price} a ${period}` : ''} />
-                <Fact label={data.state === 'active' ? 'Renews on' : 'Was due on'} value={day(data.renews_on)} />
-                <Fact label={data.state === 'expired' ? 'Switched off on' : 'Switches off if unpaid'} value={day(data.switches_off_on)} />
+                <Fact label="Price by card" value={price ? `${price} a ${period}` : ''} />
+                <Fact label={data.state === 'active' ? 'Paid up to' : 'Was due on'} value={day(data.renews_on)} />
+                <Fact label={data.state === 'expired' ? 'Switched off on' : 'Switches off without a card'} value={day(data.switches_off_on)} />
               </div>
             )}
 
@@ -255,7 +257,7 @@ export default function BillingPage() {
               ) : (
                 <>
                   <Link href={data.pay_link || '/pricing'} style={button}>
-                    Pay {price || 'now'}
+                    Set up card payment
                   </Link>
                   <Link href="/pricing" style={quiet}>Change plan</Link>
                 </>
@@ -268,10 +270,9 @@ export default function BillingPage() {
               </p>
             ) : (data.state === 'active' || data.state === 'grace') && (
               <p style={{ fontSize: 'var(--fs-label)', lineHeight: 1.6, color: 'var(--text-4)', margin: '14px 0 0' }}>
-                {data.collections_live
-                  ? 'Pay with MTN Mobile Money or Airtel Money. You approve it on your phone with your PIN.'
-                  : 'On renewal day we remind you here and by email. Pay from this page any time before then.'}
-                {data.card_payments ? ' You can also pay by card. A card plan renews by itself.' : ''}
+                Plans are now paid by card and renew automatically, so you never have to remember a renewal day.
+                Set it up on or just before the day your plan is paid up to. Every card payment has a{' '}
+                <Link href="/refunds" style={{ color: 'var(--text-3)' }}>30-day money-back guarantee</Link>.
               </p>
             )}
           </SectionCard>

@@ -282,7 +282,7 @@ def main() -> int:
     print(f"  tiers:  {', '.join(TIERS)}")
     print(f"  taster: {parsed['taster']}")
     print(f"  prices: {parsed['prices']['pro']['monthly']}/{parsed['prices']['proplus']['monthly']}"
-          f"/{parsed['prices']['growth']['monthly']} ZMW per month")
+          f"/{parsed['prices']['growth']['monthly']} USD per month")
     return 0
 
 

@@ -53,7 +53,7 @@ export default function MarketingFooter() {
               The brain behind every business.
             </p>
             <p style={{ fontSize: 'var(--fs-body)', color: '#9fabbd', margin: 0, lineHeight: 1.55, maxWidth: 320 }}>
-              The AI business operating system for African SMEs. Priced in Kwacha,
+              The AI business operating system for African SMEs. Answers in Kwacha,
               built for how you actually run.
             </p>
           </div>

@@ -12,6 +12,6 @@ export const LEGAL = {
   email: 'hello@ai-bos.website',
   phoneDisplay: '+260 973 759 352',
   phoneHref: 'tel:+260973759352',
-  termsUpdated: '21 September 2026',
-  refundsUpdated: '21 September 2026',
+  termsUpdated: '25 September 2026',
+  refundsUpdated: '25 September 2026',
 } as const;

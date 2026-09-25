@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 };
 
-const TRUST_PILLS = ['Free to start', 'Priced in ZMW', 'MTN & Airtel Money', 'Upload & go', 'Your data stays yours'];
+const TRUST_PILLS = ['Free to start', 'Cancel any time', 'Card, PayPal, Apple & Google Pay', 'Upload & go', 'Your data stays yours'];
 
 export default function MarketingHome() {
   return (

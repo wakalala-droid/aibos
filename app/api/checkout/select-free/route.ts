@@ -37,7 +37,7 @@ export async function POST() {
       .in('status', ['active', 'trialing', 'past_due', 'paused']);
     if (!cardErr && (cards ?? []).some((c: { cancel_at: string | null }) => !c.cancel_at)) {
       return NextResponse.json({
-        error: 'Your plan renews by itself on your card. Cancel the renewal on Plan & billing first, so the card is not charged for a plan you no longer have.',
+        error: 'Your plan renews automatically on your card. Cancel the renewal on Plan & billing first, so the card is not charged for a plan you no longer have.',
       }, { status: 409 });
     }
     const { data, error } = await svc

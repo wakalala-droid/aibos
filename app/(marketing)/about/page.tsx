@@ -5,7 +5,7 @@ import Reveal from '@/components/marketing/Reveal';
 export const metadata: Metadata = {
   title: 'Our Story',
   description:
-    'Why AIBOS exists: to give every African SME the kind of financial intelligence that used to be reserved for big companies, made affordable, priced in Kwacha, and built for how they actually run.',
+    'Why AIBOS exists: to give every African SME the kind of financial intelligence that used to be reserved for big companies, made affordable and built for how they actually run.',
   alternates: { canonical: '/about' },
 };
 
@@ -43,7 +43,7 @@ const ARC: { eyebrow: string; title: string; body: string }[] = [
   {
     eyebrow: 'Our commitment to you',
     title: 'We earn it on your numbers',
-    body: 'We will price in your currency, take mobile money, never hold your data hostage, and never invent a number we can’t back. You can start free and judge us on your own business, which is exactly how it should be.',
+    body: 'We will keep our prices public and simple, let you cancel any time, never hold your data hostage and never invent a number we can’t back. You can start free and judge us on your own business, which is exactly how it should be.',
   },
 ];
 

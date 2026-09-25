@@ -5,22 +5,18 @@ import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { useAuth } from '@/hooks/useAuth';
-import { TIERS, TIER_ORDER, usdApprox, type Tier } from '@/lib/tiers';
-import { formatMoney } from '@/lib/paddle';
-import type { CardPrice, CardPrices } from '@/lib/api';
+import { TIERS, TIER_ORDER, type Tier } from '@/lib/tiers';
+import type { CardPrices } from '@/lib/api';
+import { usePlanPricing, type ZmwRate } from '@/lib/planPrice';
+import PriceCurrencySwitch, { KwachaNote } from '@/components/ui/PriceCurrencySwitch';
 
 type Billing = 'monthly' | 'annual';
 
-/** With card prices on the page, the rough "≈ $" beside the Kwacha price is
- *  left off: a card is charged the card price, and two dollar figures that
- *  disagree would read as a trick. */
-function priceLabel(tier: Tier, billing: Billing, byCard: boolean): { big: string; small: string } {
+/** What a plan costs in US dollars: Paddle's price when the page has it (the
+ *  owner can change a price there), else the list price in lib/tiers.ts. */
+function usdPrice(tier: Tier, billing: Billing, cardPrices: CardPrices | null): number {
   const meta = TIERS[tier];
-  if (meta.priceMonthly === 0) return { big: 'Free', small: 'forever' };
-  if (billing === 'annual') {
-    return { big: `K${meta.priceAnnual.toLocaleString()}`, small: byCard ? '/year' : `/year · ≈ $${usdApprox(meta.priceAnnual)}` };
-  }
-  return { big: `K${meta.priceMonthly.toLocaleString()}`, small: byCard ? '/month' : `/month · ≈ $${usdApprox(meta.priceMonthly)}` };
+  return cardPrices?.[tier]?.[billing]?.amount ?? (billing === 'annual' ? meta.priceAnnual : meta.priceMonthly);
 }
 
 function Check({ colour }: { colour: string }) {
@@ -31,11 +27,16 @@ function Check({ colour }: { colour: string }) {
   );
 }
 
-export default function PricingTiers({ cardPrices = null }: { cardPrices?: CardPrices | null }) {
+export default function PricingTiers({ cardPrices = null, zmwRate }: {
+  cardPrices?: CardPrices | null;
+  /** Today's Kwacha rate, read by the page on the server (null: none today). */
+  zmwRate?: ZmwRate | null;
+}) {
   const reduce = useReducedMotion();
   const currentTier = useStore((s) => s.tier);
   const { isAuthenticated } = useAuth();
   const [billing, setBilling] = useState<Billing>('monthly');
+  const { currency, choose, rate, loading, fmt } = usePlanPricing(zmwRate);
 
   // CTA target for each tier. Logged-out visitors start free; a paid choice
   // routes them through sign-in to checkout for that plan (self-serve, no
@@ -59,8 +60,10 @@ export default function PricingTiers({ cardPrices = null }: { cardPrices?: CardP
 
   return (
     <div>
-      {/* Billing toggle — monthly is the default; annual is opt-in, never pre-selected. */}
-      <div role="group" aria-label="Billing period" style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 36 }}>
+      {/* Billing toggle — monthly is the default; annual is opt-in, never pre-selected.
+          Beside it, the switch to see every price in Kwacha. */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '16px 24px', marginBottom: 36 }}>
+      <div role="group" aria-label="Billing period" style={{ display: 'flex', justifyContent: 'center', gap: 6 }}>
         {(['monthly', 'annual'] as Billing[]).map((b) => (
           <button
             key={b}
@@ -84,6 +87,8 @@ export default function PricingTiers({ cardPrices = null }: { cardPrices?: CardP
           </button>
         ))}
       </div>
+      <PriceCurrencySwitch currency={currency} onChange={choose} rate={rate} loading={loading} />
+      </div>
 
       {/* Tier cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(255px, 1fr))', gap: 18 }}>
@@ -91,8 +96,9 @@ export default function PricingTiers({ cardPrices = null }: { cardPrices?: CardP
           const meta = TIERS[tier];
           // Pro+ is the flagship — "AIBOS runs your day" is the story we lead with.
           const popular = tier === 'proplus';
-          const card: CardPrice | undefined = cardPrices?.[tier]?.[billing];
-          const { big, small } = priceLabel(tier, billing, Boolean(cardPrices));
+          const free = meta.priceMonthly === 0;
+          const usd = usdPrice(tier, billing, cardPrices);
+          const per = billing === 'annual' ? 'year' : 'month';
           const action = cta(tier);
 
           return (
@@ -124,17 +130,17 @@ export default function PricingTiers({ cardPrices = null }: { cardPrices?: CardP
                 {meta.tagline}
               </p>
 
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: card ? 6 : 20 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: !free && currency === 'ZMW' ? 6 : 20 }}>
                 <span style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>
-                  {big}
+                  {free ? 'Free' : fmt(usd)}
                 </span>
-                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
-                  {small}
+                <span style={{ fontSize: 15, color: 'var(--text-3)' }}>
+                  {free ? 'forever' : `/${per}${currency === 'ZMW' ? ', about' : ''}`}
                 </span>
               </div>
-              {card && (
-                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 20px' }}>
-                  or {formatMoney(card.amount, card.currency)} a {billing === 'annual' ? 'year' : 'month'} by card
+              {!free && currency === 'ZMW' && (
+                <p style={{ fontSize: 15, color: 'var(--text-3)', margin: '0 0 20px' }}>
+                  Charged as ${usd.toLocaleString('en-US')} a {per}
                 </p>
               )}
 
@@ -169,40 +175,20 @@ export default function PricingTiers({ cardPrices = null }: { cardPrices?: CardP
         })}
       </div>
 
-      {/* Mobile money — first-class, not an afterthought (conversion_psychology.md).
-          Cards come second, through Paddle, for owners who would rather. */}
-      <div className="mkt-card" style={{ marginTop: 22, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-        <div>
-          <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 3px' }}>
-            Pay with Mobile Money
-          </p>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>
-            MTN Mobile Money &amp; Airtel Money. No card required.
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <span style={{ fontSize: 'var(--fs-data)', fontWeight: 800, color: '#000', background: '#ffcc00', padding: '9px 15px', borderRadius: 10 }}>
-            MTN MoMo
-          </span>
-          <span style={{ fontSize: 'var(--fs-data)', fontWeight: 800, color: '#fff', background: '#e40000', padding: '9px 15px', borderRadius: 10 }}>
-            Airtel Money
-          </span>
-        </div>
+      {/* How paying works: one way, said plainly (no drip pricing, no surprises). */}
+      <div className="mkt-card" style={{ marginTop: 22 }}>
+        <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px' }}>
+          Every plan renews automatically
+        </p>
+        <p style={{ fontSize: 16, color: 'var(--text-2)', margin: 0, lineHeight: 1.6, maxWidth: 820 }}>
+          Pay by Visa, Mastercard, American Express, PayPal, Apple Pay or Google Pay, in US dollars. Your plan
+          renews automatically each month or year until you cancel, which takes two clicks on Plan &amp; billing,
+          and it stays on to the end of what you paid. Our online reseller Paddle.com takes the payment. Every
+          payment has a{' '}
+          <Link href="/refunds" style={{ color: 'var(--text-1)', textDecoration: 'underline', textUnderlineOffset: 3 }}>30-day money-back guarantee</Link>.
+        </p>
+        {currency === 'ZMW' && rate && <div style={{ marginTop: 12 }}><KwachaNote rate={rate} /></div>}
       </div>
-
-      {cardPrices && (
-        <div className="mkt-card" style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-          <div style={{ flex: '1 1 320px' }}>
-            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 3px' }}>
-              Or pay by card
-            </p>
-            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0, lineHeight: 1.55 }}>
-              Visa, Mastercard, American Express, PayPal, Apple Pay and Google Pay, in US dollars. Our online reseller Paddle.com takes the payment. A card plan renews by itself until you cancel. Every card payment has a{' '}
-              <Link href="/refunds" style={{ color: 'var(--cyan)' }}>30-day money-back guarantee</Link>.
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -5,15 +5,17 @@ import PricingTiers from '@/components/marketing/PricingTiers';
 import ROICalculator from '@/components/marketing/ROICalculator';
 import PaddleLinkHandler from '@/components/marketing/PaddleLinkHandler';
 import { getCardPricesForPage } from '@/lib/card-prices';
+import { fetchZmwRate } from '@/lib/fx';
 
 // Card prices come from Paddle through the API (lib/card-prices.ts); the page
-// is rebuilt every ten minutes so a price changed there shows here.
+// is rebuilt every ten minutes so a price changed there shows here. Today's
+// Kwacha rate is read here too, so the Kwacha switch works on first paint.
 export const revalidate = 600;
 
 export const metadata: Metadata = {
   title: 'Pricing',
   description:
-    'Simple plans priced in Kwacha and paid by MTN or Airtel Money, or by card in US dollars. Start free on your own numbers and upgrade only when the value is obvious. No lock-in, no surprises.',
+    'Simple plans in US dollars, with Kwacha shown at today’s rate. Pay by card or PayPal and every plan renews automatically until you cancel. Start free on your own numbers and upgrade only when the value is obvious.',
   alternates: { canonical: '/pricing' },
 };
 
@@ -31,15 +33,15 @@ const TIMELINE: { when: string; what: string }[] = [
 ];
 
 const TRUST: [string, string][] = [
-  ['You choose how you pay', 'Mobile money: each payment covers a month or a year. AIBOS reminds you on your renewal day and nothing is taken until you approve it. Card: the plan renews by itself until you cancel (two clicks on Plan & billing) and it stays on to the end of what you paid.'],
-  ['Your money back if it is not right', 'Every card payment has a 30-day money-back guarantee, no reason needed. Our refund policy has the details.'],
+  ['Renews automatically, cancel any time', 'Your plan renews automatically each month or year, so it never switches off by surprise. Cancel any time with two clicks on Plan & billing: it stays on to the end of what you paid and your card is not charged again.'],
+  ['Your money back if it is not right', 'Every payment has a 30-day money-back guarantee, no reason needed. Our refund policy has the details.'],
   ['Your data is yours', 'Export your full history on any plan, including after you cancel. We never hold it hostage.'],
   ['No surprise fees', 'The price you see is the price you pay. No drip pricing, no pre-ticked add-ons at checkout.'],
   ['Fair price changes', 'We give advance notice before any plan or price change. No silent increases.'],
 ];
 
 export default async function PricingPage() {
-  const cardPrices = await getCardPricesForPage();
+  const [cardPrices, zmwRate] = await Promise.all([getCardPricesForPage(), fetchZmwRate()]);
   return (
     <>
       <PaddleLinkHandler />
@@ -47,9 +49,9 @@ export default async function PricingPage() {
       <section className="mkt-section mkt-section--tight" style={{ paddingBottom: 0 }}>
         <div className="mkt-wrap" style={{ textAlign: 'center' }}>
           <Reveal>
-            <p className="mkt-eyebrow">Pricing · Priced in Kwacha{cardPrices ? ' · Cards welcome' : ''}</p>
+            <p className="mkt-eyebrow">Pricing · US dollars or Kwacha · Cancel any time</p>
             <h1 className="mkt-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', maxWidth: 760, marginInline: 'auto' }}>
-              One CFO for your business. Pay in ZMW.
+              One CFO for your business. One simple price.
             </h1>
             <p className="mkt-lead" style={{ marginTop: 18, marginInline: 'auto', maxWidth: 560 }}>
               Start free on your own numbers. Upgrade when the value is obvious, never before.
@@ -58,10 +60,10 @@ export default async function PricingPage() {
         </div>
       </section>
 
-      {/* Tiers + mobile money */}
+      {/* Tiers, with the US dollar / Kwacha switch */}
       <section className="mkt-section mkt-section--tight">
         <div className="mkt-wrap">
-          <PricingTiers cardPrices={cardPrices} />
+          <PricingTiers cardPrices={cardPrices} zmwRate={zmwRate} />
         </div>
       </section>
 

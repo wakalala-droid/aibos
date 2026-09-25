@@ -1,7 +1,12 @@
 # Card payments through Paddle
 
-Set up 21 September 2026. Mobile money stays the main way to pay; a card is
-the second way, for anyone who would rather.
+Set up 21 September 2026. Since 25 September 2026 it is the ONLY way to pay
+for a plan: mobile money was removed from checkout, every price is in US
+dollars (Kwacha is shown only as a guide at the day's rate, `lib/fx.ts`) and
+every plan renews automatically until cancelled. Plans paid for a fixed period
+before the switch are asked to set up card payment by the renewal run
+(`aibos-api/billing.py`). Mobile money still collects invoice and booking
+payment links, which are a separate feature.
 
 ## What the customer gets
 

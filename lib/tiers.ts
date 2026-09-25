@@ -1,7 +1,8 @@
 // lib/tiers.ts — AIBOS subscription tiers + feature gating.
 // Single source of truth for what each plan unlocks and how it is priced.
-// Priced and billed in ZMW (Kwacha) — USD is a secondary display only, per
-// conversion_psychology.md PRICING DISPLAY RULE.
+// Priced and billed in US dollars by card, renewing automatically, since
+// 25 September 2026 (the owner's decision, replacing the Kwacha-first rule in
+// conversion_psychology.md). Kwacha is a guide only: see PRICE_CURRENCY below.
 
 export type Tier = 'free' | 'pro' | 'proplus' | 'growth';
 
@@ -37,22 +38,21 @@ export interface TierMeta {
   id: Tier;
   name: string;
   tagline: string;
-  /** Monthly price in ZMW. 0 = free. */
+  /** Monthly price in US dollars (PRICE_CURRENCY). 0 = free. */
   priceMonthly: number;
-  /** Annual price in ZMW — billed yearly, two months free (10 × monthly). */
+  /** Annual price in US dollars: billed yearly, two months free (10 × monthly). */
   priceAnnual: number;
   /** Plain-language inclusions, shown verbatim before signup. */
   inclusions: string[];
   accent: string;
 }
 
-// Rough display-only rate for the secondary USD figure. ZMW is always primary;
-// this is a label, never the billed amount.
-export const ZMW_PER_USD = 26;
-
-export function usdApprox(zmw: number): number {
-  return Math.round(zmw / ZMW_PER_USD);
-}
+// Every plan is priced and charged in US dollars, by card through Paddle, and
+// renews automatically (owner's decision, 25 September 2026; Paddle cannot
+// charge in Kwacha). A Kwacha figure is only ever a conversion shown for
+// reference (lib/planPrice.ts), never what is charged. These numbers must match
+// aibos-api tier_contract.json and paddle.py CARD_PRICES_USD.
+export const PRICE_CURRENCY = 'USD';
 
 export const TIERS: Record<Tier, TierMeta> = {
   free: {
@@ -76,8 +76,8 @@ export const TIERS: Record<Tier, TierMeta> = {
     id: 'pro',
     name: 'Pro',
     tagline: 'The everyday CFO for one location',
-    priceMonthly: 500,
-    priceAnnual: 5000,
+    priceMonthly: 25,
+    priceAnnual: 250,
     accent: 'var(--cyan)',
     inclusions: [
       'Everything in Free',
@@ -94,15 +94,15 @@ export const TIERS: Record<Tier, TierMeta> = {
     id: 'proplus',
     name: 'Pro+',
     tagline: 'AIBOS runs your day, you run the business',
-    priceMonthly: 750,
-    priceAnnual: 7500,
+    priceMonthly: 39,
+    priceAnnual: 390,
     accent: 'var(--e2)',
     inclusions: [
       'Everything in Pro',
       'Morning Brief: your day, ready before you ask',
       'Brief delivered to WhatsApp every morning (rolling out)',
       'Record sales & expenses straight from the chat',
-      'Expected deliveries — know what’s arriving and when',
+      'Expected deliveries: know what’s arriving and when',
       'One-tap reorder drafts when stock runs low',
       'Low-stock alerts in your brief',
     ],
@@ -111,8 +111,8 @@ export const TIERS: Record<Tier, TierMeta> = {
     id: 'growth',
     name: 'Growth',
     tagline: 'Every engine, one command centre',
-    priceMonthly: 1499,
-    priceAnnual: 14990,
+    priceMonthly: 79,
+    priceAnnual: 790,
     accent: 'var(--e3)',
     inclusions: [
       'Everything in Pro+',

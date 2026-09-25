@@ -27,7 +27,7 @@ export default function AskAnything() {
             in seconds.
           </p>
           <ul style={{ listStyle: 'none', margin: '24px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {['Reads straight from the files you upload', 'Shows its working and never invents a trend', 'Answers in plain English, priced in Kwacha'].map((t) => (
+            {['Reads straight from the files you upload', 'Shows its working and never invents a trend', 'Answers in plain English, in Kwacha'].map((t) => (
               <li key={t} style={{ display: 'flex', gap: 10, alignItems: 'center', color: 'var(--text-2)', fontSize: 'var(--fs-body)' }}>
                 <span aria-hidden style={{ color: 'var(--cyan)' }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>

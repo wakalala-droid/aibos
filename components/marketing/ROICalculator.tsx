@@ -3,12 +3,16 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { TIERS } from '@/lib/tiers';
+import { useZmwRate } from '@/lib/planPrice';
 
 // Honest, RANGED outputs only — no fabricated precision (conversion_psychology.md
 // + the SAFEGUARD no-fabrication ethos). Every figure is shown as an estimate or
 // a clearly-labelled example the visitor can check against their own numbers.
 
-const PRO = TIERS.pro.priceMonthly; // single source of truth — lib/tiers.ts
+// Pro's price in US dollars (single source of truth: lib/tiers.ts). The visitor's
+// revenue is in Kwacha, so the comparison converts it at today's rate, and
+// leaves the comparison out rather than guess when there is no rate.
+const PRO_USD = TIERS.pro.priceMonthly;
 
 function fmt(n: number) {
   return n.toLocaleString('en-ZM', { maximumFractionDigits: 0 });
@@ -45,6 +49,8 @@ function Field({
 export default function ROICalculator() {
   const [revenue, setRevenue] = useState(60000);
   const [hours, setHours] = useState(6);
+  const { rate } = useZmwRate();
+  const proK = rate ? PRO_USD * rate.rate : null;
 
   const out = useMemo(() => {
     const hoursMonth = hours * 4.3;
@@ -53,9 +59,9 @@ export default function ROICalculator() {
     const daysLow = (hoursLow / 8).toFixed(1);
     const daysHigh = (hoursHigh / 8).toFixed(1);
     const leak1pct = Math.round(revenue * 0.01);
-    const multiple = Math.max(1, Math.round(leak1pct / PRO));
+    const multiple = proK ? Math.max(1, Math.round(leak1pct / proK)) : null;
     return { hoursLow, hoursHigh, daysLow, daysHigh, leak1pct, multiple };
-  }, [revenue, hours]);
+  }, [revenue, hours, proK]);
 
   return (
     <div className="mkt-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22, alignItems: 'stretch' }}>
@@ -89,7 +95,10 @@ export default function ROICalculator() {
         <p className="mkt-body" style={{ fontSize: 'var(--fs-body)' }}>
           <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Example</span><br />
           Catching even a <strong style={{ color: 'var(--text-1)' }}>1% margin leak</strong> on K{fmt(revenue)}/mo is{' '}
-          <strong style={{ color: 'var(--text-1)' }}>K{fmt(out.leak1pct)} a month</strong>, about {out.multiple}× the price of Pro (K{fmt(PRO)}/mo).
+          <strong style={{ color: 'var(--text-1)' }}>K{fmt(out.leak1pct)} a month</strong>
+          {out.multiple && proK
+            ? <>, about {out.multiple}× the price of Pro (${PRO_USD} a month, about K{fmt(proK)} at today’s rate).</>
+            : <>. Pro costs ${PRO_USD} a month.</>}
         </p>
 
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '16px 0 0', lineHeight: 1.5 }}>

@@ -5,13 +5,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import BorderGlow from '@/components/ui/BorderGlow';
+import PriceCurrencySwitch, { KwachaNote } from '@/components/ui/PriceCurrencySwitch';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import { useTheme } from '@/lib/theme';
-import { TIERS, TIER_ORDER, isPaidTier, isTier, usdApprox, type Tier } from '@/lib/tiers';
+import { LEGAL } from '@/lib/legal';
+import { usePlanPricing } from '@/lib/planPrice';
+import { TIERS, TIER_ORDER, isPaidTier, isTier, type Tier } from '@/lib/tiers';
 import {
-  initiatePayment, checkPaymentStatus, getCardConfig, getMyBilling, startCardCheckout,
-  previewCardChange, confirmCardChange,
+  getCardConfig, getMyBilling, startCardCheckout, previewCardChange, confirmCardChange,
   type CardCheckout, type CardConfig, type CardChangePreview, type MyBilling,
 } from '@/lib/api';
 import {
@@ -20,27 +22,12 @@ import {
 } from '@/lib/paddle';
 import './checkout.css';
 
-// Merchant mobile-money accounts payments are sent to.
-const MERCHANT = {
-  mtn:    { label: 'MTN Mobile Money', number: '0762561930', ussd: '*115#', bg: '#ffcc00', fg: '#000' },
-  airtel: { label: 'Airtel Money',     number: '0973759352', ussd: '*778#', bg: '#e40000', fg: '#fff' },
-} as const;
+// Every plan is paid by card through Paddle, in US dollars, and renews
+// automatically until it is cancelled (owner's decision, 25 September 2026:
+// mobile money is no longer a way to buy a plan). Kwacha can be shown beside
+// the price for reference, never as what is charged (lib/planPrice.ts).
 
-type Network = keyof typeof MERCHANT;
-type Method = 'mobile' | 'card';
 type Billing = 'monthly' | 'annual';
-
-// Checking a mobile money approval. People approve on their phone in their own
-// time, and MTN and Airtel can take minutes to report back. The page used to
-// give up after 60 seconds and offer "Try again", which started a SECOND
-// charge while the first could still go through. Now it checks quickly for a
-// few minutes, then keeps checking slowly for as long as the page is open, and
-// never invites a second payment while the first is undecided.
-const FAST_POLL_MS = 2_500;
-const FAST_POLL_FOR_MS = 3 * 60_000;
-const SLOW_POLL_MS = 15_000;
-/** Consecutive "no such payment" answers before we say we lost track of it. */
-const UNKNOWN_LIMIT = 4;
 
 // After Paddle says a card payment is complete, the plan is switched on by
 // Paddle's webhook to the API, not by this page. Wait for the API to agree.
@@ -71,7 +58,7 @@ function firstRenewal(billing: Billing): string {
   return longDate(d.toISOString());
 }
 
-/** Paddle statuses of a card plan that is still going (renews by itself). */
+/** Paddle statuses of a card plan that is still going (renews automatically). */
 const LIVE_CARD = ['active', 'trialing', 'past_due', 'paused'];
 
 // ── Icons (2px stroke, per the Design OS) ────────────────────────────────────
@@ -87,8 +74,6 @@ const I = {
   lock: 'M7 11V8a5 5 0 0110 0v3M6 11h12a1 1 0 011 1v8a1 1 0 01-1 1H6a1 1 0 01-1-1v-8a1 1 0 011-1z',
   check: 'M20 6L9 17l-5-5',
   chevron: 'M9 18l6-6-6-6',
-  phone: 'M8 2h8a2 2 0 012 2v16a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2zM11 18h2',
-  card: 'M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM3 10h18M7 15h4',
   shield: 'M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3zM9 12l2 2 4-4',
   alert: 'M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z',
   info: 'M12 16v-4M12 8h.01M22 12a10 10 0 11-20 0 10 10 0 0120 0z',
@@ -186,6 +171,8 @@ function CheckoutInner() {
   const [billing, setBilling] = useState<Billing>(params.get('billing') === 'annual' ? 'annual' : 'monthly');
   const setTier = useStore((s) => s.setTier);
   const { serverTier, paidUntil, ownPlan, planExpired, paidTier, isAdmin, loading: profileLoading, refresh } = useProfile();
+  // Prices are in US dollars; the owner can see them in Kwacha at today's rate.
+  const pricing = usePlanPricing();
 
   // Tier is SERVER-authoritative and the client can no longer write it directly
   // (the profiles guard trigger pins tier for self-updates — migration 0010).
@@ -212,8 +199,6 @@ function CheckoutInner() {
     }
   }, [setTier, refresh]);
 
-  // ── How to pay: mobile money (Kwacha) or card (US dollars, through Paddle) ──
-  const [method, setMethod] = useState<Method>(params.get('method') === 'card' ? 'card' : 'mobile');
   const [cards, setCards] = useState<CardConfig | null>(null);
   const [account, setAccount] = useState<MyBilling | null>(null);
   // Whether we know if there is a card plan already. A card form must not be
@@ -230,71 +215,7 @@ function CheckoutInner() {
     return () => { alive = false; };
   }, []);
 
-  const [network, setNetwork] = useState<Network>('mtn');
-  const [phone, setPhone] = useState('');
-  const [status, setStatus] = useState<'idle' | 'pending' | 'done' | 'failed'>('idle');
-  const [slow, setSlow] = useState(false);       // past the quick-check window, still waiting
-  const [lost, setLost] = useState(false);       // the server no longer knows this payment
-  const [reference, setReference] = useState('');
-  const [error, setError] = useState('');
-  const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Poll the collection status until it resolves. See FAST_POLL_FOR_MS above.
-  useEffect(() => {
-    if (status !== 'pending' || !reference) return;
-    let active = true;
-    let unknown = 0;
-    const started = Date.now();
-    const tick = async () => {
-      if (!active) return;
-      try {
-        const r = await checkPaymentStatus(reference);
-        if (!active) return;
-        if (r.status === 'successful') {
-          // The backend already granted the tier server-side on confirmation;
-          // reflect it locally for instant UX, then re-read the real answer
-          // (and the new end date) from the server.
-          if (plan) cacheTier(plan);
-          setStatus('done');
-          void refresh();
-          return;
-        }
-        if (r.status === 'failed') {
-          setStatus('failed');
-          setError('The payment was declined or cancelled. No money was taken, so you can try again.');
-          return;
-        }
-        unknown = r.status === 'unknown' ? unknown + 1 : 0;
-        if (unknown >= UNKNOWN_LIMIT) {
-          setLost(true);
-          return;
-        }
-      } catch { /* a dropped connection: keep checking */ }
-      const fast = Date.now() - started < FAST_POLL_FOR_MS;
-      if (!fast) setSlow(true);
-      pollRef.current = setTimeout(tick, fast ? FAST_POLL_MS : SLOW_POLL_MS);
-    };
-    pollRef.current = setTimeout(tick, FAST_POLL_MS);
-    return () => { active = false; if (pollRef.current) clearTimeout(pollRef.current); };
-  }, [status, reference, plan, cacheTier, refresh]);
-
-  const startPayment = async () => {
-    if (!plan) return;
-    setError('');
-    setSlow(false);
-    setLost(false);
-    setStatus('pending');
-    try {
-      const r = await initiatePayment({ network, plan, billing, payer_phone: phone });
-      setReference(r.reference);
-      // The polling effect takes over from here.
-    } catch (e) {
-      setStatus('failed');
-      setError((e as Error).message || 'Could not start the payment. Please try again.');
-    }
-  };
-
-  // ── Card: a new card plan, with Paddle's form inside the page ──────────────
+  // ── A new plan, with Paddle's card form inside the page ────────────────────
   // idle → opening (the API makes a transaction, Paddle loads its form) → open
   // (the form is showing) → confirming (Paddle took the money, waiting for the
   // API) → done. `failed` means the form could not load; nothing was taken.
@@ -355,7 +276,7 @@ function CheckoutInner() {
     }
   }, []);
 
-  // ── Card: moving an existing card plan to another plan ─────────────────────
+  // ── Moving an existing card plan to another plan ───────────────────────────
   const [change, setChange] = useState<'idle' | 'previewing' | 'preview' | 'applying' | 'done'>('idle');
   const [preview, setPreview] = useState<CardChangePreview | null>(null);
   const [changeError, setChangeError] = useState('');
@@ -392,25 +313,23 @@ function CheckoutInner() {
     }
   };
 
-  // Card: offered when Paddle is set up. While it is being tested (a sandbox
-  // key, or a live one before its first real payment) only an admin sees it.
+  // Cards are open to everyone once Paddle is set up. While it is being tested
+  // (a sandbox key, or a live one before its first real payment) only an admin
+  // can pay; everyone else is told how to start a plan in the meantime.
   const cardPrice = plan ? cards?.prices?.[plan]?.[billing] ?? null : null;
-  const cardOffered = Boolean(plan && cards?.enabled && cardPrice && (!cards.testers_only || isAdmin) && ownPlan);
+  const cardsOpen = Boolean(plan && cards?.enabled && cardPrice && (!cards.testers_only || isAdmin));
+  const cardOffered = cardsOpen && ownPlan;
   const cardAfterPayment = cardState === 'confirming' || cardState === 'slow' || cardState === 'done';
-  const payBy: Method = cardAfterPayment ? 'card' : cardOffered ? method : 'mobile';
-  // While one payment is being confirmed, the way to pay and the period stay
-  // as they are: switching would invite a second payment for the same plan.
-  const choiceLocked = status === 'pending' || cardAfterPayment;
+  // While a payment is being confirmed the period stays as it is: switching
+  // would invite a second payment for the same plan.
+  const choiceLocked = cardAfterPayment;
   const cardPlan = account?.card && LIVE_CARD.includes(account.card.status) ? account.card : null;
-  // Asked for card (a pricing-page link) but not yet known whether it is on
-  // offer: hold a placeholder rather than flash the mobile money form. Once
-  // card is known to be on offer this ends, so the form's spot on the page is
-  // there before Paddle is asked to fill it.
-  const deciding = Boolean(plan) && method === 'card' && !cardOffered && (cards === null || profileLoading);
-  const frameActive = Boolean(plan) && payBy === 'card' && accountKnown && !cardPlan && !cardAfterPayment;
+  // Not yet known whether cards are on offer: hold a placeholder rather than
+  // say "not open yet" and then change our mind.
+  const deciding = Boolean(plan) && !cardOffered && (cards === null || profileLoading);
+  const frameActive = Boolean(plan) && cardOffered && accountKnown && !cardPlan && !cardAfterPayment;
 
-  // Put Paddle's card form into the page whenever card is the chosen way to
-  // pay, and again for another period. Leaving card closes it.
+  // Put Paddle's card form into the page, and again for another period.
   useEffect(() => {
     if (!frameActive || !plan) return;
     let alive = true;
@@ -479,7 +398,7 @@ function CheckoutInner() {
                 : freeState === 'done'
                 ? 'Your records are all still here. You can move to a paid plan again whenever you like.'
                 : giving && byCard
-                ? `${giving} renews by itself on your card. To stop paying, cancel the renewal on Plan & billing: ${giving} then stays on until the end of what you paid. Your records stay.`
+                ? `${giving} renews automatically on your card. To stop paying, cancel the renewal on Plan & billing: ${giving} then stays on until the end of what you paid. Your records stay.`
                 : giving
                 ? `${giving} switches off straight away${paidUntil ? `, even though it is paid until ${longDate(paidUntil)}` : ''}. Money already paid is not refunded. Your records stay.`
                 : 'Financial engine, last 30 days, full P&L and cashflow. No payment needed.'}
@@ -513,10 +432,7 @@ function CheckoutInner() {
   }
 
   const meta = TIERS[plan];
-  const amount = billing === 'annual' ? meta.priceAnnual : meta.priceMonthly;
-  const m = MERCHANT[network];
-  // Paying for the plan already in force extends it from its current end date
-  // (aibos-api paid_period_end), so say so rather than selling it as new.
+  // The plan in force, and a plan that has ended, are shown as "Renew".
   const renewing = ownPlan && serverTier === plan && Boolean(paidUntil) && new Date(paidUntil ?? 0).getTime() > Date.now();
   const lapsedSame = ownPlan && planExpired && paidTier === plan;
   // Paying for a smaller plan than the one in force switches the account DOWN
@@ -524,18 +440,13 @@ function CheckoutInner() {
   // pricing link and pay to lose features, with nothing on the page saying so.
   const downgradeFrom = ownPlan && serverTier && !planExpired
     && TIER_ORDER.indexOf(serverTier) > TIER_ORDER.indexOf(plan) ? TIERS[serverTier].name : null;
-  const period = billing === 'annual' ? 'a year' : 'a month';
   const each = billing === 'annual' ? 'each year' : 'each month';
   const cardSame = Boolean(cardPlan && cardPlan.plan === plan && cardPlan.billing === billing);
-  const cardMonthly = cards?.prices?.[plan]?.monthly ?? null;
-  const cardAnnual = cards?.prices?.[plan]?.annual ?? null;
-  const isCard = payBy === 'card';
 
-  if (status === 'done' || cardState === 'done' || change === 'done') {
-    const byCard = cardState === 'done' || change === 'done';
+  if (cardState === 'done' || change === 'done') {
     const paid = cardState === 'done' && cardTotals ? formatMoney(cardTotals.total, cardTotals.currency, { cents: true })
       : change === 'done' && preview?.action === 'charge' ? formatMoney(preview.amount, preview.currency, { cents: true })
-      : status === 'done' ? `K${amount.toLocaleString()}` : null;
+      : null;
     return (
       <Shell>
         <div className="co-solo">
@@ -545,19 +456,9 @@ function CheckoutInner() {
               {change === 'done' ? `You’re now on ${meta.name}` : renewing ? `${meta.name} renewed` : `Welcome to ${meta.name}`}
             </h1>
             <p className="co-tagline">
-              {byCard ? (
-                <>
-                  Payment confirmed{paid ? `: ${paid}` : ''}. Everything in {meta.name} is switched on
-                  {account?.card?.renews_on ? ` and renews by itself on ${longDate(account.card.renews_on)}` : ''}.
-                  Paddle has emailed your receipt. You can cancel the renewal any time on Plan &amp; billing.
-                </>
-              ) : (
-                <>
-                  Payment confirmed{paid ? `: ${paid}` : ''}. Everything in {meta.name} is switched on
-                  {paidUntil && serverTier === plan ? ` until ${longDate(paidUntil)}` : ''}.
-                  It renews on the same day {each}. AIBOS reminds you before then and nothing is taken until you approve it.
-                </>
-              )}
+              Payment confirmed{paid ? `: ${paid}` : ''}. Everything in {meta.name} is switched on
+              {account?.card?.renews_on ? ` and renews automatically on ${longDate(account.card.renews_on)}` : ' and renews automatically'}.
+              Paddle has emailed your receipt. You can cancel the renewal any time on Plan &amp; billing.
             </p>
             <Link href="/dashboard" className="co-btn">Go to dashboard</Link>
           </Panel>
@@ -567,31 +468,32 @@ function CheckoutInner() {
   }
 
   // ── What the summary shows ─────────────────────────────────────────────────
-  const cur = cardPrice?.currency ?? 'USD';
-  const money = (n: number | null | undefined) => formatMoney(n, cur, { cents: true });
-  const headline = isCard && cardPrice ? formatMoney(cardPrice.amount, cardPrice.currency) : `K${amount.toLocaleString()}`;
-  const perLine = billing === 'annual' ? 'per year' : 'per month';
-  const saveLine = isCard && cardMonthly && cardAnnual
-    ? (billing === 'annual'
-      ? <><strong>2 months free:</strong> {formatMoney(cardAnnual.amount, cardAnnual.currency)} a year instead of {formatMoney(cardMonthly.amount * 12, cardMonthly.currency)}.</>
-      : <>Pay yearly and get <strong>2 months free</strong>: {formatMoney(cardAnnual.amount, cardAnnual.currency)} a year.</>)
-    : (billing === 'annual'
-      ? <><strong>2 months free:</strong> K{meta.priceAnnual.toLocaleString()} a year instead of K{(meta.priceMonthly * 12).toLocaleString()}.</>
-      : <>Pay yearly and get <strong>2 months free</strong>: K{meta.priceAnnual.toLocaleString()} a year.</>);
+  // What is charged is always in US dollars (Paddle's price when it is known,
+  // the list price otherwise); the headline follows the Kwacha switch.
+  const usdMonthly = cards?.prices?.[plan]?.monthly?.amount ?? meta.priceMonthly;
+  const usdAnnual = cards?.prices?.[plan]?.annual?.amount ?? meta.priceAnnual;
+  const usd = billing === 'annual' ? usdAnnual : usdMonthly;
+  const money = (n: number | null | undefined) => formatMoney(n, cardPrice?.currency ?? 'USD', { cents: true });
+  const { currency, fmt, rate } = pricing;
+  const kwacha = currency === 'ZMW';
+  const saveLine = billing === 'annual'
+    ? <><strong>2 months free:</strong> {fmt(usdAnnual)} a year instead of {fmt(usdMonthly * 12)}.</>
+    : <>Pay yearly and get <strong>2 months free</strong>: {fmt(usdAnnual)} a year.</>;
 
   const summary = (
     <Panel labelledBy="co-title" className="co-summary">
-      <p className="co-eyebrow">
-        {renewing || lapsedSame ? 'Renew' : isCard ? 'Subscribe to' : 'Pay for'}
-      </p>
+      <p className="co-eyebrow">{renewing || lapsedSame ? 'Renew' : 'Subscribe to'}</p>
       <h1 id="co-title" className="co-h1">AIBOS {meta.name}</h1>
       <div className="co-price">
-        <span className="co-price-fig">{headline}</span>
+        <span className="co-price-fig">{fmt(usd)}</span>
         <span className="co-price-per">
-          {perLine}{!isCard ? `, about $${usdApprox(amount)}` : ''}
+          {billing === 'annual' ? 'per year' : 'per month'}{kwacha ? ', about' : ''}
         </span>
       </div>
+      {kwacha && <p className="co-after" style={{ marginTop: 4 }}>Charged as {money(usd)} {billing === 'annual' ? 'a year' : 'a month'}</p>}
       <p className="co-tagline">{meta.tagline}</p>
+
+      <PriceCurrencySwitch className="co-pcs" currency={currency} onChange={pricing.choose} rate={rate} loading={pricing.loading} />
 
       <div role="radiogroup" aria-label="Billing period" className="co-seg">
         {(['monthly', 'annual'] as const).map((b) => (
@@ -603,12 +505,13 @@ function CheckoutInner() {
       </div>
       <p className="co-save">{saveLine}</p>
 
+      {/* The receipt is in US dollars: it is what the card is charged. */}
       <dl className="co-lines">
-        {isCard && cardPlan ? (
+        {cardPlan ? (
           <>
             <div className="co-line">
               <dt>AIBOS {meta.name}<span className="co-line-sub">Billed {billing === 'annual' ? 'yearly' : 'monthly'}</span></dt>
-              <dd>{cardPrice ? money(cardPrice.amount) : ''}</dd>
+              <dd>{money(usd)}</dd>
             </div>
             <div className="co-line co-total">
               <dt>Due today</dt>
@@ -619,15 +522,15 @@ function CheckoutInner() {
               </dd>
             </div>
           </>
-        ) : isCard ? (
+        ) : (
           <>
             <div className="co-line">
               <dt>AIBOS {meta.name}<span className="co-line-sub">Billed {billing === 'annual' ? 'yearly' : 'monthly'}</span></dt>
-              <dd>{money(cardPrice?.amount)}</dd>
+              <dd>{money(usd)}</dd>
             </div>
             <div className="co-line">
               <dt>Subtotal</dt>
-              <dd>{money(cardTotals?.subtotal ?? cardPrice?.amount)}</dd>
+              <dd>{money(cardTotals?.subtotal ?? usd)}</dd>
             </div>
             <div className="co-line">
               <dt>Sales tax</dt>
@@ -635,41 +538,22 @@ function CheckoutInner() {
             </div>
             <div className="co-line co-total">
               <dt>Total due today</dt>
-              <dd>{money(cardTotals?.total ?? cardPrice?.amount)}</dd>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="co-line">
-              <dt>AIBOS {meta.name}<span className="co-line-sub">{billing === 'annual' ? 'One year' : 'One month'}</span></dt>
-              <dd>K{amount.toLocaleString()}</dd>
-            </div>
-            <div className="co-line co-total">
-              <dt>Total due today</dt>
-              <dd>K{amount.toLocaleString()}</dd>
+              <dd>{money(cardTotals?.total ?? usd)}</dd>
             </div>
           </>
         )}
       </dl>
       <p className="co-after">
-        {isCard && cardPlan
+        {cardPlan
           ? (cardSame ? `You already pay for ${meta.name} by card.` : `Your card plan moves to ${meta.name}. You are never charged for two plans.`)
-          : isCard
-          ? (cardTotals?.recurring != null
-            ? `Then ${money(cardTotals.recurring)} ${each} from ${firstRenewal(billing)}, until you cancel.`
-            : `Then ${money(cardPrice?.amount)} ${each} plus any sales tax, from ${firstRenewal(billing)}, until you cancel.`)
-          : renewing
-          ? `Your ${meta.name} plan runs until ${longDate(paidUntil as string)}. Paying now adds ${period} after that date, so you lose no days.`
-          : lapsedSame
-          ? `Your ${meta.name} plan has ended. Paying now switches it back on today for ${period}.`
-          : `Covers ${period}. Nothing renews by itself: when it ends, you choose whether to pay again.`}
+          : cardTotals?.recurring != null
+          ? `Then ${money(cardTotals.recurring)} ${each} from ${firstRenewal(billing)}. Renews automatically until you cancel.`
+          : `Then ${money(usd)} ${each} plus any sales tax, from ${firstRenewal(billing)}. Renews automatically until you cancel.`}
       </p>
+      {kwacha && rate && <div style={{ marginTop: 12 }}><KwachaNote rate={rate} /></div>}
 
       <ul className="co-trust">
-        {(isCard
-          ? ['30-day money-back guarantee on every card payment', 'Cancel the renewal any time on Plan & billing', 'Your card details go to Paddle, never to AIBOS']
-          : ['You approve the payment on your own phone', 'Nothing is ever taken automatically', 'Your records stay exportable on every plan']
-        ).map((t) => (
+        {['Renews automatically. Cancel any time on Plan & billing', '30-day money-back guarantee on every payment', 'Your card details go to Paddle, never to AIBOS'].map((t) => (
           <li key={t}><Icon d={I.shield} />{t}</li>
         ))}
       </ul>
@@ -686,7 +570,7 @@ function CheckoutInner() {
   );
 
   // ── How to pay ─────────────────────────────────────────────────────────────
-  const cardForm = cardPlan ? (
+  const changeForm = cardPlan && (
     // Already paying by card: a second card plan would charge twice. Move
     // the one there is instead.
     <div className="co-stack" style={{ marginTop: 24 }}>
@@ -702,7 +586,7 @@ function CheckoutInner() {
       ) : cardSame ? (
         <Note tone="good" icon="check">
           <p>
-            You already pay for {meta.name} by card.{cardPlan.renews_on ? ` It renews by itself on ${longDate(cardPlan.renews_on)}.` : ''}
+            You already pay for {meta.name} by card.{cardPlan.renews_on ? ` It renews automatically on ${longDate(cardPlan.renews_on)}.` : ''}
             {' '}There is nothing to pay here.
           </p>
           <p><Link href="/dashboard/billing" className="co-link">See Plan &amp; billing</Link></p>
@@ -737,7 +621,9 @@ function CheckoutInner() {
         </>
       )}
     </div>
-  ) : cardState === 'confirming' || cardState === 'slow' ? (
+  );
+
+  const cardForm = cardState === 'confirming' || cardState === 'slow' ? (
     <div style={{ marginTop: 24 }}>
       <Note tone={cardState === 'confirming' ? 'info' : 'good'} icon={cardState === 'confirming' ? 'spin' : 'check'} role="status">
         <p><strong>Payment received.</strong></p>
@@ -754,7 +640,7 @@ function CheckoutInner() {
         <div style={{ marginTop: 16 }}>
           <Note icon="info">
             {renewing
-              ? `A card plan starts today and renews by itself. Days left on your current payment, to ${longDate(paidUntil as string)}, are not added on.`
+              ? `Your plan starts again today and renews automatically. Days left on your current payment, to ${longDate(paidUntil as string)}, are not added on.`
               : `Your ${meta.name} plan has ended. Paying now switches it back on today.`}
           </Note>
         </div>
@@ -783,145 +669,50 @@ function CheckoutInner() {
     </>
   );
 
-  const mobileForm = (
+  // Cards not open to this account yet: how to start a plan meanwhile.
+  const notOpen = !ownPlan ? (
     <div style={{ marginTop: 24 }}>
-      {!ownPlan && (
-        <div style={{ marginBottom: 16 }}>
-          <Note icon="info">This pays for your own account. The business that invited you has its own plan, which only its owner can pay for.</Note>
-        </div>
-      )}
-      <div role="radiogroup" aria-label="Mobile money network" className="co-opts">
-        {(Object.keys(MERCHANT) as Network[]).map((net) => {
-          const info = MERCHANT[net];
-          const on = network === net;
-          return (
-            <button key={net} type="button" role="radio" aria-checked={on} className="co-opt" onClick={() => setNetwork(net)}>
-              <span className="co-chip" style={{ background: info.bg, color: info.fg }}>{net === 'mtn' ? 'MTN' : 'Airtel'}</span>
-              <span>{info.label}</span>
-              {on && <span className="co-opt-tick"><Icon d={I.check} /></span>}
-            </button>
-          );
-        })}
-      </div>
-
-      <div style={{ marginTop: 24 }}>
-        <label htmlFor="payer-phone" className="co-label">
-          Your {m.label} number <span>(required)</span>
-        </label>
-        <input
-          id="payer-phone"
-          className="co-input"
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel-national"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="e.g. 097 123 4567"
-          aria-describedby="payer-phone-help"
-        />
-        <p id="payer-phone-help" className="co-method-sub" style={{ marginTop: 8 }}>
-          You get a prompt on this phone to approve <strong style={{ color: 'var(--text-1)' }}>K{amount.toLocaleString()}</strong>.
+      <Note icon="info">
+        This pays for your own account. The business that invited you has its own plan, which only its owner can pay for.
+      </Note>
+    </div>
+  ) : (
+    <div className="co-stack" style={{ marginTop: 24 }}>
+      <Note tone="info" icon="info">
+        <p><strong>Card payments are opening very soon.</strong></p>
+        <p>
+          To start {meta.name} today, email <a className="co-link" href={`mailto:${LEGAL.email}?subject=${encodeURIComponent(`Start AIBOS ${meta.name}`)}`}>{LEGAL.email}</a> or
+          call <a className="co-link" href={LEGAL.phoneHref}>{LEGAL.phoneDisplay}</a> and we will set it up for you.
         </p>
-      </div>
-
-      <div className="co-stack" style={{ marginTop: 16 }}>
-        {status === 'pending' && !lost && (
-          <Note tone="info" icon="spin" role="status">
-            <p>
-              {slow
-                ? `Still waiting for ${m.label} to confirm. If you approved the prompt, it will show here on its own. Please do not pay again.`
-                : `Check your phone and approve the ${m.label} prompt for K${amount.toLocaleString()}.`}
-            </p>
-            {slow && reference && <p>Payment reference {reference}. Keep this page open, or quote the reference to support.</p>}
-          </Note>
-        )}
-
-        {lost && (
-          <Note tone="warn" icon="alert" role="alert">
-            <p>
-              We lost track of this payment on our side. If money left your {m.label} account, do not pay again:
-              contact support with reference <strong>{reference}</strong> and we will switch {meta.name} on.
-            </p>
-            <p>
-              <button type="button" className="co-btn co-btn-quiet co-btn-inline" style={{ minHeight: 44, fontSize: 16 }}
-                onClick={() => { setLost(false); setSlow(false); setReference(''); setStatus('idle'); }}>
-                No money left my account, start again
-              </button>
-            </p>
-          </Note>
-        )}
-
-        {status === 'failed' && error && <Note tone="err" icon="alert" role="alert">{error}</Note>}
-
-        <button
-          type="button"
-          className="co-btn"
-          disabled={phone.trim().length < 9 || status === 'pending'}
-          aria-busy={status === 'pending'}
-          onClick={() => void startPayment()}
-        >
-          {status === 'pending'
-            ? 'Waiting for your approval…'
-            : status === 'failed'
-            ? 'Try again'
-            : `Pay K${amount.toLocaleString()}`}
-        </button>
-      </div>
-
-      <p className="co-fine">
-        <Icon d={I.info} size={16} />
-        <span>Prefer to send it yourself? Dial {m.ussd} and send K{amount.toLocaleString()} to {m.number} (AIBOS, {m.label}).</span>
-      </p>
+      </Note>
     </div>
   );
 
   const payment = (
     <Panel labelledBy="co-pay-title">
-      <h2 id="co-pay-title" className="co-h2">Pay with</h2>
+      <h2 id="co-pay-title" className="co-h2">Pay by card</h2>
+      <p className="co-method-sub" style={{ marginTop: 0 }}>
+        Visa, Mastercard, American Express, PayPal, Apple Pay or Google Pay, in US dollars.
+      </p>
       {deciding ? (
-        <div className="co-frame-wrap" data-state="opening" style={{ marginTop: 0 }}>
-          <div className="co-frame-cover"><FormSkeleton label="Loading the ways to pay" /></div>
+        <div className="co-frame-wrap" data-state="opening">
+          <div className="co-frame-cover"><FormSkeleton label="Loading the secure card form" /></div>
         </div>
+      ) : !cardOffered ? (
+        notOpen
       ) : (
         <>
-          {cardOffered ? (
-            <>
-              {/* Mobile money first: it is how most owners here pay. */}
-              <div role="radiogroup" aria-label="How to pay" className="co-opts">
-                {([['mobile', 'Mobile money', I.phone], ['card', 'Card', I.card]] as const).map(([key, label, icon]) => {
-                  const on = payBy === key;
-                  return (
-                    <button key={key} type="button" role="radio" aria-checked={on} className="co-opt" onClick={() => setMethod(key)}
-                      disabled={choiceLocked && !on}>
-                      <span className="co-opt-icon"><Icon d={icon} size={22} /></span>
-                      <span>{label}</span>
-                      {on && <span className="co-opt-tick"><Icon d={I.check} /></span>}
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="co-method-sub">
-                {isCard
-                  ? 'Visa, Mastercard, American Express, PayPal, Apple Pay or Google Pay, in US dollars.'
-                  : 'MTN or Airtel, in Kwacha. You approve it on your phone.'}
-              </p>
-              {isCard && cards?.testers_only && (
-                <div style={{ marginTop: 16 }}>
-                  <Note tone="warn" icon="info">
-                    {cards.stage === 'sandbox'
-                      ? 'Test mode: use a Paddle test card. No real money moves.'
-                      : 'Only admins can see card payments until the first real one goes through.'}
-                  </Note>
-                </div>
-              )}
-            </>
-          ) : (
-            <p className="co-method-sub" style={{ marginTop: 0 }}>Mobile money: MTN or Airtel, in Kwacha. You approve it on your phone.</p>
+          {cards?.testers_only && (
+            <div style={{ marginTop: 16 }}>
+              <Note tone="warn" icon="info">
+                {cards.stage === 'sandbox'
+                  ? 'Test mode: use a Paddle test card. No real money moves.'
+                  : 'Only admins can see card payments until the first real one goes through.'}
+              </Note>
+            </div>
           )}
-
-          {isCard ? cardForm : mobileForm}
-
-          {isCard && !cardPlan && (
+          {cardPlan ? changeForm : cardForm}
+          {!cardPlan && (
             <p className="co-fine">
               <Icon d={I.lock} size={16} />
               <span>Card payments are handled by Paddle, our online reseller. Your card details never reach AIBOS and your statement shows PADDLE.NET.</span>

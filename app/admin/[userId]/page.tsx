@@ -54,10 +54,10 @@ function fmtDate(v: string | null | undefined): string {
 }
 
 /**
- * Record a payment taken by hand. Mobile money collections are not switched on
- * yet, so customers pay the merchant number and an admin switches the plan on
- * here. It sets a real end date, like a checkout would, so the customer is
- * reminded to renew and the plan ends if they do not.
+ * Record a payment taken by hand (a customer who paid AIBOS directly instead
+ * of by card). It sets a real end date, so the customer is asked to set up
+ * card payment before it ends and the plan ends if they do not. Plans are
+ * priced in US dollars (lib/tiers.ts) and the amount is recorded with it.
  */
 function ManualPayment({ userId, currentTier, onSaved }: { userId: string; currentTier: string; onSaved: () => void }) {
   const paid = TIER_ORDER.filter((t): t is Exclude<Tier, 'free'> => t !== 'free');
@@ -98,14 +98,14 @@ function ManualPayment({ userId, currentTier, onSaved }: { userId: string; curre
         <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
           Plan
           <select value={plan} onChange={(e) => setPlan(e.target.value as Tier)} style={field}>
-            {paid.map((t) => <option key={t} value={t}>{TIERS[t].name}: K{TIERS[t].priceMonthly.toLocaleString()} a month</option>)}
+            {paid.map((t) => <option key={t} value={t}>{TIERS[t].name}: ${TIERS[t].priceMonthly.toLocaleString()} a month</option>)}
           </select>
         </label>
         <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
           Period
           <select value={billing} onChange={(e) => setBilling(e.target.value === 'annual' ? 'annual' : 'monthly')} style={field}>
-            <option value="monthly">One month (K{TIERS[plan].priceMonthly.toLocaleString()})</option>
-            <option value="annual">One year (K{TIERS[plan].priceAnnual.toLocaleString()})</option>
+            <option value="monthly">One month (${TIERS[plan].priceMonthly.toLocaleString()})</option>
+            <option value="annual">One year (${TIERS[plan].priceAnnual.toLocaleString()})</option>
           </select>
         </label>
         <button type="button" onClick={() => void save()} disabled={busy}
@@ -139,10 +139,10 @@ function ordinal(n: number): string {
 }
 
 /**
- * Put an account on billing that renews on the day they joined. Nothing is
- * charged here: the plan runs to that date, and from then the renewal run
- * reminds the customer (in the app and by email) and asks their phone for the
- * money on that day each period, once mobile money is switched on.
+ * Put an account on billing from the day they joined. Nothing is charged
+ * here: the plan runs to that date, and the renewal run asks the customer (in
+ * the app and by email) to set up card payment, which then renews
+ * automatically on its own.
  */
 function BillingFromJoin({ userId, currentTier, joinedAt, scheduledUntil, onSaved }: {
   userId: string; currentTier: string; joinedAt: string | null; scheduledUntil: string | null; onSaved: () => void;
@@ -187,8 +187,8 @@ function BillingFromJoin({ userId, currentTier, joinedAt, scheduledUntil, onSave
     <div className="section-card" style={{ marginBottom: 16 }}>
       <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Bill from the day they joined</p>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 14px', lineHeight: 1.55 }}>
-        They joined on {fmtDate(joinedAt)}. The plan runs until {fmtDate(next.toISOString())} and renews {every} for K{price.toLocaleString()}.
-        AIBOS reminds them three days before, asks for payment on the day and warns them before it switches off. Nothing is charged now.
+        They joined on {fmtDate(joinedAt)}. The plan runs until {fmtDate(next.toISOString())}. AIBOS asks them to set up card payment
+        three days before, on the day and before it switches off; the card then renews {every} for ${price.toLocaleString()}. Nothing is charged now.
         {scheduledUntil ? ` Right now it renews on ${fmtDate(scheduledUntil)}.` : ''}
       </p>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -201,8 +201,8 @@ function BillingFromJoin({ userId, currentTier, joinedAt, scheduledUntil, onSave
         <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
           Every
           <select value={billing} onChange={(e) => setBilling(e.target.value === 'annual' ? 'annual' : 'monthly')} style={field}>
-            <option value="monthly">Month (K{TIERS[plan].priceMonthly.toLocaleString()})</option>
-            <option value="annual">Year (K{TIERS[plan].priceAnnual.toLocaleString()})</option>
+            <option value="monthly">Month (${TIERS[plan].priceMonthly.toLocaleString()})</option>
+            <option value="annual">Year (${TIERS[plan].priceAnnual.toLocaleString()})</option>
           </select>
         </label>
         <button type="button" onClick={() => void start()} disabled={busy}

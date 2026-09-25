@@ -13,9 +13,12 @@
  *    offers to try again.
  *
  * 2. When a paid plan has ended or is about to.
- *    A plan bought with mobile money is bought for a month or a year, and nothing
- *    is taken without the owner approving it. Without this, the first sign of a lapsed plan was every
- *    paid screen asking to "upgrade" to the plan the owner had already bought.
+ *    Every plan is paid by card and renews automatically (25 September 2026),
+ *    so a card plan that is still going is never "about to end": its end date
+ *    is its next renewal. A plan paid for a fixed period before the switch (by
+ *    mobile money, or recorded by hand) does end, and is asked to set up card
+ *    payment. Without this, the first sign of a lapsed plan was every paid
+ *    screen asking to "upgrade" to the plan the owner had already bought.
  *    Someone working in a business that invited them is told to ask the owner,
  *    because only the owner can pay.
  */
@@ -36,7 +39,7 @@ function longDate(iso: string): string {
 }
 
 export default function PlanNotice() {
-  const { planConfirmed, planNote, loading, refresh, planExpired, paidTier, paidUntil, ownPlan, serverTier } = useProfile();
+  const { planConfirmed, planNote, loading, refresh, planExpired, paidTier, paidUntil, renewsAutomatically, ownPlan, serverTier } = useProfile();
   const [retrying, setRetrying] = useState(false);
 
   if (loading) return null;
@@ -65,8 +68,8 @@ export default function PlanNotice() {
     return ownPlan ? (
       <Strip
         title={`Your ${name} plan has ended`}
-        body={`${paidUntil ? `It ran until ${longDate(paidUntil)}. ` : ''}Your records are all still here. Renew to switch ${name} back on.`}
-        action={<Link href={`/checkout?plan=${paidTier}`} style={actionStyle}>Renew {name}</Link>}
+        body={`${paidUntil ? `It ran until ${longDate(paidUntil)}. ` : ''}Your records are all still here. Set up card payment to switch ${name} back on. It then renews automatically.`}
+        action={<Link href={`/checkout?plan=${paidTier}`} style={actionStyle}>Set up card payment</Link>}
       />
     ) : (
       <Strip
@@ -76,7 +79,7 @@ export default function PlanNotice() {
     );
   }
 
-  if (ownPlan && paidUntil && serverTier && serverTier !== 'free') {
+  if (ownPlan && paidUntil && serverTier && serverTier !== 'free' && !renewsAutomatically) {
     const end = new Date(paidUntil).getTime();
     const now = Date.now();
     if (Number.isFinite(end) && end - now < WARN_DAYS * DAY) {
@@ -85,11 +88,11 @@ export default function PlanNotice() {
       const off = longDate(new Date(end + GRACE_DAYS * DAY).toISOString());
       return (
         <Strip
-          title={ended ? `Your ${name} plan ended on ${longDate(paidUntil)}` : `Your ${name} plan ends on ${longDate(paidUntil)}`}
+          title={ended ? `Your ${name} plan ended on ${longDate(paidUntil)}` : `Your ${name} plan is paid up to ${longDate(paidUntil)}`}
           body={ended
-            ? `Everything stays on until ${off}. Renew before then to keep ${name} without a break.`
-            : `Pay now and the new period starts when this one ends, so you lose no days. Nothing is taken until you approve it.`}
-          action={<Link href={`/checkout?plan=${serverTier}`} style={actionStyle}>Renew {name}</Link>}
+            ? `Everything stays on until ${off}. Set up card payment before then to keep ${name} without a break. It then renews automatically.`
+            : `To keep ${name} on after that, set up card payment on or just before that day. It then renews automatically until you cancel.`}
+          action={<Link href={`/checkout?plan=${serverTier}`} style={actionStyle}>Set up card payment</Link>}
         />
       );
     }

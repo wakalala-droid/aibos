@@ -144,8 +144,7 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 .co-seg button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-.co-seg button:disabled,
-.co-opt:disabled { opacity: 0.5; cursor: not-allowed; }
+.co-seg button:disabled { opacity: 0.5; cursor: not-allowed; }
 .co-save {
   margin: 12px 0 0;
   font-size: 16px;
@@ -251,57 +250,8 @@
 }
 .co-incl li svg { flex-shrink: 0; margin-top: 3px; color: var(--cyan); }
 
-/* Choice tiles: how to pay, and which network. */
-.co-opts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.co-opt {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  min-height: 44px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--border-md);
-  background: var(--bg-card);
-  color: var(--text-2);
-  font: inherit;
-  font-size: 18px;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
-}
-.co-opt:hover { border-color: var(--border-strong); }
-.co-opt[aria-checked="true"] {
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 1px var(--cyan);
-  color: var(--text-1);
-}
-.co-opt:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-.co-opt-icon { color: var(--text-3); }
-.co-opt[aria-checked="true"] .co-opt-icon { color: var(--cyan); }
-.co-opt-tick {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  color: var(--cyan);
-}
-.co-opt-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.co-chip {
-  font-size: 15px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 6px;
-}
+/* The US dollar / Kwacha switch in the summary. */
+.co-pcs { margin-top: 16px; }
 .co-method-sub {
   margin: 12px 0 0;
   font-size: 16px;
@@ -333,34 +283,6 @@
 .co-skel-field { height: 52px; width: 100%; border-radius: 10px; }
 .co-skel-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .co-skel-btn { height: 52px; width: 100%; border-radius: 10px; margin-top: 8px; }
-
-/* Inputs. */
-.co-label {
-  display: block;
-  margin: 0 0 8px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-2);
-}
-.co-label span { font-weight: 400; color: var(--text-3); }
-.co-input {
-  width: 100%;
-  min-height: 52px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--text-3) 75%, transparent);
-  background: var(--bg-input);
-  color: var(--text-1);
-  font: inherit;
-  font-size: 18px;
-  transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
-}
-.co-input::placeholder { color: var(--text-3); opacity: 0.8; }
-.co-input:focus {
-  outline: none;
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 30%, transparent);
-}
 
 /* Buttons. Dark ink on bright cyan in the dark theme, white on a deeper
    cyan in the light theme: both clear 4.5:1. */
@@ -538,5 +460,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .co-spin { animation: none; border-top-color: var(--cyan); opacity: 0.6; }
-  .co-seg button, .co-opt, .co-btn, .co-input, .co-back, .co-incl summary svg { transition: none; }
+  .co-seg button, .co-btn, .co-back, .co-incl summary svg { transition: none; }
 }

@@ -84,8 +84,10 @@ interface Entitlements {
   /** False when this person works in someone else's business: the plan is
    *  that business's, not the one on their own account record. */
   own_plan?: boolean;
-  /** When a plan bought with mobile money runs out (migration 0033). */
+  /** When the paid period runs out (migration 0033). */
   paid_until?: string | null;
+  /** A card plan that renews by itself: its period end is not an ending. */
+  renews_automatically?: boolean;
   expired?: boolean;
   /** The plan that lapsed, when `expired`. */
   paid_tier?: string | null;
@@ -114,6 +116,8 @@ interface ProfileContextValue {
   ownPlan: boolean;
   /** When the paid period ends (ISO), for plans bought for a period. */
   paidUntil: string | null;
+  /** The plan renews automatically by card, so paidUntil is a renewal, not an end. */
+  renewsAutomatically: boolean;
   /** The paid period and its grace are over: paid features are off. */
   planExpired: boolean;
   /** The plan that lapsed, when planExpired. */
@@ -134,6 +138,7 @@ const DEFAULT: ProfileContextValue = {
   serverTier: null,
   ownPlan: true,
   paidUntil: null,
+  renewsAutomatically: false,
   planExpired: false,
   paidTier: null,
   workspaces: [],
@@ -174,6 +179,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [serverTier, setServerTier] = useState<Tier | null>(null);
   const [ownPlan, setOwnPlan] = useState(true);
   const [paidUntil, setPaidUntil] = useState<string | null>(null);
+  const [renewsAutomatically, setRenewsAutomatically] = useState(false);
   const [planExpired, setPlanExpired] = useState(false);
   const [paidTier, setPaidTier] = useState<Tier | null>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -254,6 +260,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       setPlanConfirmed(true);
       setOwnPlan(own);
       setPaidUntil(server.paid_until ?? null);
+      setRenewsAutomatically(Boolean(server.renews_automatically));
       setPlanExpired(Boolean(server.expired));
       setPaidTier(isTier(server.paid_tier) ? server.paid_tier : null);
       // A mismatch only means something when the plan in force is this
@@ -316,6 +323,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     serverTier,
     ownPlan,
     paidUntil,
+    renewsAutomatically,
     planExpired,
     paidTier,
     workspaces,

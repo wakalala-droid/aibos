@@ -68,7 +68,7 @@ const SECTIONS: { h: string; body: string[] }[] = [
     h: 'Third parties we rely on',
     body: [
       'Supabase (authentication and database), Google Gemini (AI question answering), Resend (email delivery, if enabled) and Meta WhatsApp Cloud API (WhatsApp brief and recording, if enabled). Each receives only what is needed to perform its function.',
-      'Paddle.com, our online reseller, if you pay by card. Paddle is the Merchant of Record for card payments: it collects your card details, billing address and email on its own secure form, charges any sales tax and keeps its own records under its own privacy notice (paddle.com/legal/privacy). AIBOS never sees or stores your card number. Paddle tells us which plan you paid for, the amount, the date and whether it renews.',
+      'Paddle.com, our online reseller, which takes every plan payment. Paddle is the Merchant of Record for our payments: it collects your card details, billing address and email on its own secure form, charges any sales tax and keeps its own records under its own privacy notice (paddle.com/legal/privacy). AIBOS never sees or stores your card number. Paddle tells us which plan you paid for, the amount, the date and whether it renews.',
     ],
   },
   {

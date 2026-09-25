@@ -7,9 +7,9 @@
  * Admin-verified; writes `profiles` (tier, tier_source, tier_granted_by/at,
  * paid_until) and an `admin_audit` row, both via the service-role client.
  *
- * source 'payment' records a payment taken by hand (mobile money sent to the
- * merchant number while collections are not switched on). It is bought for a
- * period exactly like a checkout: `paid_until` is set a month or a year out,
+ * source 'payment' records a payment taken by hand (a customer who paid AIBOS
+ * directly instead of by card). It records the amount and currency, in US
+ * dollars like every plan price, and is bought for a period: `paid_until` is set a month or a year out,
  * and a renewal of the same plan before it ends extends from the old end date
  * (the same rule as aibos-api paid_period_end). Without this the only buttons
  * were demo grants that never end, so a customer who paid for one month kept
@@ -29,7 +29,7 @@ import { requireAdmin } from '@/lib/admin-server';
 import { createServiceClient } from '@/lib/supabase-admin';
 // isTier is derived from TIER_ORDER — a hand-written list here would silently
 // reject (or, worse, accept) a tier the rest of the app knows about.
-import { isTier } from '@/lib/tiers';
+import { isTier, TIERS, PRICE_CURRENCY } from '@/lib/tiers';
 
 const SOURCES = ['self', 'payment', 'admin_demo'] as const;
 const DAY = 86_400_000;
@@ -156,6 +156,11 @@ export async function POST(req: NextRequest) {
       detail: {
         tier, source,
         ...(source === 'payment' ? { billing, paid_until: patch.paid_until ?? null } : {}),
+        // Money actually received (not for putting an account on billing),
+        // so payment history never has to guess it from a later price list.
+        ...(source === 'payment' && !fromJoin && tier !== 'free'
+          ? { amount: billing === 'annual' ? TIERS[tier].priceAnnual : TIERS[tier].priceMonthly, currency: PRICE_CURRENCY }
+          : {}),
         ...(fromJoin ? { schedule: 'join_date' } : {}),
       },
     });

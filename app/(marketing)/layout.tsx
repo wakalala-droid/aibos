@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AIBOS — The brain behind every business',
     description:
-      'A CFO, analyst and consultant in your pocket, priced in Kwacha. Upload your data and get answers, briefs and decisions in minutes.',
+      'A CFO, analyst and consultant in your pocket, answering in Kwacha. Upload your data and get answers, briefs and decisions in minutes.',
     type: 'website',
     locale: 'en_ZM',
   },

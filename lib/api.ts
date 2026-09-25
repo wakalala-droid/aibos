@@ -193,29 +193,6 @@ export async function pingAPI(): Promise<boolean> {
   }
 }
 
-// ─── Payments — Mobile Money (MTN MoMo + Airtel Money) ─────────────────────────
-
-export type PaymentNetwork = 'mtn' | 'airtel';
-export type PaymentStatus = 'pending' | 'successful' | 'failed';
-
-export interface InitiatePaymentPayload {
-  network: PaymentNetwork;
-  /** Derived from the ladder — never a hand-written union (see tiers.ts isTier). */
-  plan: PaidTier;
-  billing: 'monthly' | 'annual';
-  payer_phone: string;
-  user_id?: string;
-  currency?: string;
-}
-
-export interface InitiatePaymentResult {
-  reference: string;
-  status: PaymentStatus;
-  amount: number;
-  network: PaymentNetwork;
-  plan: string;
-}
-
 /** Which Morning-Brief delivery channels the backend has keys for. */
 export async function briefDeliveryConfig(): Promise<{ email: boolean; whatsapp: boolean }> {
   try {
@@ -225,33 +202,6 @@ export async function briefDeliveryConfig(): Promise<{ email: boolean; whatsapp:
   } catch {
     return { email: false, whatsapp: false };
   }
-}
-
-/** Kick off a mobile-money collection. Returns a reference to poll. */
-export async function initiatePayment(payload: InitiatePaymentPayload): Promise<InitiatePaymentResult> {
-  const res = await fetch(`${PROXY}/payments/initiate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-    body: JSON.stringify({ currency: 'ZMW', ...payload }),
-  });
-  const raw = await res.text();
-  let data: Record<string, unknown> = {};
-  try { data = raw ? JSON.parse(raw) : {}; } catch { throw new Error('Unexpected response from the payment service.'); }
-  if (!res.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `Payment could not start (${res.status}).`);
-  return data as unknown as InitiatePaymentResult;
-}
-
-/** Poll a collection's status until it resolves. `unknown` means the server has
- *  no record of this reference (it was kept in memory and the server restarted),
- *  which is not the same as still waiting. Anything else that goes wrong, a
- *  sleeping server or a dropped connection, reads as still pending. */
-export async function checkPaymentStatus(reference: string): Promise<{ reference: string; status: PaymentStatus | 'unknown'; plan: string; billing: string }> {
-  const res = await fetch(`${PROXY}/payments/status/${encodeURIComponent(reference)}`, {
-    headers: await authHeaders(),
-  });
-  if (res.status === 404) return { reference, status: 'unknown', plan: '', billing: '' };
-  const data = (await res.json().catch(() => ({ status: 'pending' }))) as { reference?: string; status?: PaymentStatus; plan?: string; billing?: string };
-  return { reference, status: (res.ok ? data.status : undefined) ?? 'pending', plan: data.plan ?? '', billing: data.billing ?? 'monthly' };
 }
 
 // ─── Subscribe ────────────────────────────────────────────────────────────────
@@ -465,7 +415,6 @@ export interface MyBilling {
   days_left?: number | null;
   pay_link?: string;
   payments?: PlanPayment[];
-  collections_live?: boolean;
   card?: CardPlan | null;
   /** Whether card payments are switched on at all. */
   card_payments?: boolean;

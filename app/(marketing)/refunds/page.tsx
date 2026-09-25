@@ -5,20 +5,21 @@ import { LEGAL } from '@/lib/legal';
 export const metadata: Metadata = {
   title: 'Refund Policy',
   description:
-    'Every AIBOS card payment has a 30-day money-back guarantee, no reason needed. How to ask, what happens to your plan and how mobile money mistakes are put right.',
+    'Every AIBOS payment has a 30-day money-back guarantee, no reason needed. How to ask, what happens to your plan and how to cancel the automatic renewal.',
   alternates: { canonical: '/refunds' },
 };
 
 // The refund policy Paddle's website review asks for. The owner chose a 30-day
 // money-back guarantee on card payments (2026-09-21), the length Paddle
-// recommends. Mobile money payments are never taken again automatically, so
-// the promise there is to put mistakes right; widen it here if that changes.
+// recommends. Since 25 September 2026 every plan is paid by card and renews
+// automatically; a payment made to us directly (before that, or by
+// arrangement) is covered by the promise to put mistakes right.
 type Part = string | { text: string; href: string; after?: string };
 const SECTIONS: { h: string; body: Part[][] }[] = [
   {
     h: '30 days to change your mind',
     body: [
-      ['If AIBOS is not right for you, ask for your money back within 30 days of any card payment. You get the whole of that payment back. You do not have to give a reason.'],
+      ['If AIBOS is not right for you, ask for your money back within 30 days of any payment, including a renewal. You get the whole of that payment back. You do not have to give a reason.'],
       ['Card payments are sold by our online reseller Paddle.com, so Paddle makes the refund, to the card or account you paid with. Paddle aims to refund within 14 days of approving it. When it shows on your statement depends on your bank.'],
     ],
   },
@@ -39,15 +40,15 @@ const SECTIONS: { h: string; body: Part[][] }[] = [
   {
     h: 'Cancelling without a refund',
     body: [
-      ['You can cancel a card plan’s renewal at any time on Plan & billing. The plan stays on until the end of the period you paid for and your card is not charged again.'],
+      ['Every plan renews automatically. You can cancel the renewal at any time on Plan & billing. The plan stays on until the end of the period you paid for and you are not charged again.'],
       ['After the 30 days, we do not refund part of a period that has already started.'],
     ],
   },
   {
-    h: 'Mobile money payments',
+    h: 'Payments made to us directly',
     body: [
-      ['A mobile money payment covers one month or one year and is never taken again automatically, so there is nothing to cancel.'],
-      [`If something went wrong with one, such as being charged twice or charged the wrong amount, contact us on ${LEGAL.phoneDisplay} or at `, { text: LEGAL.email, href: `mailto:${LEGAL.email}` }, '. We will put it right and send the money back to the same mobile money number.'],
+      ['A plan paid by mobile money, or paid to us directly, before 25 September 2026 was never taken again automatically, so there is nothing to cancel.'],
+      [`If something went wrong with such a payment, such as being charged twice or charged the wrong amount, contact us on ${LEGAL.phoneDisplay} or at `, { text: LEGAL.email, href: `mailto:${LEGAL.email}` }, '. We will put it right and send the money back the way you paid.'],
     ],
   },
   {
@@ -65,7 +66,7 @@ export default function RefundsPage() {
         <p className="mkt-eyebrow">Legal</p>
         <h1 className="mkt-h1" style={{ fontSize: 'clamp(1.9rem, 4vw, 2.8rem)', marginBottom: 10 }}>Refund Policy</h1>
         <p className="mkt-lead" style={{ marginBottom: 8 }}>
-          A 30-day money-back guarantee on every card payment. Last updated {LEGAL.refundsUpdated}.
+          A 30-day money-back guarantee on every payment. Last updated {LEGAL.refundsUpdated}.
         </p>
         <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', marginBottom: 40 }}>
           This is part of our <Link href="/terms" style={{ color: 'var(--cyan)' }}>Terms of Service</Link>.
