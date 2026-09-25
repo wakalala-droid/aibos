@@ -138,7 +138,10 @@ export async function mountInlineCheckout(opts: {
       theme: theme(),
       locale: 'en',
       allowLogout: false,
-      showAddDiscounts: false,
+      // A promo code field. It is also how a plan is bought at zero cost with
+      // a 100% discount, which is how Paddle asks sellers to test a live
+      // checkout without money changing hands or a refund to undo.
+      showAddDiscounts: true,
     },
   });
 }
