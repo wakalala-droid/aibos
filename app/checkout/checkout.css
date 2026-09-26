@@ -1,4 +1,4 @@
-/* ── CHECKOUT ────────────────────────────────────────────────────
+﻿/* ── CHECKOUT ────────────────────────────────────────────────────
    A focused payment page in the manner of a Stripe or Linear checkout:
    what you are buying on one side, how you pay on the other (stacked on a
    phone, summary first). Type is sized to be read easily by anyone: 18px
@@ -270,6 +270,12 @@
 .co-frame-wrap[data-state="failed"] .co-frame { display: none; }
 .co-frame-wrap[data-state="failed"] .co-frame-cover { position: static; }
 .co-frame { width: 100%; }
+/* The Country dropdown inside Paddle's frame is a native browser control, so
+   it follows whatever shade the frame declares. Paddle's frame is told at
+   mount (lib/paddle.ts); this keeps it right if the page's shade is switched
+   while the form is open, which the inline style would not. */
+[data-theme="dark"] .co-frame iframe { color-scheme: dark !important; }
+[data-theme="light"] .co-frame iframe { color-scheme: light !important; }
 .co-frame-cover {
   position: absolute;
   inset: 0;

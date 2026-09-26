@@ -126,6 +126,7 @@ export async function mountInlineCheckout(opts: {
   const paddle = await ensurePaddle(opts.token, opts.environment);
   if (!opts.alive()) return;
   onPaddleEvent(opts.onEvent);
+  const shade = theme();
   paddle.Checkout.open({
     transactionId: opts.transactionId,
     settings: {
@@ -134,8 +135,15 @@ export async function mountInlineCheckout(opts: {
       frameTarget: opts.frameClass,
       frameInitialHeight: '450',
       // Paddle needs at least 286px of width to lay the form out.
-      frameStyle: 'width: 100%; min-width: 286px; background-color: transparent; border: none;',
-      theme: theme(),
+      //
+      // `color-scheme` is what stops the Country dropdown going unreadable.
+      // It is a native browser control, and a frame that does not say which
+      // shade it is gets painted in the SYSTEM's shade: on a dark Windows
+      // that put a near-black box with near-black writing inside a white
+      // form. Telling the frame which shade the form is keeps the control in
+      // step with it.
+      frameStyle: `width: 100%; min-width: 286px; background-color: transparent; border: none; color-scheme: ${shade};`,
+      theme: shade,
       locale: 'en',
       allowLogout: false,
       // A promo code field. It is also how a plan is bought at zero cost with
