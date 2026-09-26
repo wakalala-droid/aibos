@@ -126,7 +126,6 @@ export async function mountInlineCheckout(opts: {
   const paddle = await ensurePaddle(opts.token, opts.environment);
   if (!opts.alive()) return;
   onPaddleEvent(opts.onEvent);
-  const shade = theme();
   paddle.Checkout.open({
     transactionId: opts.transactionId,
     settings: {
@@ -136,14 +135,17 @@ export async function mountInlineCheckout(opts: {
       frameInitialHeight: '450',
       // Paddle needs at least 286px of width to lay the form out.
       //
-      // `color-scheme` is what stops the Country dropdown going unreadable.
-      // It is a native browser control, and a frame that does not say which
-      // shade it is gets painted in the SYSTEM's shade: on a dark Windows
-      // that put a near-black box with near-black writing inside a white
-      // form. Telling the frame which shade the form is keeps the control in
-      // step with it.
-      frameStyle: `width: 100%; min-width: 286px; background-color: transparent; border: none; color-scheme: ${shade};`,
-      theme: shade,
+      // The form is a WHITE panel on every page, dark or light, and says so
+      // with `color-scheme: light`. Two reasons. Paddle drew its light form
+      // even when asked for the dark one, and the Country list inside is a
+      // native browser control: a frame that does not say which shade it is
+      // gets painted in the SYSTEM's shade, so on a dark Windows that put a
+      // near-black box with near-black writing inside Paddle's white form.
+      // A panel that is deliberately white can never fall out of step with
+      // whatever Paddle decides to draw.
+      frameStyle: 'width: 100%; min-width: 286px; background-color: #fff; '
+        + 'border: none; border-radius: 12px; color-scheme: light;',
+      theme: 'light',
       locale: 'en',
       allowLogout: false,
       // A promo code field. It is also how a plan is bought at zero cost with

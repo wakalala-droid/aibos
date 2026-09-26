@@ -270,12 +270,11 @@
 .co-frame-wrap[data-state="failed"] .co-frame { display: none; }
 .co-frame-wrap[data-state="failed"] .co-frame-cover { position: static; }
 .co-frame { width: 100%; }
-/* The Country dropdown inside Paddle's frame is a native browser control, so
-   it follows whatever shade the frame declares. Paddle's frame is told at
-   mount (lib/paddle.ts); this keeps it right if the page's shade is switched
-   while the form is open, which the inline style would not. */
-[data-theme="dark"] .co-frame iframe { color-scheme: dark !important; }
-[data-theme="light"] .co-frame iframe { color-scheme: light !important; }
+/* Paddle's form is a white panel on every page (lib/paddle.ts says why), and
+   the Country list inside it is a native browser control that follows the
+   shade the frame declares. Without this, a dark Windows painted that one
+   control near-black inside the white form and its writing vanished. */
+.co-frame iframe { color-scheme: light !important; border-radius: 12px; }
 .co-frame-cover {
   position: absolute;
   inset: 0;
