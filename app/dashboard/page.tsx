@@ -4,7 +4,6 @@ import { fmt, scoreColor, formatAxis, n } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import InsightCard from '@/components/ui/InsightCard';
-import FileUpload from '@/components/upload/FileUpload';
 import AICFOChat from '@/components/chat/AICFOChat';
 import SimpleHome from '@/components/dashboard/SimpleHome';
 import DecisionsQueue from '@/components/dashboard/DecisionsQueue';
@@ -563,10 +562,27 @@ function OverviewPage() {
         {/* RIGHT column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-          {/* Upload */}
-          <SectionCard explainId="card.upload" title="Upload & Analyse" subtitle="CSV or Excel · month, revenue, costs columns" delay={0.08}>
-            <div id="upload-section">
-              <FileUpload />
+          {/* Upload — ONE place, so a file is never uploaded twice to two
+              different screens that each understood half of it. */}
+          <SectionCard explainId="card.upload" title="Upload a file" subtitle="Any spreadsheet — every sheet read at once" delay={0.08}>
+            <div id="upload-section" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <p style={{ margin: 0, fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.6 }}>
+                Bring in an Excel or CSV file of any shape. AIBOS reads every sheet together,
+                files each row against the right worker, product or cost, and updates these
+                dashboards — from the one upload.
+              </p>
+              <a
+                href="/dashboard/import"
+                className="touch-target"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '12px 20px', minHeight: 48, borderRadius: 10, border: 'none',
+                  background: 'var(--cyan)', color: '#04121a',
+                  fontSize: 'var(--fs-body)', fontWeight: 700, textDecoration: 'none',
+                }}
+              >
+                Upload a file →
+              </a>
             </div>
           </SectionCard>
 

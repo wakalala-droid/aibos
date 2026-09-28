@@ -18,7 +18,7 @@ import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import PageHeader from '@/components/ui/PageHeader';
 import {
-  documentScan, documentImport, listEmployees, listProducts, AlreadyImportedError,
+  documentScan, documentImport, uploadFile, listEmployees, listProducts, AlreadyImportedError,
   type DocScan, type DocTable, type DocQuestion, type DocAnswer, type DocImportResult,
   type EventType, type Employee, type Product,
 } from '@/lib/api';
@@ -76,6 +76,8 @@ function describeCounts(counts?: Record<string, number>): string {
 
 export default function ImportPage() {
   const refreshTwin = useStore(s => s.refreshTwin);
+  const setUploadResult = useStore(s => s.setUploadResult);
+  const [analysed, setAnalysed] = useState(false);
   const { profile } = useProfile();
   const currency = (profile?.currency as string | null) || 'ZMW';
   const fileRef = useRef<HTMLInputElement>(null);
@@ -126,6 +128,15 @@ export default function ImportPage() {
         .map(t => ({ id: t.id, event_type: types[t.id] ?? t.event_type, mapping: t.mapping }));
       const res = await documentImport(file, chosen, answers, { currency, force });
       setResult(res);
+      // One upload, everything done. The same file also feeds the analysis, so
+      // the owner never has to find a second screen and upload it again.
+      try {
+        const analysis = await uploadFile(file);
+        setUploadResult({ ...(analysis as unknown as Record<string, unknown>), filename: file.name });
+        setAnalysed(true);
+      } catch {
+        setAnalysed(false);       // the books are in; the charts can wait
+      }
       refreshTwin();
       setPhase('done');
     } catch (e) {
@@ -137,7 +148,7 @@ export default function ImportPage() {
 
   function reset() {
     setScan(null); setResult(null); setPhase('idle'); setError(null);
-    setFile(null); setRepeat(null); setKeep({}); setTypes({}); setAnswers({}); setOpen({});
+    setFile(null); setRepeat(null); setKeep({}); setTypes({}); setAnswers({}); setOpen({}); setAnalysed(false);
     if (fileRef.current) fileRef.current.value = '';
   }
 
@@ -152,12 +163,12 @@ export default function ImportPage() {
   return (
     <>
       <PageHeader
-        title="Import history"
-        subtitle="Any spreadsheet, any layout — AIBOS reads every sheet and files each row where it belongs."
+        title="Upload a file"
+        subtitle="Any spreadsheet, any layout. AIBOS reads every sheet at once, files each row where it belongs, and updates your dashboards — one upload, nothing else to do."
       />
 
       {(phase === 'idle' || phase === 'scanning') && (
-        <SectionCard title="Choose a file" subtitle="Excel (.xlsx/.xls) or CSV — every sheet is read">
+        <SectionCard title="Choose a file" subtitle="Excel (.xlsx/.xls) or CSV — every sheet is read together, no tab switching">
           <input
             ref={fileRef} type="file" accept=".xlsx,.xls,.csv"
             onChange={e => { const f = e.target.files?.[0]; if (f) void onPick(f); }}
@@ -608,9 +619,17 @@ export default function ImportPage() {
             </details>
           )}
 
+          <p style={{ margin: '0 0 16px', fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.6 }}>
+            {analysed
+              ? 'Your books and your dashboards have both been updated from this one file.'
+              : 'Your books have been updated. The charts could not be rebuilt from this file, so they still show what was there before.'}
+          </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <a href="/dashboard/timeline" style={{ ...primaryBtn, background: 'var(--cyan)', color: '#04121a', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
-              View timeline →
+            <a href="/dashboard" style={{ ...primaryBtn, background: 'var(--cyan)', color: '#04121a', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+              See the dashboard →
+            </a>
+            <a href="/dashboard/timeline" style={{ ...quietBtn, display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+              View timeline
             </a>
             <button type="button" onClick={reset} className="touch-target" style={quietBtn}>
               Import another
