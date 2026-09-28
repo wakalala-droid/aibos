@@ -6,7 +6,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { TIERS, canAccess, type Tier } from '@/lib/tiers';
@@ -39,6 +38,11 @@ interface FormState {
   contact_email: string;
   logo_url: string;
 }
+
+// What the logo uploader accepts, kept in step with app/api/uploads/logo.
+// SVG is left out on purpose: it can carry script and these files are public.
+const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+const LOGO_MAX_BYTES = 2 * 1024 * 1024;
 
 const EMPTY: FormState = {
   business_name: '',
@@ -165,36 +169,47 @@ export default function BusinessProfilePage() {
     }
   }
 
+  /*
+    The logo goes through the server, like every other write on this page.
+
+    Uploading from the browser straight into Supabase Storage is refused by row
+    level security on any database whose storage policies were not applied, and
+    the owner sees "new row violates row-level security policy" for what is only
+    a picture. /api/uploads/logo does the write with the service key, still
+    inside this user's own folder, and saves logo_url in the same step.
+  */
   async function onLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !user) return;
-    if (!file.type.startsWith('image/')) {
+    if (!LOGO_TYPES.includes(file.type)) {
       setSave('error');
-      setErrorMsg('Please choose an image file for the logo.');
+      setErrorMsg('Use a PNG, JPG, WEBP or GIF image for the logo.');
+      return;
+    }
+    if (file.size > LOGO_MAX_BYTES) {
+      setSave('error');
+      setErrorMsg(
+        `That image is ${(file.size / (1024 * 1024)).toFixed(1)} MB. Please use one under 2 MB.`
+      );
       return;
     }
     setLogoBusy(true);
     setErrorMsg('');
     try {
-      const supabase = createClient();
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
-      const path = `${user.id}/logo-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from('logos')
-        .upload(path, file, { upsert: true, cacheControl: '3600' });
-      if (upErr) throw new Error(upErr.message);
-      const { data } = supabase.storage.from('logos').getPublicUrl(path);
-      const url = data.publicUrl;
-      setForm((f) => ({ ...f, logo_url: url }));
-      await persist({ logo_url: url });
+      const data = new FormData();
+      data.append('file', file);
+      const res = await fetch('/api/uploads/logo', { method: 'POST', body: data });
+      const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (!res.ok || !body.url) {
+        throw new Error(body.error || 'The logo could not be uploaded. Please try again.');
+      }
+      setForm((f) => ({ ...f, logo_url: body.url as string }));
+      await refresh();
       setSave('saved');
     } catch (err) {
       setSave('error');
-      setErrorMsg(
-        (err as Error).message ||
-          'Logo upload failed. Make sure the "logos" storage bucket exists and is public.'
-      );
+      setErrorMsg((err as Error).message || 'The logo could not be uploaded. Please try again.');
     } finally {
       setLogoBusy(false);
     }

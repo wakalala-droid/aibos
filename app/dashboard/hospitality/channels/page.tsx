@@ -10,7 +10,6 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import SectionCard from '@/components/ui/SectionCard';
-import { createClient } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { slugFrom } from '@/lib/slug';
 import {
@@ -427,9 +426,11 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
     } finally { setBusy(''); }
   };
 
-  /* The property's logo, for its guest emails. Same public `logos` bucket and
-     own-folder rule as the business logo on the profile page. PNG or JPG only:
-     Gmail and Outlook show an SVG as a broken image. */
+  /* The property's logo, for its guest emails. Uploaded through
+     /api/uploads/logo, the same server route as the business logo: storage
+     row-level security refuses the browser's own upload on any database whose
+     storage policies were never applied. It still lands in this user's own
+     folder. PNG or JPG only: Gmail and Outlook show an SVG as a broken image. */
   const onLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
@@ -438,14 +439,20 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
       setMessage({ text: 'Use a PNG or JPG logo. Most email apps cannot show other kinds.', tone: 'warn' });
       return;
     }
+    if (file.size > 2 * 1024 * 1024) {
+      setMessage({ text: `That image is ${(file.size / (1024 * 1024)).toFixed(1)} MB. Please use one under 2 MB.`, tone: 'warn' });
+      return;
+    }
     setBusy('logo'); setMessage(null);
     try {
-      const supabase = createClient();
-      const ext = file.type === 'image/png' ? 'png' : 'jpg';
-      const path = `${user.id}/property-${p.id}-email-logo-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('logos').upload(path, file, { upsert: true, cacheControl: '3600' });
-      if (upErr) throw new Error(upErr.message);
-      const url = supabase.storage.from('logos').getPublicUrl(path).data.publicUrl;
+      const data = new FormData();
+      data.append('file', file);
+      data.append('attach', 'none');
+      data.append('label', `property-${p.id}-email-logo`);
+      const res = await fetch('/api/uploads/logo', { method: 'POST', body: data });
+      const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (!res.ok || !body.url) throw new Error(body.error || 'The logo could not be uploaded.');
+      const url = body.url;
       await updateProperty(p.id, { guest_email_logo_url: url });
       setLogo(url);
       await Promise.all([onChange(), refresh()]);
