@@ -226,6 +226,8 @@ export default function DashboardHeader() {
     profile?.business_name || posBusinessName || fullName || (email ? email.split('@')[0] : 'Your business');
   const metaAvatar = (typeof meta.avatar_url === 'string' && meta.avatar_url) || (typeof meta.picture === 'string' && meta.picture) || '';
   const avatarUrl = profile?.logo_url || metaAvatar;
+  // Which of the two it is decides how it is drawn (see the profile chip below).
+  const hasLogo = Boolean(profile?.logo_url);
   const initials = (businessName || 'AB').trim().slice(0, 2).toUpperCase();
 
   // Close on outside click + Escape.
@@ -369,13 +371,27 @@ export default function DashboardHeader() {
           display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
           padding: '5px 8px 5px 12px', borderRadius: 999,
           border: `1px solid ${open === 'profile' ? 'var(--border-strong)' : 'var(--border-md)'}`,
-          background: 'var(--bg-card)', maxWidth: 200,
+          background: 'var(--bg-card)', maxWidth: 260,
         }}
       >
         <span className="dash-profile-name" style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>
           {businessName}
         </span>
-        {avatarUrl ? (
+        {hasLogo ? (
+          /* A BUSINESS LOGO IS NOT AN AVATAR.
+             A logo is a shape its owner chose — usually wider than it is tall,
+             often a mark above a wordmark. Cropping one into a round 28px
+             avatar cut a third off each side and clipped the corners, which is
+             why the owner's own logo looked squashed in their header. It is
+             shown whole instead: true proportions, on a white plate, because a
+             logo drawn in dark ink would otherwise disappear into a dark
+             header. */
+          <span style={{ height: 28, maxWidth: 84, padding: 4, borderRadius: 6, background: '#fff', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={avatarUrl} alt="" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
+          </span>
+        ) : avatarUrl ? (
+          // A Google profile photo is a face: round and cropped is right here.
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatarUrl} alt="" width={28} height={28} style={{ borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
         ) : (

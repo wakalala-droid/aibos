@@ -168,10 +168,14 @@ export default function PayStayPage() {
           <>
             <div style={{ ...card, marginBottom: 16 }}>
               {stay.business_logo_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={stay.business_logo_url} alt={stay.business_name ?? ''} width={48} height={48}
-                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                  style={{ display: 'block', borderRadius: 10, objectFit: 'cover', border: '1px solid var(--border)', marginBottom: 12 }} />
+                /* Whole and undistorted, on a white plate — same treatment as
+                   the invoice page and the dashboard header. */
+                <span style={{ height: 48, maxWidth: 180, padding: 8, borderRadius: 10, background: '#fff', border: '1px solid var(--border)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={stay.business_logo_url} alt={stay.business_name ?? ''}
+                    onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }}
+                    style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
+                </span>
               )}
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>
                 {stay.business_name ?? 'Your stay'}{stay.reference ? ` · Ref ${stay.reference}` : ''}

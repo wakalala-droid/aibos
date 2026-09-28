@@ -244,8 +244,13 @@ export default function BusinessProfilePage() {
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 22, flexWrap: 'wrap' }}>
             {form.logo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={form.logo_url} alt="" width={56} height={56} style={{ borderRadius: 12, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border)' }} />
+              /* Shown whole and in its true proportions, on a white plate —
+                 this is the preview of what the header and every customer-facing
+                 page will show, so it must not flatter the file by cropping it. */
+              <span style={{ height: 56, maxWidth: 200, padding: 8, borderRadius: 10, background: '#fff', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={form.logo_url} alt="" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
+              </span>
             ) : (
               <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 12, flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 800 }}>
                 {initials}

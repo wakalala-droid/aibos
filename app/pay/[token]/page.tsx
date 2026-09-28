@@ -198,18 +198,23 @@ export default function PayInvoicePage() {
                   It self-heals: a dead image URL removes itself rather than
                   leaving a broken icon on a page that is asking for money. */}
               {invoice.business_logo_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={invoice.business_logo_url}
-                  alt={invoice.business_name ?? ''}
-                  width={48}
-                  height={48}
-                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                  style={{
-                    display: 'block', borderRadius: 10, objectFit: 'cover',
-                    border: '1px solid var(--border)', marginBottom: 12,
-                  }}
-                />
+                /* Whole and undistorted, on a white plate: a cropped logo on a
+                   page asking for money looks like a page that is not really
+                   theirs. Most logos are wider than they are tall. */
+                <span style={{
+                  height: 48, maxWidth: 180, padding: 8, borderRadius: 10,
+                  background: '#fff', border: '1px solid var(--border)',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  marginBottom: 12,
+                }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={invoice.business_logo_url}
+                    alt={invoice.business_name ?? ''}
+                    onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }}
+                    style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }}
+                  />
+                </span>
               )}
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>
                 {invoice.business_name ? `${invoice.business_name} · ` : ''}Invoice {invoice.number}
