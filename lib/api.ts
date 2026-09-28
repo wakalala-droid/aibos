@@ -1165,6 +1165,134 @@ export async function excelCommitFile(
   return data as unknown as BulkResult & { row_count: number };
 }
 
+// ── Documents: read every sheet of a file, then import it ─────────────────────
+// The old import read ONE sheet and assumed row 1 was the header. These two
+// calls replace that: scan the whole file, see what each table is, answer what
+// only the owner can know, then import the lot.
+
+export interface DocSheet {
+  name: string;
+  hidden: boolean;
+  images: number;
+  skipped: boolean;
+  reason: string;
+  tables: string[];
+}
+
+export interface DocTable {
+  id: string;
+  sheet: string;
+  title: string;
+  header_row: number;
+  orientation: 'rows' | 'matrix';
+  columns: string[];
+  rows: Record<string, unknown>[];
+  row_count: number;
+  nonzero_rows: number;
+  total_rows: number;
+  notes: string[];
+  dropped_columns: string[];
+  what_it_is: string;
+  import: boolean;
+  reason: string;
+  event_type: EventType;
+  mapping: Record<string, string>;
+  confidence: number;
+  counts?: Record<string, number>;
+}
+
+/** Something only the owner can settle: who a worker is, which product, how many. */
+export interface DocQuestion {
+  key: string;
+  type: 'unknown_worker' | 'unknown_product' | 'missing_quantity' | 'uncategorised';
+  name: string;
+  closest?: string | null;
+  closest_score?: number;
+  ask: string;
+  options: string[];
+  count: number;
+  tables: string[];
+  sheet: string;
+}
+
+export interface DocScan {
+  filename: string;
+  fingerprint: string;
+  sheets: DocSheet[];
+  sheet_count: number;
+  table_count: number;
+  row_total: number;
+  nonzero_total: number;
+  tables: DocTable[];
+  questions: DocQuestion[];
+  ai: boolean;
+  ai_note: string;
+  known: { employees: number; products: number; parties: number };
+  event_types: EventType[];
+}
+
+export interface DocAnswer {
+  action: 'add_worker' | 'use_worker' | 'add_product' | 'use_product'
+        | 'set_quantity' | 'set_category' | 'expense' | 'skip';
+  employee_id?: string;
+  employee_name?: string;
+  product_id?: string;
+  product_name?: string;
+  quantity?: number;
+  category?: string;
+}
+
+export interface DocImportResult extends BulkResult {
+  event_count: number;
+  tables: Array<{ table: string; sheet: string; title: string; events: number;
+                  event_type: string; counts: Record<string, number> }>;
+  skipped: Array<{ table: string; row?: number; why: string }>;
+  workers_not_on_register: string[];
+  products_not_on_list: string[];
+}
+
+/** Read every sheet of a file and say what each table on it is. */
+export async function documentScan(file: File, useAi = true): Promise<DocScan> {
+  const tooBig = uploadTooLarge(file);
+  if (tooBig) throw new Error(tooBig);
+  const form = new FormData();
+  form.append('file', file);
+  const data = await spineFetch(`/documents/scan?use_ai=${useAi ? 'true' : 'false'}`,
+    { method: 'POST', body: form });
+  return data as unknown as DocScan;
+}
+
+/** Import the tables the owner kept, each row filed against what it concerns. */
+export async function documentImport(
+  file: File,
+  tables: Array<{ id: string; event_type?: EventType; mapping?: Record<string, string> }>,
+  answers: Record<string, DocAnswer>,
+  opts: { currency?: string; useAi?: boolean; force?: boolean } = {},
+): Promise<DocImportResult> {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('tables', JSON.stringify(tables));
+  form.append('answers', JSON.stringify(answers));
+  form.append('currency', opts.currency ?? 'ZMW');
+  form.append('use_ai', opts.useAi === false ? 'false' : 'true');
+  if (opts.force) form.append('force', 'true');
+  const res = await fetch(`${PROXY}/documents/import`, {
+    method: 'POST', body: form, headers: await authHeaders(),
+  });
+  const raw = await res.text();
+  let data: Record<string, unknown> = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch { /* non-JSON */ }
+  if (res.status === 409) {
+    const d = (data.detail ?? {}) as { message?: string; imported_at?: string; saved_count?: number };
+    throw new AlreadyImportedError(d.message ?? 'This file has already been imported.',
+      d.imported_at ?? null, d.saved_count ?? null);
+  }
+  if (!res.ok) {
+    throw new Error(typeof data.detail === 'string' ? data.detail : `Import failed (${res.status})`);
+  }
+  return data as unknown as DocImportResult;
+}
+
 /** Receipt photo/upload → vision-OCR → a proposed Purchase (reviewed before saving). */
 export async function ingestReceipt(file: File, currency = 'ZMW'): Promise<EventProposal> {
   const photo = await shrinkPhoto(file);
