@@ -17,9 +17,10 @@ import SectionCard from '@/components/ui/SectionCard';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import PageHeader from '@/components/ui/PageHeader';
+import QuestionFlow from '@/components/import/QuestionFlow';
 import {
   documentScan, documentImport, uploadFile, listEmployees, listProducts, AlreadyImportedError,
-  type DocScan, type DocTable, type DocQuestion, type DocAnswer, type DocImportResult,
+  type DocScan, type DocTable, type DocAnswer, type DocImportResult,
   type EventType, type Employee, type Product,
 } from '@/lib/api';
 
@@ -44,13 +45,6 @@ const quietBtn: React.CSSProperties = {
   background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)',
   fontWeight: 600, cursor: 'pointer',
 };
-const chip = (on: boolean): React.CSSProperties => ({
-  padding: '8px 14px', minHeight: 40, borderRadius: 8, cursor: 'pointer',
-  border: on ? '1px solid var(--cyan)' : '1px solid var(--border-md)',
-  background: on ? 'var(--cyan)' : 'transparent',
-  color: on ? '#04121a' : 'var(--text-2)',
-  fontSize: 'var(--fs-body)', fontWeight: on ? 700 : 600,
-});
 const noteBox: React.CSSProperties = {
   padding: '12px 14px', borderRadius: 10, border: '1px solid var(--amber)',
   background: 'var(--amber-dim, rgba(251,191,36,0.12))', color: 'var(--text-1)',
@@ -80,6 +74,7 @@ export default function ImportPage() {
   const [analysed, setAnalysed] = useState(false);
   const { profile } = useProfile();
   const currency = (profile?.currency as string | null) || 'ZMW';
+  const currencySymbol = currency === 'ZMW' ? 'K' : currency === 'USD' ? '$' : `${currency} `;
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -155,10 +150,6 @@ export default function ImportPage() {
   const keptTables = scan?.tables.filter(t => keep[t.id]) ?? [];
   const keptRows = keptTables.reduce((n, t) => n + t.nonzero_rows, 0);
   const unanswered = (scan?.questions ?? []).filter(q => !answers[q.key]).length;
-
-  function answer(q: DocQuestion, a: DocAnswer) {
-    setAnswers(prev => ({ ...prev, [q.key]: a }));
-  }
 
   return (
     <>
@@ -238,133 +229,32 @@ export default function ImportPage() {
             </p>
           </SectionCard>
 
-          {/* What only the owner can settle -------------------------------- */}
+          {/* What only the owner can settle — ONE at a time, with the lines it
+              is about in front of them. A list of "2 lines, sheet Sheet1" is
+              not something anybody can answer, and the only ways through it are
+              to guess or to skip. Guessing is how a wrong figure gets into real
+              books. */}
           {scan.questions.length > 0 && (
             <SectionCard
-              title="AIBOS needs you on a few of these"
+              title="A few things only you can answer"
               subtitle={unanswered > 0
-                ? `${unanswered} still to answer — anything you leave is imported as AIBOS read it`
-                : 'All answered'}
+                ? `${scan.questions.length - unanswered} of ${scan.questions.length} answered`
+                : 'All answered — nothing left to decide'}
             >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {scan.questions.map(q => {
-                  const given = answers[q.key];
-                  return (
-                    <div key={q.key} style={{ padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)' }}>
-                      <p style={{ margin: 0, fontSize: 'var(--fs-body)', color: 'var(--text-1)', lineHeight: 1.5 }}>
-                        {q.ask}{' '}
-                        <span style={{ color: 'var(--text-3)' }}>
-                          ({q.count} line{q.count === 1 ? '' : 's'}, sheet &ldquo;{q.sheet}&rdquo;)
-                        </span>
-                      </p>
-                      {q.closest && (
-                        <p style={{ margin: '6px 0 0', fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>
-                          The closest thing you already have is <strong>{q.closest}</strong>.
-                        </p>
-                      )}
-
-                      <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-                        {q.type === 'unknown_worker' && (
-                          <>
-                            <button type="button" className="touch-target"
-                              style={chip(given?.action === 'add_worker')}
-                              onClick={() => answer(q, { action: 'add_worker', employee_name: q.name })}>
-                              Record as {q.name}&apos;s wages
-                            </button>
-                            {employees.length > 0 && (
-                              <select
-                                aria-label={`Point ${q.name} at a worker you already have`}
-                                value={given?.action === 'use_worker' ? (given.employee_id ?? '') : ''}
-                                onChange={e => {
-                                  const emp = employees.find(x => x.id === e.target.value);
-                                  if (emp) answer(q, { action: 'use_worker', employee_id: emp.id, employee_name: emp.name });
-                                }}
-                                style={{ ...sel, maxWidth: 240, width: 'auto' }}
-                              >
-                                <option value="">Point it at a worker I have…</option>
-                                {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                              </select>
-                            )}
-                          </>
-                        )}
-
-                        {q.type === 'unknown_product' && (
-                          <>
-                            <button type="button" className="touch-target"
-                              style={chip(given?.action === 'add_product')}
-                              onClick={() => answer(q, { action: 'add_product', product_name: q.name })}>
-                              Record as a new product
-                            </button>
-                            {products.length > 0 && (
-                              <select
-                                aria-label="Point it at a product you already have"
-                                value={given?.action === 'use_product' ? (given.product_id ?? '') : ''}
-                                onChange={e => {
-                                  const p = products.find(x => x.id === e.target.value);
-                                  if (p) answer(q, { action: 'use_product', product_id: p.id, product_name: p.name });
-                                }}
-                                style={{ ...sel, maxWidth: 240, width: 'auto' }}
-                              >
-                                <option value="">Point it at a product I have…</option>
-                                {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                              </select>
-                            )}
-                          </>
-                        )}
-
-                        {q.type === 'missing_quantity' && (
-                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
-                            How many?
-                            <input
-                              type="number" min={0} step="any" inputMode="decimal"
-                              defaultValue={given?.quantity ?? ''}
-                              onChange={e => {
-                                const n = parseFloat(e.target.value);
-                                if (Number.isFinite(n) && n > 0) answer(q, { action: 'set_quantity', quantity: n });
-                              }}
-                              style={{ ...sel, width: 120 }}
-                            />
-                          </label>
-                        )}
-
-                        {q.type === 'uncategorised' && (
-                          <input
-                            type="text" placeholder="What was it for? e.g. laundry"
-                            defaultValue={given?.category ?? ''}
-                            onChange={e => {
-                              const v = e.target.value.trim();
-                              if (v) answer(q, { action: 'set_category', category: v });
-                            }}
-                            style={{ ...sel, maxWidth: 260 }}
-                          />
-                        )}
-
-                        <button type="button" className="touch-target"
-                          style={chip(given?.action === 'expense')}
-                          onClick={() => answer(q, { action: 'expense', category: 'general' })}>
-                          Just an expense
-                        </button>
-                        <button type="button" className="touch-target"
-                          style={chip(given?.action === 'skip')}
-                          onClick={() => answer(q, { action: 'skip' })}>
-                          Leave these out
-                        </button>
-                        {given && (
-                          <button type="button" className="touch-target"
-                            style={{ ...quietBtn, padding: '6px 12px', minHeight: 36 }}
-                            onClick={() => setAnswers(prev => {
-                              const next = { ...prev }; delete next[q.key]; return next;
-                            })}>
-                            Undo
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
+              <QuestionFlow
+                questions={scan.questions}
+                answers={answers}
+                employees={employees}
+                products={products}
+                currencySymbol={currencySymbol}
+                onAnswer={(q, a) => setAnswers(prev => ({ ...prev, [q.key]: a }))}
+                onUndo={q => setAnswers(prev => {
+                  const next = { ...prev }; delete next[q.key]; return next;
                 })}
-              </div>
+              />
             </SectionCard>
           )}
+
 
           {/* Every table, and what it is ----------------------------------- */}
           <SectionCard

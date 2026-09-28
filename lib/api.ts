@@ -1205,18 +1205,40 @@ export interface DocTable {
   counts?: Record<string, number>;
 }
 
-/** Something only the owner can settle: who a worker is, which product, how many. */
+/** One line of the owner's own book, as evidence for a question about it. */
+export interface DocQuestionLine {
+  row: number;
+  date: string;
+  amount: number | null;
+  description: string;
+  direction?: 'in' | 'out' | null;
+  sheet?: string;
+}
+
+/** Something only the owner can settle: who a worker is, which product, how many.
+ *  It carries the LINES it is about, because "2 lines, sheet Sheet1" is not a
+ *  question anybody can answer. */
 export interface DocQuestion {
   key: string;
-  type: 'unknown_worker' | 'unknown_product' | 'missing_quantity' | 'uncategorised';
+  type: 'unknown_worker' | 'unknown_product' | 'missing_quantity'
+      | 'uncategorised' | 'money_in_kind';
   name: string;
-  closest?: string | null;
-  closest_score?: number;
+  /** A short heading: "Who is faith kasisi?" */
+  title?: string;
+  /** The question itself, in plain words. */
   ask: string;
+  /** Why it matters to their books, so the choice is an informed one. */
+  why?: string;
+  /** Only ever set when it is genuinely close — a bad guess costs trust. */
+  closest?: string | null;
+  closest_score?: number | null;
   options: string[];
   count: number;
+  total?: number;
+  lines?: DocQuestionLine[];
   tables: string[];
   sheet: string;
+  sheets?: string[];
 }
 
 export interface DocScan {
@@ -1237,7 +1259,10 @@ export interface DocScan {
 
 export interface DocAnswer {
   action: 'add_worker' | 'use_worker' | 'add_product' | 'use_product'
-        | 'set_quantity' | 'set_category' | 'expense' | 'skip';
+        | 'set_quantity' | 'set_category' | 'expense' | 'skip'
+        // What money coming in actually was. A float counted as income would
+        // make a bad month look like a good one.
+        | 'sale' | 'funding' | 'transfer';
   employee_id?: string;
   employee_name?: string;
   product_id?: string;
