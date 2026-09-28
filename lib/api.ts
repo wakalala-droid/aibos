@@ -1192,6 +1192,10 @@ export interface DocTable {
   total_rows: number;
   notes: string[];
   dropped_columns: string[];
+  /** Lines whose running balance disagrees with the figures on them. Reported,
+   *  never corrected: only the owner knows which figure is right. */
+  balance_checks: Array<{ row: number; label: string; balance_says: number;
+                          figures_say: number; difference: number }>;
   what_it_is: string;
   import: boolean;
   reason: string;

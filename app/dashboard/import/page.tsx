@@ -402,6 +402,43 @@ export default function ImportPage() {
                       <p key={i} style={{ margin: '4px 0 0', fontSize: 'var(--fs-data)', color: 'var(--text-3)', lineHeight: 1.5 }}>{n}</p>
                     ))}
 
+                    {/* The book proves itself. Where it does not, say so — and
+                        change nothing, because only the owner knows which
+                        figure is the right one. */}
+                    {(t.balance_checks?.length ?? 0) > 0 && (
+                      <details style={{ marginTop: 8 }}>
+                        <summary style={{ cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--amber)', minHeight: 36 }}>
+                          {t.balance_checks.length} line{t.balance_checks.length === 1 ? '' : 's'} do
+                          {t.balance_checks.length === 1 ? 'es' : ''} not add up against your running balance
+                        </summary>
+                        <p style={{ margin: '6px 0 0', fontSize: 'var(--fs-data)', color: 'var(--text-3)', lineHeight: 1.5 }}>
+                          Nothing has been changed. Your figures are imported exactly as written —
+                          these are the rows where the balance column and the amounts disagree,
+                          so you can check which is right.
+                        </p>
+                        <div style={{ overflowX: 'auto', marginTop: 8 }}>
+                          <table className="data-table">
+                            <thead>
+                              <tr><th>Row</th><th>Line</th><th>Balance says</th><th>Figures say</th><th>Out by</th></tr>
+                            </thead>
+                            <tbody>
+                              {t.balance_checks.slice(0, 20).map(bc => (
+                                <tr key={bc.row}>
+                                  <td>{bc.row}</td>
+                                  <td>{bc.label || '—'}</td>
+                                  <td>{bc.balance_says.toLocaleString()}</td>
+                                  <td>{bc.figures_say.toLocaleString()}</td>
+                                  <td style={{ color: 'var(--amber)', fontWeight: 600 }}>
+                                    {bc.difference > 0 ? '+' : ''}{bc.difference.toLocaleString()}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </details>
+                    )}
+
                     {on && (
                       <div style={{ display: 'flex', gap: 16, marginTop: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
                         <div>
