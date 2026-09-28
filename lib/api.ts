@@ -1249,6 +1249,8 @@ export interface DocImportResult extends BulkResult {
   skipped: Array<{ table: string; row?: number; why: string }>;
   workers_not_on_register: string[];
   products_not_on_list: string[];
+  /** What the owner's answers put on file for good. */
+  recorded: { employees: string[]; products: string[] };
 }
 
 /** Read every sheet of a file and say what each table on it is. */

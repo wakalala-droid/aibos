@@ -522,6 +522,13 @@ export default function ImportPage() {
             </ul>
           )}
 
+          {(result.recorded?.employees?.length || result.recorded?.products?.length) ? (
+            <div style={{ ...noteBox, borderColor: 'var(--green)', background: 'var(--green-dim, rgba(52,211,153,0.12))', marginBottom: 16 }}>
+              <strong>Added to your records, so you are not asked again:</strong>{' '}
+              {[...(result.recorded.employees ?? []), ...(result.recorded.products ?? [])].join(', ')}.
+            </div>
+          ) : null}
+
           {result.workers_not_on_register.length > 0 && (
             <div style={{ ...noteBox, marginBottom: 16 }}>
               <strong>These wages went in against people who are not on your worker list:</strong>{' '}
