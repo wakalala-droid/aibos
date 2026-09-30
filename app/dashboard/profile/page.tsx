@@ -14,7 +14,8 @@ import { CURRENCIES } from '@/lib/currency';
 import {
   briefDeliveryConfig, listMembers, inviteMember, updateMemberRole, revokeMember,
   getMemorySummary, getMemoryMappings, forgetMapping, exportEventsCsv, exportPnlCsv,
-  type TeamMember, type TeamMemberRole,
+  getPaymentAccount, connectPaymentAccount, disconnectPaymentAccount,
+  type TeamMember, type TeamMemberRole, type PaymentAccount,
 } from '@/lib/api';
 import PageHeader from '@/components/ui/PageHeader';
 
@@ -364,6 +365,10 @@ export default function BusinessProfilePage() {
           </div>
         </div>
 
+        {/* Mobile money into the business's OWN account (migration 0038).
+            Owners only: the key is the business's money. */}
+        {teamRole === 'owner' && <GetPaidCard />}
+
         {/* Referral loop — owners recommending AIBOS to owners is the growth
             engine that costs nothing and carries trust no ad can buy. */}
         {/* Morning Brief delivery — the day's numbers arrive before the day
@@ -387,6 +392,206 @@ export default function BusinessProfilePage() {
         {user?.id && <InviteCard userId={user.id} />}
       </div>
     </div>
+  );
+}
+
+/*
+  Get paid by mobile money.
+
+  Each business connects its OWN Lenco account here and its invoice and stay
+  payment links collect straight into it. There used to be one set of keys for
+  the whole of AIBOS, which would have paid every business's customers into
+  one account. The key is checked with Lenco before it is kept, locked away on
+  the server and never shown again: only its last four characters come back.
+
+  Type is set at 18px and up (the standing readability rule), using the h3
+  and h2 steps of the type scale rather than raw sizes.
+*/
+function GetPaidCard() {
+  const [account, setAccount] = useState<PaymentAccount | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [key, setKey] = useState('');
+  const [replacing, setReplacing] = useState(false);
+  const [busy, setBusy] = useState<'connect' | 'disconnect' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const load = () => {
+    setLoadError(null);
+    getPaymentAccount()
+      .then(setAccount)
+      .catch((e: Error) => setLoadError(e.message || 'This could not be loaded just now.'));
+  };
+  useEffect(() => { load(); }, []);
+
+  async function connect(e: React.FormEvent) {
+    e.preventDefault();
+    if (!key.trim() || busy) return;
+    setBusy('connect'); setError(null);
+    try {
+      setAccount(await connectPaymentAccount(key.trim()));
+      setKey('');
+      setReplacing(false);
+    } catch (err) {
+      setError((err as Error).message || 'That key could not be saved. Please try again.');
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function disconnect() {
+    if (!window.confirm('Stop taking mobile money? Your payment links will ask customers to pay you directly until you connect again.')) return;
+    setBusy('disconnect'); setError(null);
+    try {
+      setAccount(await disconnectPaymentAccount());
+    } catch (err) {
+      setError((err as Error).message || 'Could not disconnect. Please try again.');
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function copyWebhook(url: string) {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard blocked: the address is on screen to copy by hand */ }
+  }
+
+  const text: React.CSSProperties = { fontSize: 'var(--fs-h3)', lineHeight: 1.6, color: 'var(--text-2)', margin: 0 };
+  const quiet: React.CSSProperties = { ...text, color: 'var(--text-3)' };
+  const button: React.CSSProperties = {
+    minHeight: 48, padding: '12px 20px', borderRadius: 10, fontSize: 'var(--fs-h3)', fontWeight: 700, cursor: 'pointer',
+  };
+  const connected = Boolean(account?.connected);
+  const showForm = account !== null && (!connected || replacing || !account.usable);
+
+  return (
+    <section className="section-card" aria-labelledby="get-paid-title">
+      <h2 id="get-paid-title" style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 8px' }}>
+        Get paid by mobile money
+      </h2>
+      <p style={{ ...text, marginBottom: 18 }}>
+        Your customers pay your invoices and bookings from their phone, by MTN, Airtel or Zamtel.
+        The money goes straight into your own Lenco account.
+      </p>
+
+      {loadError && (
+        <p role="alert" style={{ ...text, color: 'var(--crit)', marginBottom: 12 }}>
+          {loadError}{' '}
+          <button type="button" onClick={load} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--cyan)', textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>
+            Try again
+          </button>
+        </p>
+      )}
+
+      {account === null && !loadError && <p style={quiet}>Checking your account…</p>}
+
+      {connected && account && (
+        <div style={{ display: 'grid', gap: 10, marginBottom: showForm ? 20 : 0 }}>
+          <p style={{ ...text, color: 'var(--text-1)', fontWeight: 600 }}>
+            <span aria-hidden="true" style={{ color: account.usable ? 'var(--good)' : 'var(--warn)', marginRight: 8 }}>●</span>
+            {account.usable ? 'Connected to Lenco' : 'Your Lenco key needs pasting again'}
+            {account.account_name ? `: ${account.account_name}` : ''}
+          </p>
+          {account.environment === 'sandbox' && (
+            <p style={{ ...text, color: 'var(--warn)' }}>
+              This is a test key, so no real money moves. Paste your live key when Lenco gives you one.
+            </p>
+          )}
+          {!account.usable && (
+            <p style={text}>
+              The key saved here can no longer be opened, so your links are not taking payments.
+              Paste your Lenco key again below.
+            </p>
+          )}
+          {account.key_hint && <p style={quiet}>Key ending {account.key_hint}</p>}
+          {account.usable && account.webhook_url && (
+            <div style={{ display: 'grid', gap: 8 }}>
+              <p style={quiet}>
+                For payments to show as paid the moment they go through, ask Lenco to send
+                payment updates to this address:
+              </p>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                <code style={{ fontSize: 'var(--fs-h3)', color: 'var(--text-1)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', padding: '9px 12px', borderRadius: 8, wordBreak: 'break-all' }}>
+                  {account.webhook_url}
+                </code>
+                <button type="button" onClick={() => void copyWebhook(account.webhook_url as string)}
+                  style={{ ...button, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: copied ? 'var(--good)' : 'var(--text-2)' }}>
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+              <p style={quiet}>Without it, payments still show as paid within a few minutes.</p>
+            </div>
+          )}
+          {!replacing && account.usable && (
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
+              <button type="button" onClick={() => { setReplacing(true); setError(null); }} disabled={busy !== null}
+                style={{ ...button, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)' }}>
+                Use a different key
+              </button>
+              <button type="button" onClick={() => void disconnect()} disabled={busy !== null}
+                style={{ ...button, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--crit)' }}>
+                {busy === 'disconnect' ? 'Disconnecting…' : 'Disconnect'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {showForm && (
+        <form onSubmit={connect} noValidate style={{ display: 'grid', gap: 12 }}>
+          {!connected && (
+            <p style={quiet}>
+              Lenco&apos;s support team gives you an API key when you ask for API access. It is checked with
+              Lenco before it is saved, then locked away: nobody can read it again, not even you.
+            </p>
+          )}
+          <div>
+            <label htmlFor="lenco-key" style={{ ...labelStyle, fontSize: 'var(--fs-h3)', color: 'var(--text-1)' }}>
+              Lenco API key
+            </label>
+            <input
+              id="lenco-key"
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              value={key}
+              onChange={(e) => { setKey(e.target.value); if (error) setError(null); }}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? 'lenco-key-error' : undefined}
+              style={{ ...inputStyle, minHeight: 48, fontSize: 'var(--fs-h3)' }}
+              placeholder="Paste the whole key"
+            />
+          </div>
+          {error && (
+            <p id="lenco-key-error" role="alert" style={{ ...text, color: 'var(--crit)' }}>{error}</p>
+          )}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            <button type="submit" disabled={!key.trim() || busy !== null}
+              style={{ ...button, border: 'none', background: 'var(--cyan)', color: '#fff', opacity: !key.trim() || busy !== null ? 0.55 : 1, cursor: !key.trim() || busy !== null ? 'not-allowed' : 'pointer' }}>
+              {busy === 'connect' ? 'Checking with Lenco…' : connected ? 'Save new key' : 'Connect Lenco'}
+            </button>
+            {replacing && (
+              <button type="button" onClick={() => { setReplacing(false); setKey(''); setError(null); }}
+                style={{ ...button, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)' }}>
+                Cancel
+              </button>
+            )}
+          </div>
+          {!connected && (
+            <p style={quiet}>
+              No Lenco account yet?{' '}
+              <a href="https://lenco.co/zm" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--cyan)', fontWeight: 600 }}>
+                Open one at lenco.co
+              </a>
+              . It is free to open. Lenco takes a small fee on each payment.
+            </p>
+          )}
+        </form>
+      )}
+    </section>
   );
 }
 

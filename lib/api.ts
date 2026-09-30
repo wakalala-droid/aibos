@@ -800,6 +800,36 @@ export async function revokeMember(id: string): Promise<void> {
   await spineFetch(`/members/${id}`, { method: 'DELETE' });
 }
 
+/** The business's own mobile money account (migration 0038). Payment links
+ *  collect into it and only into it. The key itself never comes back: only
+ *  the last four characters, so the owner can tell which key is saved. */
+export interface PaymentAccount {
+  connected: boolean;
+  usable: boolean;                       // false: saved but must be pasted again
+  provider: 'lenco' | null;
+  environment: 'live' | 'sandbox' | null;
+  account_name: string | null;
+  account_ref: string | null;
+  key_hint: string | null;
+  connected_at: string | null;
+  webhook_url: string | null;
+}
+
+export async function getPaymentAccount(): Promise<PaymentAccount> {
+  return (await spineFetch('/payments/account')) as unknown as PaymentAccount;
+}
+
+export async function connectPaymentAccount(apiKey: string): Promise<PaymentAccount> {
+  return (await spineFetch('/payments/account', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provider: 'lenco', api_key: apiKey }),
+  })) as unknown as PaymentAccount;
+}
+
+export async function disconnectPaymentAccount(): Promise<PaymentAccount> {
+  return (await spineFetch('/payments/account', { method: 'DELETE' })) as unknown as PaymentAccount;
+}
+
 /** Guided stock count → InventoryAdjustment events per discrepancy (audit #49). */
 export async function stockTake(counts: { name: string; counted: number }[]): Promise<{ adjusted: number; skipped: number }> {
   const data = await spineFetch('/products/stock-take', {
@@ -886,7 +916,7 @@ export interface PublicInvoice {
   payable: boolean;
 }
 
-export type PayNetwork = 'mtn' | 'airtel';
+export type PayNetwork = 'mtn' | 'airtel' | 'zamtel';
 
 /** An error from a public route, carrying the HTTP status so the page can tell
  *  "this link is wrong" (404 — the customer should ask for a new one) apart

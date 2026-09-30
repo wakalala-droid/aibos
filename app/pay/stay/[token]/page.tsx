@@ -27,6 +27,7 @@ type Phase = 'loading' | 'invalid' | 'unavailable' | 'ready' | 'waiting' | 'paid
 const NETWORKS: { id: PayNetwork; label: string }[] = [
   { id: 'mtn', label: 'MTN MoMo' },
   { id: 'airtel', label: 'Airtel Money' },
+  { id: 'zamtel', label: 'Zamtel Kwacha' },
 ];
 const POLL_MS = 3000;
 const POLL_LIMIT = 60;
@@ -55,7 +56,7 @@ export default function PayStayPage() {
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [stay, setStay] = useState<PublicStay | null>(null);
-  const [networks, setNetworks] = useState<Record<PayNetwork, boolean>>({ mtn: false, airtel: false });
+  const [networks, setNetworks] = useState<Record<PayNetwork, boolean>>({ mtn: false, airtel: false, zamtel: false });
   const [network, setNetwork] = useState<PayNetwork>('mtn');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +75,7 @@ export default function PayStayPage() {
         if (cancelled) return;
         setStay(s);
         setNetworks(nets);
-        setNetwork(nets.mtn ? 'mtn' : nets.airtel ? 'airtel' : 'mtn');
+        setNetwork(nets.mtn ? 'mtn' : nets.airtel ? 'airtel' : nets.zamtel ? 'zamtel' : 'mtn');
         setPhase(s.paid_in_full ? 'paid' : 'ready');
       } catch (e) {
         if (cancelled) return;
@@ -127,7 +128,7 @@ export default function PayStayPage() {
     }
   }
 
-  const anyNetworkLive = networks.mtn || networks.airtel;
+  const anyNetworkLive = networks.mtn || networks.airtel || networks.zamtel;
   const place = stay?.business_name ?? 'the property';
 
   return (
@@ -229,12 +230,12 @@ export default function PayStayPage() {
                 ) : (
                   <>
                     <p style={{ ...label, marginBottom: 8 }}>Pay with</p>
-                    <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                       {NETWORKS.filter(n => networks[n.id]).map(n => (
                         <button key={n.id} type="button" onClick={() => setNetwork(n.id)} aria-pressed={network === n.id}
                           disabled={phase === 'waiting'}
                           style={{
-                            flex: 1, minHeight: 48, borderRadius: 10, cursor: 'pointer', fontSize: 'var(--fs-body)', fontWeight: 600,
+                            flex: '1 1 120px', minHeight: 48, borderRadius: 10, cursor: 'pointer', fontSize: 'var(--fs-body)', fontWeight: 600,
                             border: network === n.id ? '2px solid var(--cyan)' : '1px solid var(--border-md)',
                             background: network === n.id ? 'var(--bg-badge)' : 'var(--bg-card)',
                             color: network === n.id ? 'var(--cyan)' : 'var(--text-2)',

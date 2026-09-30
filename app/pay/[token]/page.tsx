@@ -31,6 +31,7 @@ type Phase = 'loading' | 'invalid' | 'unavailable' | 'ready' | 'waiting' | 'paid
 const NETWORKS: { id: PayNetwork; label: string }[] = [
   { id: 'mtn', label: 'MTN MoMo' },
   { id: 'airtel', label: 'Airtel Money' },
+  { id: 'zamtel', label: 'Zamtel Kwacha' },
 ];
 
 // Poll while the customer approves the prompt on their handset. MTN/Airtel
@@ -59,7 +60,7 @@ export default function PayInvoicePage() {
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [invoice, setInvoice] = useState<PublicInvoice | null>(null);
-  const [networks, setNetworks] = useState<Record<PayNetwork, boolean>>({ mtn: false, airtel: false });
+  const [networks, setNetworks] = useState<Record<PayNetwork, boolean>>({ mtn: false, airtel: false, zamtel: false });
   const [network, setNetwork] = useState<PayNetwork>('mtn');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +79,7 @@ export default function PayInvoicePage() {
         if (cancelled) return;
         setInvoice(inv);
         setNetworks(nets);
-        setNetwork(nets.mtn ? 'mtn' : nets.airtel ? 'airtel' : 'mtn');
+        setNetwork(nets.mtn ? 'mtn' : nets.airtel ? 'airtel' : nets.zamtel ? 'zamtel' : 'mtn');
         setPhase(inv.status === 'paid' ? 'paid' : 'ready');
       } catch (e) {
         if (cancelled) return;
@@ -140,7 +141,7 @@ export default function PayInvoicePage() {
     }
   }
 
-  const anyNetworkLive = networks.mtn || networks.airtel;
+  const anyNetworkLive = networks.mtn || networks.airtel || networks.zamtel;
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg-page)', padding: '32px 16px' }}>
@@ -292,7 +293,7 @@ export default function PayInvoicePage() {
                 ) : (
                   <>
                     <p style={{ ...label, marginBottom: 8 }}>Pay with</p>
-                    <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                       {NETWORKS.filter(n => networks[n.id]).map(n => (
                         <button
                           key={n.id}
@@ -301,7 +302,7 @@ export default function PayInvoicePage() {
                           aria-pressed={network === n.id}
                           disabled={phase === 'waiting'}
                           style={{
-                            flex: 1, minHeight: 48, borderRadius: 10, cursor: 'pointer',
+                            flex: '1 1 120px', minHeight: 48, borderRadius: 10, cursor: 'pointer',
                             fontSize: 'var(--fs-body)', fontWeight: 600,
                             border: network === n.id ? '2px solid var(--cyan)' : '1px solid var(--border-md)',
                             background: network === n.id ? 'var(--bg-badge)' : 'var(--bg-card)',
