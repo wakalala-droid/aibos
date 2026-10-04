@@ -16,7 +16,7 @@ export default function PageHeader({ eyebrow, eyebrowColour = 'var(--cyan)', tit
     <div style={{ marginBottom: 24 }}>
       {eyebrow && (
         <p style={{
-          fontSize: 'var(--fs-label)', fontWeight: 600, color: eyebrowColour,
+          fontSize: 'var(--fs-caps)', fontWeight: 600, color: eyebrowColour,
           textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px',
         }}>
           {eyebrow}

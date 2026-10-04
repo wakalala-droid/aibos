@@ -20,13 +20,13 @@ export const metadata: Metadata = {
   // link-preview image pointed search engines and WhatsApp at somebody else.
   metadataBase: new URL('https://ai-bos.website'),
   title: {
-    default: 'AIBOS — The brain behind every business',
+    default: 'AIBOS · The brain behind every business',
     template: '%s · AIBOS',
   },
   description:
     'AIBOS is the AI business operating system for African SMEs. Ask your business anything and get the answer back in Kwacha, instantly. Start free.',
   openGraph: {
-    title: 'AIBOS — The brain behind every business',
+    title: 'AIBOS · The brain behind every business',
     description:
       'A CFO, analyst and consultant in your pocket, answering in Kwacha. Upload your data and get answers, briefs and decisions in minutes.',
     type: 'website',

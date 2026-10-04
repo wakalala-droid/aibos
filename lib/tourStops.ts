@@ -109,18 +109,18 @@ const SCRIPT: TourChapter[] = [
   {
     key: 'beyond',
     heading: 'Past the books',
-    lead: 'Money is one engine. These are the other two, and what happens when they talk to each other.',
+    lead: 'Money is one engine. These are the other two and what happens when they talk to each other.',
     items: [
       {
         feature: 'engine2',
         title: 'Know your customers',
-        body: 'Who is worth the most, who is drifting away, and what they buy together.',
+        body: 'Who is worth the most, who is drifting away and what they buy together.',
         href: '/dashboard/customers',
       },
       {
         feature: 'engine3',
         title: 'Watch the operation',
-        body: 'What sells, what sits, and how you compare with businesses like yours.',
+        body: 'What sells, what sits and how you compare with businesses like yours.',
         href: '/dashboard/pos',
       },
       {
@@ -151,13 +151,13 @@ const SCRIPT: TourChapter[] = [
       {
         feature: 'hospitality',
         title: 'Run your rooms',
-        body: 'One calendar for every unit, and a confirmed booking goes straight into your books.',
+        body: 'One calendar for every unit and a confirmed booking goes straight into your books.',
         href: '/dashboard/hospitality',
       },
       {
         feature: 'multi_business',
         title: 'Every business, one login',
-        body: 'Separate books for each, and one switch to move between them.',
+        body: 'Separate books for each and one switch to move between them.',
         where: 'The business name at the top of the screen.',
       },
     ],

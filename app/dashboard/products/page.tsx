@@ -9,11 +9,12 @@ import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import PageHeader from '@/components/ui/PageHeader';
 
-const BCG: Record<string, { color: string; border: string; bg: string; desc: string }> = {
-  '⭐ Star':          { color: 'var(--warn)',   border: 'rgba(251,191,36,0.25)',  bg: 'rgba(251,191,36,0.06)',  desc: 'High revenue + high orders'  },
-  '🐄 Cash Cow':      { color: 'var(--good)',   border: 'rgba(52,211,153,0.25)',  bg: 'rgba(52,211,153,0.06)',  desc: 'High revenue + low orders'   },
-  '❓ Question Mark': { color: 'var(--blue)',   border: 'rgba(96,165,250,0.25)',  bg: 'rgba(96,165,250,0.06)',  desc: 'Low revenue + high orders'   },
-  '🐕 Dog':           { color: 'var(--text-4)', border: 'rgba(71,85,105,0.25)',   bg: 'rgba(71,85,105,0.06)',   desc: 'Low revenue + low orders'    },
+// Keys are the API's class values; `name` is what the owner reads (no emoji, no BCG jargon).
+const BCG: Record<string, { name: string; color: string; border: string; bg: string; desc: string }> = {
+  '⭐ Star':          { name: 'Best sellers',        color: 'var(--warn)',   border: 'rgba(251,191,36,0.25)',  bg: 'rgba(251,191,36,0.06)',  desc: 'Earn a lot and sell often'  },
+  '🐄 Cash Cow':      { name: 'Big earners',         color: 'var(--good)',   border: 'rgba(52,211,153,0.25)',  bg: 'rgba(52,211,153,0.06)',  desc: 'Earn a lot from fewer sales'   },
+  '❓ Question Mark': { name: 'Popular, low value',  color: 'var(--blue)',   border: 'rgba(96,165,250,0.25)',  bg: 'rgba(96,165,250,0.06)',  desc: 'Sell often but earn little'   },
+  '🐕 Dog':           { name: 'Slow sellers',        color: 'var(--text-3)', border: 'rgba(71,85,105,0.25)',   bg: 'rgba(71,85,105,0.06)',   desc: 'Earn little and sell rarely'    },
 };
 
 export default function ProductsPage() {
@@ -64,9 +65,9 @@ export default function ProductsPage() {
               boxShadow: 'var(--shadow-card)', position: 'relative', overflow: 'hidden',
             }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: cfg.color, opacity: 0.6 }} />
-              <p style={{ fontSize: '1rem', margin: '0 0 3px' }}>{classLabel}</p>
+              <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 3px' }}>{cfg.name}</p>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 14px', lineHeight: 1.4 }}>{cfg.desc}</p>
-              <p style={{ fontSize: '1.8rem', fontWeight: 800, color: cfg.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{items.length}</p>
+              <p style={{ fontSize: 'var(--fs-h1)', fontWeight: 800, color: cfg.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{items.length}</p>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 12px' }}>products</p>
               {items.slice(0, 3).map(p => (
                 <div key={p.product} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderTop: '1px solid var(--border)' }}>
@@ -84,8 +85,8 @@ export default function ProductsPage() {
         <SectionCard title="Top Products by Revenue" subtitle={`${sym} ZMW · BCG-coloured`} delay={0.2} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={barData} barCategoryGap="28%">
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis minTickGap={16} dataKey="name" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="total_revenue" radius={[5, 5, 0, 0]}>
                 {barData.map((entry, i) => (

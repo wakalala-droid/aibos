@@ -5,6 +5,7 @@
 // it never nags. Silent when there's nothing real to celebrate.
 
 import { useEffect, useMemo, useState } from 'react';
+import { Trophy, Flame, TrendingUp } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { listEvents, type BusinessEvent } from '@/lib/api';
 import { topMilestone } from '@/lib/milestones';
@@ -39,7 +40,9 @@ export default function MilestoneBanner() {
       borderRadius: 12, border: '1px solid color-mix(in srgb, var(--cyan) 35%, transparent)',
       background: 'linear-gradient(120deg, color-mix(in srgb, var(--cyan) 10%, transparent), transparent)',
     }}>
-      <span aria-hidden style={{ fontSize: '1.6rem', flexShrink: 0 }}>{milestone.emoji}</span>
+      <span aria-hidden style={{ display: 'inline-flex', flexShrink: 0, color: 'var(--cyan)' }}>
+        {milestone.icon === 'trophy' ? <Trophy size={26} strokeWidth={2} /> : milestone.icon === 'streak' ? <Flame size={26} strokeWidth={2} /> : <TrendingUp size={26} strokeWidth={2} />}
+      </span>
       <div style={{ minWidth: 0, flex: 1 }}>
         <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>{milestone.title}</p>
         <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>{milestone.detail}</p>

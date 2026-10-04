@@ -112,7 +112,7 @@ export default function MarketingNav() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-1)', textDecoration: 'none', padding: '12px 4px', borderBottom: '1px solid var(--border)' }}
+              style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', textDecoration: 'none', padding: '12px 4px', borderBottom: '1px solid var(--border)' }}
             >
               {l.label}
             </Link>

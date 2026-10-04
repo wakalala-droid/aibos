@@ -25,11 +25,11 @@ interface Stop {
 }
 
 const STOPS: Stop[] = [
-  { anchor: 'ask-bar',     title: 'Just ask',              body: 'Type any question about your business — “How much cash do I have?” — and AIBOS answers from your real records. Never a made-up number.' },
-  { anchor: 'today-cards', title: 'Your day at a glance',  body: 'Money right now, today\'s sales, and whether stock needs attention. These update themselves as you record.' },
-  { anchor: 'nav-record',  title: 'Record what happens',   body: 'Sold something? Paid someone? Say it in plain words and AIBOS does the bookkeeping — cash, stock and debts stay current.' },
+  { anchor: 'ask-bar',     title: 'Just ask',              body: 'Type any question about your business (“How much cash do I have?”) and AIBOS answers from your real records. Never a made-up number.' },
+  { anchor: 'today-cards', title: 'Your day at a glance',  body: 'Money right now, today\'s sales and whether stock needs attention. These update themselves as you record.' },
+  { anchor: 'nav-record',  title: 'Record what happens',   body: 'Sold something? Paid someone? Say it in plain words and AIBOS does the bookkeeping: cash, stock and debts stay current.' },
   { anchor: 'ask-aibos',   title: 'AIBOS is always here',  body: 'Your AI advisor lives one click away on every page. You can also press and hold any card to have it explained.' },
-  { anchor: 'mode-toggle', title: 'Simple or Pro',         body: 'Simple mode shows the essentials. Flip to Pro any time for every chart, forecast and intelligence engine — nothing is hidden for good.' },
+  { anchor: 'mode-toggle', title: 'Simple or Pro',         body: 'Simple mode shows the essentials. Flip to Pro any time for every chart, forecast and intelligence engine: nothing is hidden for good.' },
 ];
 
 interface Rect { top: number; left: number; width: number; height: number }
@@ -169,13 +169,13 @@ export default function DashboardTour() {
         }}
       >
         <div style={{
-          fontSize: 'var(--fs-label)', fontWeight: 700,
+          fontSize: 'var(--fs-caps)', fontWeight: 700,
           color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6,
         }}>
           {idx + 1} of {stops.length}
         </div>
         <h2 style={{
-          fontSize: '1.02rem', fontWeight: 700,
+          fontSize: 'var(--fs-body)', fontWeight: 700,
           color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.01em',
         }}>
           {stop.title}
@@ -219,7 +219,7 @@ export default function DashboardTour() {
             onClick={last ? finish : () => setIdx(idx + 1)}
             style={{
               padding: '8px 16px', borderRadius: 8, border: 'none',
-              background: 'var(--cyan)', color: '#fff', cursor: 'pointer',
+              background: 'var(--cyan)', color: 'var(--on-cyan)', cursor: 'pointer',
               fontSize: 'var(--fs-data)', fontWeight: 700,
             }}
           >

@@ -112,7 +112,7 @@ export default function ForecastPage() {
   // Historical chart rows
   const historical: Row[] = safeMonthly.map(m => ({
     month: String(m?.Month ?? ''),
-    hist:  n(m?.Revenue),
+    hist: n(m?.Revenue),
   }));
 
   // Projection rows — anchor at the most recent actual and extend by the
@@ -133,7 +133,7 @@ export default function ForecastPage() {
   const hasBand = band != null;
   const bandLabel = hasBand
     ? 'shaded band = 95% prediction interval from your history'
-    : 'no confidence band yet — needs 3+ months of history';
+    : 'no confidence band yet: needs 3+ months of history';
 
   const chart: Row[] = [...historical, ...projections];
   const hasData = safeMonthly.length > 0;
@@ -153,7 +153,7 @@ export default function ForecastPage() {
       headline={hasData
         ? `Your revenue trend points to ${fmt(firstFcast, true, sym)} next month (${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%).`
         : 'Upload data to project your next quarter.'}
-      detail="See the full 3-month projection with confidence bands, trend strength, and the monthly drivers — plus exportable forecast tables."
+      detail="See the full 3-month projection with confidence bands, trend strength and the monthly drivers: plus exportable forecast tables."
     >
     <>
       <PageHeader
@@ -210,7 +210,7 @@ export default function ForecastPage() {
             </p>
             {!figuresLoading && (
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
-                Record your sales and costs as they happen, or upload a financial file on the dashboard, and a forecast appears here.
+                Record your sales and costs as they happen, or upload a financial file on the dashboard and a forecast appears here.
               </p>
             )}
           </div>
@@ -230,8 +230,8 @@ export default function ForecastPage() {
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false}
+              <XAxis minTickGap={16} dataKey="month" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false}
                 tickFormatter={(v) => formatAxis(n(v))} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
               <Area type="monotone" dataKey="upper" stroke="none" fill="rgba(167,139,250,0.07)" dot={false} legendType="none" name="Upper" connectNulls />
@@ -271,8 +271,8 @@ export default function ForecastPage() {
                 <tr key={`p${i}`}>
                   <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.month}</td>
                   <td style={{ color: 'var(--purple)', fontWeight: 700 }}>{fmt(fv, false, sym)}</td>
-                  <td style={{ color: 'var(--text-3)' }}>{row.lower != null ? fmt(row.lower, false, sym) : '—'}</td>
-                  <td style={{ color: 'var(--text-3)' }}>{row.upper != null ? fmt(row.upper, false, sym) : '—'}</td>
+                  <td style={{ color: 'var(--text-3)' }}>{row.lower != null ? fmt(row.lower, false, sym) : 'None'}</td>
+                  <td style={{ color: 'var(--text-3)' }}>{row.upper != null ? fmt(row.upper, false, sym) : 'None'}</td>
                   <td style={{ color: vs >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 600 }}>
                     {vs >= 0 ? '+' : ''}{vs.toFixed(1)}%
                   </td>

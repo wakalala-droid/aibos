@@ -476,7 +476,7 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
     }
     const fus = followUpProposals(s.rfm, sym, null);
     if (!fus.length) {
-      return '✅ Nobody valuable is drifting right now. I watch churn risk as your customer data updates. When someone worth keeping goes quiet, you\'ll see them here.';
+      return 'Nobody valuable is drifting right now. I watch churn risk as your customer data updates. When someone worth keeping goes quiet, you\'ll see them here.';
     }
     const lines = [`**${fus.length} customer${fus.length === 1 ? '' : 's'} worth a check-in:**`];
     for (const f of fus) lines.push(`• ${f.headline}: ${f.reason}`);
@@ -492,7 +492,7 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
     const props = reorderProposals(products);
     if (!props.length) {
       return products.length
-        ? '✅ Nothing needs reordering. Every tracked item is above its reorder level.'
+        ? 'Nothing needs reordering. Every tracked item is above its reorder level.'
         : "I can't suggest reorders yet. Add your products (with reorder levels) on the **Stock** page and I'll watch them for you.";
     }
     const lines = [`**${props.length} item${props.length === 1 ? ' needs' : 's need'} reordering:**`];
@@ -511,21 +511,21 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
     const invValue = Number(s.twin?.inventory_value) || 0;
     if (!products.length) {
       if (invValue > 0) {
-        return `Your stock on hand is worth **${money(invValue)}**, based on your recorded events.\n\nAdd your products on the **Stock** page and I'll track item-by-item levels: what's running low, what's overstocked, what to reorder.`;
+        return `Your stock on hand is worth **${money(invValue)}**, based on what you have recorded.\n\nAdd your products on the **Stock** page and I'll track item-by-item levels: what's running low, what's overstocked, what to reorder.`;
       }
-      return "You haven't added any stock yet, so there's nothing to count, and I won't guess.\n\nOpen **Stock** to add your products, or record a delivery on **Record** (e.g. “received 50 bags of sugar at K85 each”). From then on I can tell you exactly what's on hand and what's running low.";
+      return "You haven't added any stock yet, so there's nothing to count and I won't guess.\n\nOpen **Stock** to add your products, or record a delivery on **Record** (e.g. “received 50 bags of sugar at K85 each”). From then on I can tell you exactly what's on hand and what's running low.";
     }
     const low = products.filter((p) => Number(p.reorder_level) > 0 && Number(p.on_hand ?? 0) <= Number(p.reorder_level));
     const lines: string[] = [];
-    lines.push(`You have **${products.length} product${products.length === 1 ? '' : 's'}** in your catalog${invValue > 0 ? `, and your stock on hand is worth **${money(invValue)}**` : ''}.`);
+    lines.push(`You have **${products.length} product${products.length === 1 ? '' : 's'}** in your catalog${invValue > 0 ? ` and your stock on hand is worth **${money(invValue)}**` : ''}.`);
     if (low.length) {
-      lines.push(`\n⚠️ **${low.length} ${low.length === 1 ? 'item is' : 'items are'} at or below reorder level:**`);
+      lines.push(`\n**${low.length} ${low.length === 1 ? 'item is' : 'items are'} at or below reorder level:**`);
       for (const p of low.slice(0, 6)) {
         lines.push(`• ${p.name}: ${Number(p.on_hand ?? 0)} ${p.unit || 'units'} left (reorder at ${Number(p.reorder_level)})`);
       }
       if (low.length > 6) lines.push(`…and ${low.length - 6} more on the **Stock** page.`);
     } else {
-      lines.push('\n✅ Nothing is below its reorder level right now.');
+      lines.push('\nNothing is below its reorder level right now.');
     }
     return lines.join('\n');
   }
@@ -543,7 +543,7 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
       const startTomorrow = new Date(); startTomorrow.setHours(24, 0, 0, 0);
       const dueToday = expected.filter((e) => new Date(e.occurred_at) < startTomorrow);
       if (dueToday.length > 0) {
-        lines.push(`🚚 **Yes, ${dueToday.length === 1 ? 'one delivery is' : `${dueToday.length} deliveries are`} expected today:**`);
+        lines.push(`**Yes, ${dueToday.length === 1 ? 'one delivery is' : `${dueToday.length} deliveries are`} expected today:**`);
         for (const e of dueToday.slice(0, 5)) {
           const from = e.payload?.supplier ? ` from ${String(e.payload.supplier)}` : '';
           const amt = Number(e.payload?.amount) || 0;
@@ -566,7 +566,7 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
       lines.push(`Your last stock delivery arrived **${when}**${from}.`);
     }
     if (suppliers > 0) lines.push(`You have **${suppliers} supplier${suppliers === 1 ? '' : 's'}** on file.`);
-    lines.push('\nExpecting stock? Tell me, like “expecting 50kg sugar from Kasama Traders, K900”, and I\'ll track it until it arrives.');
+    lines.push('\nExpecting stock? Tell me, like “expecting 50kg sugar from Kasama Traders, K900” and I\'ll track it until it arrives.');
     return lines.join('\n');
   }
 
@@ -576,7 +576,7 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const todays = sales.filter((e) => e.status !== 'void' && new Date(e.occurred_at) >= today);
   if (!todays.length) {
-    return "No sales recorded yet today. If you've made sales, tell me on **Record**, like “sold 3 crates of drinks for K360”, and I'll keep today's total live for you.";
+    return "No sales recorded yet today. If you've made sales, tell me on **Record**, like “sold 3 crates of drinks for K360” and I'll keep today's total live for you.";
   }
   const total = todays.reduce((sum, e) => sum + (Number(e.payload?.amount) || 0), 0);
   return `So far today you've recorded **${todays.length} sale${todays.length === 1 ? '' : 's'}** totalling **${money(total)}**.${lv.cash ? `\n\nYour cash right now is **${lv.cash.fmt}**.` : ''}`;
@@ -747,7 +747,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       if (res.status === 402) {
         const d = await res.json().catch(() => ({} as Record<string, unknown>));
         setOnline(true);
-        pushAssistant(`${typeof d.detail === 'string' ? d.detail : 'The AI CFO chat is a Pro feature.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`, true);
+        pushAssistant(`${typeof d.detail === 'string' ? d.detail : 'Asking AIBOS is part of Pro.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AIBOS.`, true);
         return 'answered';
       }
       // 503 = we could not establish the plan, no AI key, or the AI is
@@ -816,7 +816,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       if (gate) {
         setOnline(true);
         pushAssistant(gate.code === 402
-          ? `${gate.detail || 'The AI CFO chat is a Pro feature.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`
+          ? `${gate.detail || 'Asking AIBOS is part of Pro.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AIBOS.`
           : (gate.detail || 'The chat is unavailable right now. This is a fault on our side.'), true);
         return 'answered';
       }
@@ -870,9 +870,9 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         await confirmEvent(draft.id);
         await useStore.getState().refreshTwin();
         const cashNow = useStore.getState().twin?.cash;
-        pushAssistant(`✅ Recorded: ${draft.summary}.${typeof cashNow === 'number' ? ` Cash is now **${fmt(Number(cashNow), true, sym)}**.` : ''}`);
+        pushAssistant(`Recorded: ${draft.summary}.${typeof cashNow === 'number' ? ` Cash is now **${fmt(Number(cashNow), true, sym)}**.` : ''}`);
       } catch (err) {
-        pushAssistant(`I couldn't post it: ${(err as Error).message}. It's saved as pending, and you can confirm it on the **Activity** page.`);
+        pushAssistant(`I couldn't post it: ${(err as Error).message}. It's saved as pending and you can confirm it on the **Activity** page.`);
       } finally {
         setLoading(false);
       }
@@ -891,7 +891,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       }
       return;
     }
-    if (draft) pendingChatEventRef.current = null; // moved on — draft stays pending on Activity
+    if (draft) pendingChatEventRef.current = null; // moved on: draft stays pending on Activity
 
     // 0b) A transaction typed straight into the chat (Pro+): draft it as a
     //     PENDING event and wait for the owner's confirm. Never auto-post.
@@ -1003,7 +1003,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     //    here, because a round-trip could only say the same thing slower.
     const noData = !lv.hasFinancial && !lv.hasCustomer && !lv.hasOps && !lv.hasTwin;
     if (noData && asksForOwnFigures(text)) {
-      pushAssistant("I don't have any of your business data yet, so I can't give you real figures, and I won't make them up.\n\nThe quickest start: open **Record** and tell me what happened today (“sold 3 crates of drinks for K360”). Or upload a CSV/Excel file on the **Overview** page. Until then I can still explain any metric or term. Try \"Explain net margin\".");
+      pushAssistant("I don't have any of your business data yet, so I can't give you real figures and I won't make them up.\n\nThe quickest start: open **Record** and tell me what happened today (“sold 3 crates of drinks for K360”). Or upload a CSV/Excel file on the **Overview** page. Until then I can still explain any metric or term. Try \"Explain net margin\".");
       setSuggestions(['How do I record a sale?', 'Explain net margin', 'How do I upload data?']);
       return;
     }
@@ -1075,8 +1075,8 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         setOnline(true);
         const msg = typeof data.detail === 'string'
           ? data.detail
-          : 'The AI CFO chat is a Pro feature.';
-        pushAssistant(`${msg}\n\n[Upgrade to Pro](/checkout?plan=pro) to chat with your AI CFO.`, true);
+          : 'Asking AIBOS is part of Pro.';
+        pushAssistant(`${msg}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AIBOS.`, true);
         return;
       }
       // 503 = the service is at fault (no AI key, the plan could not be read,
@@ -1114,7 +1114,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       setSuggestions(doc.followups ?? []);
     } else {
       const label = explainTarget.label || 'this component';
-      const valueLine = explainTarget.value ? `\n\n📊 It currently shows ${explainTarget.value}.` : '';
+      const valueLine = explainTarget.value ? `\n\nIt currently shows ${explainTarget.value}.` : '';
       pushAssistant(`**${label}**\n\nThis is part of your AIBOS dashboard. Ask me what you'd like to know about it and I'll pull the detail from your data.${valueLine}`);
       setSuggestions([]);
     }

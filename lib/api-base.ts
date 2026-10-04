@@ -40,7 +40,7 @@ export function apiBase(): ApiBase {
       reason:
         "NEXT_PUBLIC_API_URL is not set, so there is no backend to call. " +
         "Set it to the API's address (no trailing slash) in the hosting " +
-        "dashboard and redeploy — Next.js bakes NEXT_PUBLIC_* values into the " +
+        "dashboard and redeploy: Next.js bakes NEXT_PUBLIC_* values into the " +
         "build, so setting it without a redeploy changes nothing.",
     };
   }

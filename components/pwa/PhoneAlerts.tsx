@@ -122,7 +122,7 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
       padding: embedded ? 0 : '12px 16px', borderTop: embedded ? 'none' : '1px solid var(--border)',
       display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
     }}>
-      <span style={{ flex: '1 1 180px', fontSize: 16, lineHeight: 1.6, color: 'var(--text-3)' }}>
+      <span style={{ flex: '1 1 180px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
         {note || line}
       </span>
       {(state === 'off' || state === 'on') && (
@@ -135,7 +135,7 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
             border: state === 'on' ? '1px solid var(--border-md)' : '1px solid var(--text-1)',
             background: state === 'on' ? 'transparent' : 'var(--text-1)',
             color: state === 'on' ? 'var(--text-2)' : 'var(--bg-card)',
-            fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap',
+            fontSize: 'var(--fs-body)', fontWeight: 700, whiteSpace: 'nowrap',
           }}
         >
           {busy ? 'Working…' : state === 'on' ? 'Turn off here' : 'Turn on'}

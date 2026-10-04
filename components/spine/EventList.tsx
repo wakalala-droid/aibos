@@ -30,8 +30,8 @@ function correctionLines(corrections?: Record<string, unknown>): { when: string;
       out.push({
         when,
         field: field.replace(/^payload\./, '').replace(/_/g, ' '),
-        from: String((diff as { from?: unknown }).from ?? '—'),
-        to: String((diff as { to?: unknown }).to ?? '—'),
+        from: String((diff as { from?: unknown }).from ?? 'blank'),
+        to: String((diff as { to?: unknown }).to ?? 'blank'),
       });
     }
   }
@@ -82,7 +82,7 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
               <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                 <span>{fmtDate(ev.occurred_at)} · {ev.source}</span>
                 {/* Trust provenance (audit #62): how sure we were when it wasn't
-                    typed by hand — surfaced so AI-read events are never silent. */}
+                    typed by hand: surfaced so AI-read events are never silent. */}
                 {ev.source !== 'manual' && typeof ev.confidence === 'number' && ev.confidence < 0.99 && (
                   <span title="How confident the reading was" style={{ color: 'var(--warn)', fontWeight: 600 }}>
                     ~{Math.round(ev.confidence * 100)}% sure
@@ -113,7 +113,7 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
               fontSize: 'var(--fs-body)', fontWeight: 600,
               color: moneyColor, whiteSpace: 'nowrap',
             }}>
-              {amt ? `${sign < 0 ? '−' : sign > 0 ? '+' : ''}${fmt(Math.abs(amt), false, sym)}` : '—'}
+              {amt ? `${sign < 0 ? '−' : sign > 0 ? '+' : ''}${fmt(Math.abs(amt), false, sym)}` : 'None'}
             </div>
 
             {/* Status */}

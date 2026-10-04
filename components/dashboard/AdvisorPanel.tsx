@@ -63,18 +63,18 @@ function RecCard({ r, onFeedback, busy }: {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: r.alternatives.length ? 10 : 0 }}>
         <div>
-          <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Expected</div>
+          <div style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Expected</div>
           <div style={{ fontSize: 'var(--fs-data)', color: 'var(--green)' }}>{r.expected_outcome}</div>
         </div>
         <div>
-          <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Downside</div>
+          <div style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Downside</div>
           <div style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>{r.downside}</div>
         </div>
       </div>
 
       {r.alternatives.length > 0 && (
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 8 }}>
-          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Alternatives: </span>
+          <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Alternatives: </span>
           <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>{r.alternatives.join(' · ')}</span>
         </div>
       )}
@@ -155,7 +155,7 @@ export function RecommendationList({ limit, seeAllHref, title = 'Recommendations
       style={limit ? { marginBottom: 20 } : undefined}
       action={
         seeAllHref && recs.length > (limit ?? 0)
-          ? <Link href={seeAllHref} style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>See all →</Link>
+          ? <Link className="tap-link" href={seeAllHref} style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>See all →</Link>
           : <button type="button" onClick={load} className="touch-target" style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>Refresh</button>
       }
     >
@@ -164,7 +164,7 @@ export function RecommendationList({ limit, seeAllHref, title = 'Recommendations
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1].map(i => <div key={i} className="skeleton" style={{ height: 120 }} />)}</div>
       ) : recs.length === 0 ? (
         <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>
-          No recommendations right now — your numbers look healthy, or there isn&apos;t enough activity yet.
+          No recommendations right now: your numbers look healthy, or there isn&apos;t enough activity yet.
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -214,7 +214,7 @@ export function WhatIfPanel() {
   };
 
   return (
-    <SectionCard title="What if…" subtitle="Runs against a copy — your data is untouched">
+    <SectionCard title="What if…" subtitle="Runs against a copy: your data is untouched">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <select value={scenario} onChange={e => { setScenario(e.target.value); setSim(null); }} style={inputStyle}>
           {SCENARIOS.map(s => <option key={s.type} value={s.type}>{s.label}</option>)}
@@ -222,20 +222,20 @@ export function WhatIfPanel() {
 
         {isHire ? (
           <>
-            <label style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase' }}>How many</label>
+            <label style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase' }}>How many</label>
             <input type="number" value={count} min={1} onChange={e => setCount(Number(e.target.value))} style={inputStyle} />
-            <label style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase' }}>Monthly salary ({sym})</label>
+            <label style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase' }}>Monthly salary ({sym})</label>
             <input type="number" value={salary} min={0} onChange={e => setSalary(Number(e.target.value))} style={inputStyle} />
           </>
         ) : (
           <>
-            <label style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase' }}>Change (%)</label>
+            <label style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase' }}>Change (%)</label>
             <input type="number" value={value} min={-100} max={500} onChange={e => setValue(Number(e.target.value))} style={inputStyle} />
           </>
         )}
 
         <button type="button" onClick={runSim} disabled={simBusy} className="touch-target"
-          style={{ padding: '10px 18px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: simBusy ? 0.7 : 1 }}>
+          style={{ padding: '10px 18px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: simBusy ? 0.7 : 1 }}>
           {simBusy ? 'Running…' : 'Simulate'}
         </button>
 
@@ -246,7 +246,7 @@ export function WhatIfPanel() {
             <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', margin: '0 0 12px' }}>{sim.explanation}</p>
             {(['profit', 'revenue', 'costs', 'margin'] as const).map(k => (
               <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase' }}>{k}</span>
+                <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase' }}>{k}</span>
                 <span style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
                   <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>
                     {k === 'margin' ? `${sim.projected[k]}%` : `${sym}${fmt(sim.projected[k])}`}

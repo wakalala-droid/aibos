@@ -153,7 +153,7 @@ export async function PATCH(request: Request) {
 function missingColumn(error: { code?: string; message?: string }): string | null {
   const text = error.message ?? '';
   // PGRST204: "Could not find the 'website' column of 'profiles' in the schema cache"
-  // 42703:    'column profiles.website does not exist'
+  // 42703:   'column profiles.website does not exist'
   const m = text.match(/'([a-z0-9_]+)' column of/i) ?? text.match(/column [a-z0-9_]+\.([a-z0-9_]+) does not exist/i);
   return m ? m[1] : null;
 }

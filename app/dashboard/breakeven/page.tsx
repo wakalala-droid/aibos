@@ -56,8 +56,8 @@ export default function BreakevenPage() {
       month: String(m.Month),
       Revenue: Math.round(rev),
       FixedCosts: Math.round(fc),
-      VarCosts:   Math.round(vc),
-      Breakeven:  Math.round(bepRevenue),
+      VarCosts:  Math.round(vc),
+      Breakeven: Math.round(bepRevenue),
     };
   });
 
@@ -69,7 +69,7 @@ export default function BreakevenPage() {
       headline={currentRevenue > 0
         ? `You're ${fmt(Math.abs(gap), true, sym)} ${gap >= 0 ? 'above' : 'below'} a breakeven of ${fmt(bepRevenue, true, sym)}/month.`
         : 'Upload revenue and cost data to find your breakeven point.'}
-      detail="See your fixed vs variable cost split, contribution margin, margin of safety, and the exact revenue you need each month to break even."
+      detail="See your fixed vs variable cost split, contribution margin, margin of safety and the exact revenue you need each month to break even."
     >
     <>
       <PageHeader
@@ -91,7 +91,7 @@ export default function BreakevenPage() {
             </p>
             {!figuresLoading && (
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0, lineHeight: 1.6, maxWidth: 420 }}>
-                Record your sales and costs as they happen, or upload a financial file with <strong>Month</strong>, <strong>Revenue</strong> and <strong>Costs</strong> columns on the dashboard, and AIBOS will compute your fixed/variable split, contribution margin and the exact revenue you need to break even.
+                Record your sales and costs as they happen, or upload a financial file with <strong>Month</strong>, <strong>Revenue</strong> and <strong>Costs</strong> columns on the dashboard and AIBOS will compute your fixed/variable split, contribution margin and the exact revenue you need to break even.
               </p>
             )}
           </div>
@@ -118,9 +118,9 @@ export default function BreakevenPage() {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         style={{ background: 'var(--bg-card)', border: `1px solid ${statusColor}`, borderRadius: 12, padding: '18px 22px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: 'var(--shadow-card)' }}>
         <div>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Breakeven Status</p>
-          <p style={{ fontSize: '1rem', fontWeight: 700, color: statusColor, margin: 0 }}>
-            {status === 'safe' ? `${fmt(gap, false, sym)} above breakeven` : status === 'warning' ? `Only ${fmt(gap, false, sym)} above breakeven — tight margin` : `${fmt(Math.abs(gap), false, sym)} below breakeven — revenue required`}
+          <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Breakeven Status</p>
+          <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: statusColor, margin: 0 }}>
+            {status === 'safe' ? `${fmt(gap, false, sym)} above breakeven` : status === 'warning' ? `Only ${fmt(gap, false, sym)} above breakeven (tight margin` : `${fmt(Math.abs(gap), false, sym)} below breakeven) revenue required`}
           </p>
         </div>
         <span className="badge" style={{ color: statusColor, background: `color-mix(in srgb, ${statusColor} 12%, transparent)`, borderColor: `color-mix(in srgb, ${statusColor} 30%, transparent)`, fontSize: 'var(--fs-label)', padding: '4px 12px' }}>
@@ -134,13 +134,13 @@ export default function BreakevenPage() {
           <ResponsiveContainer width="100%" height={260}>
             <ComposedChart data={chartData}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis minTickGap={16} dataKey="month" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="FixedCosts"  stackId="a" fill="var(--warn)"    fillOpacity={0.6} name="Fixed Costs"    radius={[0,0,0,0]} />
               <Bar dataKey="VarCosts"    stackId="a" fill="var(--purple)"  fillOpacity={0.6} name="Variable Costs" radius={[4,4,0,0]} />
               <Line type="monotone" dataKey="Revenue"   stroke="var(--good)" strokeWidth={2.2} dot={{ r: 4, fill: 'var(--good)', strokeWidth: 0 }} name="Revenue" />
-              <ReferenceLine y={bepRevenue} stroke="var(--cyan)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: `Break-even: ${fmt(bepRevenue, true, sym)}`, fill: 'var(--cyan)', fontSize: 12, position: 'insideTopRight' }} />
+              <ReferenceLine y={bepRevenue} stroke="var(--cyan)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: `Break-even: ${fmt(bepRevenue, true, sym)}`, fill: 'var(--cyan)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
             </ComposedChart>
           </ResponsiveContainer>
         </SectionCard>
@@ -150,12 +150,12 @@ export default function BreakevenPage() {
       <SectionCard title="Cost Structure Breakdown" subtitle="Fixed vs variable cost analysis" delay={0.2}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {[
-            { label: 'Fixed Costs', value: fixedCosts,    pct: fixedCostPct * 100,           color: 'var(--warn)',   desc: 'Rent, salaries, insurance — constant regardless of sales' },
-            { label: 'Variable Costs', value: variableCosts, pct: (1 - fixedCostPct) * 100,  color: 'var(--purple)', desc: 'COGS, commissions, packaging — scale with revenue' },
+            { label: 'Fixed Costs', value: fixedCosts,    pct: fixedCostPct * 100,           color: 'var(--warn)',   desc: 'Rent, salaries, insurance: constant regardless of sales' },
+            { label: 'Variable Costs', value: variableCosts, pct: (1 - fixedCostPct) * 100,  color: 'var(--purple)', desc: 'COGS, commissions, packaging: scale with revenue' },
           ].map(item => (
             <div key={item.label} style={{ background: 'var(--bg-badge)', borderRadius: 10, padding: '16px 18px', border: '1px solid var(--border)' }}>
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>{item.label}</p>
-              <p style={{ fontSize: '1.5rem', fontWeight: 800, color: item.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{fmt(item.value, false, sym)}</p>
+              <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>{item.label}</p>
+              <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: item.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{fmt(item.value, false, sym)}</p>
               <div className="progress-track" style={{ marginBottom: 6 }}>
                 <motion.div className="progress-fill" style={{ background: item.color }} initial={{ width: 0 }} animate={{ width: `${item.pct}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
               </div>

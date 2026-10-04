@@ -89,8 +89,8 @@ export default function ChurnPage() {
       {/* High risk cards */}
       {high.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--crit)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>
-            Urgent Interventions — {high.length} customer{high.length > 1 ? 's' : ''} require immediate action
+          <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--crit)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>
+            Urgent Interventions: {high.length} customer{high.length > 1 ? 's' : ''} require immediate action
           </p>
           {high.map((r, i) => (
             <motion.div key={r.customer_id}
@@ -110,13 +110,13 @@ export default function ChurnPage() {
                   </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>CLV at risk</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--crit)', margin: 0 }}>{fmt(r.monetary, false, sym)}</p>
+                  <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>CLV at risk</p>
+                  <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--crit)', margin: 0 }}>{fmt(r.monetary, false, sym)}</p>
                 </div>
               </div>
               <div style={{ marginBottom: 12 }}><RiskBar risk={r.churn_risk} /></div>
               <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.14)' }}>
-                <p style={{ fontSize: 'var(--fs-data)', color: 'var(--crit)', margin: 0 }}>⚡ {r.intervention}</p>
+                <p style={{ fontSize: 'var(--fs-data)', color: 'var(--crit)', margin: 0 }}>{r.intervention}</p>
               </div>
             </motion.div>
           ))}
@@ -126,8 +126,8 @@ export default function ChurnPage() {
       {/* Medium risk */}
       {med.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--warn)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>
-            Follow-up Required — {med.length} customer{med.length > 1 ? 's' : ''} need attention this week
+          <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--warn)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>
+            Follow-up Required: {med.length} customer{med.length > 1 ? 's' : ''} need attention this week
           </p>
           {med.map((r, i) => (
             <motion.div key={r.customer_id}
@@ -153,7 +153,7 @@ export default function ChurnPage() {
       )}
 
       {/* Full table */}
-      <SectionCard title="All Customers — Churn Ranking" subtitle="Sorted by churn probability (highest risk first)" delay={0.3} style={{ position: 'relative' }}>
+      <SectionCard title="All Customers: Churn Ranking" subtitle="Sorted by churn probability (highest risk first)" delay={0.3} style={{ position: 'relative' }}>
         <DataTable
           ariaLabel="All customers ranked by churn risk"
           columns={churnColumns(sym)}

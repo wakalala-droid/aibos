@@ -41,13 +41,13 @@ function SourceTag({ source }: { source: string | null }) {
     );
   if (source === 'payment')
     return <span className="badge" style={{ color: 'var(--good)', background: 'color-mix(in srgb, var(--good) 14%, transparent)', borderColor: 'color-mix(in srgb, var(--good) 35%, transparent)' }}>PAID</span>;
-  return <span style={{ color: 'var(--text-4)' }}>—</span>;
+  return <span style={{ color: 'var(--text-4)' }}>None</span>;
 }
 
 function fmtDate(v: string | null): string {
-  if (!v) return '—';
+  if (!v) return 'None';
   const d = new Date(v);
-  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: '2-digit' });
+  return Number.isNaN(d.getTime()) ? 'None' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: '2-digit' });
 }
 
 const btn = (variant: 'primary' | 'ghost'): React.CSSProperties => ({
@@ -60,7 +60,7 @@ const btn = (variant: 'primary' | 'ghost'): React.CSSProperties => ({
   whiteSpace: 'nowrap',
   border: variant === 'primary' ? 'none' : '1px solid var(--border-md)',
   background: variant === 'primary' ? 'var(--cyan)' : 'var(--bg-card)',
-  color: variant === 'primary' ? '#fff' : 'var(--text-2)',
+  color: variant === 'primary' ? 'var(--on-cyan)' : 'var(--text-2)',
 });
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -186,7 +186,7 @@ export default function AdminAccountsPage() {
   // ── States ─────────────────────────────────────────────────────────────────
   const header = (
     <header style={{ marginBottom: 18 }}>
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+      <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
         Accounts
       </h1>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>

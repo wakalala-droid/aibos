@@ -44,7 +44,7 @@ export default function AdminUsagePage() {
 
   const header = (
     <header style={{ marginBottom: 18 }}>
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+      <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
         Usage
       </h1>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
@@ -113,18 +113,18 @@ export default function AdminUsagePage() {
                 ? `${data.funnel.habitFormed} of ${data.funnel.habitEligible} eligible accounts`
                 : 'no accounts eligible yet'}
             </strong>
-            {' '}— the audit’s 90-day exit metric is 40%.
+            {' '}(the audit’s 90-day exit metric is 40%).
           </p>
         </SectionCard>
 
-        <SectionCard title="Activity — last 30 days" subtitle="Uploads and AI chats per day" style={{ marginBottom: 16 }}>
+        <SectionCard title="Activity: last 30 days" subtitle="Uploads and AI chats per day" style={{ marginBottom: 16 }}>
           {hasActivity ? (
             <div style={{ width: '100%', height: 260 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.series} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--text-4)' }} tickFormatter={(d: string) => d.slice(5)} minTickGap={24} stroke="var(--border)" />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--text-4)' }} stroke="var(--border)" width={36} />
+                  <XAxis dataKey="date" tick={{ fontSize: 18, fill: 'var(--text-3)' }} tickFormatter={(d: string) => d.slice(5)} minTickGap={24} stroke="var(--border)" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 18, fill: 'var(--text-3)' }} stroke="var(--border)" width={48} />
                   <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 10, fontSize: 'var(--fs-data)' }} labelStyle={{ color: 'var(--text-2)' }} />
                   <Line type="monotone" dataKey="uploads" name="Uploads" stroke="var(--cyan)" strokeWidth={2} dot={false} />
                   <Line type="monotone" dataKey="chats" name="Chats" stroke="#f97316" strokeWidth={2} dot={false} />
@@ -146,7 +146,7 @@ export default function AdminUsagePage() {
               {data.topAccounts.map((t) => (
                 <Link key={t.user_id} href={`/admin/${t.user_id}`} className="dash-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: 8, textDecoration: 'none', border: '1px solid var(--border)' }}>
                   <span style={{ minWidth: 0 }}>
-                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{t.business_name || '—'}</span>
+                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{t.business_name || 'None'}</span>
                     <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginLeft: 8 }}>{t.email}</span>
                   </span>
                   <span style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', fontWeight: 700, flexShrink: 0 }}>{t.events} events</span>

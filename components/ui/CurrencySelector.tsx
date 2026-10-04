@@ -196,7 +196,7 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
                 Currency format
               </p>
               <p style={{ ...geist, fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>
-                Changes the symbol on every page — amounts are never converted.
+                Changes the symbol on every page: amounts are never converted.
               </p>
             </div>
 
@@ -214,7 +214,7 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
                 <span aria-hidden="true" style={badge(detected || '·', source === 'auto')}>{detected || '·'}</span>
                 <span style={{ minWidth: 0, flex: 1 }}>
                   <span style={{ display: 'block', ...geist, fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>
-                    Auto — match my uploads
+                    Auto: match my uploads
                   </span>
                   <span style={{ display: 'block', ...geist, fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
                     {detected ? `Detected ${detected} in your last file` : 'Uses the currency found in your file'}

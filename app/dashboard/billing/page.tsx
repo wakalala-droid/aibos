@@ -56,7 +56,7 @@ const receiptNumber = (id: string) => `AIBOS-${id.replace(/[^a-z0-9]/gi, '').toU
 const button: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
   padding: '10px 18px', minHeight: 44, borderRadius: 8, border: 'none',
-  background: 'var(--cyan)', color: '#fff', fontSize: 'var(--fs-body)', fontWeight: 700,
+  background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700,
   textDecoration: 'none', cursor: 'pointer',
 };
 const quiet: React.CSSProperties = {
@@ -334,7 +334,7 @@ function Fact({ label, value }: { label: string; value: string }) {
   if (!value) return null;
   return (
     <div style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-badge)' }}>
-      <div style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+      <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
       <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', marginTop: 2 }}>{value}</div>
     </div>
   );

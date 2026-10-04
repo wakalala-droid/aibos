@@ -128,7 +128,7 @@ export function FloatingAiAssistant() {
   const onAttach = useCallback(() => {
     const el = document.getElementById('upload-section');
     if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); setOpen(false); }
-    else pushAssistant('Open the Overview page and use **Upload & Analyse** to bring in a CSV or Excel file — month, revenue and cost columns to start.');
+    else pushAssistant('Open the Overview page and use **Upload & Analyse** to bring in a CSV or Excel file: month, revenue and cost columns to start.');
   }, [setOpen, pushAssistant]);
 
   const tierMeta = TIERS[tier] ?? TIERS.free;
@@ -148,7 +148,7 @@ export function FloatingAiAssistant() {
           <motion.div
             key="panel"
             role="dialog"
-            aria-label="Ask me anything — AI CFO"
+            aria-label="Ask AIBOS"
             initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.96 }}
@@ -169,21 +169,17 @@ export function FloatingAiAssistant() {
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                <motion.span
-                  animate={{ opacity: [1, 0.45, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                <span
+                  aria-hidden
                   style={{ width: 8, height: 8, borderRadius: '50%', background: online ? 'var(--good)' : 'var(--warn)', flexShrink: 0, boxShadow: online ? '0 0 8px var(--good)' : 'none' }}
                 />
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>Ask me anything</span>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>Ask AIBOS</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', border: '1px solid var(--border-md)', borderRadius: 6, padding: '3px 7px', whiteSpace: 'nowrap' }}>
-                  AI CFO
-                </span>
                 <span style={{
                   fontSize: 'var(--fs-label)', fontWeight: 700, borderRadius: 6, padding: '3px 7px', whiteSpace: 'nowrap',
-                  color: paid ? '#fff' : 'var(--text-3)',
-                  background: paid ? 'linear-gradient(135deg, #0097b2, #00d4ff)' : 'var(--bg-badge)',
+                  color: paid ? 'var(--on-cyan)' : 'var(--text-3)',
+                  background: paid ? 'var(--cyan)' : 'var(--bg-badge)',
                   border: paid ? 'none' : '1px solid var(--border-md)',
                 }}>
                   {tierMeta.name}
@@ -208,7 +204,7 @@ export function FloatingAiAssistant() {
 
               {!hasUserMsg && messages.length === 0 && (
                 <div style={{ margin: 'auto 0', paddingTop: 8 }}>
-                  <p style={{ fontSize: '1.18rem', fontWeight: 600, lineHeight: 1.4, color: 'var(--text-3)', margin: '0 0 6px' }}>
+                  <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 600, lineHeight: 1.4, color: 'var(--text-3)', margin: '0 0 6px' }}>
                     What would you like to explore today?
                   </p>
                   <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.55, color: 'var(--text-4)', margin: 0 }}>
@@ -274,7 +270,7 @@ export function FloatingAiAssistant() {
             {/* Composer */}
             <div style={{ padding: '12px 14px 14px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 12, padding: '12px 12px 10px' }}>
-                <label htmlFor="ai-assistant-input" className="sr-only">Ask the AI CFO</label>
+                <label htmlFor="ai-assistant-input" className="sr-only">Ask AIBOS</label>
                 <textarea id="ai-assistant-input" ref={inputRef} value={input} rows={2}
                   onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))} onKeyDown={handleKey}
                   placeholder="Ask anything, or long-press a card to learn about it…"
@@ -322,7 +318,7 @@ export function FloatingAiAssistant() {
       <motion.button
         type="button"
         onClick={toggle}
-        aria-label={open ? 'Close AI assistant' : 'Open AI assistant'}
+        aria-label={open ? 'Close Ask AIBOS' : 'Open Ask AIBOS'}
         aria-expanded={open}
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.94 }}

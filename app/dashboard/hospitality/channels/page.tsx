@@ -26,12 +26,12 @@ const input: React.CSSProperties = {
   fontSize: 'var(--fs-data)', outline: 'none',
 };
 const lbl: React.CSSProperties = {
-  fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)',
+  fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
   padding: '8px 14px', minHeight: 36, borderRadius: 8, border: 'none', background: 'var(--cyan)',
-  color: '#fff', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
+  color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
 };
 const ghostBtn: React.CSSProperties = {
   padding: '7px 12px', minHeight: 34, borderRadius: 8, background: 'transparent',
@@ -74,7 +74,7 @@ export default function ChannelsPage() {
     <>
       {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
       {loading && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>Loading…</p>}
-      {noUnits && <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>Add a unit first — channels attach to a unit.</p>}
+      {noUnits && <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>Add a unit first: channels attach to a unit.</p>}
 
       <WebsiteCard properties={properties} units={units} onChange={load} onError={setError} />
       <GuestEmailsCard properties={properties} onChange={load} onError={setError} />
@@ -146,7 +146,7 @@ function UnitChannels({ unit, channels, onChange, onError }: { unit: Unit; chann
               {c.last_sync_note && <p style={{ fontSize: 'var(--fs-label)', color: c.sync_status === 'error' ? 'var(--red)' : 'var(--text-3)', margin: '0 0 10px' }}>{c.last_sync_note}</p>}
 
               {/* Import URL (pull) */}
-              <label style={lbl}>Import URL — paste the OTA’s iCal export link, then Sync</label>
+              <label style={lbl}>Import URL: paste the OTA’s iCal export link, then Sync</label>
               <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                 <input style={{ ...input, flex: 1 }} defaultValue={c.ical_import_url || ''} placeholder="https://…/calendar.ics" onBlur={e => { if (e.target.value.trim() !== (c.ical_import_url || '')) saveImport(c, e.target.value); }} />
               </div>
@@ -154,7 +154,7 @@ function UnitChannels({ unit, channels, onChange, onError }: { unit: Unit; chann
               {/* Export feed (publish) */}
               {c.ical_export_token && (
                 <>
-                  <label style={lbl}>Our feed URL — paste this into the OTA’s “import calendar” field</label>
+                  <label style={lbl}>Our feed URL: paste this into the OTA’s “import calendar” field</label>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <input style={{ ...input, flex: 1, color: 'var(--text-3)' }} readOnly value={icalFeedUrl(c.ical_export_token)} onFocus={e => e.target.select()} />
                     <button style={ghostBtn} onClick={() => copyFeed(c.ical_export_token!)}>{copied === c.ical_export_token ? 'Copied ✓' : 'Copy'}</button>
@@ -243,7 +243,7 @@ function WebsiteCard({ properties, units, onChange, onError }: {
         subtitle="Take bookings direct, with no commission."
         style={{ marginBottom: 18 }}
       >
-        <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
+        <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
           Add your property and its units on the Units tab first. The key your
           website uses belongs to a property, so there has to be one to give it to.
         </p>
@@ -263,7 +263,7 @@ function WebsiteCard({ properties, units, onChange, onError }: {
         return (
           <div key={p.id} style={{ paddingBottom: 14, marginBottom: 14, borderBottom: '1px solid var(--border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-1)' }}>{p.name}</span>
+              <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{p.name}</span>
               <span className="badge" style={{
                 color: token ? 'var(--green)' : 'var(--text-4)',
                 borderColor: token ? 'var(--green)' : 'var(--border)',
@@ -274,7 +274,7 @@ function WebsiteCard({ properties, units, onChange, onError }: {
 
             {!token ? (
               <>
-                <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 10px' }}>
+                <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 10px' }}>
                   Connect your website and it can show which nights are free and send
                   booking requests straight into this calendar.
                 </p>
@@ -284,7 +284,7 @@ function WebsiteCard({ properties, units, onChange, onError }: {
               </>
             ) : (
               <>
-                <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 10px' }}>
+                <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 10px' }}>
                   Put these two settings into your website, then publish it.
                 </p>
 
@@ -306,21 +306,21 @@ function WebsiteCard({ properties, units, onChange, onError }: {
                 />
 
                 <div style={{ marginTop: 12 }}>
-                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', fontWeight: 600, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', fontWeight: 600, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Web address of each unit
                   </p>
                   {mine.length === 0 ? (
-                    <p style={{ fontSize: 15, color: 'var(--text-3)', margin: 0 }}>
+                    <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
                       No units yet. Add them on the Units tab.
                     </p>
                   ) : (
                     <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                       {mine.map((u) => (
                         <li key={u.id} style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap', padding: '2px 0' }}>
-                          <code style={{ fontFamily: 'inherit', fontSize: 15, fontWeight: 600, color: 'var(--text-1)' }}>
+                          <code style={{ fontFamily: 'inherit', fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>
                             {u.public_slug || slugFrom(u.unit_name)}
                           </code>
-                          <span style={{ fontSize: 15, color: 'var(--text-3)' }}>{u.unit_name}</span>
+                          <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>{u.unit_name}</span>
                           {!u.public_slug && (
                             <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
                               from the name
@@ -387,8 +387,8 @@ function GuestEmailsCard({ properties, onChange, onError }: {
   );
 }
 
-const BODY: React.CSSProperties = { fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)', margin: 0 };
-const FIELD: React.CSSProperties = { ...input, fontSize: 18, minHeight: 46 };
+const BODY: React.CSSProperties = { fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', margin: 0 };
+const FIELD: React.CSSProperties = { ...input, fontSize: 'var(--fs-body)', minHeight: 46 };
 
 function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
   property: Property; last: boolean;
@@ -503,7 +503,7 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
   return (
     <div style={{ paddingBottom: last ? 0 : 18, marginBottom: last ? 0 : 18, borderBottom: last ? 'none' : '1px solid var(--border)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
-        <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)' }}>{p.name}</span>
+        <span style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)' }}>{p.name}</span>
         <span className="badge" style={{ color: on ? 'var(--green)' : 'var(--text-4)', borderColor: on ? 'var(--green)' : 'var(--border)' }}>
           {on ? 'ON' : 'OFF'}
         </span>
@@ -536,17 +536,17 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
           ) : (
             <span style={{ ...BODY, color: 'var(--text-3)' }}>No logo yet, so your property&rsquo;s name is shown in its place.</span>
           )}
-          <label style={{ ...ghostBtn, fontSize: 16, minHeight: 44, display: 'inline-flex', alignItems: 'center', opacity: busy ? 0.6 : 1 }}>
+          <label style={{ ...ghostBtn, fontSize: 'var(--fs-body)', minHeight: 44, display: 'inline-flex', alignItems: 'center', opacity: busy ? 0.6 : 1 }}>
             {busy === 'logo' ? 'Uploading…' : logo ? 'Replace logo' : 'Upload logo'}
             <input type="file" accept="image/png,image/jpeg" onChange={onLogo} disabled={Boolean(busy) || notReady} style={{ display: 'none' }} />
           </label>
           {logo && (
-            <button type="button" style={{ ...ghostBtn, fontSize: 16, minHeight: 44 }} disabled={Boolean(busy)} onClick={removeLogo}>
+            <button type="button" style={{ ...ghostBtn, fontSize: 'var(--fs-body)', minHeight: 44 }} disabled={Boolean(busy)} onClick={removeLogo}>
               Remove
             </button>
           )}
         </div>
-        <p style={{ ...BODY, fontSize: 16, color: 'var(--text-3)', marginTop: 6 }}>
+        <p style={{ ...BODY, fontSize: 'var(--fs-body)', color: 'var(--text-3)', marginTop: 6 }}>
           Shown at the top of every email to your guests. Use a PNG or JPG on a white or clear background.
         </p>
       </div>
@@ -579,13 +579,13 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
           placeholder="Mobile money and bank details, exactly as a guest should copy them."
         />
       </label>
-      <p style={{ ...BODY, fontSize: 16, color: 'var(--text-3)', marginTop: 6 }}>
-        Shown in the first email as an option to pay now, and in the confirmation.
+      <p style={{ ...BODY, fontSize: 'var(--fs-body)', color: 'var(--text-3)', marginTop: 6 }}>
+        Shown in the first email as an option to pay now and in the confirmation.
       </p>
 
       {status && (
         <div style={{ marginTop: 16, padding: '12px 14px', borderRadius: 10, background: 'var(--bg-badge)', border: '1px solid var(--border-md)' }}>
-          <p style={{ ...BODY, color: 'var(--text-3)', fontSize: 16 }}>Your guests will see it from</p>
+          <p style={{ ...BODY, color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>Your guests will see it from</p>
           <p style={{ ...BODY, fontWeight: 700, color: 'var(--text-1)', wordBreak: 'break-word' }}>{status.sending_as}</p>
           {status.own_domain_verified === false && (
             <p style={{ ...BODY, color: 'var(--warn)', marginTop: 6 }}>
@@ -611,15 +611,15 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
       )}
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
-        <button type="button" style={{ ...ghostBtn, fontSize: 16, minHeight: 44 }} disabled={Boolean(busy)} onClick={() => save()}>
+        <button type="button" style={{ ...ghostBtn, fontSize: 'var(--fs-body)', minHeight: 44 }} disabled={Boolean(busy)} onClick={() => save()}>
           {busy === 'save' ? 'Saving…' : 'Save'}
         </button>
-        <button type="button" style={{ ...ghostBtn, fontSize: 16, minHeight: 44 }} disabled={Boolean(busy) || notReady || notLive} onClick={samples}>
+        <button type="button" style={{ ...ghostBtn, fontSize: 'var(--fs-body)', minHeight: 44 }} disabled={Boolean(busy) || notReady || notLive} onClick={samples}>
           {busy === 'samples' ? 'Sending…' : 'Send me the three samples'}
         </button>
         <button
           type="button"
-          style={{ ...primaryBtn, fontSize: 16, minHeight: 44, ...(on ? { background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)' } : {}) }}
+          style={{ ...primaryBtn, fontSize: 'var(--fs-body)', minHeight: 44, ...(on ? { background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)' } : {}) }}
           disabled={Boolean(busy) || notReady}
           onClick={() => save({ guest_emails_enabled: !on }, on ? 'Emails to guests are off.' : 'Emails to guests are on.')}
         >

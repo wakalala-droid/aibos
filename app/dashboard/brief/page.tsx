@@ -19,7 +19,7 @@ type Tab = 'financial' | 'ops' | 'advisor';
 const TABS: { id: Tab; label: string; colour: string }[] = [
   { id: 'financial', label: 'Financial', colour: 'var(--e1)' },
   { id: 'ops',       label: 'Operations', colour: 'var(--e3)' },
-  { id: 'advisor',   label: 'Advisor',    colour: 'var(--cyan)' },
+  { id: 'advisor',   label: 'Recommendations', colour: 'var(--cyan)' },
 ];
 
 function BriefsInner() {
@@ -36,7 +36,7 @@ function BriefsInner() {
     <>
       <PageHeader
         title="Briefs"
-        subtitle="The long reads — deep analysis by engine, and the full Advisor."
+        subtitle="The long reads: deeper analysis and every recommendation."
       />
 
       <div role="tablist" aria-label="Brief type" style={{ display: 'flex', gap: 8, marginBottom: 20 }}>

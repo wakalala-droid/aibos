@@ -60,8 +60,8 @@ export default function MarketPage() {
         <SectionCard title="Revenue by Segment" delay={0.1}>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={segData} barCategoryGap="32%">
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis minTickGap={16} dataKey="name" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="revenue" radius={[5,5,0,0]}>
                 {segData.map((e, i) => <Cell key={i} fill={e.colour} fillOpacity={0.8} />)}
@@ -73,8 +73,8 @@ export default function MarketPage() {
         <SectionCard title="CLV Distribution" delay={0.14}>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={clvData} barCategoryGap="32%">
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis minTickGap={16} dataKey="name" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="clv" radius={[5,5,0,0]}>
                 {clvData.map((e, i) => <Cell key={i} fill={e.colour} fillOpacity={0.8} />)}

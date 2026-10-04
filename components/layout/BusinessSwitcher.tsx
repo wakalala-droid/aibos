@@ -116,7 +116,7 @@ export default function BusinessSwitcher() {
             className="dash-pop" style={{ width: 'min(280px, 92vw)', right: 0 }}>
             {showWorkspaces && (
               <>
-                <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Whose books</div>
+                <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Whose books</div>
                 {workspaces.map((w) => (
                   <button key={w.acting_as} type="button" role="menuitem" onClick={() => !w.current && openWorkspace(w)}
                     aria-current={w.current || undefined}
@@ -131,7 +131,7 @@ export default function BusinessSwitcher() {
               </>
             )}
             {showBusinesses && (<>
-            <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', borderTop: showWorkspaces ? '1px solid var(--border)' : undefined, fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Your businesses</div>
+            <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', borderTop: showWorkspaces ? '1px solid var(--border)' : undefined, fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Your businesses</div>
             <div style={{ maxHeight: 260, overflowY: 'auto' }}>
               {businesses.map((b) => (
                 <button key={b.id} type="button" role="menuitem" onClick={() => b.id !== active?.id && switchTo(b.id)}
@@ -152,7 +152,7 @@ export default function BusinessSwitcher() {
                   {error && <span style={{ fontSize: 'var(--fs-label)', color: 'var(--crit)' }}>{error}</span>}
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button type="button" onClick={() => void add()} disabled={busy || !name.trim()}
-                      style={{ flex: 1, minHeight: 34, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#04121a', fontWeight: 700, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>
+                      style={{ flex: 1, minHeight: 34, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>
                       {busy ? 'Adding…' : 'Add & switch'}
                     </button>
                     <button type="button" onClick={() => { setAdding(false); setError(null); }} style={{ minHeight: 34, padding: '0 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>Cancel</button>

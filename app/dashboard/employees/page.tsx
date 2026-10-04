@@ -31,9 +31,9 @@ const input: React.CSSProperties = {
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
   fontSize: 'var(--fs-body)', outline: 'none',
 };
-const lbl: React.CSSProperties = { fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
+const lbl: React.CSSProperties = { fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
 const ghostBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-label)' };
-const th: React.CSSProperties = { fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right', padding: '4px 6px', whiteSpace: 'nowrap' };
+const th: React.CSSProperties = { fontSize: 'var(--fs-caps)', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right', padding: '4px 6px', whiteSpace: 'nowrap' };
 const td: React.CSSProperties = { fontSize: 'var(--fs-data)', color: 'var(--text-2)', textAlign: 'right', padding: '6px', whiteSpace: 'nowrap' };
 
 interface FormState {
@@ -217,7 +217,7 @@ export default function EmployeesPage() {
     <>
       <PageHeader
         title="Employees & Payroll"
-        subtitle="Your people, their pay — PAYE, NAPSA and net pay worked out for you."
+        subtitle="Your people, their pay: PAYE, NAPSA and net pay worked out for you."
       />
 
       <div className="grid-main">
@@ -230,7 +230,7 @@ export default function EmployeesPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 48 }} />)}</div>
           ) : employees.length === 0 ? (
             <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '4px 0 0' }}>
-              No employees yet. Add your first person below — name and monthly pay is enough to start.
+              No employees yet. Add your first person below: name and monthly pay is enough to start.
             </p>
           ) : (
             <div>
@@ -395,8 +395,8 @@ export default function EmployeesPage() {
                     {busy ? 'Running…' : `Run payroll & post to books`}
                   </button>
                 ) : (
-                  <Link href="/pricing" style={{ padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, background: 'var(--cyan)', color: '#fff', fontSize: 'var(--fs-body)', fontWeight: 700, textDecoration: 'none' }}>
-                    Unlock payroll — upgrade to {needTier}
+                  <Link href="/pricing" style={{ padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, textDecoration: 'none' }}>
+                    Unlock payroll: upgrade to {needTier}
                   </Link>
                 )}
                 {preview.payslips.some(s => s.gratuity_accrued > 0) && (
@@ -421,7 +421,7 @@ export default function EmployeesPage() {
                     ))}
                   </div>
                   <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 6 }}>
-                    Posted as pending payments — confirm each when you pay ZRA / NAPSA / NHIMA.
+                    Posted as pending payments: confirm each when you pay ZRA / NAPSA / NHIMA.
                   </div>
                 </div>
               )}
@@ -431,7 +431,7 @@ export default function EmployeesPage() {
           {/* Past runs */}
           {runs.length > 0 && (
             <div style={{ marginTop: 4 }}>
-              <div style={{ fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', marginBottom: 4 }}>Past runs</div>
+              <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', marginBottom: 4 }}>Past runs</div>
               {runs.map(r => (
                 <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                   <span style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)' }}>
@@ -464,7 +464,7 @@ export default function EmployeesPage() {
           {/* Rate transparency — AIBOS-maintained, the owner never edits these. */}
           {rates && (
             <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 12, lineHeight: 1.5 }}>
-              Using {rates.currency} statutory rates effective {rates.effective_from}: NAPSA {Math.round(rates.napsa_rate * 100)}% (ceiling {money(rates.napsa_ceiling)}), NHIMA {Math.round(rates.nhima_rate * 100)}%, PAYE up to {Math.round((rates.paye_bands.at(-1)?.rate ?? 0) * 100)}%. Kept current for you — no tax tables to manage.
+              Using {rates.currency} statutory rates effective {rates.effective_from}: NAPSA {Math.round(rates.napsa_rate * 100)}% (ceiling {money(rates.napsa_ceiling)}), NHIMA {Math.round(rates.nhima_rate * 100)}%, PAYE up to {Math.round((rates.paye_bands.at(-1)?.rate ?? 0) * 100)}%. Kept current for you: no tax tables to manage.
             </p>
           )}
         </SectionCard>

@@ -41,7 +41,7 @@ export async function fetchBriefExtras(): Promise<BriefExtras> {
     .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
     .map((it) => {
       const t = timeOf(it.starts_at);
-      return t ? `${it.title} — ${t}` : it.title;
+      return t ? `${it.title} at ${t}` : it.title;
     });
 
   // Overdue once the due DATE has passed on the owner's calendar, the same

@@ -47,9 +47,9 @@ export default function MarketingFooter() {
           {/* Brand + tagline */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, marginLeft: -10 }}>
-              <Image src="/brand/aibos-mark-white.png" alt="AIBOS — Artificial Intelligence Business Operating System" width={210} height={154} style={{ width: 210, height: 'auto', objectFit: 'contain' }} />
+              <Image src="/brand/aibos-mark-white.png" alt="AIBOS, Artificial Intelligence Business Operating System" width={210} height={154} style={{ width: 210, height: 'auto', objectFit: 'contain' }} />
             </div>
-            <p style={{ fontSize: '1.05rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
               The brain behind every business.
             </p>
             <p style={{ fontSize: 'var(--fs-body)', color: '#9fabbd', margin: 0, lineHeight: 1.55, maxWidth: 320 }}>
@@ -61,7 +61,7 @@ export default function MarketingFooter() {
           {/* Link columns */}
           {COLS.map((col) => (
             <nav key={col.title} aria-label={col.title}>
-              <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#707d8e', margin: '0 0 14px' }}>
+              <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#707d8e', margin: '0 0 14px' }}>
                 {col.title}
               </p>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>

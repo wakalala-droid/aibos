@@ -117,7 +117,7 @@ export default function PricingTiers({ cardPrices = null, zmwRate }: {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, minHeight: 26 }}>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: meta.accent, margin: 0 }}>
+                <h3 style={{ fontSize: 'var(--fs-h3)', fontWeight: 800, color: meta.accent, margin: 0 }}>
                   {meta.name}
                 </h3>
                 {popular && (
@@ -131,15 +131,15 @@ export default function PricingTiers({ cardPrices = null, zmwRate }: {
               </p>
 
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: !free && currency === 'ZMW' ? 6 : 20 }}>
-                <span style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>
+                <span style={{ fontSize: 'var(--fs-display)', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>
                   {free ? 'Free' : fmt(usd)}
                 </span>
-                <span style={{ fontSize: 15, color: 'var(--text-3)' }}>
+                <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>
                   {free ? 'forever' : `/${per}${currency === 'ZMW' ? ', about' : ''}`}
                 </span>
               </div>
               {!free && currency === 'ZMW' && (
-                <p style={{ fontSize: 15, color: 'var(--text-3)', margin: '0 0 20px' }}>
+                <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 20px' }}>
                   Charged as ${usd.toLocaleString('en-US')} a {per}
                 </p>
               )}
@@ -177,10 +177,10 @@ export default function PricingTiers({ cardPrices = null, zmwRate }: {
 
       {/* How paying works: one way, said plainly (no drip pricing, no surprises). */}
       <div className="mkt-card" style={{ marginTop: 22 }}>
-        <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px' }}>
+        <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px' }}>
           Every plan renews automatically
         </p>
-        <p style={{ fontSize: 16, color: 'var(--text-2)', margin: 0, lineHeight: 1.6, maxWidth: 820 }}>
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: 0, lineHeight: 1.6, maxWidth: 820 }}>
           Pay by Visa, Mastercard, American Express, PayPal, Apple Pay or Google Pay, in US dollars. Your plan
           renews automatically each month or year until you cancel, which takes two clicks on Plan &amp; billing,
           and it stays on to the end of what you paid. Our online reseller Paddle.com takes the payment. Every

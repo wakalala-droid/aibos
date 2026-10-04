@@ -168,14 +168,14 @@ export default function InstallPrompt() {
         style={{ flexShrink: 0, objectFit: 'contain' }}
       />
       <div style={{ flex: '1 1 280px', minWidth: 0 }}>
-        <p style={{ margin: 0, fontSize: 18, lineHeight: 1.5, fontWeight: 700, color: 'var(--text-1)' }}>{title}</p>
+        <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.5, fontWeight: 700, color: 'var(--text-1)' }}>{title}</p>
         {mode === 'native' && (
-          <p style={{ margin: '4px 0 0', fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)' }}>
+          <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)' }}>
             Open it with one {phone ? 'tap' : 'click'}, like any other app. It opens straight to your business, full screen and without the browser around it.
           </p>
         )}
         {mode === 'ios' && (
-          <ol style={{ margin: '6px 0 0', paddingLeft: 22, fontSize: 18, lineHeight: 1.7, color: 'var(--text-2)' }}>
+          <ol style={{ margin: '6px 0 0', paddingLeft: 22, fontSize: 'var(--fs-body)', lineHeight: 1.7, color: 'var(--text-2)' }}>
             <li>
               Tap the Share button <ShareIcon /> {/iPad/.test(navigator.userAgent) ? 'at the top of the screen' : 'at the bottom of the screen'}.
             </li>
@@ -183,7 +183,7 @@ export default function InstallPrompt() {
           </ol>
         )}
         {mode === 'mac-safari' && (
-          <p style={{ margin: '4px 0 0', fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)' }}>
+          <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)' }}>
             In the menu bar choose <strong style={{ color: 'var(--text-1)' }}>File</strong>, then <strong style={{ color: 'var(--text-1)' }}>Add to Dock</strong>. AIBOS then opens from your Dock like any other app.
           </p>
         )}
@@ -196,7 +196,7 @@ export default function InstallPrompt() {
             disabled={busy}
             style={{
               minHeight: 44, padding: '10px 18px', borderRadius: 8, border: 'none',
-              background: 'var(--cyan)', color: '#fff', fontSize: 16, fontWeight: 700,
+              background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700,
               cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1,
             }}
           >
@@ -209,7 +209,7 @@ export default function InstallPrompt() {
           style={{
             minHeight: 44, padding: '10px 16px', borderRadius: 8,
             border: '1px solid var(--border-md)', background: 'transparent',
-            color: 'var(--text-2)', fontSize: 16, fontWeight: 600, cursor: 'pointer',
+            color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer',
           }}
         >
           {mode === 'native' ? 'Not now' : 'Got it'}

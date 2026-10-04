@@ -45,14 +45,14 @@ export function reorderProposals(products: Product[]): ReorderProposal[] {
   const out: ReorderProposal[] = [];
   for (const p of products) {
     const reorderAt = Number(p.reorder_level) || 0;
-    if (reorderAt <= 0) continue;                    // owner hasn't set a level — never guess one
+    if (reorderAt <= 0) continue;                    // owner hasn't set a level: never guess one
     const onHand = Number(p.on_hand ?? 0);
     if (onHand > reorderAt) continue;
     const qty = Math.max(reorderAt * 2 - onHand, 1);
     const buy = Number(p.buy_price) || 0;
     out.push({
       productId: p.id,
-      headline: `${p.name} — ${qty} ${p.unit || 'units'}${p.supplier ? ` from ${p.supplier}` : ''}`,
+      headline: `${p.name}: ${qty} ${p.unit || 'units'}${p.supplier ? ` from ${p.supplier}` : ''}`,
       reason: `${onHand} left, reorder level is ${reorderAt}`,
       item: p.name,
       quantity: qty,
@@ -108,10 +108,10 @@ export function followUpProposals(
       const name = String(r.customer_id);
       const spend = fmt(Number(r.monetary) || 0, true, sym);
       const days = Math.round(Number(r.recency_days) || 0);
-      const msg = `Hi ${name}! It's been a while since your last visit to ${biz} — we'd love to see you again. Is there anything we could do better?`;
+      const msg = `Hi ${name}! It's been a while since your last visit to ${biz}: we'd love to see you again. Is there anything we could do better?`;
       return {
         customerId: name,
-        headline: `${name} — usually spends ${spend}, quiet for ${days} day${days === 1 ? '' : 's'}`,
+        headline: `${name}: usually spends ${spend}, quiet for ${days} day${days === 1 ? '' : 's'}`,
         reason: `${Math.round(Number(r.churn_risk) || 0)}% risk of not coming back${r.intervention ? ` · ${r.intervention}` : ''}`,
         suggestedMessage: msg,
         waLink: `https://wa.me/?text=${encodeURIComponent(msg)}`,
@@ -175,7 +175,7 @@ export async function draftReorder(p: ReorderProposal): Promise<BusinessEvent> {
     source: 'manual',
     confidence: 0.9,
     status: 'pending',
-    note: 'auto-proposed reorder — approved by owner, awaiting arrival',
+    note: 'auto-proposed reorder: approved by owner, awaiting arrival',
   });
   logUsage('event_recorded', { meta: { event_type: 'InventoryReceipt', via: 'reorder_draft' } });
   return ev;

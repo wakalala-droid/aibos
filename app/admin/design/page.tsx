@@ -14,13 +14,13 @@ import PageHeader from '@/components/ui/PageHeader';
 import DataTable, { type DataTableColumn } from '@/components/ui/DataTable';
 
 const TYPE_SCALE = [
-  { token: '--fs-display', px: '32px', sample: 'K284,500', note: 'KPI values — one per card' },
+  { token: '--fs-display', px: '32px', sample: 'K284,500', note: 'KPI values: one per card' },
   { token: '--fs-h1',      px: '28px', sample: 'Page display heading', note: 'reserved' },
   { token: '--fs-h2',      px: '22px', sample: 'Page title (PageHeader)', note: 'one per page' },
   { token: '--fs-h3',      px: '18px', sample: 'Section card title', note: '' },
   { token: '--fs-body',    px: '14px', sample: 'Body copy, nav labels, buttons and inputs.', note: '' },
   { token: '--fs-data',    px: '13px', sample: 'Table cells · dense data · sublines', note: '' },
-  { token: '--fs-label',   px: '12px', sample: 'MICRO LABELS · EYEBROWS · BADGES', note: 'the floor — nothing smaller' },
+  { token: '--fs-label',   px: '12px', sample: 'MICRO LABELS · EYEBROWS · BADGES', note: 'the floor: nothing smaller' },
 ];
 
 const COLOR_GROUPS: { name: string; tokens: string[] }[] = [
@@ -60,10 +60,10 @@ export default function DesignGalleryPage() {
       <PageHeader
         eyebrow="Admin · Design System"
         title="Component gallery"
-        subtitle="The canonical primitives with seeded data. New surfaces must compose these — if it isn't here, question it."
+        subtitle="The canonical primitives with seeded data. New surfaces must compose these: if it isn't here, question it."
       />
 
-      <Specimen title="Type scale — 7 sizes, nothing else">
+      <Specimen title="Type scale: 7 sizes, nothing else">
         <div className="section-card">
           {TYPE_SCALE.map(t => (
             <div key={t.token} style={{ display: 'flex', alignItems: 'baseline', gap: 16, padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
@@ -75,11 +75,11 @@ export default function DesignGalleryPage() {
         </div>
       </Specimen>
 
-      <Specimen title="Colour tokens — roles, not decoration">
+      <Specimen title="Colour tokens: roles, not decoration">
         <div className="grid-2">
           {COLOR_GROUPS.map(g => (
             <div key={g.name} className="section-card">
-              <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>{g.name}</p>
+              <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>{g.name}</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {g.tokens.map(t => (
                   <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -93,7 +93,7 @@ export default function DesignGalleryPage() {
         </div>
       </Specimen>
 
-      <Specimen title="KPI cards — value is the hero; severity tints the bloom">
+      <Specimen title="KPI cards: value is the hero; severity tints the bloom">
         <div className="grid-kpi">
           <KPICard label="TOTAL REVENUE" value="K284,500" growth={12.4} sub="vs last month" sparkData={[40, 52, 47, 61, 58, 72]} sparkColor="var(--spark-revenue)" />
           <KPICard label="TOTAL COSTS" value="K191,200" growth={8.1} goodWhenUp={false} sub="vs last month" sparkData={[30, 34, 31, 39, 41, 44]} sparkColor="var(--spark-cost)" />
@@ -114,15 +114,17 @@ export default function DesignGalleryPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <InsightCard
             insight="Net margin compressed 3.1 pts month-over-month."
-            action="Costs are outpacing revenue — act on the largest line."
+            action="Costs are outpacing revenue: act on the largest line."
             priority="high"
             sourceEngines={['E1']}
           />
           <SectionCard title="Empty state" subtitle="Every empty space educates and points at the next action">
             <EmptyState
               colour="var(--e2)"
-              text="Upload customer or sales data to unlock RFM segments, CLV tiers and churn risk."
-              action={{ label: 'Import data', href: '/dashboard/import' }}
+              chip="Needs named sales"
+              text="Add the customer's name when you record a sale. After about 10 named sales, AIBOS shows who your best customers are."
+              action={{ label: 'Record a sale', href: '/dashboard/record' }}
+              secondary={{ label: 'Or upload a file', href: '/dashboard/import' }}
             />
           </SectionCard>
           <SectionCard title="DataTable" subtitle="Sortable · filterable · paginates past 25 rows">
@@ -144,13 +146,13 @@ export default function DesignGalleryPage() {
       <Specimen title="Rules that are never broken">
         <div className="section-card">
           <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.6 }}>
-            <li>Geist is the only typeface — every text, every number, everywhere.</li>
+            <li>Geist is the only typeface: every text, every number, everywhere.</li>
             <li>Every card ships the bento dot texture + cursor BorderGlow (core chrome).</li>
             <li>Glow light effects are dark-mode only; light mode keeps static borders + dot grain.</li>
             <li>Font sizes come from the 7 tokens; 12px is the floor.</li>
             <li>Status colours (good/warn/crit/info) never double as brand or series colours.</li>
             <li>Motion communicates state; auto-playing decorative loops are banned.</li>
-            <li>2px line indicators for status/active marking — never 3px ribbons.</li>
+            <li>2px line indicators for status/active marking: never 3px ribbons.</li>
           </ul>
         </div>
       </Specimen>

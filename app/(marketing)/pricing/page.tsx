@@ -20,14 +20,14 @@ export const metadata: Metadata = {
 };
 
 const FEATURE_GLOSSARY: { term: string; plain: string }[] = [
-  { term: 'An engine', plain: 'A whole department’s intelligence, covering Financial, Customer or Operations, not just a single chart. Free gives you the Financial engine and Pro unlocks the rest.' },
-  { term: 'AI CFO chat', plain: 'Ask your business anything in plain words, as often as you like. It answers from your own uploaded data, in Kwacha.' },
+  { term: 'Money, customers and operations', plain: 'The three things AIBOS watches for you, each with its own pages, not just a single chart. Free covers your money; Pro adds customers and operations.' },
+  { term: 'Ask AIBOS', plain: 'Ask your business anything in plain words, as often as you like. It answers from your own records, in Kwacha.' },
   { term: 'A scheduled brief', plain: 'The one number that matters, delivered every morning so you don’t have to remember to check. Email and WhatsApp delivery are rolling out now.' },
-  { term: 'A business', plain: 'One venture with its own books. Every plan runs one beautifully; Growth lets you run several — a shop, a salon, a lodge — under one login, each with separate books.' },
+  { term: 'A business', plain: 'One venture with its own books. Every plan runs one beautifully; Growth lets you run several (a shop, a salon, a lodge) under one login, each with separate books.' },
 ];
 
 const TIMELINE: { when: string; what: string }[] = [
-  { when: 'Minutes', what: 'Upload a spreadsheet and see your P&L and cashflow read straight back to you.' },
+  { when: 'Minutes', what: 'Record a sale or upload a spreadsheet and see your profit and cash read straight back to you.' },
   { when: 'An hour', what: 'Ask your first questions and set the brief that lands on your phone each morning.' },
   { when: 'A day', what: 'The full picture across money, customers and operations, in one command centre.' },
 ];
@@ -51,7 +51,7 @@ export default async function PricingPage() {
           <Reveal>
             <p className="mkt-eyebrow">Pricing · US dollars or Kwacha · Cancel any time</p>
             <h1 className="mkt-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', maxWidth: 760, marginInline: 'auto' }}>
-              One CFO for your business. One simple price.
+              One expert for your business. One simple price.
             </h1>
             <p className="mkt-lead" style={{ marginTop: 18, marginInline: 'auto', maxWidth: 560 }}>
               Start free on your own numbers. Upgrade when the value is obvious, never before.
@@ -78,7 +78,7 @@ export default async function PricingPage() {
             {FEATURE_GLOSSARY.map((f, i) => (
               <Reveal key={f.term} delay={i * 0.06}>
                 <div className="mkt-card" style={{ height: '100%' }}>
-                  <h3 className="mkt-h3" style={{ fontSize: '1.02rem' }}>{f.term}</h3>
+                  <h3 className="mkt-h3" style={{ fontSize: 'var(--fs-body)' }}>{f.term}</h3>
                   <p className="mkt-body" style={{ marginTop: 8 }}>{f.plain}</p>
                 </div>
               </Reveal>
@@ -87,16 +87,16 @@ export default async function PricingPage() {
         </div>
       </section>
 
-      {/* Locked-but-visible teaser — same pattern as inside the product. */}
+      {/* Locked-but-visible teaser: same pattern as inside the product. */}
       <section className="mkt-section mkt-section--tight">
         <div className="mkt-wrap">
           <Reveal>
             <div className="mkt-card" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, justifyContent: 'space-between' }}>
               <div style={{ flex: '1 1 280px' }}>
-                <p style={{ fontSize: 'var(--fs-label)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--e-cust)', margin: '0 0 10px' }}>
-                  Locked-but-visible
+                <p style={{ fontSize: 'var(--fs-caps)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--e-cust)', margin: '0 0 10px' }}>
+                  See it before you pay
                 </p>
-                <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-1)', margin: 0, lineHeight: 1.5 }}>
+                <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0, lineHeight: 1.5 }}>
                   Your top 5% of customers drive{' '}
                   <span style={{ position: 'relative', filter: 'blur(6px)', userSelect: 'none' }} aria-hidden>≈38%</span>{' '}
                   of revenue.

@@ -48,7 +48,7 @@ export default function LiveDashboard() {
     <div className="mkt-livedash" data-theme="dark">
       <div className="aibos-window-body">
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 6 }}>
-          <p style={{ margin: 0, fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-1)', letterSpacing: '-0.02em' }}>{DEMO_BUSINESS}</p>
+          <p style={{ margin: 0, fontWeight: 800, fontSize: 'var(--fs-body)', color: 'var(--text-1)', letterSpacing: '-0.02em' }}>{DEMO_BUSINESS}</p>
           <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Updated today · ZMW</span>
         </div>
 

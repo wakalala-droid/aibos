@@ -85,7 +85,7 @@ const inputStyle: React.CSSProperties = {
 };
 const primaryBtn: React.CSSProperties = {
   padding: '10px 16px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--cyan)',
-  color: '#fff', fontSize: FS_SMALL, fontWeight: 700, cursor: 'pointer',
+  color: 'var(--on-cyan)', fontSize: FS_SMALL, fontWeight: 700, cursor: 'pointer',
 };
 const ghostBtn: React.CSSProperties = {
   padding: '10px 14px', minHeight: 44, borderRadius: 10, background: 'transparent',
@@ -387,7 +387,7 @@ export default function BookingsPage() {
                       </div>
                       {/* An unanswered website request stops holding its nights
                           after a day, so the calendar and the website can sell
-                          them. It stays here to be answered, and the row has to
+                          them. It stays here to be answered and the row has to
                           say which of the two is true. */}
                       {b.holding === false && (
                         <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, fontWeight: 700, color: 'var(--warn)' }}>
@@ -508,7 +508,7 @@ export default function BookingsPage() {
         <p style={{ fontSize: FS_SMALL, lineHeight: 1.6, color: 'var(--text-4)', marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
           Confirming a booking records the sale in your books. It counts as money owed to you until you mark it paid,
           then it moves into your cash. You can see both in{' '}
-          <Link href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Cash Intel</Link>.
+          <Link className="tap-link" href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Cash Intel</Link>.
           Turning one down changes nothing in the books: the dates simply go free again.
           A deposit or a refund is recorded on the booking itself, on the calendar.
         </p>

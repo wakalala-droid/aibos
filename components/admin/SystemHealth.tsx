@@ -53,11 +53,11 @@ function Row({ ok, label, detail }: { ok: boolean | null; label: string; detail?
     <li style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '8px 0' }}>
       <span style={{ paddingTop: 6 }}><Light ok={ok} /></span>
       <span style={{ minWidth: 0 }}>
-        <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: 'var(--text-1)' }}>
+        <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>
           {label}
         </span>
         {detail && (
-          <span style={{ display: 'block', fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)' }}>
+          <span style={{ display: 'block', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
             {detail}
           </span>
         )}
@@ -92,7 +92,7 @@ export default function SystemHealth() {
   return (
     <div className="section-card" style={{ marginBottom: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-        <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text-1)' }}>
+        <h2 style={{ margin: 0, fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
           System health
         </h2>
         <button
@@ -102,7 +102,7 @@ export default function SystemHealth() {
           style={{
             marginLeft: 'auto', minHeight: 36, padding: '7px 12px', borderRadius: 8,
             border: '1px solid var(--border-md)', background: 'var(--bg-card)',
-            color: 'var(--text-2)', fontSize: 14, fontWeight: 600,
+            color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600,
             cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.6 : 1,
           }}
         >
@@ -113,7 +113,7 @@ export default function SystemHealth() {
       {loading && !health && <div className="skeleton" style={{ height: 120 }} />}
 
       {failed && (
-        <p style={{ fontSize: 15, color: 'var(--crit)', margin: '8px 0 0' }}>
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--crit)', margin: '8px 0 0' }}>
           The check itself could not run: {failed}
         </p>
       )}
@@ -121,7 +121,7 @@ export default function SystemHealth() {
       {health && (
         <>
           <p style={{
-            margin: '0 0 8px', fontSize: 16, lineHeight: 1.6, fontWeight: 600,
+            margin: '0 0 8px', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 600,
             color: health.healthy ? 'var(--good)' : 'var(--crit)',
           }}>
             {health.verdict}
@@ -139,7 +139,7 @@ export default function SystemHealth() {
               ok={api.reachable === true}
               label="API reachable"
               detail={api.reachable
-                ? `${api.host ?? 'unknown host'} · build ${api.build_sha ?? '—'} · expects migration ${api.expects_migration ?? '—'}`
+                ? `${api.host ?? 'unknown host'} · build ${api.build_sha ?? 'None'} · expects migration ${api.expects_migration ?? 'None'}`
                 : (api.note ?? 'No answer.')}
             />
             <Row

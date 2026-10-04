@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Camera, MessageSquare, CircleCheck, Package } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { useStore } from '@/lib/store';
@@ -36,7 +37,7 @@ const inputStyle: React.CSSProperties = {
   color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none',
 };
 const labelStyle: React.CSSProperties = {
-  fontSize: 'var(--fs-label)', fontWeight: 600,
+  fontSize: 'var(--fs-caps)', fontWeight: 600,
   color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em',
   marginBottom: 8, display: 'block',
 };
@@ -74,7 +75,7 @@ export default function OnboardingPage() {
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
   const [appliedMatch, setAppliedMatch] = useState<BusinessMatch | null>(null);
-  const [lookupOff, setLookupOff] = useState(false);   // "none of these" — for this session
+  const [lookupOff, setLookupOff] = useState(false);   // "none of these": for this session
   // What the fields held before a match was applied, so Undo is exact rather
   // than a guess at which values were ours.
   const beforeMatch = useRef<Partial<typeof form> | null>(null);
@@ -123,13 +124,13 @@ export default function OnboardingPage() {
       // filled is never overwritten by a listing.
       return {
         ...p,
-        business_name:   m.business_name || p.business_name,
-        industry:        p.industry || m.industry,
-        location:        p.location || m.location,
+        business_name:  m.business_name || p.business_name,
+        industry:       p.industry || m.industry,
+        location:       p.location || m.location,
         operating_hours: p.operating_hours || m.operating_hours,
-        phone:           p.phone || m.phone,
-        website:         p.website || m.website,
-        logo_url:        p.logo_url || m.logo_url,
+        phone:          p.phone || m.phone,
+        website:        p.website || m.website,
+        logo_url:       p.logo_url || m.logo_url,
       };
     });
     setAppliedMatch(m);
@@ -231,11 +232,11 @@ export default function OnboardingPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-page)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '32px 16px' }}>
       <div style={{ width: '100%', maxWidth: 560 }}>
-        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: '0 0 4px' }}>
+        <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: '0 0 4px' }}>
           Set up your business
         </h1>
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 24px' }}>
-          A few essentials — everything else you can add later.
+          A few essentials: everything else you can add later.
         </p>
 
         {/* Stepper — hidden on the post-setup first-win step. */}
@@ -244,7 +245,7 @@ export default function OnboardingPage() {
             {STEPS.map((s, i) => (
               <div key={s} style={{ flex: 1 }}>
                 <div style={{ height: 4, borderRadius: 99, background: i <= step ? 'var(--cyan)' : 'var(--border)' }} />
-                <div style={{ marginTop: 6, fontSize: 'var(--fs-label)', color: i === step ? 'var(--cyan)' : 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s}</div>
+                <div style={{ marginTop: 6, fontSize: 'var(--fs-caps)', color: i === step ? 'var(--cyan)' : 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s}</div>
               </div>
             ))}
           </div>
@@ -299,7 +300,7 @@ export default function OnboardingPage() {
                     <label style={labelStyle}>Cash on hand today</label>
                     <input type="number" inputMode="decimal" value={form.initial_cash} onChange={e => set('initial_cash', e.target.value)} placeholder={`${sym} 0.00`} style={{ ...inputStyle }} />
                     <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)', marginTop: 6 }}>
-                      Your starting balance — every event you record adjusts it from here.
+                      Your starting balance: every entry you record adjusts it from here.
                     </p>
                   </div>
                   <div style={fieldGap}>
@@ -319,7 +320,7 @@ export default function OnboardingPage() {
                   </div>
                   <div style={fieldGap}>
                     <label style={labelStyle}>Operating hours</label>
-                    <input value={form.operating_hours} onChange={e => set('operating_hours', e.target.value)} placeholder="e.g. 08:00 – 18:00" style={inputStyle} />
+                    <input value={form.operating_hours} onChange={e => set('operating_hours', e.target.value)} placeholder="e.g. 08:00 to 18:00" style={inputStyle} />
                   </div>
                   <div style={fieldGap}>
                     <label style={labelStyle}>Preferred language</label>
@@ -333,8 +334,8 @@ export default function OnboardingPage() {
               {step === 4 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   <div>
-                    <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 4px' }}>
-                      You&apos;re set up. Let&apos;s get your first numbers. 🎉
+                    <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 4px' }}>
+                      You&apos;re set up. Let&apos;s get your first numbers.
                     </h2>
                     <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
                       One real entry and your dashboard comes alive. Pick whatever&apos;s easiest right now.
@@ -343,16 +344,16 @@ export default function OnboardingPage() {
 
                   <button type="button" onClick={() => router.push('/dashboard/record?receipt=1')} className="touch-target"
                     style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 12, border: '1px solid var(--cyan)', background: 'var(--cyan-dim)', cursor: 'pointer' }}>
-                    <span aria-hidden style={{ fontSize: '1.5rem' }}>📸</span>
+                    <span aria-hidden style={{ display: 'inline-flex', color: 'var(--cyan)' }}><Camera size={26} strokeWidth={2} /></span>
                     <span>
                       <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>Scan your last receipt</span>
-                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Photograph it — AIBOS reads it and records the purchase.</span>
+                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Photograph it: AIBOS reads it and records the purchase.</span>
                     </span>
                   </button>
 
                   <button type="button" onClick={() => router.push('/dashboard/record')} className="touch-target"
                     style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 12, border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: 'pointer' }}>
-                    <span aria-hidden style={{ fontSize: '1.5rem' }}>💬</span>
+                    <span aria-hidden style={{ display: 'inline-flex', color: 'var(--text-2)' }}><MessageSquare size={26} strokeWidth={2} /></span>
                     <span>
                       <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>Record a sale in words</span>
                       <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>“{industryOf(form.industry, form.industry).saleExample}”</span>
@@ -361,24 +362,24 @@ export default function OnboardingPage() {
 
                   <button type="button" onClick={() => void seedStarters()} disabled={seeding || seeded} className="touch-target"
                     style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 12, border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: seeded ? 'default' : 'pointer', opacity: seeded ? 0.75 : 1 }}>
-                    <span aria-hidden style={{ fontSize: '1.5rem' }}>{seeded ? '✅' : '📦'}</span>
+                    <span aria-hidden style={{ display: 'inline-flex', color: seeded ? 'var(--good)' : 'var(--text-2)' }}>{seeded ? <CircleCheck size={26} strokeWidth={2} /> : <Package size={26} strokeWidth={2} />}</span>
                     <span>
                       <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
                         {seeded ? 'Starter products added' : seeding ? 'Adding…' : `Add starter products for your ${industryOf(form.industry, form.industry).label}`}
                       </span>
                       <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-                        {seeded ? 'Edit prices and stock anytime on the Inventory page.' : 'A ready-made catalog you can edit — no blank page.'}
+                        {seeded ? 'Edit prices and stock anytime on the Inventory page.' : 'A ready-made catalog you can edit: no blank page.'}
                       </span>
                     </span>
                   </button>
 
                   <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '4px 0 0', textAlign: 'center' }}>
-                    💡 Record for 3 days and your Morning Brief unlocks automatically.
+                    Record for 3 days and your Morning Brief unlocks automatically.
                   </p>
 
                   <button type="button" onClick={() => router.push('/dashboard')} className="touch-target"
                     style={{ marginTop: 4, padding: '12px 20px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer' }}>
-                    {seeded ? 'Go to my dashboard' : 'I&apos;ll do this later — go to dashboard'}
+                    {seeded ? 'Go to my dashboard' : 'I&apos;ll do this later: go to dashboard'}
                   </button>
                 </div>
               )}
@@ -386,22 +387,22 @@ export default function OnboardingPage() {
               {step === 3 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {[
-                    ['Business', form.business_name || '—'],
-                    ['Industry', form.industry || '—'],
-                    ['Location', form.location || '—'],
+                    ['Business', form.business_name || 'None'],
+                    ['Industry', form.industry || 'None'],
+                    ['Location', form.location || 'None'],
                     // Shown only when an identity match supplied them — no point
                     // printing two empty rows for everyone else.
                     ...(form.phone ? [['Phone', form.phone]] : []),
                     ...(form.website ? [['Website', form.website]] : []),
                     ['Currency', form.currency],
                     ['Cash on hand', form.initial_cash ? `${sym}${form.initial_cash}` : `${sym}0`],
-                    ['Tax status', TAX.find(t => t.v === form.tax_status)?.l ?? '—'],
-                    ['Employees', form.employees || '—'],
-                    ['Hours', form.operating_hours || '—'],
-                    ['Language', LANGUAGES.find(l => l.v === form.language)?.l ?? '—'],
+                    ['Tax status', TAX.find(t => t.v === form.tax_status)?.l ?? 'None'],
+                    ['Employees', form.employees || 'None'],
+                    ['Hours', form.operating_hours || 'None'],
+                    ['Language', LANGUAGES.find(l => l.v === form.language)?.l ?? 'None'],
                   ].map(([k, v]) => (
                     <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</span>
+                      <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</span>
                       <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', textAlign: 'right' }}>{v}</span>
                     </div>
                   ))}
@@ -429,7 +430,7 @@ export default function OnboardingPage() {
             {step < STEPS.length - 1 ? (
               <button
                 type="button" onClick={() => setStep(s => s + 1)} disabled={!canNext} className="touch-target"
-                style={{ padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canNext ? 'pointer' : 'default', opacity: canNext ? 1 : 0.5 }}
+                style={{ padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canNext ? 'pointer' : 'default', opacity: canNext ? 1 : 0.5 }}
               >
                 Continue
               </button>

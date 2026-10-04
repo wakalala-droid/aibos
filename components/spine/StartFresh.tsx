@@ -72,7 +72,7 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
   return (
     <SectionCard
       title="Start fresh"
-      subtitle="Danger zone — permanently delete recorded data and rebuild from zero."
+      subtitle="Danger zone: permanently delete recorded data and rebuild from zero."
       style={{ marginTop: 24 }}
       action={!open ? (
         <button type="button" className="touch-target" onClick={() => { setOpen(true); setDone(null); }}
@@ -102,15 +102,15 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
               <input type="radio" name="reset-scope" checked={scope === 'all'} onChange={() => setScope('all')}
                 style={{ accentColor: 'var(--red)', marginTop: 2 }} />
               <span>
-                <strong style={{ color: 'var(--text-1)' }}>Everything</strong> — every recorded event, from every source
-                <div style={hint}>The timeline, and every dashboard number derived from it, returns to zero.</div>
+                <strong style={{ color: 'var(--text-1)' }}>Everything</strong>: every recorded event, from every source
+                <div style={hint}>The timeline and every dashboard number derived from it, returns to zero.</div>
               </span>
             </label>
             <label style={label}>
               <input type="radio" name="reset-scope" checked={scope === 'excel'} onChange={() => setScope('excel')}
                 style={{ accentColor: 'var(--red)', marginTop: 2 }} />
               <span>
-                <strong style={{ color: 'var(--text-1)' }}>Only file imports</strong> — events created by Excel/CSV import
+                <strong style={{ color: 'var(--text-1)' }}>Only file imports</strong>: events created by Excel/CSV import
                 <div style={hint}>Undo a bad upload. Activity you recorded by hand, voice, receipt or QR stays.</div>
               </span>
             </label>
@@ -123,7 +123,7 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
                 style={{ accentColor: 'var(--red)', marginTop: 2 }} />
               <span>
                 Forget learned import mappings &amp; name aliases
-                <div style={hint}>Recommended after a wrong mapping — otherwise the next import re-applies it.</div>
+                <div style={hint}>Recommended after a wrong mapping: otherwise the next import re-applies it.</div>
               </span>
             </label>
             <label style={label}>

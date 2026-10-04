@@ -387,7 +387,7 @@ function CheckoutInner() {
       <Shell>
         <div className="co-solo">
           <Panel labelledBy="co-free-title">
-            <h1 id="co-free-title" className="co-h1" style={{ fontSize: 26 }}>
+            <h1 id="co-free-title" className="co-h1" style={{ fontSize: 'var(--fs-h2)' }}>
               {planParam !== 'free' ? 'Choose a plan first'
                 : freeState === 'done' || (!giving && serverTier === 'free') ? 'You’re on the Free plan'
                 : giving ? `Switch from ${giving} to Free?` : 'The Free plan'}
@@ -452,7 +452,7 @@ function CheckoutInner() {
         <div className="co-solo">
           <Panel labelledBy="co-done-title">
             <div className="co-done-mark"><Icon d={I.check} size={28} /></div>
-            <h1 id="co-done-title" className="co-h1" style={{ fontSize: 26 }}>
+            <h1 id="co-done-title" className="co-h1" style={{ fontSize: 'var(--fs-h2)' }}>
               {change === 'done' ? `You’re now on ${meta.name}` : renewing ? `${meta.name} renewed` : `Welcome to ${meta.name}`}
             </h1>
             <p className="co-tagline">
@@ -748,7 +748,7 @@ function CheckoutInner() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="co-page" style={{ padding: 48, textAlign: 'center', color: 'var(--text-3)', fontSize: 18 }}>Loading checkout…</div>}>
+    <Suspense fallback={<div className="co-page" style={{ padding: 48, textAlign: 'center', color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>Loading checkout…</div>}>
       <CheckoutInner />
     </Suspense>
   );

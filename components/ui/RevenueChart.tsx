@@ -33,11 +33,11 @@ export default function RevenueChart({
             </linearGradient>
           </defs>
           <CartesianGrid stroke="var(--border)" vertical={false} />
-          <XAxis dataKey="month"
-            tick={{ fontSize: 12, fill: 'var(--text-3)' }}
+          <XAxis minTickGap={16} dataKey="month"
+            tick={{ fontSize: 18, fill: 'var(--text-3)' }}
             axisLine={false} tickLine={false} />
-          <YAxis
-            tick={{ fontSize: 12, fill: 'var(--text-3)' }}
+          <YAxis width={84}
+            tick={{ fontSize: 18, fill: 'var(--text-3)' }}
             axisLine={false} tickLine={false}
             tickFormatter={(v) => formatAxis(Number(v))} />
           <Tooltip content={<ChartTooltip sym={sym} />}

@@ -71,7 +71,7 @@ function num(v: unknown): number {
 }
 
 function formatResult(val: unknown): string {
-  if (val === null || val === undefined) return "—";
+  if (val === null || val === undefined) return "None";
   if (Array.isArray(val)) {
     const nums = val.map(Number).filter(isFinite);
     if (!nums.length) return "[]";
@@ -129,7 +129,7 @@ export default function DataStudio() {
         const profit  = r.profit != null ? num(r.profit) : revenue - costs;
         const margin  = r.margin != null ? num(r.margin) : revenue ? (profit / revenue) * 100 : 0;
         return {
-          month: String(r.Month ?? r.month ?? "—"),
+          month: String(r.Month ?? r.month ?? "None"),
           revenue,
           costs,
           profit,
@@ -146,9 +146,9 @@ export default function DataStudio() {
     if (!rows.length) return {} as Record<string, number[]>;
     return {
       revenue: rows.map((m) => m.revenue),
-      costs:   rows.map((m) => m.costs),
-      profit:  rows.map((m) => m.profit),
-      margin:  rows.map((m) => m.margin),
+      costs:  rows.map((m) => m.costs),
+      profit: rows.map((m) => m.profit),
+      margin: rows.map((m) => m.margin),
     };
   }, [rows]);
 
@@ -166,15 +166,15 @@ export default function DataStudio() {
       const isAI = f.toUpperCase().startsWith("AI:");
       const payload = {
         formula: f,
-        cabinet_id:     cabinetId ?? undefined,
+        cabinet_id:    cabinetId ?? undefined,
         column_context: colContext,
-        ai_mode:        isAI,
+        ai_mode:       isAI,
       };
 
       const res = await fetch("/api/proxy/data-studio/compute", {
-        method:  "POST",
+        method: "POST",
         headers: { "content-type": "application/json", ...(await authHeaders()) },
-        body:    JSON.stringify(payload),
+        body:   JSON.stringify(payload),
       });
 
       const data = (await res.json()) as ComputeResult & { detail?: string };
@@ -183,12 +183,12 @@ export default function DataStudio() {
       setHistory((prev) =>
         [
           {
-            id:      Math.random().toString(36).slice(2),
+            id:     Math.random().toString(36).slice(2),
             formula: f,
-            result:  data.result,
+            result: data.result,
             insight: data.insight,
-            mode:    data.mode ?? (isAI ? "ai" : "formula"),
-            ts:      Date.now(),
+            mode:   data.mode ?? (isAI ? "ai" : "formula"),
+            ts:     Date.now(),
           },
           ...prev,
         ].slice(0, 50)
@@ -462,8 +462,8 @@ export default function DataStudio() {
                     { label: "Total Costs",    value: formatCurrency(totCost),   color: "var(--warn)" },
                     { label: "Total Profit",   value: formatCurrency(totProfit), color: totProfit >= 0 ? "var(--good)" : "var(--crit)" },
                     { label: "Avg Margin",     value: `${avgMargin.toFixed(1)}%`, color: avgMargin >= 0 ? "var(--good)" : "var(--crit)" },
-                    { label: "Best Month",     value: bestRev ? bestRev.month : "—", color: "var(--text-2)" },
-                    { label: "Best Revenue",   value: bestRev ? formatCurrency(bestRev.revenue) : "—", color: "var(--cyan)" },
+                    { label: "Best Month",     value: bestRev ? bestRev.month : "None", color: "var(--text-2)" },
+                    { label: "Best Revenue",   value: bestRev ? formatCurrency(bestRev.revenue) : "None", color: "var(--cyan)" },
                   ].map((stat) => (
                     <div key={stat.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: 'var(--fs-data)', color: "var(--text-3)" }}>
@@ -547,7 +547,7 @@ export default function DataStudio() {
                 <path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="var(--text-4)" strokeWidth="1.5"/>
               </svg>
               <p style={{ color: "var(--text-3)", fontSize: 'var(--fs-body)', margin: 0 }}>
-                No data — upload a financial file to populate the grid.
+                No data: upload a financial file to populate the grid.
               </p>
             </div>
           ) : (
@@ -560,7 +560,7 @@ export default function DataStudio() {
                         key={h}
                         style={{
                           padding: "12px 16px",
-                          fontSize: 'var(--fs-label)',
+                          fontSize: 'var(--fs-caps)',
                           fontWeight: 600,
                           textAlign: h === "#" || h === "Period" ? "left" : "right",
                           color: "var(--text-3)",
@@ -623,7 +623,7 @@ export default function DataStudio() {
                 </tbody>
                 <tfoot>
                   <tr style={{ background: "var(--bg-page)", borderTop: "2px solid var(--border)" }}>
-                    <td colSpan={2} style={{ padding: "13px 16px", fontSize: 'var(--fs-label)', fontWeight: 700, color: "var(--text-2)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    <td colSpan={2} style={{ padding: "13px 16px", fontSize: 'var(--fs-caps)', fontWeight: 700, color: "var(--text-2)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       Totals / Avg
                     </td>
                     <td style={{ padding: "13px 16px", textAlign: "right", fontSize: 'var(--fs-data)', fontWeight: 700, color: "var(--cyan)" }}>

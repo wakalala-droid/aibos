@@ -90,7 +90,7 @@ export default function QrScanner({ onResult, onClose }: { onResult: (text: stri
               {!cameraOn && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <button type="button" onClick={startCamera} className="touch-target"
-                    style={{ padding: '12px 22px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer' }}>
+                    style={{ padding: '12px 22px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer' }}>
                     Start camera
                   </button>
                 </div>
@@ -102,14 +102,14 @@ export default function QrScanner({ onResult, onClose }: { onResult: (text: stri
           </>
         ) : (
           <div>
-            <label style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'block' }}>
+            <label style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'block' }}>
               Paste the QR contents
             </label>
             <textarea value={paste} onChange={e => setPaste(e.target.value)} rows={3}
               placeholder="Paste the decoded QR text / URL here"
               style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-md)', borderRadius: 8, color: 'var(--text-1)', fontSize: 'var(--fs-data)', outline: 'none', resize: 'vertical' }} />
             <button type="button" onClick={() => paste.trim() && onResult(paste.trim())} disabled={!paste.trim()} className="touch-target"
-              style={{ marginTop: 10, width: '100%', padding: '12px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: paste.trim() ? 'pointer' : 'default', opacity: paste.trim() ? 1 : 0.5 }}>
+              style={{ marginTop: 10, width: '100%', padding: '12px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: paste.trim() ? 'pointer' : 'default', opacity: paste.trim() ? 1 : 0.5 }}>
               Use this code
             </button>
           </div>

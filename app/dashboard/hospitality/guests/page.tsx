@@ -18,12 +18,12 @@ const input: React.CSSProperties = {
   fontSize: 'var(--fs-body)', outline: 'none',
 };
 const lbl: React.CSSProperties = {
-  fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)',
+  fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
   padding: '9px 16px', minHeight: 38, borderRadius: 8, border: 'none', background: 'var(--cyan)',
-  color: '#fff', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
+  color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
 };
 const ghostBtn: React.CSSProperties = {
   padding: '7px 12px', minHeight: 34, borderRadius: 8, background: 'transparent',
@@ -80,7 +80,7 @@ export default function GuestsPage() {
   };
 
   const reveal = async (id: string) => {
-    try { const g = await getGuest(id, true); setRevealed(r => ({ ...r, [id]: g.id_document_number || '—' })); }
+    try { const g = await getGuest(id, true); setRevealed(r => ({ ...r, [id]: g.id_document_number || 'None' })); }
     catch (e) { setError(e instanceof Error ? e.message : 'Could not reveal ID.'); }
   };
 
@@ -111,7 +111,7 @@ export default function GuestsPage() {
               <div>
                 <label style={lbl}>ID type</label>
                 <select style={input} value={form.id_document_type} onChange={e => setForm({ ...form, id_document_type: e.target.value as typeof form.id_document_type })}>
-                  <option value="">—</option>
+                  <option value="">Choose…</option>
                   <option value="passport">Passport</option>
                   <option value="national_id">National ID</option>
                   <option value="other">Other</option>
@@ -130,7 +130,7 @@ export default function GuestsPage() {
         )}
 
         {/* List */}
-        {!loading && guests.length === 0 && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>No guests yet — they’re also created automatically when you name one on a booking.</p>}
+        {!loading && guests.length === 0 && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>No guests yet: they’re also created automatically when you name one on a booking.</p>}
 
         <div style={{ display: 'grid', gap: 8 }}>
           {guests.map(g => (

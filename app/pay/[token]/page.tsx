@@ -148,7 +148,7 @@ export default function PayInvoicePage() {
       <div style={{ maxWidth: 480, margin: '0 auto' }}>
 
         <p style={{
-          fontSize: 'var(--fs-label)', letterSpacing: '0.08em', textTransform: 'uppercase',
+          fontSize: 'var(--fs-caps)', letterSpacing: '0.08em', textTransform: 'uppercase',
           fontWeight: 700, color: 'var(--text-3)', margin: '0 0 16px', textAlign: 'center',
         }}>
           Secure payment
@@ -266,7 +266,7 @@ export default function PayInvoicePage() {
                   Payment received
                 </h1>
                 <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
-                  Thank you. {invoice.business_name ?? 'The business'} has been notified — this
+                  Thank you. {invoice.business_name ?? 'The business'} has been notified: this
                   invoice is settled. Keep this page as your reference.
                 </p>
               </div>
@@ -288,7 +288,7 @@ export default function PayInvoicePage() {
                   <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: 0 }}>
                     Paying by mobile money isn’t switched on for this business yet. Please pay
                     {invoice.business_name ? ` ${invoice.business_name}` : ' them'} the way you
-                    normally do — they can mark this invoice as paid.
+                    normally do: they can mark this invoice as paid.
                   </p>
                 ) : (
                   <>

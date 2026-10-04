@@ -61,7 +61,7 @@ export default function ContactsPage() {
 
       <SectionCard
         title={`${parties.length} contact${parties.length === 1 ? '' : 's'}`}
-        subtitle={mergeMode ? 'Pick the two to combine — the first you keep, the second folds in.' : 'Money in (as customer) and money out (as supplier), from your records.'}
+        subtitle={mergeMode ? 'Pick the two to combine: the first you keep, the second folds in.' : 'Money in (as customer) and money out (as supplier), from your records.'}
         action={
           parties.length > 1 ? (
             <button type="button" onClick={() => { setMergeMode((v) => !v); setSelected([]); }}
@@ -75,7 +75,7 @@ export default function ContactsPage() {
           <div className="skeleton" style={{ height: 120 }} />
         ) : parties.length === 0 ? (
           <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
-            No contacts yet — as you record sales and purchases with a customer or supplier name, they appear here.
+            No contacts yet: as you record sales and purchases with a customer or supplier name, they appear here.
           </p>
         ) : (
           <div style={{ display: 'grid', gap: 8 }}>
@@ -106,7 +106,7 @@ export default function ContactsPage() {
               Keep <strong>{keepName}</strong>, fold <strong>{dropName}</strong> into it? AIBOS will remember they&apos;re the same from now on.
             </p>
             <button type="button" onClick={() => void doMerge()} disabled={busy}
-              style={{ minHeight: 40, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#04121a', fontWeight: 700, cursor: 'pointer' }}>
+              style={{ minHeight: 40, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, cursor: 'pointer' }}>
               {busy ? 'Merging…' : 'Merge them'}
             </button>
           </div>

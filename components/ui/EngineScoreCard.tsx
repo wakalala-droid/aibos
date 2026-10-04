@@ -42,8 +42,8 @@ export default function EngineScoreCard({
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '2px 0 10px' }}>
             {sub}
           </p>
-          <p style={{ fontSize: '2.4rem', fontWeight: 800, color: locked ? 'var(--text-4)' : col, letterSpacing: '-0.04em', margin: '0 0 10px' }}>
-            {locked ? '—' : score}
+          <p style={{ fontSize: 'var(--fs-display)', fontWeight: 800, color: locked ? 'var(--text-4)' : col, letterSpacing: '-0.04em', margin: '0 0 10px' }}>
+            {locked ? 'Not yet' : score}
           </p>
           <div className="progress-track">
             {!locked && <div className="progress-fill" style={{ width: `${score}%`, background: col }} />}

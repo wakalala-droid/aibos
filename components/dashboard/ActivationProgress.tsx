@@ -52,7 +52,7 @@ export default function ActivationProgress() {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
         <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
-          {reached ? '🎉 Your Morning Brief is ready' : `Record on ${GOAL_DAYS} days to unlock your Morning Brief`}
+          {reached ? 'Your Morning Brief is ready' : `Record on ${GOAL_DAYS} days to unlock your Morning Brief`}
         </span>
         <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
           {Math.min(days, GOAL_DAYS)} / {GOAL_DAYS} days
@@ -68,7 +68,7 @@ export default function ActivationProgress() {
               style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', textDecoration: 'underline', fontSize: 'var(--fs-label)' }}>dismiss</button>
           </>
         ) : (
-          <>Record a sale or expense on {GOAL_DAYS} different days — that&apos;s enough for AIBOS to spot your first patterns. <Link href="/dashboard/record" style={{ color: 'var(--cyan)', fontWeight: 600 }}>Record now →</Link>
+          <>Record a sale or expense on {GOAL_DAYS} different days: that&apos;s enough for AIBOS to spot your first patterns. <Link href="/dashboard/record" style={{ color: 'var(--cyan)', fontWeight: 600 }}>Record now →</Link>
             {days === 0 && <> · <Link href="/dashboard/demo" style={{ color: 'var(--text-3)', fontWeight: 600 }}>see a sample first</Link></>}
           </>
         )}

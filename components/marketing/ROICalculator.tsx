@@ -77,12 +77,12 @@ export default function ROICalculator() {
 
       {/* Results */}
       <div className="mkt-card" style={{ background: 'linear-gradient(180deg, var(--cyan-dim), transparent 40%), var(--bg-card)', borderColor: 'color-mix(in srgb, var(--cyan) 35%, var(--border-md))' }}>
-        <p style={{ fontSize: 'var(--fs-label)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 16px' }}>
+        <p style={{ fontSize: 'var(--fs-caps)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 16px' }}>
           A rough estimate
         </p>
 
         <div style={{ marginBottom: 18 }}>
-          <p style={{ fontSize: '1.9rem', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-0.03em', margin: 0 }}>
+          <p style={{ fontSize: 'var(--fs-h1)', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-0.03em', margin: 0 }}>
             {out.hoursLow} to {out.hoursHigh} hrs
           </p>
           <p className="mkt-body" style={{ fontSize: 'var(--fs-body)' }}>
@@ -93,7 +93,7 @@ export default function ROICalculator() {
         <div style={{ height: 1, background: 'var(--border)', margin: '4px 0 18px' }} />
 
         <p className="mkt-body" style={{ fontSize: 'var(--fs-body)' }}>
-          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Example</span><br />
+          <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Example</span><br />
           Catching even a <strong style={{ color: 'var(--text-1)' }}>1% margin leak</strong> on K{fmt(revenue)}/mo is{' '}
           <strong style={{ color: 'var(--text-1)' }}>K{fmt(out.leak1pct)} a month</strong>
           {out.multiple && proK

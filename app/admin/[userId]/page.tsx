@@ -17,9 +17,9 @@ interface DetailPayload {
 }
 
 function fmtDateTime(v: string | null | undefined): string {
-  if (!v) return '—';
+  if (!v) return 'None';
   const d = new Date(v);
-  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString(undefined, { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+  return Number.isNaN(d.getTime()) ? 'None' : d.toLocaleString(undefined, { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
 /** Plain English for an audit row. Without this the new hospitality actions
@@ -48,9 +48,9 @@ function describeAudit(action: string, detail: unknown): string {
 }
 
 function fmtDate(v: string | null | undefined): string {
-  if (!v) return '—';
+  if (!v) return 'None';
   const d = new Date(v);
-  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+  return Number.isNaN(d.getTime()) ? 'None' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 /**
@@ -90,7 +90,7 @@ function ManualPayment({ userId, currentTier, onSaved }: { userId: string; curre
   const field: React.CSSProperties = { minHeight: 40, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
   return (
     <div className="section-card" style={{ marginBottom: 16 }}>
-      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Record a manual payment</p>
+      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Record a manual payment</p>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 14px', lineHeight: 1.55 }}>
         For money received by hand. The plan runs for the period paid. Paying again for the same plan before it ends adds the new period on the end.
       </p>
@@ -109,7 +109,7 @@ function ManualPayment({ userId, currentTier, onSaved }: { userId: string; curre
           </select>
         </label>
         <button type="button" onClick={() => void save()} disabled={busy}
-          style={{ alignSelf: 'flex-end', minHeight: 40, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#fff', fontWeight: 700, fontSize: 'var(--fs-body)', cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+          style={{ alignSelf: 'flex-end', minHeight: 40, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, fontSize: 'var(--fs-body)', cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
           {busy ? 'Saving…' : 'Record payment'}
         </button>
       </div>
@@ -185,7 +185,7 @@ function BillingFromJoin({ userId, currentTier, joinedAt, scheduledUntil, onSave
   const field: React.CSSProperties = { minHeight: 40, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
   return (
     <div className="section-card" style={{ marginBottom: 16 }}>
-      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Bill from the day they joined</p>
+      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Bill from the day they joined</p>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 14px', lineHeight: 1.55 }}>
         They joined on {fmtDate(joinedAt)}. The plan runs until {fmtDate(next.toISOString())}. AIBOS asks them to set up card payment
         three days before, on the day and before it switches off; the card then renews {every} for ${price.toLocaleString()}. Nothing is charged now.
@@ -206,7 +206,7 @@ function BillingFromJoin({ userId, currentTier, joinedAt, scheduledUntil, onSave
           </select>
         </label>
         <button type="button" onClick={() => void start()} disabled={busy}
-          style={{ alignSelf: 'flex-end', minHeight: 40, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#fff', fontWeight: 700, fontSize: 'var(--fs-body)', cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+          style={{ alignSelf: 'flex-end', minHeight: 40, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, fontSize: 'var(--fs-body)', cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
           {busy ? 'Saving…' : 'Start billing'}
         </button>
       </div>
@@ -221,7 +221,7 @@ function Fact({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
       <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>{label}</p>
-      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: 0, wordBreak: 'break-word' }}>{value || '—'}</p>
+      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: 0, wordBreak: 'break-word' }}>{value || 'None'}</p>
     </div>
   );
 }
@@ -293,14 +293,14 @@ export default function AdminAccountDetailPage() {
     <div style={{ padding: '8px 0 48px', maxWidth: 920 }}>
       {back}
       <header style={{ marginBottom: 18 }}>
-        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
-          {p.business_name || '—'}
+        <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+          {p.business_name || 'None'}
         </h1>
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>{p.email}</p>
       </header>
 
       <div className="section-card" style={{ marginBottom: 16 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Profile</p>
+        <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Profile</p>
         <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
           {/* Display name from the ladder — hand-writing the Pro+ special case
               here is how a new tier ends up shown as a raw id. */}
@@ -337,7 +337,7 @@ export default function AdminAccountDetailPage() {
       {userId && <HospitalitySetup userId={userId} />}
 
       <div className="section-card" style={{ marginBottom: 16 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Admin actions</p>
+        <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Admin actions</p>
         {data.audit.length === 0 ? (
           <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>Nothing an admin has done to this account.</p>
         ) : (
@@ -356,7 +356,7 @@ export default function AdminAccountDetailPage() {
       </div>
 
       <div className="section-card">
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Recent activity</p>
+        <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Recent activity</p>
         {data.events.length === 0 ? (
           <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>No usage events yet.</p>
         ) : (

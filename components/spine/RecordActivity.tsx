@@ -31,19 +31,19 @@ type Field = { key: string; label: string; kind: 'number' | 'text' | 'select'; o
 // Which payload fields each type surfaces for review (RFC-001 §5). `amount` is
 // rendered separately (every money type needs it).
 const TYPE_FIELDS: Record<EventType, Field[]> = {
-  Sale:                [{ key: 'customer', label: 'Customer', kind: 'text' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank', 'credit'] }],
-  Purchase:            [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank', 'credit'] }],
-  Expense:             [{ key: 'category', label: 'Category', kind: 'text', placeholder: 'rent, fuel, utilities…' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank'] }, { key: 'is_fixed', label: 'Fixed cost?', kind: 'select', options: ['no', 'yes'] }],
-  InventoryReceipt:    [{ key: 'supplier', label: 'Supplier', kind: 'text' }],
+  Sale:               [{ key: 'customer', label: 'Customer', kind: 'text' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank', 'credit'] }],
+  Purchase:           [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank', 'credit'] }],
+  Expense:            [{ key: 'category', label: 'Category', kind: 'text', placeholder: 'rent, fuel, utilities…' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank'] }, { key: 'is_fixed', label: 'Fixed cost?', kind: 'select', options: ['no', 'yes'] }],
+  InventoryReceipt:   [{ key: 'supplier', label: 'Supplier', kind: 'text' }],
   InventoryAdjustment: [{ key: 'item', label: 'Item', kind: 'text' }, { key: 'delta_qty', label: 'Qty change (+/-)', kind: 'number' }, { key: 'reason', label: 'Reason', kind: 'select', options: ['recount', 'shrinkage', 'damage'] }],
-  Salary:              [{ key: 'employee', label: 'Employee', kind: 'text' }, { key: 'period', label: 'Period', kind: 'text', placeholder: 'e.g. June 2026' }],
-  SupplierPayment:     [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'invoice_ref', label: 'Invoice ref', kind: 'text' }],
-  CustomerPayment:     [{ key: 'customer', label: 'Customer', kind: 'text' }, { key: 'invoice_ref', label: 'Invoice ref', kind: 'text' }],
-  AssetPurchase:       [{ key: 'asset_name', label: 'Asset', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }],
-  TaxPayment:          [{ key: 'tax_type', label: 'Tax type', kind: 'text', placeholder: 'VAT, PAYE…' }, { key: 'authority', label: 'Authority', kind: 'text', placeholder: 'ZRA' }],
-  Loan:                [{ key: 'direction', label: 'Direction', kind: 'select', options: ['received', 'repayment'] }, { key: 'lender', label: 'Lender', kind: 'text' }],
-  Refund:              [{ key: 'direction', label: 'Direction', kind: 'select', options: ['to_customer', 'from_supplier'] }, { key: 'reason', label: 'Reason', kind: 'text' }],
-  Transfer:            [{ key: 'from', label: 'From', kind: 'text', placeholder: 'cash' }, { key: 'to', label: 'To', kind: 'text', placeholder: 'bank' }],
+  Salary:             [{ key: 'employee', label: 'Employee', kind: 'text' }, { key: 'period', label: 'Period', kind: 'text', placeholder: 'e.g. June 2026' }],
+  SupplierPayment:    [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'invoice_ref', label: 'Invoice ref', kind: 'text' }],
+  CustomerPayment:    [{ key: 'customer', label: 'Customer', kind: 'text' }, { key: 'invoice_ref', label: 'Invoice ref', kind: 'text' }],
+  AssetPurchase:      [{ key: 'asset_name', label: 'Asset', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }],
+  TaxPayment:         [{ key: 'tax_type', label: 'Tax type', kind: 'text', placeholder: 'VAT, PAYE…' }, { key: 'authority', label: 'Authority', kind: 'text', placeholder: 'ZRA' }],
+  Loan:               [{ key: 'direction', label: 'Direction', kind: 'select', options: ['received', 'repayment'] }, { key: 'lender', label: 'Lender', kind: 'text' }],
+  Refund:             [{ key: 'direction', label: 'Direction', kind: 'select', options: ['to_customer', 'from_supplier'] }, { key: 'reason', label: 'Reason', kind: 'text' }],
+  Transfer:           [{ key: 'from', label: 'From', kind: 'text', placeholder: 'cash' }, { key: 'to', label: 'To', kind: 'text', placeholder: 'bank' }],
 };
 
 const NO_AMOUNT: EventType[] = ['InventoryReceipt', 'InventoryAdjustment']; // amount optional
@@ -69,7 +69,7 @@ const inputStyle: React.CSSProperties = {
   fontSize: 'var(--fs-body)', outline: 'none',
 };
 const labelStyle: React.CSSProperties = {
-  fontSize: 'var(--fs-label)', fontWeight: 600,
+  fontSize: 'var(--fs-caps)', fontWeight: 600,
   color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em',
   marginBottom: 6, display: 'block',
 };
@@ -156,7 +156,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     try {
       const proposal = await ingestQr(qrText, currency);
       if (!proposal.event_type && !proposal.payload?.amount) {
-        setError("Couldn't read that QR — try the photo/manual entry."); setPhase('idle'); return;
+        setError("Couldn't read that QR: try the photo/manual entry."); setPhase('idle'); return;
       }
       loadProposal(proposal);
     } catch (e) {
@@ -171,7 +171,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     try {
       const proposal = await ingestReceipt(file, currency);
       if (!proposal.payload?.amount) {
-        setError("Couldn't read a total from that photo — try a clearer shot or enter it manually.");
+        setError("Couldn't read a total from that photo: try a clearer shot or enter it manually.");
         setPhase('idle'); return;
       }
       loadProposal(proposal);
@@ -237,7 +237,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
           await handleClassify(transcript, 'voice');
         } catch (e) {
           setPhase('idle');
-          setError((e as Error).message || "Didn't catch that — try again or type it.");
+          setError((e as Error).message || "Didn't catch that: try again or type it.");
         }
       };
       mediaRef.current = rec;
@@ -245,7 +245,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
       rec.start();
     } catch {
       setListening(false);
-      setError('Mic access is blocked — allow microphone permission for this site and try again.');
+      setError('Mic access is blocked: allow microphone permission for this site and try again.');
     }
   }
 
@@ -270,12 +270,12 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     rec.onerror = (e) => {
       setListening(false);
       const msg = e?.error === 'not-allowed' || e?.error === 'service-not-allowed'
-        ? 'Mic access is blocked — allow microphone permission for this site and try again.'
+        ? 'Mic access is blocked: allow microphone permission for this site and try again.'
         : e?.error === 'no-speech'
-        ? "Didn't catch that — try again or type it."
+        ? "Didn't catch that: try again or type it."
         : e?.error === 'audio-capture'
-        ? 'No microphone found — try typing instead.'
-        : 'Could not hear that — try again or type it.';
+        ? 'No microphone found: try typing instead.'
+        : 'Could not hear that: try again or type it.';
       setError(msg);
     };
     rec.onend = () => setListening(false);
@@ -342,7 +342,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
       if (result.queued) {
         // Network down — the outbox holds it and posts when signal returns.
         // The habit must survive the connection (Proposal risk: connectivity).
-        setSuccess(`${etype} saved on your device — it will post automatically when you're back online.`);
+        setSuccess(`${etype} saved on your device: it will post automatically when you're back online.`);
         setText(''); setAmount(''); setFields({}); setLines([]); setCarry({}); setPhase('idle');
         return;
       }
@@ -365,12 +365,12 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
       {receiptSpotlight && phase === 'idle' && (
         <div role="status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '12px 14px', marginBottom: 14, borderRadius: 10, border: '1px solid var(--cyan)', background: 'var(--cyan-dim)' }}>
           <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>
-            📸 <strong>Got a receipt nearby?</strong> Photograph it and AIBOS records the purchase for you — your first numbers in under a minute.
+            <strong>Got a receipt nearby?</strong> Photograph it and AIBOS records the purchase for you: your first numbers in under a minute.
           </span>
           <span style={{ display: 'flex', gap: 8 }}>
             <button type="button" className="touch-target"
               onClick={() => { setReceiptSpotlight(false); fileRef.current?.click(); }}
-              style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
+              style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
               Scan a receipt
             </button>
             <button type="button" className="touch-target" aria-label="Dismiss"
@@ -464,7 +464,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
           className="touch-target"
           style={{
             padding: '10px 18px', minHeight: 44, borderRadius: 10, border: 'none',
-            background: 'var(--cyan)', color: '#04121a',
+            background: 'var(--cyan)', color: 'var(--on-cyan)',
             fontSize: 'var(--fs-body)', fontWeight: 700, cursor: busy ? 'default' : 'pointer',
             opacity: busy ? 0.7 : 1, whiteSpace: 'nowrap',
           }}
@@ -559,7 +559,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                         onChange={e => setFields(p => ({ ...p, [fld.key]: e.target.value }))}
                         style={inputStyle}
                       >
-                        <option value="">—</option>
+                        <option value="">Choose…</option>
                         {fld.options!.map(o => <option key={o} value={o}>{o}</option>)}
                       </select>
                     ) : (

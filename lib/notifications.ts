@@ -80,7 +80,7 @@ export async function buildNotifications(twin: Twin | null, sym: string): Promis
         out.push({
           id: 'runway', severity: 'warning',
           title: 'Watch your cash runway',
-          description: `Roughly ${runway.toFixed(1)} months of cash left — plan ahead.`,
+          description: `Roughly ${runway.toFixed(1)} months of cash left: plan ahead.`,
           href: '/dashboard/cash',
         });
       }
@@ -97,7 +97,7 @@ export async function buildNotifications(twin: Twin | null, sym: string): Promis
       out.push({
         id: 'overdue', severity: worst > 60 ? 'critical' : 'warning',
         title: `${overdue.length} customer${overdue.length === 1 ? '' : 's'} owe you overdue`,
-        description: `${fmt(total, true, sym)} past due — a WhatsApp nudge usually does it.`,
+        description: `${fmt(total, true, sym)} past due: a WhatsApp nudge usually does it.`,
         href: '/dashboard/invoices',
       });
     }

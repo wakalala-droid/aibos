@@ -134,8 +134,8 @@ export async function flushOutbox(): Promise<{ posted: number; rejected: number;
       items = items.filter((i) => i.id !== item.id);
       write(items);
     } catch (err) {
-      if (isNetworkError(err)) break; // still offline — try again later
-      rejected += 1;                  // server said no — surface, don't loop
+      if (isNetworkError(err)) break; // still offline: try again later
+      rejected += 1;                  // server said no: surface, don't loop
       items = items.filter((i) => i.id !== item.id);
       write(items);
     }

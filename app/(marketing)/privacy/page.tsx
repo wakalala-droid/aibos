@@ -5,7 +5,7 @@ import { LEGAL } from '@/lib/legal';
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
-    'How AIBOS collects, uses, stores and protects your business data — including financial records, payroll, and guest details — and the rights you have over it.',
+    'How AIBOS collects, uses, stores and protects your business data (including financial records, payroll and guest details) and the rights you have over it.',
   alternates: { canonical: '/privacy' },
 };
 
@@ -18,10 +18,10 @@ const SECTIONS: { h: string; body: string[] }[] = [
   {
     h: 'What we collect',
     body: [
-      'Account details you give us: your name, email, business name, industry, currency, and (if you choose) a WhatsApp number for your brief.',
-      'Business data you record or upload: sales, expenses, inventory, customers, suppliers, invoices, schedules, and any spreadsheets you import.',
-      'Payroll data, if you use it: employee names, pay, and statutory figures (PAYE, NAPSA, NHIMA).',
-      'Hospitality data, if you use it: guest names, contact details, and — encrypted at the field level before it is stored — guest ID numbers.',
+      'Account details you give us: your name, email, business name, industry, currency and (if you choose) a WhatsApp number for your brief.',
+      'Business data you record or upload: sales, expenses, inventory, customers, suppliers, invoices, schedules and any spreadsheets you import.',
+      'Payroll data, if you use it: employee names, pay and statutory figures (PAYE, NAPSA, NHIMA).',
+      'Hospitality data, if you use it: guest names, contact details and (encrypted at the field level before it is stored) guest ID numbers.',
       'Usage events: which features you open, so we can improve the product. Never the content of your records for advertising.',
     ],
   },
@@ -31,7 +31,7 @@ const SECTIONS: { h: string; body: string[] }[] = [
       'To run the product for you: compute your P&L, cashflow, forecasts, briefs and recommendations from your own recorded data.',
       'To answer your questions: when you use the AI chat, the relevant figures are sent to our AI provider (Google Gemini) solely to generate your answer. They are not used to train any model.',
       'To keep you informed: deliver the brief you asked for, by email or WhatsApp, if you opt in.',
-      'We do NOT sell your data, and we do NOT use your business records to train AI models or to advertise to you.',
+      'We do NOT sell your data and we do NOT use your business records to train AI models or to advertise to you.',
     ],
   },
   {
@@ -53,7 +53,7 @@ const SECTIONS: { h: string; body: string[] }[] = [
     h: 'Your rights',
     body: [
       'Export: download your full history at any time, on any plan, including after you cancel.',
-      'Deletion: you can start fresh (which archives then removes recorded events, recoverable for 30 days) or ask us to delete your account entirely.',
+      'Deletion: you can start fresh (which archives then removes recorded entries, recoverable for 30 days) or ask us to delete your account entirely.',
       'Correction: edit any recorded event; the change is kept in an audit trail.',
       'To exercise any right, or ask a question, contact us at the address below.',
     ],
@@ -74,16 +74,16 @@ const SECTIONS: { h: string; body: string[] }[] = [
   {
     h: 'Data processing (for business customers)',
     body: [
-      'When you record your customers’, suppliers’ or guests’ personal details in AIBOS, you are the data controller and AIBOS is your data processor. We process that data only on your instructions — to run the features you use — and never for our own purposes.',
-      'We keep it confidential, apply the security measures described above (RLS isolation, field encryption for guest IDs, TLS), and do not transfer it to anyone except the sub-processors listed below, each bound to equivalent terms.',
-      'On request we will help you meet your own obligations to the people whose data you hold — including access, correction, export and deletion — and we return or delete the data when you close your account. For a signed Data Processing Agreement, contact us.',
+      'When you record your customers’, suppliers’ or guests’ personal details in AIBOS, you are the data controller and AIBOS is your data processor. We process that data only on your instructions (to run the features you use) and never for our own purposes.',
+      'We keep it confidential, apply the security measures described above (RLS isolation, field encryption for guest IDs, TLS) and do not transfer it to anyone except the sub-processors listed below, each bound to equivalent terms.',
+      'On request we will help you meet your own obligations to the people whose data you hold (including access, correction, export and deletion) and we return or delete the data when you close your account. For a signed Data Processing Agreement, contact us.',
     ],
   },
   {
     h: 'Benchmarks and anonymised insights',
     body: [
-      'In future, AIBOS may offer benchmark insights — e.g. “restaurants like yours run a 62% food margin.” Any such benchmarks are built ONLY from data that has been aggregated and anonymised so no individual business can be identified, and only from businesses that have explicitly opted in.',
-      'This is off by default. We will ask for your clear consent before your (anonymised) figures ever contribute to a benchmark, and you can withdraw at any time. We never sell your data, benchmarked or otherwise.',
+      'In future, AIBOS may offer benchmark insights: e.g. “restaurants like yours run a 62% food margin.” Any such benchmarks are built ONLY from data that has been aggregated and anonymised so no individual business can be identified and only from businesses that have explicitly opted in.',
+      'This is off by default. We will ask for your clear consent before your (anonymised) figures ever contribute to a benchmark and you can withdraw at any time. We never sell your data, benchmarked or otherwise.',
     ],
   },
   {

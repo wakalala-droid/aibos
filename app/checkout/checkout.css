@@ -51,7 +51,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 500;
   color: var(--text-3);
   white-space: nowrap;
@@ -68,7 +68,7 @@
 
 .co-eyebrow {
   margin: 0 0 4px;
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 500;
   color: var(--text-3);
 }
@@ -147,7 +147,7 @@
 .co-seg button:disabled { opacity: 0.5; cursor: not-allowed; }
 .co-save {
   margin: 12px 0 0;
-  font-size: 16px;
+  font-size: var(--fs-body);
   line-height: 1.5;
   color: var(--text-3);
 }
@@ -176,11 +176,11 @@
 .co-line-sub {
   display: block;
   margin-top: 2px;
-  font-size: 16px;
+  font-size: var(--fs-body);
   color: var(--text-3);
 }
 .co-line .co-pending {
-  font-size: 16px;
+  font-size: var(--fs-body);
   color: var(--text-3);
   white-space: normal;
 }
@@ -192,7 +192,7 @@
 .co-line.co-total dd { font-size: 20px; font-weight: 700; }
 .co-after {
   margin: 4px 0 0;
-  font-size: 16px;
+  font-size: var(--fs-body);
   line-height: 1.55;
   color: var(--text-3);
 }
@@ -210,7 +210,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  font-size: 16px;
+  font-size: var(--fs-body);
   line-height: 1.5;
   color: var(--text-2);
 }
@@ -223,7 +223,7 @@
   align-items: center;
   gap: 8px;
   min-height: 44px;
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: var(--text-2);
   cursor: pointer;
@@ -244,7 +244,7 @@
 .co-incl li {
   display: flex;
   gap: 12px;
-  font-size: 16px;
+  font-size: var(--fs-body);
   line-height: 1.5;
   color: var(--text-2);
 }
@@ -254,7 +254,7 @@
 .co-pcs { margin-top: 16px; }
 .co-method-sub {
   margin: 12px 0 0;
-  font-size: 16px;
+  font-size: var(--fs-body);
   line-height: 1.5;
   color: var(--text-3);
 }
@@ -336,7 +336,7 @@
   border-radius: 10px;
   border: 1px solid var(--border-md);
   background: var(--bg-badge);
-  font-size: 16px;
+  font-size: var(--fs-body);
   line-height: 1.55;
   color: var(--text-2);
 }
@@ -381,7 +381,7 @@
   align-items: flex-start;
   gap: 8px;
   margin: 16px 0 0;
-  font-size: 16px;
+  font-size: var(--fs-body);
   line-height: 1.55;
   color: var(--text-3);
 }
@@ -397,7 +397,7 @@
 
 .co-foot {
   margin: 24px 0 0;
-  font-size: 16px;
+  font-size: var(--fs-body);
   line-height: 1.55;
   text-align: center;
   color: var(--text-3);

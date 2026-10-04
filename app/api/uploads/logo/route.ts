@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     const mb = (file.size / (1024 * 1024)).toFixed(1);
     return NextResponse.json(
       {
-        error: `That image is ${mb} MB. Please use one under 2 MB — a logo that size loads slowly for everyone who sees it.`,
+        error: `That image is ${mb} MB. Please use one under 2 MB: a logo that size loads slowly for everyone who sees it.`,
       },
       { status: 413 }
     );

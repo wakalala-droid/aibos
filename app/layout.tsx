@@ -5,7 +5,7 @@ import { OfflineSync } from '@/components/pwa/OfflineSync';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AIBOS — Business Intelligence Platform',
+  title: 'AIBOS · Business Intelligence Platform',
   description: 'Financial · Customer · Operations intelligence for Zambian SMEs',
   manifest: '/manifest.webmanifest',
   icons: {

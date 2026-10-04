@@ -25,7 +25,7 @@ const TITLES: Record<string, string> = {
 };
 
 const money = (n: number | null | undefined, sym: string) =>
-  n == null ? '—' : `${sym}${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  n == null ? 'None' : `${sym}${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const card: React.CSSProperties = {
   padding: '20px 22px', borderRadius: 14, border: '1px solid var(--border-md)',
@@ -35,7 +35,7 @@ const btn = (on: boolean): React.CSSProperties => ({
   padding: '12px 18px', minHeight: 48, borderRadius: 10, cursor: 'pointer',
   border: on ? '1px solid var(--cyan)' : '1px solid var(--border-md)',
   background: on ? 'var(--cyan)' : 'transparent',
-  color: on ? '#04121a' : 'var(--text-1)',
+  color: on ? 'var(--on-cyan)' : 'var(--text-1)',
   fontSize: 'var(--fs-body)', fontWeight: on ? 700 : 600, textAlign: 'left',
 });
 const quiet: React.CSSProperties = {
@@ -103,13 +103,13 @@ export default function QuestionFlow({
       {/* The question */}
       <div style={card}>
         <p style={{
-          margin: '0 0 6px', fontSize: 'var(--fs-label)', fontWeight: 700,
+          margin: '0 0 6px', fontSize: 'var(--fs-caps)', fontWeight: 700,
           color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em',
         }}>
           {TITLES[q.type] ?? 'Needs your answer'}
         </p>
         <h3 style={{
-          margin: '0 0 8px', fontSize: '1.25rem', fontWeight: 700,
+          margin: '0 0 8px', fontSize: 'var(--fs-h3)', fontWeight: 700,
           color: 'var(--text-1)', lineHeight: 1.35,
         }}>
           {q.title || q.ask}
@@ -144,8 +144,8 @@ export default function QuestionFlow({
                     <td style={{ color: 'var(--text-3)' }}>
                       {ln.sheet ? `${ln.sheet} ` : ''}{ln.row}
                     </td>
-                    <td>{ln.date || '—'}</td>
-                    <td>{ln.description || '—'}</td>
+                    <td>{ln.date || 'None'}</td>
+                    <td>{ln.description || 'None'}</td>
                     <td style={{ textAlign: 'right', fontWeight: 600 }}>{money(ln.amount, sym)}</td>
                   </tr>
                 ))}
@@ -161,7 +161,7 @@ export default function QuestionFlow({
 
         {q.closest && (
           <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
-            The closest thing you already have is <strong>{q.closest}</strong> — is it the same one?
+            The closest thing you already have is <strong>{q.closest}</strong>: is it the same one?
           </p>
         )}
 
@@ -172,7 +172,7 @@ export default function QuestionFlow({
             <>
               <button type="button" className="touch-target" style={btn(given?.action === 'add_worker')}
                 onClick={() => answer({ action: 'add_worker', employee_name: q.name })}>
-                Add {q.name} to my workers, and record these as their wages
+                Add {q.name} to my workers and record these as their wages
               </button>
               {employees.length > 0 && (
                 <select
@@ -244,11 +244,11 @@ export default function QuestionFlow({
             <>
               <button type="button" className="touch-target" style={btn(given?.action === 'sale')}
                 onClick={() => answer({ action: 'sale' })}>
-                The business earned it — record it as a sale
+                The business earned it: record it as a sale
               </button>
               <button type="button" className="touch-target" style={btn(given?.action === 'funding')}
                 onClick={() => answer({ action: 'funding' })}>
-                It was money put in to spend — not income
+                It was money put in to spend: not income
               </button>
               <button type="button" className="touch-target" style={btn(given?.action === 'transfer')}
                 onClick={() => answer({ action: 'transfer' })}>

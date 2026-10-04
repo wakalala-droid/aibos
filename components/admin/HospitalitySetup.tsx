@@ -44,20 +44,20 @@ interface State {
 const input: React.CSSProperties = {
   width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 15, outline: 'none',
+  fontSize: 'var(--fs-body)', outline: 'none',
 };
 const lbl: React.CSSProperties = {
-  fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)',
+  fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
   padding: '9px 16px', minHeight: 40, borderRadius: 8, border: 'none',
-  background: 'var(--cyan)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+  background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer',
 };
 const ghostBtn: React.CSSProperties = {
   padding: '8px 14px', minHeight: 38, borderRadius: 8, background: 'transparent',
   border: '1px solid var(--border-md)', color: 'var(--text-2)',
-  fontSize: 15, fontWeight: 600, cursor: 'pointer',
+  fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer',
 };
 
 const emptyUnit = (): UnitRow => ({
@@ -131,7 +131,7 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
   if (!state) {
     return (
       <div className="section-card" style={{ marginBottom: 16 }}>
-        <p style={{ fontSize: 15, color: 'var(--crit)', margin: 0 }}>{error || 'Could not load.'}</p>
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--crit)', margin: 0 }}>{error || 'Could not load.'}</p>
       </div>
     );
   }
@@ -140,18 +140,18 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
 
   return (
     <div className="section-card" style={{ marginBottom: 16 }}>
-      <h2 style={{ margin: '0 0 4px', fontSize: 17, fontWeight: 700, color: 'var(--text-1)' }}>
+      <h2 style={{ margin: '0 0 4px', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
         Booking website
       </h2>
-      <p style={{ margin: '0 0 12px', fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)' }}>
+      <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
         Set this customer&rsquo;s property up so their own website takes bookings through
-        AI-BOS. Everything here is written to their account, not yours, and every
+        AI-BOS. Everything here is written to their account, not yours and every
         action is logged against your email.
       </p>
 
       {error && (
         <p role="alert" style={{
-          margin: '0 0 12px', padding: '10px 12px', borderRadius: 8, fontSize: 15, lineHeight: 1.6,
+          margin: '0 0 12px', padding: '10px 12px', borderRadius: 8, fontSize: 'var(--fs-body)', lineHeight: 1.6,
           background: 'color-mix(in srgb, var(--crit) 10%, transparent)',
           border: '1px solid color-mix(in srgb, var(--crit) 35%, transparent)', color: 'var(--crit)',
         }}>
@@ -161,7 +161,7 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
 
       {!state.entitled && (
         <p style={{
-          margin: '0 0 12px', padding: '10px 12px', borderRadius: 8, fontSize: 15, lineHeight: 1.6,
+          margin: '0 0 12px', padding: '10px 12px', borderRadius: 8, fontSize: 'var(--fs-body)', lineHeight: 1.6,
           background: 'color-mix(in srgb, var(--warn) 10%, transparent)',
           border: '1px solid color-mix(in srgb, var(--warn) 35%, transparent)', color: 'var(--text-1)',
         }}>
@@ -175,7 +175,7 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
       {state.property ? (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-1)' }}>{state.property.name}</span>
+            <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{state.property.name}</span>
             <span className="badge" style={{
               color: token ? 'var(--good)' : 'var(--text-4)',
               borderColor: token ? 'var(--good)' : 'var(--border)',
@@ -184,19 +184,19 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
             </span>
           </div>
 
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', fontWeight: 600, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', fontWeight: 600, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Units and the web address each answers to
           </p>
           <ul style={{ listStyle: 'none', margin: '0 0 12px', padding: 0 }}>
             {state.units.length === 0 && (
-              <li style={{ fontSize: 15, color: 'var(--text-3)' }}>No units. Nothing can be booked until there is at least one.</li>
+              <li style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>No units. Nothing can be booked until there is at least one.</li>
             )}
             {state.units.map((u) => (
               <li key={u.id} style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap', padding: '2px 0' }}>
-                <code style={{ fontFamily: 'inherit', fontSize: 15, fontWeight: 600, color: 'var(--text-1)' }}>
+                <code style={{ fontFamily: 'inherit', fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>
                   {u.public_slug || slugFrom(u.unit_name)}
                 </code>
-                <span style={{ fontSize: 15, color: 'var(--text-3)' }}>
+                <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>
                   {u.unit_name} · sleeps {u.max_guests} · {u.currency} {u.base_nightly_rate}/night
                 </span>
               </li>
@@ -205,7 +205,7 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
 
           {token ? (
             <>
-              <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 8px' }}>
+              <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 8px' }}>
                 Put these two settings into the customer&rsquo;s website, then redeploy it.
               </p>
               <Setting
@@ -223,7 +223,7 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
               />
             </>
           ) : (
-            <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 8px' }}>
+            <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 8px' }}>
               This property has no website key. Mint one to let their site read
               availability and send booking requests.
             </p>

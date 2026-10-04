@@ -57,9 +57,9 @@ function OverviewPage() {
   // Chart data
   const safeMonthly = Array.isArray(monthly) ? monthly : [];
   const chartData = safeMonthly.slice(-6).map(m => ({
-    month:   String(m?.Month ?? ''),
+    month:  String(m?.Month ?? ''),
     Revenue: Math.round(Number(m?.Revenue) || 0),
-    Profit:  Math.round((Number(m?.Revenue) || 0) - (Number(m?.Costs) || 0)),
+    Profit: Math.round((Number(m?.Revenue) || 0) - (Number(m?.Costs) || 0)),
   }));
 
   // Spark arrays
@@ -156,9 +156,9 @@ function OverviewPage() {
         : 'the dataset';
     synthSignals.push({
       insight: `Average net margin is ${m.toFixed(1)}% across ${scope}.`,
-      action: m < 10 ? 'Margins are thin — review pricing and your largest cost lines.'
-            : m < 20 ? 'Workable, but improvable — target your top variable costs.'
-            : 'Strong margins — protect them as you scale.',
+      action: m < 10 ? 'Margins are thin: review pricing and your largest cost lines.'
+            : m < 20 ? 'Workable, but improvable: target your top variable costs.'
+            : 'Strong margins: protect them as you scale.',
       priority: m < 10 ? 'high' : m < 20 ? 'medium' : 'low',
       source_engines: ['E1'],
     });
@@ -175,7 +175,7 @@ function OverviewPage() {
       const up = marginGrowth >= 0;
       synthSignals.push({
         insight: `Net margin ${up ? 'expanded' : 'compressed'} ${Math.abs(marginGrowth).toFixed(1)} pts month-over-month.`,
-        action: up ? 'Lock in whatever drove the gain.' : 'Costs are outpacing revenue — act on the largest line.',
+        action: up ? 'Lock in whatever drove the gain.' : 'Costs are outpacing revenue: act on the largest line.',
         priority: !up && Math.abs(marginGrowth) > 3 ? 'high' : !up ? 'medium' : 'low',
         source_engines: ['E1'],
       });
@@ -192,7 +192,7 @@ function OverviewPage() {
   if (hasEngine3Data) {
     synthSignals.push({
       insight: `Drink attach at ${drinkAttach.toFixed(0)}%${warnB > 0 ? ` · ${warnB} benchmark${warnB === 1 ? '' : 's'} below target` : ''}.`,
-      action: drinkAttach < 80 ? 'Push combo prompts at the point of sale to lift attach.' : 'Attach is strong — replicate it across locations.',
+      action: drinkAttach < 80 ? 'Push combo prompts at the point of sale to lift attach.' : 'Attach is strong: replicate it across locations.',
       priority: warnB > 0 || drinkAttach < 70 ? 'high' : 'low',
       source_engines: ['E3'],
     });
@@ -222,7 +222,7 @@ function OverviewPage() {
       <TodayBrief />
       <DecisionsQueue />
       <div id="decide">
-        <RecommendationList limit={3} title="Decide next" subtitle="From your Digital Twin — evidence attached" seeAllHref="/dashboard/brief?tab=advisor" />
+        <RecommendationList limit={3} title="Decide next" subtitle="From your Digital Twin: evidence attached" seeAllHref="/dashboard/brief?tab=advisor" />
       </div>
 
       {/* ── Contextual upgrade trigger (only at moments of demonstrated value) ── */}
@@ -251,10 +251,10 @@ function OverviewPage() {
             color: scores ? scoreColor(scores.overall_score) : 'var(--text-4)',
             letterSpacing: '-0.05em', margin: 0, lineHeight: 1,
           }}>
-            {scores?.overall_score ?? '—'}
+            {scores?.overall_score ?? 'Not yet'}
           </p>
           <p style={{
-            fontSize: 'var(--fs-label)',
+            fontSize: 'var(--fs-caps)',
             color: 'var(--cyan)', margin: '6px 0 0', letterSpacing: '0.1em', textTransform: 'uppercase',
           }}>
             {scores?.overall_label ?? 'No data'}
@@ -338,11 +338,11 @@ function OverviewPage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="var(--border)" vertical={false}/>
-                  <XAxis dataKey="month"
-                    tick={{ fontSize: 12, fill: 'var(--text-3)' }}
+                  <XAxis minTickGap={16} dataKey="month"
+                    tick={{ fontSize: 18, fill: 'var(--text-3)' }}
                     axisLine={false} tickLine={false}/>
-                  <YAxis
-                    tick={{ fontSize: 12, fill: 'var(--text-3)' }}
+                  <YAxis width={84}
+                    tick={{ fontSize: 18, fill: 'var(--text-3)' }}
                     axisLine={false} tickLine={false}
                     tickFormatter={(v) => formatAxis(Number(v))}/>
                   <Tooltip content={<ChartTooltip sym={sym}/>}
@@ -373,11 +373,11 @@ function OverviewPage() {
           <div className="grid-2">
             <SectionCard explainId="card.customer" delay={0.15}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                   Customer Intelligence
                 </p>
                 {hasEngine2Data && (
-                  <Link href="/dashboard/customers" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
+                  <Link className="tap-link" href="/dashboard/customers" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
                     View →
                   </Link>
                 )}
@@ -390,10 +390,10 @@ function OverviewPage() {
                     { l: 'Retention', v: `${retRate.toFixed(0)}%`, c: 'var(--e2)'  },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         {item.l}
                       </p>
-                      <p style={{ fontSize: '1.4rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>
+                      <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>
                         {item.v}
                       </p>
                     </div>
@@ -402,19 +402,21 @@ function OverviewPage() {
               ) : (
                 <EmptyState
                   colour="var(--e2)"
-                  text="Upload customer or sales data to unlock RFM segments, CLV tiers and churn risk."
-                  action={{ label: 'Import data', href: '/dashboard/import' }}
+                  chip="Needs named sales"
+                  text="Add the customer's name when you record a sale. After about 10 named sales, AIBOS shows who your best customers are and who has gone quiet."
+                  action={{ label: 'Record a sale', href: '/dashboard/record' }}
+                  secondary={{ label: 'Or upload a file', href: '/dashboard/import' }}
                 />
               )}
             </SectionCard>
 
             <SectionCard explainId="card.operations" delay={0.18}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                   Operations
                 </p>
                 {hasEngine3Data && (
-                  <Link href="/dashboard/pos" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
+                  <Link className="tap-link" href="/dashboard/pos" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
                     View →
                   </Link>
                 )}
@@ -427,10 +429,10 @@ function OverviewPage() {
                     { l: 'Benchmarks',    v: `${warnB} warn`,                        c: warnB > 0 ? 'var(--warn)' : 'var(--good)' },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         {item.l}
                       </p>
-                      <p style={{ fontSize: '1rem', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
+                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
                         {item.v}
                       </p>
                     </div>
@@ -440,11 +442,11 @@ function OverviewPage() {
                 <div className="grid-3" style={{ gap: 10 }}>
                   {[
                     { l: 'Products',    v: String(safeBreakdown.length),                           c: 'var(--e3)' },
-                    { l: 'Top Seller',  v: topSeller?.item ?? '—',                                 c: 'var(--good)' },
-                    { l: 'Best Margin', v: bestMargin ? `${bestMargin.margin.toFixed(0)}%` : '—',  c: (bestMargin?.margin ?? 0) >= 0 ? 'var(--good)' : 'var(--crit)' },
+                    { l: 'Top Seller',  v: topSeller?.item ?? 'None',                                 c: 'var(--good)' },
+                    { l: 'Best Margin', v: bestMargin ? `${bestMargin.margin.toFixed(0)}%` : 'None',  c: (bestMargin?.margin ?? 0) >= 0 ? 'var(--good)' : 'var(--crit)' },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         {item.l}
                       </p>
                       <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.v}>
@@ -456,8 +458,9 @@ function OverviewPage() {
               ) : (
                 <EmptyState
                   colour="var(--e3)"
-                  text="Upload a POS export to unlock category mix, item velocity and QSR benchmarks."
-                  action={{ label: 'Import data', href: '/dashboard/import' }}
+                  chip="Needs your till data"
+                  text="Upload the sales report from your till (POS) to see what sells, how fast and at what time of day."
+                  action={{ label: 'Upload a file', href: '/dashboard/import' }}
                 />
               )}
             </SectionCard>
@@ -472,7 +475,7 @@ function OverviewPage() {
             delay={0.22}
             action={
               orderedInsights.length > 0 ? (
-                <Link href="/dashboard/brief?tab=ops" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
+                <Link className="tap-link" href="/dashboard/brief?tab=ops" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
                   View all →
                 </Link>
               ) : undefined
@@ -485,11 +488,11 @@ function OverviewPage() {
                   flex: '1 1 0', minWidth: 92, padding: '10px 12px', borderRadius: 10,
                   border: '1px solid var(--border)', opacity: s.active ? 1 : 0.4,
                 }}>
-                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     {s.label}
                   </p>
-                  <p style={{ fontSize: '1.3rem', fontWeight: 800, color: s.active ? s.colour : 'var(--text-4)', margin: 0, letterSpacing: '-0.03em' }}>
-                    {s.active && s.score !== undefined ? s.score : '—'}
+                  <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 800, color: s.active ? s.colour : 'var(--text-4)', margin: 0, letterSpacing: '-0.03em' }}>
+                    {s.active && s.score !== undefined ? s.score : 'Not yet'}
                   </p>
                 </div>
               ))}
@@ -509,7 +512,7 @@ function OverviewPage() {
                 ))}
               </div>
             ) : (
-              <EmptyState colour="var(--cyan)" text="Upload financial, customer or POS data to generate unified intelligence." action={{ label: 'Import data', href: '/dashboard/import' }} />
+              <EmptyState colour="var(--cyan)" chip="Needs your sales" text="Record your sales and costs, or upload a file, and AIBOS puts its findings across money, customers and operations here." action={{ label: 'Record a sale', href: '/dashboard/record' }} secondary={{ label: 'Or upload a file', href: '/dashboard/import' }} />
             )}
 
             {/* Encourage more engines — informational, never a blocking lock. */}
@@ -530,7 +533,7 @@ function OverviewPage() {
               subtitle="AIBOS unified brief · Financial + Customer Intelligence + Operations"
               delay={0.26}
               action={
-                <Link href="/dashboard/brief?tab=ops" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
+                <Link className="tap-link" href="/dashboard/brief?tab=ops" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
                   Full brief →
                 </Link>
               }
@@ -564,12 +567,12 @@ function OverviewPage() {
 
           {/* Upload — ONE place, so a file is never uploaded twice to two
               different screens that each understood half of it. */}
-          <SectionCard explainId="card.upload" title="Upload a file" subtitle="Any spreadsheet — every sheet read at once" delay={0.08}>
+          <SectionCard explainId="card.upload" title="Upload a file" subtitle="Any spreadsheet: every sheet read at once" delay={0.08}>
             <div id="upload-section" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <p style={{ margin: 0, fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.6 }}>
                 Bring in an Excel or CSV file of any shape. AIBOS reads every sheet together,
-                files each row against the right worker, product or cost, and updates these
-                dashboards — from the one upload.
+                files each row against the right worker, product or cost and updates these
+                dashboards: from the one upload.
               </p>
               <a
                 href="/dashboard/import"
@@ -577,7 +580,7 @@ function OverviewPage() {
                 style={{
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   padding: '12px 20px', minHeight: 48, borderRadius: 10, border: 'none',
-                  background: 'var(--cyan)', color: '#04121a',
+                  background: 'var(--cyan)', color: 'var(--on-cyan)',
                   fontSize: 'var(--fs-body)', fontWeight: 700, textDecoration: 'none',
                 }}
               >
@@ -657,10 +660,10 @@ function OverviewPage() {
       <div style={{ marginBottom: 8 }}>
         <FeatureGate
           feature="ai_chat"
-          title="AI CFO Chat"
+          title="Ask AIBOS"
           colour="var(--cyan)"
-          headline="Ask your numbers anything — in plain language."
-          detail="“What drove last month's cost spike?” “What's our cash runway?” The AI CFO reasons across your Financial, Customer and Operations data and answers instantly."
+          headline="Ask your numbers anything: in plain language."
+          detail="“What drove last month's cost spike?” “What's our cash runway?” AIBOS reasons across your money, customers and operations and answers instantly."
         >
           <div style={{ height: 600 }}>
             <AICFOChat />

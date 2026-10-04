@@ -114,18 +114,18 @@ function Strip({ title, body, action }: { title: string; body: string; action?: 
     >
       <span
         aria-hidden
-        style={{ fontSize: 18, lineHeight: '24px', color: 'var(--amber)' }}
+        style={{ fontSize: 'var(--fs-body)', lineHeight: '24px', color: 'var(--amber)' }}
       >
         !
       </span>
       <div style={{ flex: '1 1 320px', minWidth: 0 }}>
         <p style={{
-          margin: 0, fontSize: 16, lineHeight: 1.5, fontWeight: 600, color: 'var(--text-1)',
+          margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.5, fontWeight: 600, color: 'var(--text-1)',
         }}>
           {title}
         </p>
         <p style={{
-          margin: '4px 0 0', fontSize: 16, lineHeight: 1.6, fontWeight: 400, color: 'var(--text-2)',
+          margin: '4px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 400, color: 'var(--text-2)',
         }}>
           {body}
         </p>
@@ -138,6 +138,6 @@ function Strip({ title, body, action }: { title: string; body: string; action?: 
 const actionStyle: React.CSSProperties = {
   display: 'inline-block', padding: '9px 16px', minHeight: 40, borderRadius: 8,
   border: '1px solid var(--border-md)', background: 'var(--bg-input)',
-  color: 'var(--text-1)', fontSize: 15, fontWeight: 600, textDecoration: 'none',
+  color: 'var(--text-1)', fontSize: 'var(--fs-body)', fontWeight: 600, textDecoration: 'none',
   cursor: 'pointer', lineHeight: '20px',
 };

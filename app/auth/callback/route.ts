@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   // ── OAuth error from Google/Supabase ──────────────────────────────────────
   if (error) {
-    console.error(`[AIBOS Auth] OAuth error: ${error} — ${errorDesc}`);
+    console.error(`[AIBOS Auth] OAuth error: ${error}: ${errorDesc}`);
     const loginUrl = new URL('/login', origin);
     loginUrl.searchParams.set('error', error);
     loginUrl.searchParams.set('error_description', errorDesc ?? 'Authentication failed');
@@ -81,18 +81,18 @@ export async function GET(request: NextRequest) {
       // new rows get the server-authoritative defaults, including an admin role
       // for allowlisted emails so the first admin works before any seed runs.
       await supabase.from('profiles').upsert({
-        id:                user.id,
-        email:             user.email!,
-        full_name:         fullName,
-        avatar_url:        (user.user_metadata?.avatar_url as string | undefined) ?? null,
-        business_name:     fullName,
-        role:              isAdminUser(user) ? 'admin' : 'member',
-        tier:              'free',
-        tier_source:       'self',
+        id:               user.id,
+        email:            user.email!,
+        full_name:        fullName,
+        avatar_url:       (user.user_metadata?.avatar_url as string | undefined) ?? null,
+        business_name:    fullName,
+        role:             isAdminUser(user) ? 'admin' : 'member',
+        tier:             'free',
+        tier_source:      'self',
         subscription_tier: 'free',
         // ignoreDuplicates ⇒ referred_by is stamped on FIRST provision only —
         // an existing account can never be claimed retroactively (anti-gaming).
-        referred_by:       referredBy,
+        referred_by:      referredBy,
       }, { onConflict: 'id', ignoreDuplicates: true });
     }
   } catch (profileError) {

@@ -23,7 +23,7 @@ export default function AskAnything() {
           <h2 className="mkt-h2">Ask your business anything.</h2>
           <p className="mkt-lead" style={{ marginTop: 18 }}>
             No dashboards to learn, no formulas to write. Type a question the way
-            you’d ask a sharp employee, and your AI CFO answers from your own numbers
+            you’d ask a sharp employee and AIBOS answers from your own numbers
             in seconds.
           </p>
           <ul style={{ listStyle: 'none', margin: '24px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>

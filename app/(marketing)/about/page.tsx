@@ -33,12 +33,12 @@ const ARC: { eyebrow: string; title: string; body: string }[] = [
   {
     eyebrow: 'Your business tomorrow',
     title: 'A CFO in your pocket',
-    body: 'Imagine asking your business a question in plain words and getting a straight answer, in Kwacha, in seconds. Knowing your runway before it runs out. Seeing which product really pays. That’s not enterprise software; that’s AIBOS, and it costs less than one bad decision.',
+    body: 'Imagine asking your business a question in plain words and getting a straight answer, in Kwacha, in seconds. Knowing your runway before it runs out. Seeing which product really pays. That’s not enterprise software; that’s AIBOS and it costs less than one bad decision.',
   },
   {
     eyebrow: 'The world we’re building',
     title: 'Every African business, intelligent',
-    body: 'When millions of SMEs can see clearly, they hire with confidence, price fairly, and survive the lean months. We think that’s how economies are built: not from the top down, but from every shop, restaurant and workshop getting a little bit smarter.',
+    body: 'When millions of SMEs can see clearly, they hire with confidence, price fairly and survive the lean months. We think that’s how economies are built: not from the top down, but from every shop, restaurant and workshop getting a little bit smarter.',
   },
   {
     eyebrow: 'Our commitment to you',
@@ -61,7 +61,7 @@ export default function AboutPage() {
               Make every African business intelligent.
             </h1>
             <p className="mkt-lead" style={{ marginTop: 20, marginInline: 'auto', maxWidth: 580 }}>
-              AIBOS exists for one reason: the tools that let big companies see clearly should belong to the small ones too, in their language, their currency, and their reach.
+              AIBOS exists for one reason: the tools that let big companies see clearly should belong to the small ones too, in their language, their currency and their reach.
             </p>
           </Reveal>
         </div>
@@ -112,8 +112,8 @@ export default function AboutPage() {
                   </p>
                 ) : (
                   <p className="mkt-body" style={{ marginTop: 16 }}>
-                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                      Placeholder — fill in the FOUNDER object at the top of this file.
+                    <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      Placeholder: fill in the FOUNDER object at the top of this file.
                     </span>
                   </p>
                 )}
@@ -136,10 +136,10 @@ export default function AboutPage() {
             {ARC.map((s, i) => (
               <Reveal key={s.eyebrow} delay={i * 0.05}>
                 <div className="mkt-card">
-                  <p style={{ fontSize: 'var(--fs-label)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 10px' }}>
+                  <p style={{ fontSize: 'var(--fs-caps)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 10px' }}>
                     {s.eyebrow}
                   </p>
-                  <h2 className="mkt-h3" style={{ fontSize: '1.25rem' }}>{s.title}</h2>
+                  <h2 className="mkt-h3" style={{ fontSize: 'var(--fs-h3)' }}>{s.title}</h2>
                   <p className="mkt-body" style={{ marginTop: 10, fontSize: 'var(--fs-body)' }}>{s.body}</p>
                 </div>
               </Reveal>

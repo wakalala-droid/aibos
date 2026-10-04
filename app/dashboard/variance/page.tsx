@@ -41,14 +41,14 @@ export default function VariancePage() {
     const profitChangePct = prevProfit !== 0 ? ((profit - prevProfit) / Math.abs(prevProfit) * 100) : 0;
 
     return {
-      month:         String(m.Month),
-      revenue:       rev,
+      month:        String(m.Month),
+      revenue:      rev,
       cost,
       profit,
-      revChange:     Math.round(revChangePct * 10) / 10,
-      costChange:    Math.round(costChangePct * 10) / 10,
-      profitChange:  Math.round(profitChangePct * 10) / 10,
-      margin:        rev > 0 ? Math.round((profit / rev) * 1000) / 10 : 0,
+      revChange:    Math.round(revChangePct * 10) / 10,
+      costChange:   Math.round(costChangePct * 10) / 10,
+      profitChange: Math.round(profitChangePct * 10) / 10,
+      margin:       rev > 0 ? Math.round((profit / rev) * 1000) / 10 : 0,
     };
   });
 
@@ -59,15 +59,15 @@ export default function VariancePage() {
   const avgCostChange   = variances.length > 1
     ? variances.slice(1).reduce((s, v) => s + v.costChange, 0) / (variances.length - 1)
     : 0;
-  const maxSpike        = variances.reduce((max, v) => Math.abs(v.costChange) > Math.abs(max.costChange) ? v : max, variances[0] ?? { costChange: 0, month: '—' });
+  const maxSpike        = variances.reduce((max, v) => Math.abs(v.costChange) > Math.abs(max.costChange) ? v : max, variances[0] ?? { costChange: 0, month: 'None' });
   const criticalAlerts  = (alerts ?? []).filter((a: any) => a.severity === 'critical' || a.severity === 'warning');
 
   // Chart data — revenue vs costs with variance bars
   const chartData = variances.map(v => ({
-    month:      v.month,
-    Revenue:    v.revenue,
-    Costs:      v.cost,
-    RevChange:  v.revChange,
+    month:     v.month,
+    Revenue:   v.revenue,
+    Costs:     v.cost,
+    RevChange: v.revChange,
     CostChange: v.costChange,
   }));
 
@@ -79,7 +79,7 @@ export default function VariancePage() {
       headline={variances.length > 1
         ? `Your biggest swing was ${maxSpike.month}, with costs moving ${maxSpike.costChange >= 0 ? '+' : ''}${maxSpike.costChange}% month-over-month.`
         : 'Upload at least two months to see month-over-month variance.'}
-      detail="See month-by-month revenue and cost variance, the months that broke pattern, and which line items drove every swing."
+      detail="See month-by-month revenue and cost variance, the months that broke pattern and which line items drove every swing."
     >
     <>
       <PageHeader
@@ -122,7 +122,7 @@ export default function VariancePage() {
         />
         <KPICard
           label="LARGEST COST SPIKE" value={`${maxSpike?.costChange >= 0 ? '+' : ''}${(maxSpike?.costChange ?? 0).toFixed(1)}%`}
-          sub={`in ${maxSpike?.month ?? '—'}`}
+          sub={`in ${maxSpike?.month ?? 'None'}`}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--crit)" strokeWidth="1.5" fill="none"/><path d="M12 8v5M12 16v.5" stroke="var(--crit)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(239,68,68,0.15)"
           sparkData={variances.map(v => Math.abs(v.costChange))}
@@ -147,8 +147,8 @@ export default function VariancePage() {
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} barCategoryGap="22%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis minTickGap={16} dataKey="month" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="Revenue" fill="var(--cyan)"  fillOpacity={0.75} radius={[4,4,0,0]} name="Revenue" />
               <Bar dataKey="Costs"   fill="var(--e2)"    fillOpacity={0.75} radius={[4,4,0,0]} name="Costs"   />
@@ -163,8 +163,8 @@ export default function VariancePage() {
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={chartData.slice(1)} barCategoryGap="28%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={v => `${v.toFixed(0)}%`} />
+              <XAxis minTickGap={16} dataKey="month" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={v => `${v.toFixed(0)}%`} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <ReferenceLine y={0} stroke="var(--border-md)" strokeWidth={1} />
               <Bar dataKey="RevChange"  name="Revenue Δ" radius={[3,3,0,0]}>
@@ -199,11 +199,11 @@ export default function VariancePage() {
                   <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.month}</td>
                   <td>{fmt(row.revenue, false, sym)}</td>
                   <td style={{ color: row.revChange >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 600 }}>
-                    {i === 0 ? '—' : `${row.revChange >= 0 ? '+' : ''}${row.revChange.toFixed(1)}%`}
+                    {i === 0 ? 'First' : `${row.revChange >= 0 ? '+' : ''}${row.revChange.toFixed(1)}%`}
                   </td>
                   <td>{fmt(row.cost, false, sym)}</td>
                   <td style={{ color: row.costChange > 10 ? 'var(--warn)' : row.costChange > 0 ? 'var(--text-3)' : 'var(--good)', fontWeight: 600 }}>
-                    {i === 0 ? '—' : `${row.costChange >= 0 ? '+' : ''}${row.costChange.toFixed(1)}%`}
+                    {i === 0 ? 'First' : `${row.costChange >= 0 ? '+' : ''}${row.costChange.toFixed(1)}%`}
                   </td>
                   <td style={{ color: row.profit >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 700 }}>{fmt(row.profit, false, sym)}</td>
                   <td style={{ color: row.margin >= 20 ? 'var(--good)' : row.margin >= 10 ? 'var(--warn)' : 'var(--crit)' }}>

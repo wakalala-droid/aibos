@@ -30,8 +30,8 @@ export default function SimpleSummary({ page }: { page: 'cash' | 'customers' | '
     const pay = Number(twin?.payables) || 0;
     if (twin && (cash !== 0 || Number(twin.event_count) > 0)) {
       const bits = [`In plain words: you're holding ${money(cash)} right now.`];
-      if (recv > 0) bits.push(`Customers owe you ${money(recv)} — collecting it is the cheapest cash you'll ever raise.`);
-      if (pay > 0) bits.push(`You owe suppliers ${money(pay)} — plan for it so it never surprises you.`);
+      if (recv > 0) bits.push(`Customers owe you ${money(recv)}: collecting it is the cheapest cash you'll ever raise.`);
+      if (pay > 0) bits.push(`You owe suppliers ${money(pay)}: plan for it so it never surprises you.`);
       text = bits.join(' ');
     } else if (kpi && Number(kpi.totalRevenue) > 0) {
       text = `In plain words: across your uploaded months you brought in ${money(Number(kpi.totalRevenue))} and kept ${money(Number(kpi.totalProfit))} after costs. The charts below show when cash gets tight and why.`;
@@ -42,8 +42,8 @@ export default function SimpleSummary({ page }: { page: 'cash' | 'customers' | '
     const champions = rfm.filter((r) => r.segment === 'Champion').length;
     const atRisk = rfm.filter((r) => (Number(r.churn_risk) || 0) >= 70).length;
     const bits = [`In plain words: ${rfm.length} customer${rfm.length === 1 ? '' : 's'} on file.`];
-    if (champions > 0) bits.push(`${champions} ${champions === 1 ? 'is a regular' : 'are regulars'} who drive your revenue — protect them.`);
-    if (atRisk > 0) bits.push(`${atRisk} ${atRisk === 1 ? 'is' : 'are'} drifting — check-in drafts are ready on your Home page.`);
+    if (champions > 0) bits.push(`${champions} ${champions === 1 ? 'is a regular' : 'are regulars'} who drive your revenue: protect them.`);
+    if (atRisk > 0) bits.push(`${atRisk} ${atRisk === 1 ? 'is' : 'are'} drifting: check-in drafts are ready on your Home page.`);
     else bits.push('Nobody valuable is drifting right now.');
     text = bits.join(' ');
   }
@@ -51,7 +51,7 @@ export default function SimpleSummary({ page }: { page: 'cash' | 'customers' | '
   if (page === 'ops' && pos) {
     const net = Number(pos.net_revenue ?? pos.gross_revenue) || 0;
     if (net > 0) {
-      text = `In plain words: your sales data below adds up to ${money(net)}. This page shows what sells, when — your busiest hours and best sellers are where staffing and stock decisions pay off.`;
+      text = `In plain words: your sales data below adds up to ${money(net)}. This page shows what sells, when: your busiest hours and best sellers are where staffing and stock decisions pay off.`;
     }
   }
 

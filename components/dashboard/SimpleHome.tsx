@@ -76,12 +76,12 @@ const cardStyle: React.CSSProperties = {
 };
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 'var(--fs-label)', fontWeight: 600,
+  fontSize: 'var(--fs-caps)', fontWeight: 600,
   color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.07em',
 };
 
 const valueStyle: React.CSSProperties = {
-  fontSize: '1.55rem', fontWeight: 700,
+  fontSize: 'var(--fs-h2)', fontWeight: 700,
   color: 'var(--text-1)', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums',
 };
 
@@ -207,7 +207,7 @@ export default function SimpleHome() {
 
   // "AIBOS is handling this" — honest automation receipts from real data.
   const handled: string[] = [];
-  if (eventCount > 0) handled.push(`Your books: ${eventCount} event${eventCount === 1 ? '' : 's'} recorded. Cash, ${ind.stockWord} and money owed update themselves.`);
+  if (eventCount > 0) handled.push(`Your books: ${eventCount} ${eventCount === 1 ? 'entry' : 'entries'} recorded. Cash, ${ind.stockWord} and money owed update themselves.`);
   if (products && products.length > 0) {
     handled.push(lowStock.length > 0
       ? `Watching your ${ind.stockWord}: ${lowStock.length} item${lowStock.length === 1 ? '' : 's'} at or below reorder level.`
@@ -230,7 +230,7 @@ export default function SimpleHome() {
       {/* Greeting */}
       <motion.div {...fade(0)}>
         <h1 style={{
-          fontSize: '1.65rem', fontWeight: 700,
+          fontSize: 'var(--fs-h1)', fontWeight: 700,
           color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0,
         }}>
           {greeting()}{profile?.business_name ? `, ${profile.business_name}` : ''}.
@@ -294,7 +294,7 @@ export default function SimpleHome() {
             style={{
               height: 46, padding: '0 18px', borderRadius: 10, border: 'none',
               background: question.trim() ? 'var(--cyan)' : 'var(--bg-badge)',
-              color: question.trim() ? '#fff' : 'var(--text-4)',
+              color: question.trim() ? 'var(--on-cyan)' : 'var(--text-4)',
               fontSize: 'var(--fs-body)', fontWeight: 700,
               cursor: question.trim() ? 'pointer' : 'default', transition: 'all 0.15s ease',
             }}
@@ -339,10 +339,10 @@ export default function SimpleHome() {
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16 }}
       >
         <Glow>
-        <Link href="/dashboard/cash" className="kpi-card glow-inner" style={cardStyle} data-ai-explain="simple-cash" aria-label="Money right now — open Money page">
+        <Link href="/dashboard/cash" className="kpi-card glow-inner" style={cardStyle} data-ai-explain="simple-cash" aria-label="Money right now: open Money page">
           <span className="bento-tex" aria-hidden="true" />
           <span style={labelStyle}>Money right now</span>
-          <span style={valueStyle}>{twin ? money(cash) : '—'}</span>
+          <span style={valueStyle}>{twin ? money(cash) : '…'}</span>
           <span style={subStyle}>
             {twin
               ? (receivables > 0 || payables > 0
@@ -354,7 +354,7 @@ export default function SimpleHome() {
         </Glow>
 
         <Glow>
-        <Link href="/dashboard/timeline" className="kpi-card glow-inner" style={cardStyle} data-ai-explain="simple-today" aria-label="Today's sales — open Activity page">
+        <Link href="/dashboard/timeline" className="kpi-card glow-inner" style={cardStyle} data-ai-explain="simple-today" aria-label="Today's sales: open Activity page">
           <span className="bento-tex" aria-hidden="true" />
           <span style={labelStyle}>Today</span>
           <span style={valueStyle}>{todaySales === null ? '…' : money(todayTotal)}</span>
@@ -369,11 +369,11 @@ export default function SimpleHome() {
         </Glow>
 
         <Glow>
-        <Link href="/dashboard/inventory" className="kpi-card glow-inner" style={cardStyle} data-ai-explain="simple-stock" aria-label="Stock status — open Stock page">
+        <Link href="/dashboard/inventory" className="kpi-card glow-inner" style={cardStyle} data-ai-explain="simple-stock" aria-label="Stock status: open Stock page">
           <span className="bento-tex" aria-hidden="true" />
           <span style={labelStyle}>{ind.stockWord}</span>
           <span style={{ ...valueStyle, color: lowStock.length > 0 ? 'var(--amber)' : 'var(--text-1)' }}>
-            {products === null ? '…' : products.length === 0 ? '—' : lowStock.length > 0 ? `${lowStock.length} low` : 'All good'}
+            {products === null ? '…' : products.length === 0 ? 'None tracked' : lowStock.length > 0 ? `${lowStock.length} low` : 'All good'}
           </span>
           <span style={subStyle}>
             {products === null
@@ -435,7 +435,7 @@ export default function SimpleHome() {
                     disabled={st === 'drafting'}
                     style={{
                       padding: '8px 14px', borderRadius: 8, border: 'none', cursor: st === 'drafting' ? 'default' : 'pointer',
-                      background: 'var(--cyan)', color: '#fff',
+                      background: 'var(--cyan)', color: 'var(--on-cyan)',
                       fontSize: 'var(--fs-data)', fontWeight: 700,
                       opacity: st === 'drafting' ? 0.6 : 1, transition: 'all 0.15s ease',
                     }}

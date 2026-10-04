@@ -52,98 +52,98 @@ export function uploadTooLarge(file: File): string | null {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface UploadResult {
-  ok:              boolean;
-  rows:            number;
-  columns:         string[];
-  records:         Record<string, unknown>[];
-  pnl:             PNL;
-  health_score:    number;
-  health_label:    string;
-  alerts:          Alert[];
-  cashflow:        CashflowMonth[];
-  runway_months:   number;
-  forecast:        ForecastResult;
-  anomalies:       Anomaly[];
-  breakeven:       Breakeven;
-  currency:        string;          // e.g. "ZMW" | "USD" | "EUR" | "GBP"
+  ok:             boolean;
+  rows:           number;
+  columns:        string[];
+  records:        Record<string, unknown>[];
+  pnl:            PNL;
+  health_score:   number;
+  health_label:   string;
+  alerts:         Alert[];
+  cashflow:       CashflowMonth[];
+  runway_months:  number;
+  forecast:       ForecastResult;
+  anomalies:      Anomaly[];
+  breakeven:      Breakeven;
+  currency:       string;          // e.g. "ZMW" | "USD" | "EUR" | "GBP"
   currency_symbol: string;          // e.g. "K"   | "$"   | "€"   | "£"
 }
 
 export interface PNL {
-  total_revenue:  number;
-  total_costs:    number;
-  total_profit:   number;
-  avg_margin:     number;
-  best_month:     string;
-  worst_month:    string;
+  total_revenue: number;
+  total_costs:   number;
+  total_profit:  number;
+  avg_margin:    number;
+  best_month:    string;
+  worst_month:   string;
   revenue_growth?: number;
-  cost_growth?:    number;
-  profit_growth?:  number;
-  margin_change?:  number;
-  revenue_delta?:  number;
-  costs_delta?:    number;
-  profit_delta?:   number;
-  margin_delta?:   number;
+  cost_growth?:   number;
+  profit_growth?: number;
+  margin_change?: number;
+  revenue_delta?: number;
+  costs_delta?:   number;
+  profit_delta?:  number;
+  margin_delta?:  number;
 }
 
 export interface Alert {
-  id?:        string;
-  month:      string;
+  id?:       string;
+  month:     string;
   change_pct: number;
-  direction:  string;
-  type?:      string;
-  severity?:  string;
-  title?:     string;
+  direction: string;
+  type?:     string;
+  severity?: string;
+  title?:    string;
   description?: string;
-  value?:     number;
-  expected?:  number;
+  value?:    number;
+  expected?: number;
 }
 
 export interface CashflowMonth {
-  month_ahead:    number;
+  month_ahead:   number;
   projected_cash: number;
-  status:         string;
+  status:        string;
 }
 
 export interface ForecastPoint {
-  month:     string;
+  month:    string;
   predicted: number;
-  low:       number;
-  high:      number;
+  low:      number;
+  high:     number;
 }
 
 export interface ForecastResult {
-  forecast:    ForecastPoint[];
-  trend?:      string;
+  forecast:   ForecastPoint[];
+  trend?:     string;
   growth_rate?: number;
-  confidence?:  number;
-  r_squared?:   number;
+  confidence?: number;
+  r_squared?:  number;
 }
 
 export interface Anomaly {
-  id?:        string;
-  month:      string;
-  metric:     string;
-  type:       string;
-  direction:  string;
+  id?:       string;
+  month:     string;
+  metric:    string;
+  type:      string;
+  direction: string;
   change_pct: number;
-  z_score:    number;
-  severity:   string;
+  z_score:   number;
+  severity:  string;
   root_cause?: string;
-  field?:     string;
-  value?:     number;
-  expected?:  number;
-  zScore?:    number;
+  field?:    string;
+  value?:    number;
+  expected?: number;
+  zScore?:   number;
 }
 
 export interface Breakeven {
-  breakeven_revenue:          number;
-  current_avg_revenue:        number;
-  fixed_costs:                number;
-  variable_costs:             number;
-  contribution_margin_ratio:  number;
-  margin_of_safety:           number;
-  margin_of_safety_pct?:      number;
+  breakeven_revenue:         number;
+  current_avg_revenue:       number;
+  fixed_costs:               number;
+  variable_costs:            number;
+  contribution_margin_ratio: number;
+  margin_of_safety:          number;
+  margin_of_safety_pct?:     number;
 }
 
 // ─── Upload file ──────────────────────────────────────────────────────────────
@@ -153,9 +153,9 @@ export async function uploadFile(
   options: { current_cash?: number; months_ahead?: number; z_threshold?: number; fixed_cost_pct?: number } = {}
 ): Promise<UploadResult> {
   const params = new URLSearchParams({
-    current_cash:   String(options.current_cash   ?? 50000),
-    months_ahead:   String(options.months_ahead   ?? 3),
-    z_threshold:    String(options.z_threshold    ?? 2.0),
+    current_cash:  String(options.current_cash   ?? 50000),
+    months_ahead:  String(options.months_ahead   ?? 3),
+    z_threshold:   String(options.z_threshold    ?? 2.0),
     fixed_cost_pct: String(options.fixed_cost_pct ?? 0.40),
   });
 
@@ -165,9 +165,9 @@ export async function uploadFile(
   // Backend requires a verified Supabase JWT (tenant-scoped uploads). Don't set
   // Content-Type — FormData sets its own multipart boundary.
   const res = await fetch(`${PROXY}/upload?${params}`, {
-    method:  'POST',
+    method: 'POST',
     headers: await authHeaders(),
-    body:    form,
+    body:   form,
   });
 
   if (!res.ok) {
@@ -847,7 +847,7 @@ export async function importLoyverseItems(file: File): Promise<{
   form.append('file', file, file.name);
   const res = await fetch(`${PROXY}/products/import/loyverse`, {
     method: 'POST',
-    headers: await authHeaders(),          // no Content-Type — FormData sets it
+    headers: await authHeaders(),          // no Content-Type: FormData sets it
     body: form,
   });
   const data = await res.json().catch(() => ({}));
@@ -863,7 +863,7 @@ export async function transcribeAudio(blob: Blob): Promise<string> {
   form.append('file', blob, 'note.webm');
   const res = await fetch(`${PROXY}/transcribe`, {
     method: 'POST',
-    headers: await authHeaders(),          // no Content-Type — FormData sets it
+    headers: await authHeaders(),          // no Content-Type: FormData sets it
     body: form,
   });
   const data = await res.json().catch(() => ({}));
@@ -1096,7 +1096,7 @@ export async function voidEvent(id: string, reason?: string): Promise<BusinessEv
 }
 
 export interface ResetOptions {
-  source?: EventSource;          // e.g. 'excel' — flush only that producer's events
+  source?: EventSource;          // e.g. 'excel': flush only that producer's events
   wipe_memory?: boolean;         // forget learned import mappings / aliases
   wipe_products?: boolean;
   wipe_schedule?: boolean;
@@ -1760,21 +1760,21 @@ export async function seedTwin(opening_cash: number | null, currency = 'ZMW'): P
  *  profile columns they fill, so applying a match is a plain spread — no second
  *  mapping here to drift out of step with aibos-api/identity.py. */
 export interface BusinessMatch {
-  place_id:        string;
-  business_name:   string;
-  industry:        string;       // '' when Google's types didn't map cleanly
-  location:        string;
+  place_id:       string;
+  business_name:  string;
+  industry:       string;       // '' when Google's types didn't map cleanly
+  location:       string;
   operating_hours: string;
-  phone:           string;
-  website:         string;
-  logo_url:        string;
+  phone:          string;
+  website:        string;
+  logo_url:       string;
   /** Context for the "Is this you?" card — shown to help them decide, not saved. */
-  address:         string;
-  rating:          number | null;
-  reviews:         number | null;
-  closed:          boolean;
-  confidence:      number;       // 0-1
-  source:          string;       // 'google_places'
+  address:        string;
+  rating:         number | null;
+  reviews:        number | null;
+  closed:         boolean;
+  confidence:     number;       // 0-1
+  source:         string;       // 'google_places'
 }
 
 export interface IdentityLookup {

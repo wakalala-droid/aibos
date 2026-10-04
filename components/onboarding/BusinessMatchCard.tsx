@@ -20,6 +20,7 @@
  * than the pre-fill.
  */
 import { AnimatePresence, motion } from 'framer-motion';
+import { CircleCheck } from 'lucide-react';
 import BorderGlow from '@/components/ui/BorderGlow';
 import type { BusinessMatch } from '@/lib/api';
 
@@ -76,7 +77,7 @@ function initialsOf(name: string): string {
  *  where it is, then what it is, then how busy it looks. */
 function detailsOf(m: BusinessMatch): string {
   const bits = [m.address || m.location, m.industry].filter(Boolean);
-  if (m.reviews) bits.push(`${m.rating ?? '—'} ★ (${m.reviews})`);
+  if (m.reviews) bits.push(`rated ${m.rating ?? 'unrated'} from ${m.reviews} reviews`);
   return bits.join(' · ');
 }
 
@@ -119,11 +120,11 @@ export default function BusinessMatchCard({
           {view === 'applied' && (
             <Shell>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                <span aria-hidden="true" style={{ fontSize: '1.25rem' }}>✅</span>
+                <span aria-hidden="true" style={{ display: 'inline-flex', color: 'var(--good)' }}><CircleCheck size={24} strokeWidth={2} /></span>
                 <div style={{ flex: 1, minWidth: 180 }}>
                   <p style={titleText}>Filled in from your online listing</p>
                   <p style={{ ...metaText, marginTop: 4 }}>
-                    Everything is editable — check the fields above and change anything
+                    Everything is editable: check the fields above and change anything
                     that&apos;s out of date.
                   </p>
                 </div>
@@ -174,11 +175,11 @@ export default function BusinessMatchCard({
                       {detailsOf(m) && <p style={{ ...metaText, marginTop: 4 }}>{detailsOf(m)}</p>}
                       {m.operating_hours && <p style={{ ...metaText, marginTop: 2 }}>{m.operating_hours}</p>}
                       {/* Said plainly rather than colour-coded: a listing Google
-                          thinks is shut is usually stale, and the owner is the
+                          thinks is shut is usually stale and the owner is the
                           only one who can say so. */}
                       {m.closed && (
                         <p style={{ ...metaText, marginTop: 4, color: 'var(--warn)' }}>
-                          This listing is marked closed — if that&apos;s wrong, it&apos;s worth fixing on Google.
+                          This listing is marked closed: if that&apos;s wrong, it&apos;s worth fixing on Google.
                         </p>
                       )}
 
@@ -186,7 +187,7 @@ export default function BusinessMatchCard({
                         type="button" onClick={() => onApply(m)} className="touch-target"
                         style={{
                           marginTop: 12, minHeight: 48, padding: '0 20px', borderRadius: 10,
-                          border: 'none', background: 'var(--cyan)', color: '#04121a',
+                          border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)',
                           fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer',
                         }}
                       >
@@ -217,8 +218,8 @@ export default function BusinessMatchCard({
                 We couldn&apos;t find {query.trim() || 'your business'} online
               </p>
               <p style={{ ...metaText, marginTop: 4 }}>
-                That&apos;s normal — most small businesses aren&apos;t listed yet. Carry on
-                filling this in, and once you&apos;re set up AIBOS can help you get on
+                That&apos;s normal: most small businesses aren&apos;t listed yet. Carry on
+                filling this in and once you&apos;re set up AIBOS can help you get on
                 Google Maps so customers can find you.
               </p>
             </Shell>

@@ -19,10 +19,10 @@ function BenchmarkCard({ b, delay }: { b: any; delay: number }) {
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}
       style={{ background: 'var(--bg-card)', border: `1px solid ${cfg.border}`, borderRadius: 12, padding: '20px', boxShadow: 'var(--shadow-card)', position: 'relative', overflow: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0, maxWidth: 130 }}>{b.label}</p>
+        <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0, maxWidth: 130 }}>{b.label}</p>
         <span className="badge" style={{ color: cfg.color, background: cfg.bg, borderColor: cfg.border }}>{cfg.label}</span>
       </div>
-      <p style={{ fontSize: '2rem', fontWeight: 800, color: cfg.color, letterSpacing: '-0.03em', margin: '0 0 12px' }}>
+      <p style={{ fontSize: 'var(--fs-display)', fontWeight: 800, color: cfg.color, letterSpacing: '-0.03em', margin: '0 0 12px' }}>
         {b.actual}{b.unit !== 'K' ? b.unit : ''}
       </p>
       <div className="progress-track" style={{ marginBottom: 8 }}>
@@ -48,7 +48,7 @@ function AttachMeter({ label, value, benchmark, color }: { label: string; value:
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>{label}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: '1.1rem', fontWeight: 800, color: barCol }}>{value.toFixed(1)}%</span>
+          <span style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: barCol }}>{value.toFixed(1)}%</span>
           <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>/ {benchmark}%</span>
         </div>
       </div>

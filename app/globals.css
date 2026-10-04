@@ -36,18 +36,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── TYPE SCALE (Design OS visual_language_system.md) ──────────
-   The ONLY font sizes in the product. 12px is the floor — nothing
-   interactive or data-bearing renders smaller (audit F-02).
-     display 32 · h1 28 · h2 22 · h3 18 · body 14 · data 13 · label 12 */
+/* ── TYPE SCALE (owner rule, UI/UX audit 2026-10 Part E) ─────────
+   The ONLY font sizes in the product. Nothing in a sentence is below
+   18px: body, table cells, captions, chips and chart labels included.
+   Spaced capitals (labels, eyebrows, badges, table heads) are the one
+   exception and use --fs-caps, 16px. Hierarchy at 18px comes from
+   weight and colour, never from shrinking.
+     display 36 · h1 30 · h2 24 · h3 20 · body/data/label 18 · caps 16 */
 :root {
-  --fs-display: 2rem;      /* 32px — one per page, max */
-  --fs-h1:      1.75rem;   /* 28px */
-  --fs-h2:      1.375rem;  /* 22px */
-  --fs-h3:      1.125rem;  /* 18px */
-  --fs-body:    0.875rem;  /* 14px */
-  --fs-data:    0.8125rem; /* 13px — table cells, dense data */
-  --fs-label:   0.75rem;   /* 12px — micro labels, eyebrows, badges */
+  --fs-display: 2.25rem;   /* 36px, KPI values, one per card */
+  --fs-h1:      1.875rem;  /* 30px */
+  --fs-h2:      1.5rem;    /* 24px, page titles */
+  --fs-h3:      1.25rem;   /* 20px, card titles */
+  --fs-body:    1.125rem;  /* 18px */
+  --fs-data:    1.125rem;  /* 18px, table cells, captions, helper text */
+  --fs-label:   1.125rem;  /* 18px, time stamps, sub-lines, chips */
+  --fs-caps:    1rem;      /* 16px, SPACED CAPITALS ONLY */
 
   /* Radius (Design OS: small 6 · medium 10 · large 16; cards keep the
      established 14px the BorderGlow chrome is tuned to). */
@@ -85,10 +89,12 @@
   --text-3:         #9fabbd;
   /* was #475569 — too dark on the near-black card bg, tiny labels were barely
      legible. Lifted to a readable muted slate while staying clearly tertiary. */
-  --text-4:         #707d8e;
+  --text-4:         #94a0b2; /* 7.2:1 on cards (audit A3); was #707d8e at 4.5 */
 
   /* Accent colours — identical to E1 */
   --cyan:           #00d4ff;
+  /* Ink for text ON a cyan fill. White on #00d4ff is 1.77:1 (audit A2). */
+  --on-cyan:        #04121a;
   --cyan-dim:       rgba(0,212,255,0.12);
   --orange:         #f97316;
   --orange-dim:     rgba(249,115,22,0.12);
@@ -121,7 +127,7 @@
   --spark-margin:   #a78bfa;
 
   /* Sidebar */
-  --sidebar-width:  240px;
+  --sidebar-width:  264px; /* room for 18px labels (audit Part E) */
   --sidebar-collapsed: 56px;
 
   /* Shadows */
@@ -183,29 +189,30 @@
   --text-2:         #292524;
   --text-3:         #5d5954;
   /* was #9c9892 — only ~2.3:1 on white. Darkened for ~4:1 legibility. */
-  --text-4:         #7a746d;
+  --text-4:         #6b645d; /* 5.8:1 on cards (audit A3) */
 
-  --cyan:           #0284c7;
+  --cyan:           #075985; /* text-safe: 7.6:1 on cards (audit A3) */
+  --on-cyan:        #ffffff;
   --cyan-dim:       rgba(2,132,199,0.08);
-  --orange:         #ea580c;
+  --orange:         #c2410c;
   --orange-dim:     rgba(234,88,12,0.08);
-  --green:          #059669;
+  --green:          #065f46; /* money in: 7.7:1 on cards */
   --green-dim:      rgba(5,150,105,0.08);
-  --emerald:        #10b981;
-  --blue:           #2563eb;
-  --purple:         #7c3aed;
-  --amber:          #d97706;
-  --red:            #dc2626;
+  --emerald:        #047857;
+  --blue:           #1d4ed8;
+  --purple:         #6d28d9;
+  --amber:          #92400e; /* warnings: 7.1:1 on cards */
+  --red:            #b91c1c;
   --red-dim:        rgba(220,38,38,0.08);
 
   --e1:             #1d4ed8; /* distinct blue — brand cyan stays the summary/nav hue */
-  --e2:             #ea580c;
-  --e3:             #059669;
+  --e2:             #c2410c;
+  --e3:             #047857;
 
-  --good:           #059669;
-  --warn:           #d97706;
-  --crit:           #dc2626;
-  --info:           #2563eb;
+  --good:           #065f46;
+  --warn:           #92400e;
+  --crit:           #b91c1c;
+  --info:           #1d4ed8;
 
   --spark-revenue:  #2563eb;
   --spark-cost:     #ea580c;
@@ -248,11 +255,14 @@ html {
 
 body {
   font-family: 'Geist', system-ui, sans-serif;
+  line-height: 1.6;
   background: var(--bg-page);
   color: var(--text-2);
   min-height: 100vh;
   transition: background 0.3s ease, color 0.2s ease;
 }
+
+h1, h2, h3, h4 { line-height: 1.25; }
 
 /* ── SCROLLBAR ───────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 4px; height: 4px; }
@@ -382,7 +392,7 @@ body {
 
 .kpi-card .kpi-label {
   font-family: 'Geist', sans-serif;
-  font-size: var(--fs-label);
+  font-size: var(--fs-caps);
   font-weight: 500;
   color: var(--text-3);
   text-transform: uppercase;
@@ -604,7 +614,7 @@ body {
 
 .insight-label {
   font-family: 'Geist', sans-serif;
-  font-size: var(--fs-label);
+  font-size: var(--fs-caps);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -687,7 +697,7 @@ body {
 .nav-section {
   padding: 14px 20px 4px;
   font-family: 'Geist', sans-serif;
-  font-size: var(--fs-label);
+  font-size: var(--fs-caps);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -717,7 +727,7 @@ body {
   text-align: left;
   padding: 8px 12px;
   font-family: 'Geist', sans-serif;
-  font-size: var(--fs-label);
+  font-size: var(--fs-caps);
   font-weight: 600;
   color: var(--text-3);
   letter-spacing: 0.08em;
@@ -861,6 +871,20 @@ select optgroup {
 .skip-link:focus {
   top: 8px;
 }
+
+/* ── TAP TARGETS (accessibility_system.md TOUCH TARGET RULE, audit A4) ──
+   Every control is at least 44x44 at every breakpoint, not just on phones.
+   Inline styles may set a smaller height; min-height wins over height.
+   .tap-link gives the same floor to links used as actions ("View all").
+   .btn-inline opts out, only for a control that sits inside a sentence. */
+button, select, [role="button"], [role="tab"], [role="switch"], [role="option"],
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="color"]):not([type="file"]) {
+  min-height: 44px;
+}
+button, [role="button"], [role="tab"] { min-width: 44px; }
+.tap-link { display: inline-flex; align-items: center; min-height: 44px; }
+.btn-inline { min-height: 0 !important; min-width: 0 !important; }
+.nav-item { min-height: 44px; }
 
 /* Minimum touch target — 44x44 per accessibility_system.md TOUCH TARGET RULE.
    Applied to icon-only controls that would otherwise be smaller below desktop. */
@@ -1174,7 +1198,7 @@ html, body {
 .reminder-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .reminder-label {
   display: inline-flex; align-items: center; gap: 8px;
-  font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  font-size: var(--fs-caps); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
   color: var(--amber);
 }
 /* Light amber on white reads at about 3:1; deepened toward the ink it clears 6.5:1. */
@@ -1188,12 +1212,12 @@ html, body {
 .reminder-close:hover { background: var(--bg-badge); color: var(--text-1); }
 .reminder-name { margin: 8px 0 0; font-size: 18px; line-height: 1.4; font-weight: 700; color: var(--text-1); overflow-wrap: anywhere; }
 .reminder-body { margin: 4px 0 0; font-size: 18px; line-height: 1.6; color: var(--text-2); }
-.reminder-age { margin: 4px 0 0; font-size: 15px; line-height: 1.5; color: var(--text-3); }
+.reminder-age { margin: 4px 0 0; font-size: var(--fs-body); line-height: 1.5; color: var(--text-3); }
 .reminder-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .reminder-open, .reminder-dismiss {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 44px; padding: 0 16px; border-radius: 10px;
-  font-size: 16px; font-weight: 700; text-decoration: none; cursor: pointer;
+  font-size: var(--fs-body); font-weight: 700; text-decoration: none; cursor: pointer;
 }
 .reminder-open { background: var(--text-1); color: var(--bg-card); border: 1px solid var(--text-1); }
 .reminder-open:hover { opacity: 0.9; }
@@ -1223,7 +1247,7 @@ html, body {
 .update-button, .update-later {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 44px; padding: 0 16px; border-radius: 10px;
-  font-size: 16px; font-weight: 700; cursor: pointer;
+  font-size: var(--fs-body); font-weight: 700; cursor: pointer;
 }
 .update-button { background: var(--text-1); color: var(--bg-card); border: 1px solid var(--text-1); }
 .update-button:hover { opacity: 0.9; }

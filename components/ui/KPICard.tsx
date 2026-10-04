@@ -135,8 +135,8 @@ export default function KPICard({
         </div>
 
         {drillHref && (
-          <Link href={drillHref}
-            style={{ display: 'inline-block', marginTop: 10, fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none' }}>
+          <Link className="tap-link" href={drillHref}
+            style={{ marginTop: 4, fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none' }}>
             {drillLabel} <span aria-hidden>›</span>
           </Link>
         )}

@@ -51,7 +51,7 @@ export default function FeatureGate({
           <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
             {taster.perDay} {taster.noun}s a day, included.
           </span>
-          <Link href={`/checkout?plan=${need}`} style={{
+          <Link className="tap-link" href={`/checkout?plan=${need}`} style={{
             fontSize: 'var(--fs-label)', color: 'var(--cyan)', fontWeight: 600,
             marginLeft: 'auto', textDecoration: 'none',
           }}>

@@ -58,10 +58,10 @@ const EMPTY: FormState = {
 };
 
 function fmtDate(v: string | null): string {
-  if (!v) return '—';
+  if (!v) return 'None';
   const d = new Date(v);
   return Number.isNaN(d.getTime())
-    ? '—'
+    ? 'None'
     : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
@@ -236,7 +236,7 @@ export default function BusinessProfilePage() {
     <div style={{ padding: '8px 0 48px' }}>
       <PageHeader
         title="Business profile"
-        subtitle="The details here power your dashboard identity — the name and logo shown in the header come from this page."
+        subtitle="The details here power your dashboard identity: the name and logo shown in the header come from this page."
       />
 
       <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr', maxWidth: 980 }}>
@@ -253,7 +253,7 @@ export default function BusinessProfilePage() {
                 <img src={form.logo_url} alt="" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
               </span>
             ) : (
-              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 12, flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 800 }}>
+              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 12, flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-body)', fontWeight: 800 }}>
                 {initials}
               </span>
             )}
@@ -301,7 +301,7 @@ export default function BusinessProfilePage() {
             <div>
               <label htmlFor="bp-currency" style={labelStyle}>Currency</label>
               <select id="bp-currency" value={form.currency} onChange={(e) => set('currency', e.target.value)} style={inputStyle}>
-                {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{`${c.code} — ${c.name} (${c.symbol})`}</option>)}
+                {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{`${c.code}: ${c.name} (${c.symbol})`}</option>)}
               </select>
             </div>
 
@@ -326,7 +326,7 @@ export default function BusinessProfilePage() {
             <button
               type="submit"
               disabled={!canSave}
-              style={{ minHeight: 44, padding: '12px 22px', borderRadius: 10, border: 'none', background: 'var(--cyan)', color: '#fff', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canSave ? 'pointer' : 'not-allowed', opacity: canSave ? 1 : 0.55 }}
+              style={{ minHeight: 44, padding: '12px 22px', borderRadius: 10, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canSave ? 'pointer' : 'not-allowed', opacity: canSave ? 1 : 0.55 }}
             >
               {save === 'saving' ? 'Saving…' : 'Save changes'}
             </button>
@@ -341,7 +341,7 @@ export default function BusinessProfilePage() {
 
         {/* Read-only account facts */}
         <div className="section-card">
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>
+          <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>
             Account
           </p>
           <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
@@ -349,7 +349,7 @@ export default function BusinessProfilePage() {
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>Plan</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)' }}>{TIERS[tier].name}</span>
-                <Link href="/pricing" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
+                <Link className="tap-link" href="/pricing" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
                   {tier === 'growth' ? 'Manage' : 'Upgrade'} →
                 </Link>
               </div>
@@ -570,7 +570,7 @@ function GetPaidCard() {
           )}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
             <button type="submit" disabled={!key.trim() || busy !== null}
-              style={{ ...button, border: 'none', background: 'var(--cyan)', color: '#fff', opacity: !key.trim() || busy !== null ? 0.55 : 1, cursor: !key.trim() || busy !== null ? 'not-allowed' : 'pointer' }}>
+              style={{ ...button, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', opacity: !key.trim() || busy !== null ? 0.55 : 1, cursor: !key.trim() || busy !== null ? 'not-allowed' : 'pointer' }}>
               {busy === 'connect' ? 'Checking with Lenco…' : connected ? 'Save new key' : 'Connect Lenco'}
             </button>
             {replacing && (
@@ -658,7 +658,7 @@ function MemoryLearnedCard() {
         </>
       ) : (
         <div style={{ display: 'grid', gap: 6 }}>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px' }}>Wrong? Remove it and AIBOS forgets — you correct it, not the other way round.</p>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px' }}>Wrong? Remove it and AIBOS forgets: you correct it, not the other way round.</p>
           {manageError && <p role="alert" style={{ color: 'var(--crit)', fontSize: 'var(--fs-label)', margin: '0 0 6px' }}>{manageError}</p>}
           {manageError && mappings.length === 0 ? null : mappings.length === 0 ? (
             <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Nothing learned yet.</span>
@@ -689,7 +689,7 @@ function ExportCard() {
     <div className="section-card" style={{ marginTop: 20 }}>
       <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>Export your books</h2>
       <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 14px' }}>
-        Your data is yours — pull it out as CSV any time, for your accountant or your own records.
+        Your data is yours: pull it out as CSV any time, for your accountant or your own records.
       </p>
       {err && <p role="alert" style={{ color: 'var(--crit)', fontSize: 'var(--fs-label)', margin: '0 0 10px' }}>{err}</p>}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -738,7 +738,7 @@ function TeamCard() {
     <div className="section-card" style={{ marginTop: 20 }}>
       <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>Your team</h2>
       <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 16px' }}>
-        Invite a cashier to <strong>record</strong> sales (you confirm them) or an accountant to <strong>view and export</strong> — read-only. The accountant seat is free.
+        Invite a cashier to <strong>record</strong> sales (you confirm them) or an accountant to <strong>view and export</strong>: read-only. The accountant seat is free.
       </p>
 
       {error && <p role="alert" style={{ color: 'var(--crit)', fontSize: 'var(--fs-label)', margin: '0 0 12px' }}>{error}</p>}
@@ -747,8 +747,8 @@ function TeamCard() {
         <input type="email" inputMode="email" value={email} onChange={e => setEmail(e.target.value)}
           placeholder="teammate@email.com" aria-label="Invite email" style={{ ...cardInput, flex: '1 1 200px' }} />
         <select value={role} onChange={e => setRole(e.target.value as TeamMemberRole)} aria-label="Role" style={cardInput}>
-          <option value="staff">Staff — records</option>
-          <option value="accountant">Accountant — read-only</option>
+          <option value="staff">Staff: records</option>
+          <option value="accountant">Accountant: read-only</option>
         </select>
         <button type="button" style={{ ...cardBtn, color: 'var(--cyan)', borderColor: 'var(--cyan)' }} disabled={busy || !email.trim()} onClick={() => void invite()}>
           {busy ? 'Inviting…' : 'Invite'}
@@ -761,7 +761,7 @@ function TeamCard() {
           <button type="button" onClick={load} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--cyan)', textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>Try again</button>
         </p>
       ) : members.length === 0 ? (
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>No team members yet — it&apos;s just you.</p>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>No team members yet: it&apos;s just you.</p>
       ) : (
         <div style={{ display: 'grid', gap: 8 }}>
           {members.map(m => (
@@ -822,7 +822,7 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
           whatsapp_number: waNumber.trim().replace(/[^\d+]/g, '') || null,
         }),
       });
-      if (!res.ok) throw new Error('Could not save — try again.');
+      if (!res.ok) throw new Error('Could not save: try again.');
       await onSaved();
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
@@ -848,7 +848,7 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
 
   return (
     <div className="section-card">
-      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
+      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
         Morning Brief, delivered
       </p>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 16px' }}>
@@ -897,7 +897,7 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
             disabled={saving || (!canEmail && !canWa)}
             style={{
               padding: '10px 18px', borderRadius: 10, border: 'none',
-              cursor: saving ? 'default' : 'pointer', background: 'var(--cyan)', color: '#fff',
+              cursor: saving ? 'default' : 'pointer', background: 'var(--cyan)', color: 'var(--on-cyan)',
               fontSize: 'var(--fs-body)', fontWeight: 700,
               opacity: saving ? 0.6 : 1,
             }}
@@ -912,10 +912,10 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
         {channels && (!channels.email || !channels.whatsapp) && (
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0, lineHeight: 1.5 }}>
             {!channels.email && !channels.whatsapp
-              ? 'Delivery is being switched on — your preference is saved and takes effect the moment it goes live.'
+              ? 'Delivery is being switched on: your preference is saved and takes effect the moment it goes live.'
               : !channels.email
-                ? 'Email delivery is being switched on — WhatsApp is live.'
-                : 'WhatsApp delivery is being switched on — email is live.'}
+                ? 'Email delivery is being switched on: WhatsApp is live.'
+                : 'WhatsApp delivery is being switched on: email is live.'}
           </p>
         )}
       </div>
@@ -927,7 +927,7 @@ function InviteCard({ userId }: { userId: string }) {
   const [copied, setCopied] = useState(false);
   const code = userId.replace(/-/g, '').slice(0, 8);
   const link = typeof window !== 'undefined' ? `${window.location.origin}/login?ref=${code}` : `/login?ref=${code}`;
-  const waText = `I run my business on AIBOS — it keeps the books, watches my stock and answers questions about my numbers. Try it free: ${link}`;
+  const waText = `I run my business on AIBOS: it keeps the books, watches my stock and answers questions about my numbers. Try it free: ${link}`;
 
   async function copy() {
     try {
@@ -939,12 +939,12 @@ function InviteCard({ userId }: { userId: string }) {
 
   return (
     <div className="section-card">
-      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
+      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
         Invite a business owner
       </p>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 14px' }}>
         Know someone running a shop, lodge, restaurant or site? When someone you invite subscribes to any paid plan,
-        you both get a month of Pro+ free — applied by our team for now.
+        you both get a month of Pro+ free: applied by our team for now.
       </p>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <code style={{ fontSize: 'var(--fs-data)', color: 'var(--text-1)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', padding: '9px 12px', borderRadius: 8, wordBreak: 'break-all' }}>

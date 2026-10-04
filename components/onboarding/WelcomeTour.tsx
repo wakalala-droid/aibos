@@ -41,13 +41,13 @@ const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
 
 const primary: React.CSSProperties = {
   padding: '12px 24px', minHeight: 48, borderRadius: 10, border: 'none',
-  color: '#fff', fontSize: 17, fontWeight: 700, cursor: 'pointer',
+  color: '#fff', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer',
 };
 
 const ghost: React.CSSProperties = {
   padding: '12px 20px', minHeight: 48, borderRadius: 10,
   background: 'transparent', border: '1px solid var(--border-md)',
-  color: 'var(--text-2)', fontSize: 17, fontWeight: 600, cursor: 'pointer',
+  color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer',
 };
 
 // ── The panel ───────────────────────────────────────────────────────────────
@@ -176,16 +176,16 @@ export function WelcomeTourPanel({ tier, step, onStep, onClose, closing = false 
                   </span>
                   <h2
                     id="welcome-tour-heading"
-                    style={{ margin: '0 0 12px', fontSize: 28, lineHeight: 1.2, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-1)' }}
+                    style={{ margin: '0 0 12px', fontSize: 'var(--fs-h1)', lineHeight: 1.2, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-1)' }}
                   >
                     You are on {meta.name}.
                   </h2>
-                  <p style={{ margin: '0 0 8px', fontSize: 18, lineHeight: 1.6, fontWeight: 400, color: 'var(--text-2)' }}>
+                  <p style={{ margin: '0 0 8px', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 400, color: 'var(--text-2)' }}>
                     {meta.tagline}. {count} {count === 1 ? 'thing is' : 'things are'} open to you
-                    now that were not before, and everything you have already recorded works with
+                    now that were not before and everything you have already recorded works with
                     all of them straight away.
                   </p>
-                  <p style={{ margin: 0, fontSize: 18, lineHeight: 1.6, fontWeight: 400, color: 'var(--text-3)' }}>
+                  <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 400, color: 'var(--text-3)' }}>
                     Take a minute and we will show you where each one lives.
                   </p>
                 </>
@@ -193,11 +193,11 @@ export function WelcomeTourPanel({ tier, step, onStep, onClose, closing = false 
                 <>
                   <h2
                     id="welcome-tour-heading"
-                    style={{ margin: '0 0 8px', fontSize: 24, lineHeight: 1.25, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-1)' }}
+                    style={{ margin: '0 0 8px', fontSize: 'var(--fs-h2)', lineHeight: 1.25, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-1)' }}
                   >
                     {chapter.heading}
                   </h2>
-                  <p style={{ margin: '0 0 24px', fontSize: 18, lineHeight: 1.6, fontWeight: 400, color: 'var(--text-3)' }}>
+                  <p style={{ margin: '0 0 24px', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 400, color: 'var(--text-3)' }}>
                     {chapter.lead}
                   </p>
 
@@ -207,22 +207,22 @@ export function WelcomeTourPanel({ tier, step, onStep, onClose, closing = false 
                         key={item.feature}
                         style={{ display: 'grid', gap: 4, paddingLeft: 16, borderLeft: `2px solid ${meta.accent}` }}
                       >
-                        <span style={{ fontSize: 18, lineHeight: 1.4, fontWeight: 700, color: 'var(--text-1)' }}>
+                        <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.4, fontWeight: 700, color: 'var(--text-1)' }}>
                           {item.title}
                         </span>
-                        <span style={{ fontSize: 18, lineHeight: 1.6, fontWeight: 400, color: 'var(--text-3)' }}>
+                        <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 400, color: 'var(--text-3)' }}>
                           {item.body}
                         </span>
                         {item.href ? (
                           <Link
                             href={item.href}
                             onClick={onClose}
-                            style={{ fontSize: 17, fontWeight: 600, color: meta.accent, textDecoration: 'none', justifySelf: 'start' }}
+                            style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: meta.accent, textDecoration: 'none', justifySelf: 'start' }}
                           >
                             Take me there →
                           </Link>
                         ) : (
-                          <span style={{ fontSize: 17, lineHeight: 1.6, fontWeight: 400, color: 'var(--text-4)' }}>
+                          <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 400, color: 'var(--text-4)' }}>
                             {item.where}
                           </span>
                         )}
@@ -233,7 +233,7 @@ export function WelcomeTourPanel({ tier, step, onStep, onClose, closing = false 
               ) : null}
 
               {/* Stuck to the bottom of the viewport while the card scrolls. On a
-                  phone the longest chapter runs well past a screen, and Next
+                  phone the longest chapter runs well past a screen and Next
                   sitting at the far end of that reads as no Next at all. */}
               <div
                 style={{

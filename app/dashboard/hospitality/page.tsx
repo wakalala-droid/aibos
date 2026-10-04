@@ -68,33 +68,33 @@ const sentence = (s?: string | null) => {
 // that was never agreed to, which the shared BookingStatus union does not carry yet.
 const STATUS_COLOUR: Record<string, string> = {
   confirmed: 'var(--good)',
-  pending:   'var(--warn)',
+  pending:  'var(--warn)',
   completed: 'var(--text-3)',
   cancelled: 'var(--text-4)',
-  declined:  'var(--text-4)',
-  no_show:   'var(--crit)',
+  declined: 'var(--text-4)',
+  no_show:  'var(--crit)',
 };
 const STATUS_LABEL: Record<string, string> = {
   confirmed: 'Confirmed',
-  pending:   'Waiting for your answer',
+  pending:  'Waiting for your answer',
   completed: 'Stay finished',
   cancelled: 'Cancelled',
-  declined:  'Turned down',
-  no_show:   'Never arrived',
+  declined: 'Turned down',
+  no_show:  'Never arrived',
 };
 const statusColour = (s: string) => STATUS_COLOUR[s] ?? 'var(--text-3)';
 const statusLabel = (s: string) => STATUS_LABEL[s] ?? sentence(s);
 
 const PAYMENT_LABEL: Record<PaymentStatus, string> = {
-  unpaid:   'Not paid yet',
-  partial:  'Part paid',
-  paid:     'Paid in full',
+  unpaid:  'Not paid yet',
+  partial: 'Part paid',
+  paid:    'Paid in full',
   refunded: 'Refunded',
 };
 const PAYMENT_COLOUR: Record<PaymentStatus, string> = {
-  unpaid:   'var(--warn)',
-  partial:  'var(--warn)',
-  paid:     'var(--good)',
+  unpaid:  'var(--warn)',
+  partial: 'var(--warn)',
+  paid:    'var(--good)',
   refunded: 'var(--text-3)',
 };
 
@@ -127,15 +127,15 @@ const nightsLabel = (b: Booking) => { const n = nights(b); return `${n} night${n
 const input: React.CSSProperties = {
   width: '100%', padding: '10px 12px', minHeight: 44, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 18, lineHeight: 1.6, outline: 'none',
+  fontSize: 'var(--fs-body)', lineHeight: 1.6, outline: 'none',
 };
 const lbl: React.CSSProperties = {
-  fontSize: 13, fontWeight: 600, color: 'var(--text-3)',
+  fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
   padding: '10px 18px', minHeight: 44, borderRadius: 8, border: 'none', background: 'var(--cyan)',
-  color: '#fff', fontSize: 18, fontWeight: 700, lineHeight: 1.6, cursor: 'pointer',
+  color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.6, cursor: 'pointer',
 };
 const quietBtn: React.CSSProperties = {
   ...primaryBtn, background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)',
@@ -375,7 +375,7 @@ export default function HospitalityPage() {
     const what = paid <= 0
       ? 'The nights are freed and the stay comes out of your books.'
       : refund
-        ? `The nights are freed, and the ${fmt(paid, false, bookingSymbol(b))} paid comes out of your books as refunded.`
+        ? `The nights are freed and the ${fmt(paid, false, bookingSymbol(b))} paid comes out of your books as refunded.`
         : `The nights are freed. The ${fmt(paid, false, bookingSymbol(b))} already paid stays in your books as income you kept.`;
     if (!window.confirm(`Cancel ${guestName(b)}'s stay? ${what}`)) return;
     setBusy(true); setPanelNote(''); setError('');
@@ -442,7 +442,7 @@ export default function HospitalityPage() {
   return (
     <>
       {error && (
-        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--crit)', color: 'var(--crit)', fontSize: 18, lineHeight: 1.6 }}>
+        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--crit)', color: 'var(--crit)', fontSize: 'var(--fs-body)', lineHeight: 1.6 }}>
           {error}
         </div>
       )}
@@ -482,25 +482,25 @@ export default function HospitalityPage() {
                         background: 'var(--bg-badge)', cursor: 'pointer',
                       }}
                     >
-                      <span style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.6, color: 'var(--text-1)' }}>
+                      <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.6, color: 'var(--text-1)' }}>
                         {guestName(b) || 'No name given'}
                       </span>
-                      <span style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)' }}>
+                      <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
                         {shortDate(b.check_in)} to {shortDate(b.check_out)} · {nightsLabel(b)} · {unitName(b.unit_id)}
                       </span>
                       {/* Still in the queue, no longer standing in anyone's way.
                           Saying nothing would have the owner believe the room is
                           being kept when the website can already sell it. */}
                       {b.holding === false && (
-                        <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.6, color: 'var(--warn)' }}>
+                        <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.6, color: 'var(--warn)' }}>
                           Waited too long, so the dates are open again
                         </span>
                       )}
                       <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
-                        <span style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.6, color: 'var(--text-2)' }}>
+                        <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.6, color: 'var(--text-2)' }}>
                           {fmt(b.total_amount || 0, false, bookingSymbol(b))}
                         </span>
-                        <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.6, color: 'var(--cyan)' }}>Answer</span>
+                        <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.6, color: 'var(--cyan)' }}>Answer</span>
                       </span>
                     </button>
                   ))}
@@ -524,18 +524,18 @@ export default function HospitalityPage() {
             action={
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                 <button aria-label="Previous week" onClick={() => setGridStart(addDays(gridStart, -7))} style={navBtn}>‹</button>
-                <button onClick={() => setGridStart(startOfDay(new Date()))} style={{ ...navBtn, width: 'auto', padding: '0 12px', fontSize: 15, fontWeight: 700 }}>Today</button>
+                <button onClick={() => setGridStart(startOfDay(new Date()))} style={{ ...navBtn, width: 'auto', padding: '0 12px', fontSize: 'var(--fs-body)', fontWeight: 700 }}>Today</button>
                 <button aria-label="Next week" onClick={() => setGridStart(addDays(gridStart, 7))} style={navBtn}>›</button>
                 {/* Any date in one step. A stay months away used to take a press
                     of Next week for every week in between. */}
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 15, fontWeight: 700, color: 'var(--text-3)' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-3)' }}>
                   Go to
                   <input
                     type="date"
                     aria-label="Show the calendar from this date"
                     value={iso(gridStart)}
                     onChange={e => { if (e.target.value) setGridStart(parseISO(e.target.value)); }}
-                    style={{ height: 34, padding: '0 8px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontSize: 16 }}
+                    style={{ height: 34, padding: '0 8px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
                   />
                 </label>
                 <button onClick={() => openDraft('')} style={primaryBtn}>+ Booking</button>
@@ -551,9 +551,9 @@ export default function HospitalityPage() {
                     const weekend = d.getDay() === 0 || d.getDay() === 6;
                     const isToday = iso(d) === iso(new Date());
                     return (
-                      <div key={i} style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', color: isToday ? 'var(--cyan)' : weekend ? 'var(--text-3)' : 'var(--text-4)', textTransform: 'uppercase' }}>
+                      <div key={i} style={{ textAlign: 'center', fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.05em', color: isToday ? 'var(--cyan)' : weekend ? 'var(--text-3)' : 'var(--text-4)', textTransform: 'uppercase' }}>
                         <div>{d.toLocaleDateString([], { weekday: 'narrow' })}</div>
-                        <div style={{ fontSize: 15, letterSpacing: 0, color: isToday ? 'var(--cyan)' : 'var(--text-2)' }}>{d.getDate()}</div>
+                        <div style={{ fontSize: 'var(--fs-body)', letterSpacing: 0, color: isToday ? 'var(--cyan)' : 'var(--text-2)' }}>{d.getDate()}</div>
                       </div>
                     );
                   })}
@@ -563,8 +563,8 @@ export default function HospitalityPage() {
                 {units.map(u => (
                   <div key={u.id} style={{ display: 'grid', gridTemplateColumns: `160px repeat(${WINDOW}, 1fr)`, gap: 2, marginBottom: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 8px', minWidth: 0 }}>
-                      <span style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.6, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.unit_name}</span>
-                      <span style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-4)' }}>{fmt(u.base_nightly_rate, false, symbolForToken(u.currency) || sym)}/night</span>
+                      <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.6, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.unit_name}</span>
+                      <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>{fmt(u.base_nightly_rate, false, symbolForToken(u.currency) || sym)}/night</span>
                     </div>
                     {days.map((d, i) => {
                       const bk = occupancyOn(u.id, d);
@@ -587,7 +587,7 @@ export default function HospitalityPage() {
                             display: 'flex', alignItems: 'center', paddingLeft: 4, overflow: 'hidden',
                           }}
                         >
-                          {isStart && bk?.channel_id && <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-2)' }}>OTA</span>}
+                          {isStart && bk?.channel_id && <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-2)' }}>OTA</span>}
                         </button>
                       );
                     })}
@@ -599,16 +599,16 @@ export default function HospitalityPage() {
             {/* Legend + the "it's all connected" note */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
               {(['confirmed', 'pending', 'completed'] as BookingStatus[]).map(s => (
-                <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)' }}>
+                <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
                   <span style={{ width: 10, height: 10, borderRadius: 3, background: `color-mix(in srgb, ${statusColour(s)} 40%, transparent)`, border: `1px solid ${statusColour(s)}` }} />
                   {statusLabel(s)}
                 </span>
               ))}
-              <span style={{ marginLeft: 'auto', fontSize: 15, lineHeight: 1.6, color: 'var(--text-3)' }}>
+              <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
                 Confirmed bookings post to your books:{' '}
-                <Link href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Cash Intel</Link>
+                <Link className="tap-link" href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Cash Intel</Link>
                 {' · '}
-                <Link href="/dashboard/timeline" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Timeline</Link>
+                <Link className="tap-link" href="/dashboard/timeline" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Timeline</Link>
               </span>
             </div>
           </SectionCard>
@@ -682,7 +682,7 @@ export default function HospitalityPage() {
 
 const navBtn: React.CSSProperties = {
   width: 34, height: 34, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
-  color: 'var(--text-2)', cursor: 'pointer', fontSize: '1.125rem', lineHeight: 1,
+  color: 'var(--text-2)', cursor: 'pointer', fontSize: 'var(--fs-body)', lineHeight: 1,
 };
 
 // ── The booking panel ────────────────────────────────────────────────────────
@@ -761,7 +761,7 @@ function BookingPanel({
     >
       {/* WHO */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.4, color: 'var(--text-1)' }}>
+        <span style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, lineHeight: 1.4, color: 'var(--text-1)' }}>
           {name || 'No name on this booking'}
         </span>
         <Badge text={statusLabel(b.status)} colour={colour} />
@@ -772,14 +772,14 @@ function BookingPanel({
       </div>
 
       {(b.organisation || '').trim() && (
-        <div style={{ fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)', marginTop: 4 }}>{b.organisation}</div>
+        <div style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', marginTop: 4 }}>{b.organisation}</div>
       )}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12 }}>
         {phone && <ContactLink href={`tel:${phone.replace(/[^\d+]/g, '')}`} label="Call" value={phone} />}
         {email && <ContactLink href={`mailto:${email}`} label="Email" value={email} />}
         {!phone && !email && (
-          <span style={{ fontSize: 18, lineHeight: 1.6, color: 'var(--text-4)' }}>No phone number or email on this booking.</span>
+          <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>No phone number or email on this booking.</span>
         )}
       </div>
 
@@ -815,9 +815,9 @@ function BookingPanel({
       {/* WHAT THEY HAVE PAID */}
       {earns && (
         <PanelBlock title="Money from this stay" tone={PAYMENT_COLOUR[payment]}>
-          <p style={{ margin: '0 0 12px', fontSize: 18, lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)' }}>{moneySummary}</p>
+          <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)' }}>{moneySummary}</p>
           {b.payment_method && (
-            <p style={{ margin: '0 0 12px', fontSize: 15, lineHeight: 1.6, color: 'var(--text-4)' }}>
+            <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>
               The guest said they would pay by {sentence(b.payment_method).toLowerCase()}.
             </p>
           )}
@@ -831,7 +831,7 @@ function BookingPanel({
                   disabled={busy}
                   onClick={() => choose(s)}
                   style={{
-                    ...quietBtn, fontSize: 16, padding: '8px 14px', opacity: busy ? 0.7 : 1,
+                    ...quietBtn, fontSize: 'var(--fs-body)', padding: '8px 14px', opacity: busy ? 0.7 : 1,
                     color: on ? 'var(--text-1)' : 'var(--text-2)',
                     background: on ? `color-mix(in srgb, ${PAYMENT_COLOUR[s]} 16%, transparent)` : 'transparent',
                     border: `1px solid ${on ? PAYMENT_COLOUR[s] : 'var(--border-md)'}`,
@@ -864,7 +864,7 @@ function BookingPanel({
               </button>
               <button style={quietBtn} disabled={busy} onClick={() => setTakingDeposit(false)}>Never mind</button>
               {deposit.trim() !== '' && !depositOk && (
-                <p style={{ flexBasis: '100%', margin: 0, fontSize: 15, lineHeight: 1.6, color: 'var(--warn)' }}>
+                <p style={{ flexBasis: '100%', margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--warn)' }}>
                   A deposit is more than nothing and less than the whole {fmt(total, false, symbol)}. If they paid it all, choose Paid in full.
                 </p>
               )}
@@ -876,7 +876,7 @@ function BookingPanel({
       {/* KEPT WHEN CALLED OFF (upgrade 5) */}
       {(b.status === 'cancelled' || b.status === 'no_show') && (b.kept_amount || 0) > 0 && b.payment_status !== 'refunded' && (
         <PanelBlock title="Money from this stay" tone="var(--good)">
-          <p style={{ margin: 0, fontSize: 18, lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)' }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)' }}>
             You kept {fmt(b.kept_amount || 0, false, symbol)} when this stay was called off. It stays in your books as income.
           </p>
         </PanelBlock>
@@ -890,13 +890,13 @@ function BookingPanel({
       {/* THEIR WORDS */}
       {(b.guest_notes || '').trim() && (
         <PanelBlock title="What the guest wrote" tone="var(--info)">
-          <p style={{ margin: 0, fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>{b.guest_notes}</p>
+          <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>{b.guest_notes}</p>
         </PanelBlock>
       )}
 
       {myNote && (
         <PanelBlock title="Your note about this guest">
-          <p style={{ margin: 0, fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>{myNote}</p>
+          <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>{myNote}</p>
         </PanelBlock>
       )}
 
@@ -908,7 +908,7 @@ function BookingPanel({
             {b.declined_at && <DecisionLine text={`Turned down on ${stamp(b.declined_at)}`} colour="var(--text-3)" />}
             {b.cancelled_at && <DecisionLine text={`Cancelled on ${stamp(b.cancelled_at)}`} colour="var(--text-3)" />}
             {(b.decline_reason || '').trim() && (
-              <div style={{ fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)' }}>Reason given: {b.decline_reason}</div>
+              <div style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)' }}>Reason given: {b.decline_reason}</div>
             )}
           </div>
         </PanelBlock>
@@ -927,7 +927,7 @@ function BookingPanel({
 
       {emailNote && (
         <div style={{
-          marginTop: 20, padding: '12px 14px', borderRadius: 10, background: 'var(--bg-badge)', fontSize: 18, lineHeight: 1.6,
+          marginTop: 20, padding: '12px 14px', borderRadius: 10, background: 'var(--bg-badge)', fontSize: 'var(--fs-body)', lineHeight: 1.6,
           border: `1px solid ${emailNote.tone === 'good' ? 'var(--good)' : 'var(--warn)'}`, color: 'var(--text-1)',
         }}>
           {emailNote.text}
@@ -936,7 +936,7 @@ function BookingPanel({
 
       {/* Something went wrong on the last action, said plainly. */}
       {note && (
-        <div style={{ marginTop: 20, padding: '12px 14px', borderRadius: 10, background: 'var(--red-dim)', border: '1px solid var(--crit)', color: 'var(--crit)', fontSize: 18, lineHeight: 1.6 }}>
+        <div style={{ marginTop: 20, padding: '12px 14px', borderRadius: 10, background: 'var(--red-dim)', border: '1px solid var(--crit)', color: 'var(--crit)', fontSize: 'var(--fs-body)', lineHeight: 1.6 }}>
           {note}
         </div>
       )}
@@ -945,7 +945,7 @@ function BookingPanel({
       <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
         {waiting && !declining && (
           <>
-            <p style={{ margin: '0 0 12px', fontSize: 18, lineHeight: 1.6, color: 'var(--text-3)' }}>
+            <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
               Confirming holds the dates for this guest and records the money in your books. Turning it down frees the nights straight away.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -988,7 +988,7 @@ function BookingPanel({
 
         {cancellable && (
           <>
-            <p style={{ margin: '0 0 12px', fontSize: 18, lineHeight: 1.6, color: 'var(--text-3)' }}>
+            <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
               This stay is booked. Cancelling frees the nights for somebody else.
               {paidSoFar > 0 && ` The guest has paid ${fmt(paidSoFar, false, symbol)}: keep it (a deposit they lose) or refund it.`}
             </p>
@@ -1010,7 +1010,7 @@ function BookingPanel({
         )}
 
         {!waiting && !cancellable && (
-          <p style={{ margin: 0, fontSize: 18, lineHeight: 1.6, color: 'var(--text-4)' }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>
             This booking is closed. Nothing left to answer.
           </p>
         )}
@@ -1088,10 +1088,10 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
           <div style={{ ...lbl, marginBottom: 0 }}>Payments received</div>
           {list.map((p) => (
             <div key={p.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 14px', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
-              <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-1)' }}>{fmt(p.amount, false, symbol)}</span>
-              <span style={{ fontSize: 16, color: 'var(--text-3)' }}>{shortDate(p.date)} · {METHOD_LABEL[p.method] ?? p.method}</span>
+              <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{fmt(p.amount, false, symbol)}</span>
+              <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>{shortDate(p.date)} · {METHOD_LABEL[p.method] ?? p.method}</span>
               <button onClick={() => remove(p)} disabled={busy}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--text-3)', textDecoration: 'underline', fontSize: 15, cursor: 'pointer', padding: 4 }}>
+                style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--text-3)', textDecoration: 'underline', fontSize: 'var(--fs-body)', cursor: 'pointer', padding: 4 }}>
                 Remove
               </button>
             </div>
@@ -1099,7 +1099,7 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
         </div>
       )}
       {owed > 0.005 && !adding && (
-        <button style={{ ...quietBtn, fontSize: 16, padding: '8px 14px' }} disabled={busy} onClick={() => setAdding(true)}>
+        <button style={{ ...quietBtn, fontSize: 'var(--fs-body)', padding: '8px 14px' }} disabled={busy} onClick={() => setAdding(true)}>
           + Add a payment
         </button>
       )}
@@ -1129,11 +1129,11 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
         </div>
       )}
       {amount.trim() !== '' && value > owed + 0.005 && (
-        <p style={{ margin: '8px 0 0', fontSize: 15, lineHeight: 1.6, color: 'var(--warn)' }}>
+        <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--warn)' }}>
           That is more than the {fmt(owed, false, symbol)} still owed.
         </p>
       )}
-      {error && <p role="alert" style={{ margin: '8px 0 0', fontSize: 16, lineHeight: 1.6, color: 'var(--crit)' }}>{error}</p>}
+      {error && <p role="alert" style={{ margin: '8px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--crit)' }}>{error}</p>}
     </div>
   );
 }
@@ -1187,8 +1187,8 @@ function PayLinkBlock({ booking: b, owed, symbol, unitName, phone, name }: {
 
   return (
     <PanelBlock title="Payment link for the guest" tone="var(--cyan)">
-      <p style={{ margin: '0 0 12px', fontSize: 18, lineHeight: 1.6, color: 'var(--text-2)' }}>
-        Send the guest a link. They pay by mobile money from their phone, and this booking marks itself paid.
+      <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)' }}>
+        Send the guest a link. They pay by mobile money from their phone and this booking marks itself paid.
       </p>
       <div role="group" aria-label="How much the link asks for" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
         {(['all', 'deposit'] as const).map(m => (
@@ -1197,7 +1197,7 @@ function PayLinkBlock({ booking: b, owed, symbol, unitName, phone, name }: {
             aria-pressed={mode === m}
             onClick={() => { setMode(m); setLink(null); }}
             style={{
-              ...quietBtn, fontSize: 16, padding: '8px 14px',
+              ...quietBtn, fontSize: 'var(--fs-body)', padding: '8px 14px',
               color: mode === m ? 'var(--text-1)' : 'var(--text-2)',
               background: mode === m ? 'color-mix(in srgb, var(--cyan) 16%, transparent)' : 'transparent',
               border: `1px solid ${mode === m ? 'var(--cyan)' : 'var(--border-md)'}`,
@@ -1222,19 +1222,19 @@ function PayLinkBlock({ booking: b, owed, symbol, unitName, phone, name }: {
       >
         {busy ? 'Making the link…' : link ? 'Make it again' : 'Make the link'}
       </button>
-      {error && <p role="alert" style={{ margin: '10px 0 0', fontSize: 16, lineHeight: 1.6, color: 'var(--crit)' }}>{error}</p>}
+      {error && <p role="alert" style={{ margin: '10px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--crit)' }}>{error}</p>}
       {link && (
         <div style={{ marginTop: 14, padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-3)', marginBottom: 4 }}>
+          <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-3)', marginBottom: 4 }}>
             Asks for {fmt(link.requested, false, symbol)}
           </div>
-          <div style={{ fontSize: 16, lineHeight: 1.5, color: 'var(--text-1)', wordBreak: 'break-all', marginBottom: 10 }}>{link.url}</div>
+          <div style={{ fontSize: 'var(--fs-body)', lineHeight: 1.5, color: 'var(--text-1)', wordBreak: 'break-all', marginBottom: 10 }}>{link.url}</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            <button style={{ ...quietBtn, fontSize: 16, padding: '8px 14px' }} onClick={copy}>{copied ? 'Copied' : 'Copy link'}</button>
+            <button style={{ ...quietBtn, fontSize: 'var(--fs-body)', padding: '8px 14px' }} onClick={copy}>{copied ? 'Copied' : 'Copy link'}</button>
             <a
               href={`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`}
               target="_blank" rel="noopener noreferrer"
-              style={{ ...primaryBtn, fontSize: 16, padding: '8px 14px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+              style={{ ...primaryBtn, fontSize: 'var(--fs-body)', padding: '8px 14px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
             >
               {waNumber ? 'Send on WhatsApp' : 'Share on WhatsApp'}
             </a>
@@ -1248,7 +1248,7 @@ function PayLinkBlock({ booking: b, owed, symbol, unitName, phone, name }: {
 function PanelBlock({ title, children, tone = 'var(--border-md)' }: { title: string; children: React.ReactNode; tone?: string }) {
   return (
     <section style={{ marginTop: 24, paddingLeft: 14, borderLeft: `2px solid ${tone}` }}>
-      <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-4)' }}>
+      <h4 style={{ margin: '0 0 12px', fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-4)' }}>
         {title}
       </h4>
       {children}
@@ -1263,9 +1263,9 @@ function FieldGrid({ children }: { children: React.ReactNode }) {
 function Field({ label, value, colour, hint }: { label: string; value: string; colour?: string; hint?: string }) {
   return (
     <div>
-      <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-4)' }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.6, color: colour || 'var(--text-1)', marginTop: 2 }}>{value}</div>
-      {hint && <div style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-4)' }}>{hint}</div>}
+      <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-4)' }}>{label}</div>
+      <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.6, color: colour || 'var(--text-1)', marginTop: 2 }}>{value}</div>
+      {hint && <div style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>{hint}</div>}
     </div>
   );
 }
@@ -1273,7 +1273,7 @@ function Field({ label, value, colour, hint }: { label: string; value: string; c
 function Badge({ text, colour }: { text: string; colour: string }) {
   return (
     <span style={{
-      fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', whiteSpace: 'nowrap',
+      fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', whiteSpace: 'nowrap',
       color: colour, background: `color-mix(in srgb, ${colour} 16%, transparent)`,
       border: `1px solid color-mix(in srgb, ${colour} 40%, transparent)`, borderRadius: 6, padding: '5px 10px',
     }}>
@@ -1290,15 +1290,15 @@ function ContactLink({ href, label, value }: { href: string; label: string; valu
       style={{
         display: 'inline-flex', alignItems: 'baseline', gap: 8, padding: '10px 14px', minHeight: 44,
         borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
-        fontSize: 18, lineHeight: 1.6, color: 'var(--text-1)', textDecoration: 'none',
+        fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-1)', textDecoration: 'none',
       }}
     >
-      <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-4)' }}>{label}</span>
+      <span style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-4)' }}>{label}</span>
       <span style={{ fontWeight: 600 }}>{value}</span>
     </a>
   );
 }
 
 function DecisionLine({ text, colour }: { text: string; colour: string }) {
-  return <div style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.6, color: colour }}>{text}</div>;
+  return <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.6, color: colour }}>{text}</div>;
 }

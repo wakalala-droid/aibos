@@ -126,7 +126,7 @@ export interface Booking {
   guest_id?: string | null;
   channel_id?: string | null;
   check_in: string;   // YYYY-MM-DD
-  check_out: string;  // YYYY-MM-DD (exclusive — the free turnover day)
+  check_out: string;  // YYYY-MM-DD (exclusive: the free turnover day)
   guests_count: number;
   status: BookingStatus;
   total_amount: number;

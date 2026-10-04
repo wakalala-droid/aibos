@@ -15,7 +15,7 @@ import {
 } from '@/lib/demoData';
 
 export const metadata: Metadata = {
-  title: 'AIBOS — The brain behind every business',
+  title: 'AIBOS · The brain behind every business',
   description:
     'Ask your business anything and get the answer, in Kwacha, instantly. AIBOS reads your data and gives you a CFO, analyst and consultant in your pocket. Start free.',
   alternates: { canonical: '/' },
@@ -49,12 +49,12 @@ export default function MarketingHome() {
       <ShowcaseBand
         eyebrow="See around the corner"
         title="Know what’s coming, while you can still act."
-        lead="AIBOS projects your revenue from your own history and shows the range, not a fake single number. You see the strong month to ride, and the soft one to brace for."
+        lead="AIBOS projects your revenue from your own history and shows the range, not a fake single number. You see the strong month to ride and the soft one to brace for."
         values={['Built only from your real data', 'A 95% confidence band, never false precision', 'Updates the moment you upload']}
         cta={{ label: 'Start free', href: '/login' }}
       >
         <AibosWindow>
-          <p style={{ margin: '0 0 12px', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>AI Revenue Forecast</p>
+          <p style={{ margin: '0 0 12px', fontWeight: 800, fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>AI Revenue Forecast</p>
           <ForecastChart data={DEMO_FORECAST} sym="K" />
         </AibosWindow>
       </ShowcaseBand>
@@ -84,20 +84,20 @@ export default function MarketingHome() {
         cta={{ label: 'Start free', href: '/login' }}
       >
         <AibosWindow>
-          <p style={{ margin: '0 0 14px', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>Customer Intelligence</p>
+          <p style={{ margin: '0 0 14px', fontWeight: 800, fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>Customer Intelligence</p>
           <SegmentDonut segments={DEMO_SEGMENTS} />
           <div style={{ display: 'flex', gap: 24, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
             <div>
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Retention</p>
-              <p style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--good)', margin: 0 }}>{DEMO_RETENTION.rate}%</p>
+              <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Retention</p>
+              <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 800, color: 'var(--good)', margin: 0 }}>{DEMO_RETENTION.rate}%</p>
             </div>
             <div>
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Returning</p>
-              <p style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--blue)', margin: 0 }}>{DEMO_RETENTION.returning}</p>
+              <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Returning</p>
+              <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 800, color: 'var(--blue)', margin: 0 }}>{DEMO_RETENTION.returning}</p>
             </div>
             <div>
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>First-time</p>
-              <p style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-2)', margin: 0 }}>{DEMO_RETENTION.firstTime}</p>
+              <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>First-time</p>
+              <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 800, color: 'var(--text-2)', margin: 0 }}>{DEMO_RETENTION.firstTime}</p>
             </div>
           </div>
         </AibosWindow>
@@ -112,7 +112,7 @@ export default function MarketingHome() {
         values={['Statistical anomaly detection', 'Critical vs warning, colour-coded', 'A cause and an action, not just a red number']}
       >
         <AibosWindow>
-          <p style={{ margin: '0 0 12px', fontWeight: 800, fontSize: '1rem', color: 'var(--text-1)' }}>Z-Score Distribution</p>
+          <p style={{ margin: '0 0 12px', fontWeight: 800, fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>Z-Score Distribution</p>
           <AnomalyZChart data={DEMO_ANOMALY_Z} />
         </AibosWindow>
       </ShowcaseBand>
@@ -122,7 +122,7 @@ export default function MarketingHome() {
         reverse
         eyebrow="No black box"
         title="It shows its working."
-        lead="Before any insight, AIBOS tells you exactly how it read your file: every column, what it became, and how confident it is. When the data can’t answer, it says so."
+        lead="Before any insight, AIBOS tells you exactly how it read your file: every column, what it became and how confident it is. When the data can’t answer, it says so."
         values={['A plain-English read-out of every file', 'Confidence shown on each column', 'Refuses to invent what isn’t there']}
       >
         <AibosWindow>

@@ -172,7 +172,7 @@ export default function InvoicesPage() {
     { key: 'due_at', label: 'Due', sortValue: i => i.due_at ?? '',
       render: i => i.due_at
         ? <span style={{ color: isOverdue(i) ? 'var(--crit)' : undefined, fontWeight: isOverdue(i) ? 600 : undefined }}>{i.due_at.slice(0, 10)}{isOverdue(i) ? ' · overdue' : ''}</span>
-        : '—' },
+        : 'None' },
     { key: 'status', label: 'Status', sortValue: i => i.status,
       render: i => (
         <span className="badge" style={{ color: STATUS_COLOUR[i.status], borderColor: 'var(--border)', textTransform: 'capitalize' }}>
@@ -188,7 +188,7 @@ export default function InvoicesPage() {
               <>
                 <button type="button" style={{ ...btn, color: 'var(--cyan)' }} disabled={busy}
                   onClick={() => void act(i.id, sendInvoice,
-                    `Send ${i.number}? ${fmt(i.total, false, sym)} is recorded as a sale owed by ${i.customer_name}, and the invoice can no longer be edited.`,
+                    `Send ${i.number}? ${fmt(i.total, false, sym)} is recorded as a sale owed by ${i.customer_name} and the invoice can no longer be edited.`,
                     () => logUsage('event_recorded', { meta: { event_type: 'Sale', via: 'invoice_send' } }))}>
                   Send
                 </button>
@@ -227,7 +227,7 @@ export default function InvoicesPage() {
         eyebrow="Record & Plan · Invoices"
         eyebrowColour="var(--cyan)"
         title="Invoices"
-        subtitle="Issue, share on WhatsApp, get paid — receivables and cash stay one story"
+        subtitle="Issue, share on WhatsApp, get paid: receivables and cash stay one story"
       />
 
       {error && (
@@ -334,7 +334,7 @@ export default function InvoicesPage() {
             rows={invoices}
             rowKey={i => i.id}
             defaultSort={{ key: 'number', dir: 'desc' }}
-            emptyMessage="No invoices yet — create one and share it on WhatsApp. Sent invoices appear in your receivables automatically."
+            emptyMessage="No invoices yet: create one and share it on WhatsApp. Sent invoices appear in your receivables automatically."
           />
         )}
       </SectionCard>

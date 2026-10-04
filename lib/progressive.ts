@@ -66,10 +66,10 @@ export function computeProgress(twin: Twin | null): Progress {
   } else if (next) {
     const need = Math.max(0, next.monthsNeeded - months);
     nextAction = need > 0
-      ? `Keep recording — ${need} more month${need === 1 ? '' : 's'} of activity unlocks ${next.title}.`
+      ? `Keep recording: ${need} more month${need === 1 ? '' : 's'} of activity unlocks ${next.title}.`
       : `You're ready for ${next.title}.`;
   } else {
-    nextAction = 'Your AIBOS is fully matured — every engine is live.';
+    nextAction = 'Your AIBOS is fully matured: every engine is live.';
   }
 
   return { stage: current, next, months, events, pctToNext, nextAction };

@@ -134,8 +134,8 @@ export default function StrategicBriefView({
     <>
       {!hideHeader && (
         <div style={{ marginBottom: 24 }}>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Strategic Brief</h1>
+          <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
+          <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Strategic Brief</h1>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>AI-generated executive summary · recommendations · action plan</p>
         </div>
       )}
@@ -168,8 +168,8 @@ export default function StrategicBriefView({
                 transition={{ duration: 1.4, ease: 'easeOut', delay: 0.3 }} style={{ transform: 'rotate(-90deg)', transformOrigin: '65px 65px' }} />
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '1.8rem', fontWeight: 900, color: healthColour, lineHeight: 1 }}>{health.score}</span>
-              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3 }}>{health.label}</span>
+              <span style={{ fontSize: 'var(--fs-h1)', fontWeight: 900, color: healthColour, lineHeight: 1 }}>{health.score}</span>
+              <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3 }}>{health.label}</span>
               <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 1 }}>/100</span>
             </div>
           </div>
@@ -183,7 +183,7 @@ export default function StrategicBriefView({
                 single month of data it also printed the same figure twice, once
                 as the best and once as the worst, which reads as a broken card.
                 Colour carries meaning here, so a loss is never green, the bars
-                are proportional to the actual figures, and one month says it is
+                are proportional to the actual figures and one month says it is
                 one month. */}
             {monthCount === 0 ? (
               <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.6 }}>
@@ -192,7 +192,7 @@ export default function StrategicBriefView({
               </p>
             ) : monthCount === 1 ? (
               <div>
-                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>
+                <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>
                   Only month so far
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 5 }}>
@@ -213,7 +213,7 @@ export default function StrategicBriefView({
             ) : (
               <>
                 <div style={{ marginBottom: 14 }}>
-                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Best Month</p>
+                  <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Best Month</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 5 }}>
                     <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{health.bestMonth}</span>
                     <span style={{ fontSize: 'var(--fs-label)', color: profitColour(bestProfit) }}>
@@ -227,7 +227,7 @@ export default function StrategicBriefView({
                   </div>
                 </div>
                 <div>
-                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Worst Month</p>
+                  <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Worst Month</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 5 }}>
                     <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{health.worstMonth}</span>
                     <span style={{ fontSize: 'var(--fs-label)', color: profitColour(worstProfit) }}>
@@ -253,7 +253,7 @@ export default function StrategicBriefView({
                   { label: 'Operations', score: scores.e3_score, colour: 'var(--e3)', measured: scores.measured?.e3 ?? true },
                 ].map((item) => (
                   <div key={item.label} style={{ flex: 1 }}>
-                    <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.label}</p>
+                    <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.label}</p>
                     <div className="progress-track" style={{ marginBottom: 3 }}><motion.div className="progress-fill" style={{ background: item.measured ? item.colour : 'var(--border-md)' }} initial={{ width: 0 }} animate={{ width: item.measured ? `${item.score}%` : '0%' }} transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }} /></div>
                     <span style={{ fontSize: 'var(--fs-label)', color: item.measured ? item.colour : 'var(--text-4)', fontWeight: 700 }}>
                       {item.measured ? item.score : 'No data yet'}
@@ -291,8 +291,8 @@ export default function StrategicBriefView({
             { label: 'Worst Month', value: health.worstMonth, colour: profitColour(worstProfit) },
           ].map((item) => (
             <div key={item.label} style={{ padding: '12px 14px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>{item.label}</p>
-              <p style={{ fontSize: '1.1rem', fontWeight: 800, color: item.colour, margin: 0, letterSpacing: '-0.02em' }}>{item.value}</p>
+              <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>{item.label}</p>
+              <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: item.colour, margin: 0, letterSpacing: '-0.02em' }}>{item.value}</p>
             </div>
           ))}
         </div>

@@ -42,13 +42,13 @@ export default function DataManifestCard({
   return (
     <SectionCard
       title="How AIBOS read your file"
-      subtitle="Transparency-first — every column, how it was mapped, and how confident we are"
+      subtitle="Transparency-first: every column, how it was mapped and how confident we are"
       delay={0.12}
     >
       {/* Shape badge */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
         <span style={{
-          fontSize: 'var(--fs-label)', fontWeight: 700,
+          fontSize: 'var(--fs-caps)', fontWeight: 700,
           textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 10px',
           borderRadius: 6, color: isCross ? 'var(--warn)' : 'var(--cyan)',
           background: isCross ? 'color-mix(in srgb, var(--warn) 14%, transparent)' : 'var(--cyan-dim)',
@@ -94,7 +94,7 @@ export default function DataManifestCard({
                 <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{c.name}</td>
                 <td>
                   <span style={{
-                    fontSize: 'var(--fs-label)', fontWeight: 700,
+                    fontSize: 'var(--fs-caps)', fontWeight: 700,
                     color: ROLE_COLOUR[c.role] ?? 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em',
                   }}>
                     {c.role}
@@ -113,7 +113,7 @@ export default function DataManifestCard({
       {breakdown.length > 0 && (
         <div style={{ marginTop: 20 }}>
           <p style={{
-            fontSize: 'var(--fs-label)', fontWeight: 700,
+            fontSize: 'var(--fs-caps)', fontWeight: 700,
             color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px',
           }}>
             Per-item economics

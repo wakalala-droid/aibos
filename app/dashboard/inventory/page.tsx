@@ -24,7 +24,7 @@ const input: React.CSSProperties = {
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
   fontSize: 'var(--fs-body)', outline: 'none',
 };
-const lbl: React.CSSProperties = { fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
+const lbl: React.CSSProperties = { fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
 
 export default function InventoryPage() {
   const sym = useStore(s => s.currencySymbol) || 'K';
@@ -98,7 +98,7 @@ export default function InventoryPage() {
         .filter(([, v]) => v !== '' && !isNaN(Number(v)))
         .map(([name, v]) => ({ name, counted: Number(v) }));
       const out = await stockTake(payload);
-      setTakeMsg(`${out.adjusted} product${out.adjusted === 1 ? '' : 's'} adjusted${out.adjusted === 0 ? ' — everything matched' : ''}.`);
+      setTakeMsg(`${out.adjusted} product${out.adjusted === 1 ? '' : 's'} adjusted${out.adjusted === 0 ? ': everything matched' : ''}.`);
       setCounts({});
       await load();
     } catch (e) { setError((e as Error).message); }
@@ -129,7 +129,7 @@ export default function InventoryPage() {
     <>
       <PageHeader
         title="Inventory"
-        subtitle="Your product catalog — prices, stock and reorder levels."
+        subtitle="Your product catalog: prices, stock and reorder levels."
       />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
@@ -174,7 +174,7 @@ export default function InventoryPage() {
           </div>
           <button type="button" className="touch-target" disabled={takeBusy || Object.keys(counts).length === 0}
             onClick={() => void submitStockTake()}
-            style={{ marginTop: 14, padding: '9px 16px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: takeBusy ? 0.7 : 1 }}>
+            style={{ marginTop: 14, padding: '9px 16px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: takeBusy ? 0.7 : 1 }}>
             {takeBusy ? 'Saving…' : 'Save count'}
           </button>
         </SectionCard>
@@ -187,7 +187,7 @@ export default function InventoryPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 48 }} />)}</div>
           ) : items.length === 0 ? (
             <div style={{ padding: '28px 16px', textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)', margin: '0 0 14px' }}>No products yet — add your first one, or start from a template for your {ind.label}.</p>
+              <p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)', margin: '0 0 14px' }}>No products yet: add your first one, or start from a template for your {ind.label}.</p>
               <button type="button" className="touch-target" disabled={seeding}
                 onClick={() => void seedStarters()}
                 style={{ padding: '9px 16px', minHeight: 40, borderRadius: 8, border: '1px solid var(--cyan)', background: 'transparent', color: 'var(--cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>

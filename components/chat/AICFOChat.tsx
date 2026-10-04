@@ -68,7 +68,7 @@ export default function AICFOChat() {
 
   return (
     <section
-      aria-label="AI CFO assistant"
+      aria-label="Ask AIBOS"
       style={{
         display: 'flex', flexDirection: 'column', height: '100%',
         background: 'var(--bg-card)', borderRadius: 12, overflow: 'hidden',
@@ -78,8 +78,8 @@ export default function AICFOChat() {
       {/* Header */}
       <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
-            AI CFO Assistant
+          <h2 style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+            Ask AIBOS
           </h2>
           {messages.length > 0 && (
             <button type="button" onClick={clearConversation} disabled={loading}
@@ -95,7 +95,7 @@ export default function AICFOChat() {
       </div>
 
       {/* Body */}
-      <div ref={scrollRef} onScroll={onBodyScroll} role="log" aria-live="polite" aria-atomic="false" aria-label="Conversation with AI CFO"
+      <div ref={scrollRef} onScroll={onBodyScroll} role="log" aria-live="polite" aria-atomic="false" aria-label="Conversation with AIBOS"
         style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
 
         {/* Identity card */}
@@ -107,7 +107,7 @@ export default function AICFOChat() {
             </svg>
           </div>
           <div>
-            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>AI CFO</p>
+            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>AIBOS</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
               <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2, repeat: Infinity }}
                 style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--good)' }} />
@@ -183,11 +183,11 @@ export default function AICFOChat() {
       {/* Input bar */}
       <div style={{ padding: '12px 16px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 12, padding: '10px 12px 10px 16px', transition: 'border-color 0.15s ease' }}>
-          <label htmlFor="cfo-chat-input" className="sr-only">Message to AI CFO</label>
+          <label htmlFor="cfo-chat-input" className="sr-only">Message to AIBOS</label>
           <textarea
             id="cfo-chat-input" ref={inputRef} value={input}
             onChange={(e) => setInput(e.target.value)} onKeyDown={handleKey}
-            placeholder="Ask your AI CFO anything..." aria-label="Message to AI CFO" rows={1} disabled={loading}
+            placeholder="Ask AIBOS anything…" aria-label="Message to AIBOS" rows={1} disabled={loading}
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontSize: 'var(--fs-body)', color: 'var(--text-1)', lineHeight: 1.5, maxHeight: 120, overflow: 'auto' }}
             onInput={(e) => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 120)}px`; }}
           />

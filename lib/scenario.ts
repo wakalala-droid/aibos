@@ -57,7 +57,7 @@ function baseline(monthly: MonthlyRow[]): { rev: number; cost: number; months: n
 export function runScenario(sc: Scenario, monthly: MonthlyRow[], sym: string): string {
   const base = baseline(monthly);
   if (!base) {
-    return "I can model that as soon as I have your financials — upload a P&L on the **Overview** page, or keep recording; after a month of activity I'll have real numbers to work with. I won't model a scenario on made-up figures.";
+    return "I can model that as soon as I have your financials: upload a P&L on the **Overview** page, or keep recording; after a month of activity I'll have real numbers to work with. I won't model a scenario on made-up figures.";
   }
   const money = (n: number) => fmt(n, true, sym);
   const { rev, cost, months } = base;
@@ -66,14 +66,14 @@ export function runScenario(sc: Scenario, monthly: MonthlyRow[], sym: string): s
   const pctLabel = `${Math.round(sc.pct * 100)}%`;
   const dirWord = sc.direction === 1 ? 'up' : 'down';
   const basis = `Based on your last ${months} recorded month${months === 1 ? '' : 's'} (avg revenue ${money(rev)}, avg costs ${money(cost)}, profit ${money(profitNow)}/month):`;
-  const coda = '\n\n_A simple model on your real averages — not a forecast. Useful for direction, not for decimals._';
+  const coda = '\n\n_A simple model on your real averages: not a forecast. Useful for direction, not for decimals._';
 
   if (sc.target === 'costs') {
     const after = rev - cost * (1 + delta);
     return [
       basis,
       `If costs go ${dirWord} ${pctLabel} and sales stay the same, profit goes from **${money(profitNow)}** to **${money(after)}** per month (${money(after - profitNow)}).`,
-      after < 0 ? '⚠️ That would put you below breakeven — worth stress-testing your biggest cost lines now.' : null,
+      after < 0 ? 'That would put you below breakeven: worth stress-testing your biggest cost lines now.' : null,
     ].filter(Boolean).join('\n\n') + coda;
   }
 
@@ -83,8 +83,8 @@ export function runScenario(sc: Scenario, monthly: MonthlyRow[], sym: string): s
       basis,
       `If you change prices ${dirWord} ${pctLabel} and volume holds, profit goes from **${money(profitNow)}** to **${money(after)}** per month (${money(after - profitNow)}).`,
       sc.direction === 1
-        ? 'In practice some customers buy less after a price rise — treat this as the upper end, and watch volume for two weeks after changing.'
-        : 'A price cut needs enough extra volume to pay for itself — this shows the cost of the cut before any new customers arrive.',
+        ? 'In practice some customers buy less after a price rise: treat this as the upper end and watch volume for two weeks after changing.'
+        : 'A price cut needs enough extra volume to pay for itself: this shows the cost of the cut before any new customers arrive.',
     ].join('\n\n') + coda;
   }
 
@@ -97,6 +97,6 @@ export function runScenario(sc: Scenario, monthly: MonthlyRow[], sym: string): s
   const hi = Math.max(profitFixed, profitVariable);
   return [
     basis,
-    `If sales go ${dirWord} ${pctLabel}, monthly profit lands between **${money(lo)}** and **${money(hi)}** — the exact spot depends on how much of your costs move with sales (stock does, rent doesn't).`,
+    `If sales go ${dirWord} ${pctLabel}, monthly profit lands between **${money(lo)}** and **${money(hi)}**: the exact spot depends on how much of your costs move with sales (stock does, rent doesn't).`,
   ].join('\n\n') + coda;
 }

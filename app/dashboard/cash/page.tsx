@@ -178,7 +178,7 @@ export default function CashPage() {
               ...(Math.abs(split.opening) > 0.005 ? [['Starting balance', split.opening] as [string, number]] : []),
             ] as [string, number][]).map(([label, value]) => (
               <div key={label} style={{ padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-badge)' }}>
-                <div style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+                <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
                 <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: value < 0 ? 'var(--crit)' : 'var(--text-1)', marginTop: 2 }}>
                   {fmt(value, false, sym)}
                 </div>
@@ -188,7 +188,7 @@ export default function CashPage() {
           {(split.cash < 0 || split.mobile_money < 0 || split.bank < 0 || Math.abs(split.unsaid) > 0.005) && (
             <p style={{ fontSize: 'var(--fs-label)', lineHeight: 1.6, color: 'var(--text-4)', margin: '12px 0 0' }}>
               A figure below zero means more was recorded going out that way than coming in. Record money you move
-              between them (for example, cash taken to the bank) and say how each payment was made, and these even out.
+              between them (for example, cash taken to the bank) and say how each payment was made and these even out.
               Together they always add up to your {fmt(split.total, false, sym)}.
             </p>
           )}
@@ -200,16 +200,16 @@ export default function CashPage() {
         style={{ background: 'var(--bg-card)', border: `1px solid var(--border)`, borderRadius: 12, padding: '20px 24px', marginBottom: 20, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <div>
-            <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
+            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
             <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
               {/* The card above says "not shrinking"; this line used to say
                   "18mo remaining" at the same time. */}
               {notShrinking
                 ? 'Your income covers your spending, so your cash is not running down.'
-                : `${runway}mo remaining · ${runway < runwayTarget ? `⚠ Below ${runwayTarget}mo target` : `✓ Above ${runwayTarget}mo target`}`}
+                : `${runway}mo remaining · ${runway < runwayTarget ? `below your ${runwayTarget}-month target` : `above your ${runwayTarget}-month target`}`}
             </p>
           </div>
-          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: runwayColor }}>
+          <span style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: runwayColor }}>
             {notShrinking ? 'Safe' : <>{runway}mo <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontWeight: 400 }}>/ {runwayTarget}mo</span></>}
           </span>
         </div>
@@ -225,7 +225,7 @@ export default function CashPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           {[0, 6, 12, 18, 24].map(mo => (
             <span key={mo} style={{ fontSize: 'var(--fs-label)', color: mo === 12 ? 'var(--warn)' : 'var(--text-4)' }}>
-              {mo}mo{mo === 12 ? ' ⚑' : ''}
+              {mo}mo{mo === 12 ? ' (target)' : ''}
             </span>
           ))}
         </div>
@@ -243,8 +243,8 @@ export default function CashPage() {
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis minTickGap={16} dataKey="label" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
               <Area type="monotone" dataKey="cash" stroke="var(--cyan)" strokeWidth={2} fill="url(#cashGrad)" dot={false} name="Cash Position" />
               <ReferenceLine y={0} stroke="var(--crit)" strokeDasharray="4 4" strokeWidth={1} />
@@ -277,7 +277,7 @@ export default function CashPage() {
             </table>
           </div>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '10px 0 0', lineHeight: 1.5 }}>
-            Months with nothing recorded are left out. A booking or invoice counts as income in the month it was made, and as cash when it is paid.
+            Months with nothing recorded are left out. A booking or invoice counts as income in the month it was made and as cash when it is paid.
           </p>
         </SectionCard>
       )}

@@ -421,7 +421,7 @@ export default function DashboardHeader() {
                 aria-expanded="true"
                 aria-controls="dash-search-listbox"
                 aria-activedescendant={options.length ? `dash-search-opt-${activeIdx}` : undefined}
-                placeholder="Search pages, customers, products — or ask a question…"
+                placeholder="Search pages, customers, products: or ask a question…"
                 aria-label="Search pages, customers and products, or ask AIBOS"
                 style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none' }}
               />
@@ -446,7 +446,7 @@ export default function DashboardHeader() {
                       style={{ ...base, justifyContent: 'space-between' }}
                     >
                       <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 500 }}>{opt.label}</span>
-                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{opt.group}</span>
+                      <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{opt.group}</span>
                     </button>
                   );
                 }
@@ -487,12 +487,12 @@ export default function DashboardHeader() {
             className="dash-pop" style={{ width: 'min(420px, 92vw)' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderBottom: '1px solid var(--border)' }}>
-              <span style={{ fontSize: 18, lineHeight: 1.6, fontWeight: 800, color: 'var(--text-1)' }}>Alerts</span>
-              <span style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-4)', background: 'var(--bg-badge)', border: '1px solid var(--border)', padding: '2px 12px', borderRadius: 999 }}>{unread} total</span>
+              <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 800, color: 'var(--text-1)' }}>Alerts</span>
+              <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)', background: 'var(--bg-badge)', border: '1px solid var(--border)', padding: '2px 12px', borderRadius: 999 }}>{unread} total</span>
             </div>
             <div style={{ maxHeight: 360, overflowY: 'auto' }}>
               {unread === 0 ? (
-                <p style={{ padding: '24px 16px', fontSize: 18, lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
+                <p style={{ padding: '24px 16px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
                   You are all clear. Nothing needs you right now. As you record, AIBOS flags anything that needs attention here.
                 </p>
               ) : mergedAlerts.slice(0, 12).map((a, i) => {
@@ -512,15 +512,15 @@ export default function DashboardHeader() {
                   <div style={{ display: 'flex', gap: 12, padding: '16px', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
                     <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: sc, flexShrink: 0, marginTop: 10 }} />
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 18, lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)', margin: '0 0 4px' }}>
+                      <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)', margin: '0 0 4px' }}>
                         {title}
-                        <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 700, color: sc, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        <span style={{ marginLeft: 8, fontSize: 'var(--fs-caps)', fontWeight: 700, color: sc, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                           {sevWord}
                         </span>
                       </p>
-                      {desc && <p style={{ fontSize: 18, color: 'var(--text-3)', margin: 0, lineHeight: 1.6 }}>{desc}</p>}
+                      {desc && <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.6 }}>{desc}</p>}
                       {/* Only a thing that happened has a moment worth printing. */}
-                      {when && <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-4)', margin: '4px 0 0' }}>{when}</p>}
+                      {when && <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)', margin: '4px 0 0' }}>{when}</p>}
                     </div>
                   </div>
                 );
@@ -547,7 +547,7 @@ export default function DashboardHeader() {
             </div>
             {/* Alerts on the phone, with AIBOS closed (upgrade 10). */}
             <PhoneAlerts />
-            <Link href="/dashboard/anomaly" onClick={() => setOpen(null)} style={{ display: 'block', textAlign: 'center', padding: '16px', borderTop: '1px solid var(--border)', fontSize: 18, lineHeight: 1.6, fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
+            <Link href="/dashboard/anomaly" onClick={() => setOpen(null)} style={{ display: 'block', textAlign: 'center', padding: '16px', borderTop: '1px solid var(--border)', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
               View anomaly intelligence →
             </Link>
           </motion.div>
@@ -564,7 +564,7 @@ export default function DashboardHeader() {
             <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
               <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{businessName}</p>
               {email && <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</p>}
-              <span style={{ display: 'inline-block', marginTop: 10, fontSize: 'var(--fs-label)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--cyan)', background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)', padding: '3px 8px', borderRadius: 6 }}>
+              <span style={{ display: 'inline-block', marginTop: 10, fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--cyan)', background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)', padding: '3px 8px', borderRadius: 6 }}>
                 {TIERS[tier].name} plan
               </span>
             </div>
@@ -610,7 +610,7 @@ export default function DashboardHeader() {
                 ['Ctrl K', 'Search anything, or ask AIBOS a question'],
                 ['↑ ↓ + Enter', 'Move through search results and open one'],
                 ['Esc', 'Close any panel, menu or the assistant'],
-                ['Shift + Enter', 'New line in the AI CFO chat'],
+                ['Shift + Enter', 'New line when asking AIBOS'],
                 ['Hold a card', 'Long-press any metric and AIBOS explains it'],
               ].map(([key, tip]) => (
                 <div key={key} style={{ display: 'flex', gap: 12, alignItems: 'baseline', padding: '7px 0' }}>

@@ -65,7 +65,7 @@ export function OutboxChip({ style }: { style?: React.CSSProperties }) {
         ...style,
       }}
     >
-      {count} saved offline — will sync when signal returns
+      {count} saved offline: will sync when signal returns
     </span>
   );
 }

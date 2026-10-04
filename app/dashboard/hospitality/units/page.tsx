@@ -22,12 +22,12 @@ const input: React.CSSProperties = {
   fontSize: 'var(--fs-body)', outline: 'none',
 };
 const lbl: React.CSSProperties = {
-  fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)',
+  fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
   padding: '9px 16px', minHeight: 38, borderRadius: 8, border: 'none', background: 'var(--cyan)',
-  color: '#fff', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
+  color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
 };
 const ghostBtn: React.CSSProperties = {
   padding: '8px 14px', minHeight: 36, borderRadius: 8, background: 'transparent',
@@ -79,7 +79,7 @@ export default function UnitsPage() {
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'end' }}>
           <div style={{ flex: 1, minWidth: 200 }}>
             <label style={lbl}>New property name</label>
-            <input style={input} value={newProp} onChange={e => setNewProp(e.target.value)} placeholder="Dunslim Apartments — Makeni Road" />
+            <input style={input} value={newProp} onChange={e => setNewProp(e.target.value)} placeholder="Dunslim Apartments, Makeni Road" />
           </div>
           <button style={{ ...primaryBtn, opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={addProperty}>Add property</button>
         </div>
@@ -92,7 +92,7 @@ export default function UnitsPage() {
         return (
           <div key={p.id} style={{ marginTop: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>{p.name}</h2>
+              <h2 style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>{p.name}</h2>
               <button style={ghostBtn} onClick={() => { setAddingTo(addingTo === p.id ? null : p.id); setNewUnit(''); }}>{addingTo === p.id ? 'Close' : '+ Add unit'}</button>
             </div>
 
@@ -100,7 +100,7 @@ export default function UnitsPage() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'end', marginBottom: 12 }}>
                 <div style={{ flex: 1 }}>
                   <label style={lbl}>Unit name</label>
-                  <input style={input} value={newUnit} onChange={e => setNewUnit(e.target.value)} placeholder="Unit A — 2BR" autoFocus />
+                  <input style={input} value={newUnit} onChange={e => setNewUnit(e.target.value)} placeholder="Unit A, 2 bedrooms" autoFocus />
                 </div>
                 <button style={{ ...primaryBtn, opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={() => addUnit(p.id)}>Add</button>
               </div>
@@ -166,7 +166,7 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
   const remove = async () => {
     // Bookings are deleted with the unit (0015 cascades them), and the money
     // from its stays comes out of the books. This used to promise the opposite.
-    if (!confirm(`Delete “${unit.unit_name}”? Every booking on it is deleted too, and the money from those stays is taken out of your books. This cannot be undone.`)) return;
+    if (!confirm(`Delete “${unit.unit_name}”? Every booking on it is deleted too and the money from those stays is taken out of your books. This cannot be undone.`)) return;
     setBusy(true); onError('');
     try { await deleteUnit(unit.id); await onSaved(); }
     catch (e) { onError(e instanceof Error ? e.message : 'Could not delete unit.'); }
@@ -196,7 +196,7 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
       {/* The handle this unit answers to on the property's own website.
           Deliberately separate from the unit name: it appears in links people
           have already sent each other, so renaming the unit here must not
-          quietly break the site. Blank is fine — the name is used instead. */}
+          quietly break the site. Blank is fine: the name is used instead. */}
       <div style={{ marginTop: 14 }}>
         <label style={lbl}>Web address on your own site</label>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -218,7 +218,7 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
       <div style={{ marginTop: 14 }}>
         <label style={lbl}>Amenities (the canonical list)</label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
-          {amenities.length === 0 && <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>None yet — add the real ones so no listing can diverge.</span>}
+          {amenities.length === 0 && <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>None yet: add the real ones so no listing can diverge.</span>}
           {amenities.map(a => (
             <span key={a} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 999, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>
               {a}

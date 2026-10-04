@@ -75,7 +75,7 @@ export default function AdminProposalsPage() {
 
   // Generate from the file currently loaded in this session, then persist.
   const scan = useCallback(async () => {
-    if (!cabinetId) { setNote('Upload a file first — there is no current file to scan.'); return; }
+    if (!cabinetId) { setNote('Upload a file first: there is no current file to scan.'); return; }
     setBusy(true); setNote('');
     try {
       const r = await fetch(`/api/proxy/propose?cabinet_id=${encodeURIComponent(cabinetId)}`, { method: 'POST', headers: await authHeaders() });
@@ -138,7 +138,7 @@ export default function AdminProposalsPage() {
     try {
       const r = await fetch('/api/admin/proposals?sweep=approved', { method: 'DELETE' });
       if (!r.ok) { const j = await r.json(); throw new Error(j.error || 'Sweep failed'); }
-      setNote('Cleared legacy approved rows — re-scan to regenerate the correct set under the new lifecycle.');
+      setNote('Cleared legacy approved rows: re-scan to regenerate the correct set under the new lifecycle.');
       await load();
     } catch (e) {
       setNote((e as Error).message);
@@ -149,27 +149,27 @@ export default function AdminProposalsPage() {
     const passed = p.critique?.passed;
     const previewStr = p.preview
       ? Object.entries(p.preview).map(([k, v]) => `${k}=${v}`).join(' · ')
-      : '—';
+      : 'None';
     return (
       <SectionCard key={p.id}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 320px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>{p.name}</h3>
-              <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.source === 'ai' ? 'var(--purple)' : 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: '1px solid var(--border-md)' }}>{p.source}</span>
-              <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: STATUS_TONE[p.status] ?? 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: `1px solid color-mix(in srgb, ${STATUS_TONE[p.status] ?? 'var(--text-3)'} 35%, transparent)` }}>{p.status}</span>
+              <h3 style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>{p.name}</h3>
+              <span style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.source === 'ai' ? 'var(--purple)' : 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: '1px solid var(--border-md)' }}>{p.source}</span>
+              <span style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: STATUS_TONE[p.status] ?? 'var(--text-3)', padding: '2px 6px', borderRadius: 5, border: `1px solid color-mix(in srgb, ${STATUS_TONE[p.status] ?? 'var(--text-3)'} 35%, transparent)` }}>{p.status}</span>
               <span style={{ fontSize: 'var(--fs-label)', color: passed ? 'var(--good)' : 'var(--crit)' }}>{passed ? '✓ passed critique' : '✕ failed critique'}</span>
             </div>
             {p.purpose && <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: '0 0 8px', lineHeight: 1.5 }}>{p.purpose}</p>}
           </div>
           <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--cyan)', margin: 0, letterSpacing: '-0.03em' }}>{Math.round(p.confidence * 100)}%</p>
-            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>confidence</p>
+            <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 800, color: 'var(--cyan)', margin: 0, letterSpacing: '-0.03em' }}>{Math.round(p.confidence * 100)}%</p>
+            <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>confidence</p>
           </div>
         </div>
 
         <div style={{ display: 'grid', gap: 6, fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '6px 0 12px', padding: '10px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border-md)' }}>
-          <div><span style={{ color: 'var(--text-4)' }}>extends</span> {p.extends_engine ?? '—'} · <span style={{ color: 'var(--text-4)' }}>inputs</span> {p.inputs?.join(', ') || '—'}</div>
+          <div><span style={{ color: 'var(--text-4)' }}>extends</span> {p.extends_engine ?? 'None'} · <span style={{ color: 'var(--text-4)' }}>inputs</span> {p.inputs?.join(', ') || 'None'}</div>
           <div><span style={{ color: 'var(--text-4)' }}>formula</span> <code style={{ color: 'var(--text-2)' }}>{p.formula}</code></div>
           <div><span style={{ color: 'var(--text-4)' }}>preview</span> <span style={{ color: 'var(--good)' }}>{previewStr}</span></div>
           {p.critique?.llm && (
@@ -179,7 +179,7 @@ export default function AdminProposalsPage() {
                 <span style={{ color: p.critique.llm.sound ? 'var(--good)' : 'var(--crit)' }}>
                   {p.critique.llm.sound ? '✓ sound' : '✕ rejected'}
                   {typeof p.critique.llm.score === 'number' ? ` (${Math.round(p.critique.llm.score * 100)}%)` : ''}
-                  {p.critique.llm.notes ? ` — ${p.critique.llm.notes}` : ''}
+                  {p.critique.llm.notes ? `: ${p.critique.llm.notes}` : ''}
                 </span>
               ) : (
                 <span style={{ color: 'var(--text-4)' }}>not independently reviewed</span>
@@ -192,7 +192,7 @@ export default function AdminProposalsPage() {
         {p.status === 'proposed' && (
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={() => setStatus(p.id, 'monitoring')} disabled={!passed}
-              title={passed ? 'Approve into a 15-day monitoring window' : 'Cannot approve — failed the critique gate'}
+              title={passed ? 'Approve into a 15-day monitoring window' : 'Cannot approve: failed the critique gate'}
               style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: passed ? '#04210f' : 'var(--text-4)', background: passed ? 'var(--good)' : 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 8, padding: '8px 14px', cursor: passed ? 'pointer' : 'not-allowed' }}>
               Approve → 15-day monitor
             </button>
@@ -215,11 +215,11 @@ export default function AdminProposalsPage() {
                   <span style={{ color: 'var(--cyan)' }}>Monitoring · {dl} day{dl === 1 ? '' : 's'} left</span>
                   <span>re-checks {runs}</span>
                   <span style={{ color: fails > 0 ? 'var(--crit)' : 'var(--good)' }}>failures {fails}</span>
-                  {fails > 0 && <span style={{ color: 'var(--crit)' }}>— not stable until it holds 0 failures for the full window</span>}
+                  {fails > 0 && <span style={{ color: 'var(--crit)' }}>: not stable until it holds 0 failures for the full window</span>}
                 </div>
               ) : (
                 <p style={{ fontSize: 'var(--fs-label)', color: 'var(--warn)', margin: '0 0 10px' }}>
-                  legacy approval — drop it and re-scan to re-validate under the new lifecycle
+                  legacy approval: drop it and re-scan to re-validate under the new lifecycle
                 </p>
               )}
               <div style={{ display: 'flex', gap: 8 }}>
@@ -259,7 +259,7 @@ export default function AdminProposalsPage() {
       {nav}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
+          <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
             Function Proposals
           </h1>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>
@@ -267,7 +267,7 @@ export default function AdminProposalsPage() {
           </p>
         </div>
         <button onClick={scan} disabled={busy}
-          style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: '#001018', background: 'var(--cyan)', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+          style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--on-cyan)', background: 'var(--cyan)', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}>
           {busy ? 'Scanning…' : 'Scan current file for functions'}
         </button>
       </div>
@@ -284,7 +284,7 @@ export default function AdminProposalsPage() {
         <SectionCard title="No proposals yet" subtitle="Upload a file, then “Scan current file for functions”">
           <p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)', lineHeight: 1.6, margin: 0 }}>
             When a file contains columns the engines don’t use (e.g. a promotion multiplier),
-            AIBOS proposes a derived metric here — already run safely on your data — for you to approve.
+            AIBOS proposes a derived metric here (already run safely on your data) for you to approve.
           </p>
         </SectionCard>
       ) : (

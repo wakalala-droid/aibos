@@ -24,8 +24,8 @@ export function ForecastChart({ data, sym = 'K', height = 240 }: { data: Forecas
             <linearGradient id="mForeG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--purple)" stopOpacity={0.22} /><stop offset="100%" stopColor="var(--purple)" stopOpacity={0} /></linearGradient>
           </defs>
           <CartesianGrid stroke="var(--border)" vertical={false} />
-          <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
+          <XAxis minTickGap={16} dataKey="month" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+          <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
           <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
           <Area type="monotone" dataKey="upper" stroke="none" fill="rgba(167,139,250,0.07)" dot={false} name="Upper" connectNulls />
           <Area type="monotone" dataKey="lower" stroke="none" fill="var(--bg-page)" dot={false} name="Lower" connectNulls />
@@ -53,8 +53,8 @@ export function CashProjectionChart({ data, sym = 'K', height = 210 }: { data: C
       <AreaChart data={data}>
         <defs><linearGradient id="mCashGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--cyan)" stopOpacity={0.22} /><stop offset="100%" stopColor="var(--cyan)" stopOpacity={0} /></linearGradient></defs>
         <CartesianGrid stroke="var(--border)" vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-        <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
+        <XAxis minTickGap={16} dataKey="label" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+        <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
         <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
         <Area type="monotone" dataKey="cash" stroke="var(--cyan)" strokeWidth={2} fill="url(#mCashGrad)" dot={false} name="Cash Position" />
         <ReferenceLine y={0} stroke="var(--crit)" strokeDasharray="4 4" strokeWidth={1} />
@@ -72,9 +72,9 @@ export function RunwayBar({ runway, target = 18 }: { runway: number; target?: nu
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <div>
           <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>{runway}mo remaining · {runway < target ? `⚠ below ${target}mo target` : `✓ above ${target}mo target`}</p>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>{runway}mo remaining · {runway < target ? `below your ${target}-month target` : `above your ${target}-mo target`}</p>
         </div>
-        <span style={{ fontSize: '1.4rem', fontWeight: 800, color }}>{runway}mo <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontWeight: 400 }}>/ {target}mo</span></span>
+        <span style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color }}>{runway}mo <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontWeight: 400 }}>/ {target}mo</span></span>
       </div>
       <div style={{ position: 'relative', height: 8, borderRadius: 8, background: 'var(--border)', overflow: 'hidden', marginBottom: 10 }}>
         <motion.div style={{ height: '100%', background: color, borderRadius: 8 }} initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 1.2, ease: 'easeOut' }} />
@@ -82,7 +82,7 @@ export function RunwayBar({ runway, target = 18 }: { runway: number; target?: nu
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {[0, 6, 12, 18, 24].map((mo) => (
-          <span key={mo} style={{ fontSize: 'var(--fs-label)', color: mo === 12 ? 'var(--warn)' : 'var(--text-4)' }}>{mo}mo{mo === 12 ? ' ⚑' : ''}</span>
+          <span key={mo} style={{ fontSize: 'var(--fs-label)', color: mo === 12 ? 'var(--warn)' : 'var(--text-4)' }}>{mo}mo{mo === 12 ? ' (target)' : ''}</span>
         ))}
       </div>
     </div>
@@ -97,11 +97,11 @@ export function AnomalyZChart({ data, height = 200 }: { data: ZRow[]; height?: n
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} barCategoryGap="22%" barGap={4}>
           <CartesianGrid stroke="var(--border)" vertical={false} />
-          <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+          <XAxis minTickGap={16} dataKey="month" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+          <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
           <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
-          <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: 'Critical (2.0)', fill: 'var(--crit)', fontSize: 12, position: 'insideTopRight' }} />
-          <ReferenceLine y={1.5} stroke="var(--warn)" strokeDasharray="4 3" strokeWidth={1} label={{ value: 'Warning (1.5)', fill: 'var(--warn)', fontSize: 12, position: 'insideTopRight' }} />
+          <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: 'Critical (2.0)', fill: 'var(--crit)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
+          <ReferenceLine y={1.5} stroke="var(--warn)" strokeDasharray="4 3" strokeWidth={1} label={{ value: 'Warning (1.5)', fill: 'var(--warn)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
           <Bar dataKey="revZ" name="Revenue Z" radius={[3, 3, 0, 0]}>
             {data.map((e, i) => <Cell key={i} fill={e.revZ > 2 ? 'var(--crit)' : e.revZ > 1.5 ? 'var(--warn)' : 'var(--cyan)'} fillOpacity={0.8} />)}
           </Bar>

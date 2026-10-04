@@ -11,7 +11,8 @@ import { fmt } from './utils';
 
 export interface Milestone {
   id: string;               // stable key for on-device dismissal
-  emoji: string;
+  /** Line icon to draw (no emoji in the product). */
+  icon: 'trophy' | 'rise' | 'streak';
   title: string;
   detail: string;
 }
@@ -56,7 +57,7 @@ export function topMilestone(twin: Twin | null, events: BusinessEvent[], sym: st
     const latest = withProfit[withProfit.length - 1];
     if (best.month === latest.month && best.profit > 0) {
       out.push({
-        id: `best-month-${best.month}`, emoji: '🏆',
+        id: `best-month-${best.month}`, icon: 'trophy',
         title: 'Best month yet',
         detail: `${monthWords(best.month)} is your strongest month on record: ${fmt(best.profit, true, sym)} profit.`,
       });
@@ -68,7 +69,7 @@ export function topMilestone(twin: Twin | null, events: BusinessEvent[], sym: st
   const crossed = THRESHOLDS.filter((t) => rev >= t).pop();
   if (crossed) {
     out.push({
-      id: `revenue-${crossed}`, emoji: '🎉',
+      id: `revenue-${crossed}`, icon: 'rise',
       title: `${fmt(crossed, true, sym)} in recorded revenue`,
       detail: `You've passed ${fmt(crossed, true, sym)} in total recorded sales. Every one of them is in your books.`,
     });
@@ -78,10 +79,10 @@ export function topMilestone(twin: Twin | null, events: BusinessEvent[], sym: st
   const streak = recordingStreak(events);
   if (streak >= 3) {
     out.push({
-      id: `streak-${streak}`, emoji: '🔥',
+      id: `streak-${streak}`, icon: 'streak',
       title: `${streak}-day recording streak`,
       detail: streak >= 7
-        ? `${streak} days in a row — your forecasts and briefs are sharper for it.`
+        ? `${streak} days in a row: your forecasts and briefs are sharper for it.`
         : `${streak} days in a row. Keep it up and your first weekly patterns unlock.`,
     });
   }

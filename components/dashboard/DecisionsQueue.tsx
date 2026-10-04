@@ -53,7 +53,7 @@ const SEV_WORD: Record<Severity, string> = { crit: 'Critical', warn: 'Attention'
 const actionBtn: React.CSSProperties = {
   flexShrink: 0, padding: '7px 14px', borderRadius: 'var(--radius-md)', border: 'none',
   cursor: 'pointer', fontSize: 'var(--fs-data)', fontWeight: 600,
-  background: 'var(--cyan)', color: '#fff', textDecoration: 'none',
+  background: 'var(--cyan)', color: 'var(--on-cyan)', textDecoration: 'none',
   display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
 };
 const quietBtn: React.CSSProperties = {
@@ -98,8 +98,8 @@ export default function DecisionsQueue() {
         severity: runway < 6 ? 'crit' : 'warn',
         headline: `Cash runway is ${runway} month${runway === 1 ? '' : 's'}`,
         reason: runway < 6
-          ? 'Below the 6-month line — decide what to cut or collect now.'
-          : 'Under the 12-month comfort line — worth a plan this week.',
+          ? 'Below the 6-month line: decide what to cut or collect now.'
+          : 'Under the 12-month comfort line: worth a plan this week.',
         kind: 'link', href: '/dashboard/cash', actionLabel: 'Review cash',
       });
     }
@@ -156,7 +156,7 @@ export default function DecisionsQueue() {
           id: 'margin',
           severity: 'warn',
           headline: `Margin compressed ${Math.abs(delta).toFixed(1)} pts last month`,
-          reason: 'Costs grew faster than revenue — find the line responsible.',
+          reason: 'Costs grew faster than revenue: find the line responsible.',
           kind: 'link', href: '/dashboard/variance', actionLabel: 'See what changed',
         });
       }
@@ -210,7 +210,7 @@ export default function DecisionsQueue() {
             </h2>
             {critCount > 0 && (
               <span style={{
-                fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+                fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
                 color: 'var(--crit)', background: 'var(--red-dim)',
                 border: '1px solid color-mix(in srgb, var(--crit) 30%, transparent)',
                 padding: '3px 9px', borderRadius: 999, whiteSpace: 'nowrap',
@@ -243,7 +243,7 @@ export default function DecisionsQueue() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
                         {d.headline}
-                        <span style={{ marginLeft: 8, fontSize: 'var(--fs-label)', fontWeight: 700, color: sev, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        <span style={{ marginLeft: 8, fontSize: 'var(--fs-caps)', fontWeight: 700, color: sev, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                           {SEV_WORD[d.severity]}
                         </span>
                       </p>
@@ -265,7 +265,7 @@ export default function DecisionsQueue() {
                           style={{
                             ...actionBtn,
                             background: st === 'done' ? 'var(--green-dim)' : 'var(--cyan)',
-                            color: st === 'done' ? 'var(--good)' : '#fff',
+                            color: st === 'done' ? 'var(--good)' : 'var(--on-cyan)',
                             cursor: st === 'drafting' || st === 'done' ? 'default' : 'pointer',
                           }}
                         >

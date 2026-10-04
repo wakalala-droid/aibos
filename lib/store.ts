@@ -372,8 +372,8 @@ const INITIAL_KPI: KpiShape = {
 const INITIAL_HEALTH: HealthShape = {
   score: 0,
   label: "No Data",
-  bestMonth: "—",
-  worstMonth: "—",
+  bestMonth: "None",
+  worstMonth: "None",
   monthsCounted: 0,
 };
 
@@ -492,9 +492,9 @@ function deriveHealth(monthly: MonthlyRow[], rawHealth?: Record<string, unknown>
   if (rawHealth && typeof rawHealth.score === "number") {
     return {
       score: Number(rawHealth.score) || 0,
-      label: String(rawHealth.label ?? "—"),
-      bestMonth: String(rawHealth.bestMonth ?? ext?.best.month ?? "—"),
-      worstMonth: String(rawHealth.worstMonth ?? ext?.worst.month ?? "—"),
+      label: String(rawHealth.label ?? "None"),
+      bestMonth: String(rawHealth.bestMonth ?? ext?.best.month ?? "None"),
+      worstMonth: String(rawHealth.worstMonth ?? ext?.worst.month ?? "None"),
       bestProfit: ext?.best.profit,
       worstProfit: ext?.worst.profit,
       monthsCounted: ext?.count ?? 0,
@@ -575,7 +575,7 @@ function toMonthlyRows(raw: unknown): MonthlyRow[] {
   return raw.map((m) => {
     const row = (m ?? {}) as Record<string, unknown>;
     return {
-      Month: String(row.Month ?? row.month ?? "—"),
+      Month: String(row.Month ?? row.month ?? "None"),
       Revenue: Number(row.Revenue ?? row.revenue ?? 0) || 0,
       Costs: Number(row.Costs ?? row.costs ?? 0) || 0,
       ...row,
@@ -905,7 +905,7 @@ const _store = create<FinancialState & FinancialActions>()(
       // Without these, account B on the same device would see account A's cached
       // cabinet/files/tier. bindUser wipes the cache whenever the owner changes.
       bindUser: (userId) => {
-        if (get().ownerId === userId) return;   // same owner — keep the cache
+        if (get().ownerId === userId) return;   // same owner: keep the cache
         forgetBooksChoice();
         setCurrencyGlobal(INITIAL.currencySymbol);
         set({

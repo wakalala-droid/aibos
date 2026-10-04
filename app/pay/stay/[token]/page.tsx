@@ -135,7 +135,7 @@ export default function PayStayPage() {
     <main style={{ minHeight: '100vh', background: 'var(--bg-page)', padding: '32px 16px' }}>
       <div style={{ maxWidth: 480, margin: '0 auto' }}>
         <p style={{
-          fontSize: 'var(--fs-label)', letterSpacing: '0.08em', textTransform: 'uppercase',
+          fontSize: 'var(--fs-caps)', letterSpacing: '0.08em', textTransform: 'uppercase',
           fontWeight: 700, color: 'var(--text-3)', margin: '0 0 16px', textAlign: 'center',
         }}>
           Pay for your stay
@@ -225,7 +225,7 @@ export default function PayStayPage() {
                 {!anyNetworkLive ? (
                   <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: 0 }}>
                     Paying by mobile money isn’t switched on here yet. Please pay {place} the way you
-                    agreed, and they will mark your booking paid.
+                    agreed and they will mark your booking paid.
                   </p>
                 ) : (
                   <>

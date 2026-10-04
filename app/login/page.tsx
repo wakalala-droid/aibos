@@ -61,7 +61,7 @@ function LogoMark() {
   return (
     <Image
       src="/brand/aibos-mark-white.png"
-      alt="AIBOS — Artificial Intelligence Business Operating System"
+      alt="AIBOS, Artificial Intelligence Business Operating System"
       width={240}
       height={178}
       style={{ width: 240, height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 0 18px rgba(96,165,250,0.4))' }}
@@ -87,9 +87,9 @@ function LoginForm() {
     const urlDesc  = searchParams.get('error_description');
     if (urlError) {
       const messages: Record<string, string> = {
-        no_code:                 'Authentication code missing. Please try again.',
+        no_code:                'Authentication code missing. Please try again.',
         session_exchange_failed: 'Could not complete sign-in. Please try again.',
-        access_denied:           'Access denied. Please use an authorised account.',
+        access_denied:          'Access denied. Please use an authorised account.',
       };
       setErrorMsg(messages[urlError] ?? urlDesc ?? 'Sign-in failed. Please try again.');
       setShaking(true);
@@ -148,11 +148,11 @@ function LoginForm() {
       <div
         className="relative rounded-[20px] p-8 sm:p-10 overflow-hidden"
         style={{
-          background:     'rgba(9,13,30,0.78)',
+          background:    'rgba(9,13,30,0.78)',
           backdropFilter: 'blur(20px)',
-          border:         `1px solid ${errorMsg ? 'rgba(239,68,68,0.3)' : 'rgba(99,179,237,0.15)'}`,
-          boxShadow:      '0 0 0 1px rgba(99,179,237,0.08), 0 16px 48px rgba(0,0,0,0.5)',
-          transition:     'border-color 0.3s ease',
+          border:        `1px solid ${errorMsg ? 'rgba(239,68,68,0.3)' : 'rgba(99,179,237,0.15)'}`,
+          boxShadow:     '0 0 0 1px rgba(99,179,237,0.08), 0 16px 48px rgba(0,0,0,0.5)',
+          transition:    'border-color 0.3s ease',
         }}
       >
         {/* Top glow line */}
@@ -172,7 +172,7 @@ function LoginForm() {
 
         {/* Heading */}
         <div className="text-center mb-5">
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 600, color: '#e2eeff', margin: 0 }}>Sign in to continue</h2>
+          <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 600, color: '#e2eeff', margin: 0 }}>Sign in to continue</h2>
           <p style={{ fontSize: 'var(--fs-label)', color: '#4a6285', marginTop: 4 }}>Your session is protected and encrypted</p>
         </div>
 
@@ -183,7 +183,7 @@ function LoginForm() {
               initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', marginBottom: 16, borderRadius: 8, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.1)' }}
             >
-              <span style={{ fontSize: 'var(--fs-label)', color: '#ef4444' }}>⚠ {errorMsg}</span>
+              <span style={{ fontSize: 'var(--fs-label)', color: '#ef4444' }}>{errorMsg}</span>
             </motion.div>
           )}
           {redirecting && (
@@ -251,7 +251,7 @@ export default function LoginPage() {
       </Suspense>
       <div className="absolute bottom-6 left-0 right-0 flex justify-center">
         {/* The name in full. This used to print the tech stack to customers. */}
-        <p style={{ fontSize: 'var(--fs-label)', color: '#5b7196', letterSpacing: '0.18em', textTransform: 'uppercase', textAlign: 'center', padding: '0 16px' }}>
+        <p style={{ fontSize: 'var(--fs-caps)', color: '#5b7196', letterSpacing: '0.18em', textTransform: 'uppercase', textAlign: 'center', padding: '0 16px' }}>
           Artificial Intelligence Business Operating System
         </p>
       </div>

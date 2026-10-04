@@ -175,7 +175,7 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
         return NextResponse.json(
           {
             detail:
-              `The backend at ${host} answered ${res.status}, and it was not ` +
+              `The backend at ${host} answered ${res.status} and it was not ` +
               `this API. Check NEXT_PUBLIC_API_URL points at the running ` +
               `service, then redeploy so the new value is built in.`,
             upstream_status: res.status,

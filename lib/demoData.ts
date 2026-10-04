@@ -75,9 +75,9 @@ export const DEMO_MANIFEST: DataManifest = {
     { name: 'Revenue',  role: 'revenue',  confidence: 0.98, reason: 'Numeric income column',   sample: '284,500' },
     { name: 'Costs',    role: 'cost',     confidence: 0.97, reason: 'Numeric expense column',  sample: '222,700' },
     { name: 'Category', role: 'category', confidence: 0.92, reason: 'Repeated text labels',    sample: 'Mains' },
-    { name: 'Notes',    role: 'unknown',  confidence: 1.0,  reason: 'Free text — ignored',     sample: 'staff party' },
+    { name: 'Notes',    role: 'unknown',  confidence: 1.0,  reason: 'Free text: ignored',     sample: 'staff party' },
   ],
-  flags: ['No “units” column found — per-unit economics are turned off rather than guessed.'],
+  flags: ['No “units” column found: per-unit economics are turned off rather than guessed.'],
   unknown_columns: ['Notes'],
   grouping_column: null,
 };

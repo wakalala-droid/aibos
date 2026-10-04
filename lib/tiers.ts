@@ -22,7 +22,7 @@ export type Feature =
   | 'engine3'
   | 'schedule'         // recurrence + reminders on the Scheduler (core CRUD is free, like recording)
   | 'payroll'          // run a pay period: PAYE/NAPSA/net-pay engine + posting Salary events (register is free)
-  | 'hospitality'      // PROVISIONAL: short-let PMS vertical (properties/units/bookings). Whole module gated — moves to its own add-on SKU later
+  | 'hospitality'      // PROVISIONAL: short-let PMS vertical (properties/units/bookings). Whole module gated: moves to its own add-on SKU later
   // Pro+ — "AIBOS runs your day": the assistant acts, not just answers.
   | 'morning_brief'    // in-app daily digest composed from the twin
   | 'chat_actions'     // record sales/expenses straight from the chat
@@ -31,8 +31,8 @@ export type Feature =
   // Growth — every venture, one brain.
   | 'cross_engine'
   | 'multi_business'   // run several businesses under one login (audit #16)
-  | 'multi_location'   // UNBUILT — flag reserved; never list as a live inclusion (audit 2026-07)
-  | 'api_access';      // UNBUILT — flag reserved; never list as a live inclusion (audit 2026-07)
+  | 'multi_location'   // UNBUILT: flag reserved; never list as a live inclusion (audit 2026-07)
+  | 'api_access';      // UNBUILT: flag reserved; never list as a live inclusion (audit 2026-07)
 
 export interface TierMeta {
   id: Tier;
@@ -63,12 +63,12 @@ export const TIERS: Record<Tier, TierMeta> = {
     priceAnnual: 0,
     accent: 'var(--text-3)',
     inclusions: [
-      'Financial engine (Engine 1)',
-      'Last 30 days of data',
-      'Full P&L and cashflow',
-      'AI CFO chat: 3 questions a day',
-      'Forecast, anomaly, variance & breakeven: preview',
-      'Schedule: meetings, pick-ups & deadlines',
+      'See your money: sales, costs and profit',
+      'Your last 30 days',
+      'Profit and cash, in full',
+      'Ask AIBOS: 3 questions a day',
+      'A preview of forecasts, warnings and breakeven',
+      'A schedule for meetings, pick-ups and deadlines',
       'Export your data anytime',
     ],
   },
@@ -81,13 +81,13 @@ export const TIERS: Record<Tier, TierMeta> = {
     accent: 'var(--cyan)',
     inclusions: [
       'Everything in Free',
-      'Full Engine 1: forecast, anomaly, variance, breakeven',
-      'Complete history, no 30-day limit',
-      'AI CFO chat, unlimited',
-      'Recurring schedule & reminders: NAPSA, ZRA, rent',
-      'Payroll: PAYE, NAPSA & net pay computed for you',
-      'AI brief to your email every morning (rolling out)',
-      'Customer & Operations intelligence (Engines 2 & 3)',
+      'Forecasts, unusual-spending warnings and your breakeven point',
+      'Your whole history, no 30-day limit',
+      'Ask AIBOS, unlimited',
+      'Repeating reminders for NAPSA, ZRA and rent',
+      'Payroll with PAYE, NAPSA and take-home pay worked out',
+      'A morning summary by email (rolling out)',
+      'Who your best customers are and what sells fastest',
     ],
   },
   proplus: {
@@ -101,7 +101,7 @@ export const TIERS: Record<Tier, TierMeta> = {
       'Everything in Pro',
       'Morning Brief: your day, ready before you ask',
       'Brief delivered to WhatsApp every morning (rolling out)',
-      'Record sales & expenses straight from the chat',
+      'Record sales and expenses just by telling AIBOS',
       'Expected deliveries: know what’s arriving and when',
       'One-tap reorder drafts when stock runs low',
       'Low-stock alerts in your brief',
@@ -117,9 +117,9 @@ export const TIERS: Record<Tier, TierMeta> = {
     inclusions: [
       'Everything in Pro+',
       'Run multiple businesses under one login, with separate books',
-      'Cross-engine composite score: every engine, one signal',
+      'One health score across money, customers and operations',
       'Priority support',
-      'First in line: API access (in development)',
+      'First in line to connect your other software (in development)',
     ],
   },
 };

@@ -11,7 +11,9 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis
 import PageHeader from '@/components/ui/PageHeader';
 
 const CAT_COLORS = ['var(--e3)','var(--blue)','var(--warn)','var(--purple)','var(--e2)','var(--crit)','var(--text-3)'];
-const VEL_COLOR: Record<string, string> = { '🔥': 'var(--crit)', '✅': 'var(--good)', '⚠': 'var(--warn)' };
+// The API ranks speed with emoji; the owner reads words.
+const VEL_COLOR: Record<string, string> = { '🔥': 'var(--good)', '✅': 'var(--text-2)', '⚠': 'var(--warn)' };
+const VEL_WORD: Record<string, string> = { '🔥': 'Fast', '✅': 'Steady', '⚠': 'Slow' };
 
 // Top-items columns. Rank (#) follows the current sort — it's the row's place
 // in whatever ordering the user chose, not a frozen revenue rank.
@@ -26,8 +28,8 @@ const itemColumns = (sym: string): DataTableColumn<TopItemRow>[] => [
   { key: 'units_sold', label: 'Units', sortValue: r => r.units_sold, render: r => r.units_sold.toLocaleString() },
   { key: 'revenue', label: 'Revenue', sortValue: r => r.revenue,
     render: r => <span style={{ fontWeight: 700, color: 'var(--e3)' }}>{fmt(r.revenue, false, sym)}</span> },
-  { key: 'velocity_rank', label: 'Velocity', sortValue: r => r.velocity_rank,
-    render: r => <span style={{ fontSize: '1rem', color: VEL_COLOR[r.velocity_rank] ?? 'var(--text-3)' }}>{r.velocity_rank}</span> },
+  { key: 'velocity_rank', label: 'How fast it sells', sortValue: r => r.velocity_rank,
+    render: r => <span style={{ fontSize: 'var(--fs-body)', color: VEL_COLOR[r.velocity_rank] ?? 'var(--text-3)' }}>{VEL_WORD[r.velocity_rank] ?? r.velocity_rank}</span> },
 ];
 
 export default function POSPage() {
@@ -97,8 +99,8 @@ export default function POSPage() {
           <div role="img" aria-label={`Bar chart of units sold across ${barData.length} categories`}>
           <ResponsiveContainer width="100%" height={170}>
             <BarChart data={barData} layout="vertical" barCategoryGap="22%">
-              <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" width={75} tick={{ fontSize: 12, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <XAxis minTickGap={16} type="number" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="units" radius={[0, 5, 5, 0]}>
                 {barData.map((_, i) => <Cell key={i} fill={CAT_COLORS[i % CAT_COLORS.length]} fillOpacity={0.75} />)}

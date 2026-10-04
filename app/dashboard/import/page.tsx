@@ -51,7 +51,7 @@ const noteBox: React.CSSProperties = {
   fontSize: 'var(--fs-body)', lineHeight: 1.5,
 };
 const label: React.CSSProperties = {
-  fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)',
+  fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
   textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block',
 };
 
@@ -155,11 +155,11 @@ export default function ImportPage() {
     <>
       <PageHeader
         title="Upload a file"
-        subtitle="Any spreadsheet, any layout. AIBOS reads every sheet at once, files each row where it belongs, and updates your dashboards — one upload, nothing else to do."
+        subtitle="Any spreadsheet, any layout. AIBOS reads every sheet at once, files each row where it belongs and updates your dashboards: one upload, nothing else to do."
       />
 
       {(phase === 'idle' || phase === 'scanning') && (
-        <SectionCard title="Choose a file" subtitle="Excel (.xlsx/.xls) or CSV — every sheet is read together, no tab switching">
+        <SectionCard title="Choose a file" subtitle="Excel (.xlsx/.xls) or CSV: every sheet is read together, no tab switching">
           <input
             ref={fileRef} type="file" accept=".xlsx,.xls,.csv"
             onChange={e => { const f = e.target.files?.[0]; if (f) void onPick(f); }}
@@ -231,7 +231,7 @@ export default function ImportPage() {
 
           {/* What only the owner can settle — ONE at a time, with the lines it
               is about in front of them. A list of "2 lines, sheet Sheet1" is
-              not something anybody can answer, and the only ways through it are
+              not something anybody can answer and the only ways through it are
               to guess or to skip. Guessing is how a wrong figure gets into real
               books. */}
           {scan.questions.length > 0 && (
@@ -239,7 +239,7 @@ export default function ImportPage() {
               title="A few things only you can answer"
               subtitle={unanswered > 0
                 ? `${scan.questions.length - unanswered} of ${scan.questions.length} answered`
-                : 'All answered — nothing left to decide'}
+                : 'All answered: nothing left to decide'}
             >
               <QuestionFlow
                 questions={scan.questions}
@@ -291,7 +291,7 @@ export default function ImportPage() {
 
                     {(t.what_it_is || t.reason) && (
                       <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-data)', color: 'var(--text-2)', lineHeight: 1.5 }}>
-                        {t.what_it_is}{t.reason ? ` — ${t.reason}` : ''}
+                        {t.what_it_is}{t.reason ? `: ${t.reason}` : ''}
                       </p>
                     )}
                     {t.counts && (
@@ -313,7 +313,7 @@ export default function ImportPage() {
                           {t.balance_checks.length === 1 ? 'es' : ''} not add up against your running balance
                         </summary>
                         <p style={{ margin: '6px 0 0', fontSize: 'var(--fs-data)', color: 'var(--text-3)', lineHeight: 1.5 }}>
-                          Nothing has been changed. Your figures are imported exactly as written —
+                          Nothing has been changed. Your figures are imported exactly as written:
                           these are the rows where the balance column and the amounts disagree,
                           so you can check which is right.
                         </p>
@@ -326,7 +326,7 @@ export default function ImportPage() {
                               {t.balance_checks.slice(0, 20).map(bc => (
                                 <tr key={bc.row}>
                                   <td>{bc.row}</td>
-                                  <td>{bc.label || '—'}</td>
+                                  <td>{bc.label || 'None'}</td>
                                   <td>{bc.balance_says.toLocaleString()}</td>
                                   <td>{bc.figures_say.toLocaleString()}</td>
                                   <td style={{ color: 'var(--amber)', fontWeight: 600 }}>
@@ -354,10 +354,10 @@ export default function ImportPage() {
                           </select>
                         </div>
                         <p style={{ margin: 0, fontSize: 'var(--fs-data)', color: 'var(--text-3)', lineHeight: 1.6 }}>
-                          Date: <strong>{t.mapping.date ?? '—'}</strong> ·
-                          {' '}Amount: <strong>{t.mapping.amount ?? '—'}</strong> ·
-                          {' '}Who: <strong>{t.mapping.counterparty ?? '—'}</strong> ·
-                          {' '}Details: <strong>{t.mapping.description ?? '—'}</strong>
+                          Date: <strong>{t.mapping.date ?? 'None'}</strong> ·
+                          {' '}Amount: <strong>{t.mapping.amount ?? 'None'}</strong> ·
+                          {' '}Who: <strong>{t.mapping.counterparty ?? 'None'}</strong> ·
+                          {' '}Details: <strong>{t.mapping.description ?? 'None'}</strong>
                         </p>
                         <button type="button" className="touch-target"
                           style={{ ...quietBtn, padding: '6px 12px', minHeight: 36 }}
@@ -377,7 +377,7 @@ export default function ImportPage() {
                             {t.rows.slice(0, 8).map((r, i) => (
                               <tr key={i}>
                                 {t.columns.slice(0, 8).map(c => (
-                                  <td key={c}>{r[c] == null || r[c] === '' ? '—' : String(r[c])}</td>
+                                  <td key={c}>{r[c] == null || r[c] === '' ? 'None' : String(r[c])}</td>
                                 ))}
                               </tr>
                             ))}
@@ -400,7 +400,7 @@ export default function ImportPage() {
                 {' '}Importing it again records every row a second time and doubles those figures.
                 <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
                   <button type="button" onClick={reset} className="touch-target"
-                    style={{ ...primaryBtn, background: 'var(--cyan)', color: '#04121a' }}>
+                    style={{ ...primaryBtn, background: 'var(--cyan)', color: 'var(--on-cyan)' }}>
                     Don&apos;t import it again
                   </button>
                   <button type="button" onClick={() => void commit(true)} className="touch-target" style={quietBtn}>
@@ -434,14 +434,14 @@ export default function ImportPage() {
         <SectionCard title="Import complete" subtitle="Your dashboards have been updated">
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 16 }}>
             <div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--green)' }}>
+              <div style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, color: 'var(--green)' }}>
                 {result.saved_count.toLocaleString()}
               </div>
               <div style={label}>imported</div>
             </div>
             {result.error_count > 0 && (
               <div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--amber)' }}>
+                <div style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, color: 'var(--amber)' }}>
                   {result.error_count.toLocaleString()}
                 </div>
                 <div style={label}>skipped</div>
@@ -453,7 +453,7 @@ export default function ImportPage() {
             <ul style={{ margin: '0 0 16px', paddingLeft: 18, color: 'var(--text-2)', fontSize: 'var(--fs-body)', lineHeight: 1.7 }}>
               {result.tables.map(t => (
                 <li key={t.table}>
-                  <strong>{t.title}</strong> ({t.sheet}) — {t.events.toLocaleString()} recorded as {t.event_type}
+                  <strong>{t.title}</strong> ({t.sheet}): {t.events.toLocaleString()} recorded as {t.event_type}
                   {describeCounts(t.counts) ? `: ${describeCounts(t.counts)}` : ''}
                 </li>
               ))}
@@ -473,7 +473,7 @@ export default function ImportPage() {
               {result.workers_not_on_register.join(', ')}. Add them under Employees so their
               pay, NAPSA and PAYE are worked out properly from now on.
               <div style={{ marginTop: 10 }}>
-                <a href="/dashboard/payroll" style={{ ...primaryBtn, background: 'var(--cyan)', color: '#04121a', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                <a href="/dashboard/payroll" style={{ ...primaryBtn, background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
                   Add them now →
                 </a>
               </div>
@@ -486,7 +486,7 @@ export default function ImportPage() {
               {result.products_not_on_list.join(', ')}. Add them under Products so stock
               moves when you buy and sell them.
               <div style={{ marginTop: 10 }}>
-                <a href="/dashboard/products" style={{ ...primaryBtn, background: 'var(--cyan)', color: '#04121a', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                <a href="/dashboard/products" style={{ ...primaryBtn, background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
                   Add them now →
                 </a>
               </div>
@@ -496,7 +496,7 @@ export default function ImportPage() {
           {(result.error_count > 0 || result.skipped.length > 0) && (
             <details style={{ marginBottom: 16 }}>
               <summary style={{ cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--text-3)', minHeight: 40 }}>
-                What was left out, and why
+                What was left out and why
               </summary>
               <ul style={{ margin: '8px 0 0', paddingLeft: 18, color: 'var(--text-3)', fontSize: 'var(--fs-data)', lineHeight: 1.6 }}>
                 {result.skipped.slice(0, 50).map((s, i) => (
@@ -515,7 +515,7 @@ export default function ImportPage() {
               : 'Your books have been updated. The charts could not be rebuilt from this file, so they still show what was there before.'}
           </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <a href="/dashboard" style={{ ...primaryBtn, background: 'var(--cyan)', color: '#04121a', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+            <a href="/dashboard" style={{ ...primaryBtn, background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
               See the dashboard →
             </a>
             <a href="/dashboard/timeline" style={{ ...quietBtn, display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>

@@ -35,13 +35,13 @@ import {
 
 // ── Kind vocabulary (colour = meaning, per visual_language_system) ──────────
 const KIND_META: Record<ScheduleKind, { label: string; colour: string }> = {
-  meeting:     { label: 'Meeting',  colour: 'var(--cyan)'   },
-  pickup:      { label: 'Pick-up',  colour: 'var(--green)'  },
-  delivery:    { label: 'Delivery', colour: 'var(--e2)'     },
-  deadline:    { label: 'Deadline', colour: 'var(--red)'    },
+  meeting:    { label: 'Meeting',  colour: 'var(--cyan)'   },
+  pickup:     { label: 'Pick-up',  colour: 'var(--green)'  },
+  delivery:   { label: 'Delivery', colour: 'var(--e2)'     },
+  deadline:   { label: 'Deadline', colour: 'var(--red)'    },
   payment_due: { label: 'Payment',  colour: 'var(--amber)'  },
-  reminder:    { label: 'Reminder', colour: 'var(--text-3)' },
-  other:       { label: 'Other',    colour: 'var(--text-3)' },
+  reminder:   { label: 'Reminder', colour: 'var(--text-3)' },
+  other:      { label: 'Other',    colour: 'var(--text-3)' },
 };
 const QUICK_KINDS: ScheduleKind[] = ['meeting', 'pickup', 'delivery', 'deadline', 'payment_due', 'reminder'];
 
@@ -62,10 +62,10 @@ const SEEDS: Array<{ title: string; kind: ScheduleKind; day: number }> = [
 
 type RepeatChoice = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
 const REPEAT_RULES: Record<Exclude<RepeatChoice, 'none'>, Recurrence> = {
-  daily:    { freq: 'daily',   interval: 1 },
-  weekly:   { freq: 'weekly',  interval: 1 },
+  daily:   { freq: 'daily',   interval: 1 },
+  weekly:  { freq: 'weekly',  interval: 1 },
   biweekly: { freq: 'weekly',  interval: 2 },
-  monthly:  { freq: 'monthly', interval: 1 },
+  monthly: { freq: 'monthly', interval: 1 },
 };
 
 // Reminders: minutes before the item. Unset on the server means at the time,
@@ -148,7 +148,7 @@ const input: React.CSSProperties = {
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
   fontSize: 'var(--fs-body)', outline: 'none',
 };
-const lbl: React.CSSProperties = { fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
+const lbl: React.CSSProperties = { fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
 const ghostBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-label)' };
 
 export default function SchedulePage() {
@@ -402,7 +402,7 @@ export default function SchedulePage() {
   const group = (label: string, entries: Array<[Date, ScheduleItem]>, warn = false) =>
     entries.length === 0 ? null : (
       <div key={label} style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: warn ? 'var(--amber)' : 'var(--text-4)', marginBottom: 2 }}>
+        <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: warn ? 'var(--amber)' : 'var(--text-4)', marginBottom: 2 }}>
           {label}
         </div>
         {entries.map(([when, it]) => itemRow(when, it))}
@@ -416,7 +416,7 @@ export default function SchedulePage() {
     <>
       <PageHeader
         title="Schedule"
-        subtitle="Meetings, pick-ups and deadlines — your week, one glance."
+        subtitle="Meetings, pick-ups and deadlines: your week, one glance."
       />
 
       {/* Statutory autopilot (audit #25): one tap seeds recurring PAYE/NAPSA/
@@ -425,11 +425,11 @@ export default function SchedulePage() {
       {pro && !loading && !items.some(i => i.title === 'NAPSA contribution') && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '12px 14px', marginBottom: 16, borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
           <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
-            <strong style={{ color: 'var(--text-1)' }}>Never miss ZRA, NAPSA or NHIMA again</strong> — recurring reminders on the 10th, amounts filled from your last payroll run.
+            <strong style={{ color: 'var(--text-1)' }}>Never miss ZRA, NAPSA or NHIMA again</strong>: recurring reminders on the 10th, amounts filled from your last payroll run.
           </span>
           <button type="button" className="touch-target" disabled={statutoryBusy}
             onClick={() => void seedStatutory()}
-            style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: '#04121a', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: statutoryBusy ? 0.7 : 1 }}>
+            style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: statutoryBusy ? 0.7 : 1 }}>
             {statutoryBusy ? 'Setting up…' : 'Set up statutory reminders'}
           </button>
         </div>
@@ -443,7 +443,7 @@ export default function SchedulePage() {
             <div role="group" aria-label="Schedule view" style={{ display: 'flex', height: 28, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
               {(['agenda', 'month'] as const).map(v => (
                 <button key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v}
-                  style={{ padding: '0 12px', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-label)', fontWeight: 700, background: view === v ? 'var(--cyan)' : 'transparent', color: view === v ? '#fff' : 'var(--text-4)' }}>
+                  style={{ padding: '0 12px', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-label)', fontWeight: 700, background: view === v ? 'var(--cyan)' : 'transparent', color: view === v ? 'var(--on-cyan)' : 'var(--text-4)' }}>
                   {v === 'agenda' ? 'Agenda' : 'Month'}
                 </button>
               ))}
@@ -456,7 +456,7 @@ export default function SchedulePage() {
           {bridge && (
             <div style={{ marginBottom: 14, padding: '12px 14px', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--green) 40%, transparent)', background: 'color-mix(in srgb, var(--green) 8%, transparent)' }}>
               <div style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', marginBottom: 8 }}>
-                Record “{bridge.title}” — {fmt(bridge.amount ?? 0, false, sym)} in your books?
+                Record “{bridge.title}”: {fmt(bridge.amount ?? 0, false, sym)} in your books?
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 <select value={bridgeType} onChange={e => setBridgeType(e.target.value as EventType)} style={{ ...input, width: 'auto', minHeight: 36 }} aria-label="Event type">
@@ -487,7 +487,7 @@ export default function SchedulePage() {
                 ))}
               </div>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 12 }}>
-                {pro ? 'One tap — each repeats monthly.' : `One tap adds the next due date. On ${needTier} they repeat monthly on their own.`}
+                {pro ? 'One tap: each repeats monthly.' : `One tap adds the next due date. On ${needTier} they repeat monthly on their own.`}
               </p>
             </div>
           ) : view === 'agenda' ? (
@@ -499,7 +499,7 @@ export default function SchedulePage() {
               {group('Later', groups.later)}
               {groups.finished.length > 0 && (
                 <div style={{ marginBottom: 4 }}>
-                  <div style={{ fontSize: 'var(--fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', marginBottom: 2 }}>Recently finished</div>
+                  <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', marginBottom: 2 }}>Recently finished</div>
                   {groups.finished.slice(0, 5).map(([when, it]) => itemRow(when, it, true))}
                 </div>
               )}
@@ -507,15 +507,15 @@ export default function SchedulePage() {
           ) : (
             <>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <button type="button" aria-label="Previous month" onClick={() => { setSelectedDay(null); setMonthCursor(c => new Date(c.getFullYear(), c.getMonth() - 1, 1)); }} style={{ ...ghostBtn, color: 'var(--text-2)', fontSize: '1rem', padding: '4px 10px' }}>‹</button>
+                <button type="button" aria-label="Previous month" onClick={() => { setSelectedDay(null); setMonthCursor(c => new Date(c.getFullYear(), c.getMonth() - 1, 1)); }} style={{ ...ghostBtn, color: 'var(--text-2)', fontSize: 'var(--fs-body)', padding: '4px 10px' }}>‹</button>
                 <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
                   {monthCursor.toLocaleDateString([], { month: 'long', year: 'numeric' })}
                 </span>
-                <button type="button" aria-label="Next month" onClick={() => { setSelectedDay(null); setMonthCursor(c => new Date(c.getFullYear(), c.getMonth() + 1, 1)); }} style={{ ...ghostBtn, color: 'var(--text-2)', fontSize: '1rem', padding: '4px 10px' }}>›</button>
+                <button type="button" aria-label="Next month" onClick={() => { setSelectedDay(null); setMonthCursor(c => new Date(c.getFullYear(), c.getMonth() + 1, 1)); }} style={{ ...ghostBtn, color: 'var(--text-2)', fontSize: 'var(--fs-body)', padding: '4px 10px' }}>›</button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
                 {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
-                  <div key={d} style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-4)', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '2px 0' }}>{d}</div>
+                  <div key={d} style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, color: 'var(--text-4)', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '2px 0' }}>{d}</div>
                 ))}
                 {monthDays.map((cell, i) => cell === null ? <div key={`x${i}`} /> : (
                   <button key={cell.key} type="button" onClick={() => setSelectedDay(cell.key === selectedDay ? null : cell.key)}
@@ -571,7 +571,7 @@ export default function SchedulePage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div style={{ gridColumn: '1 / -1' }}>
               <label style={lbl}>Title *</label>
-              <input value={form.title} onChange={e => set('title', e.target.value)} placeholder={form.kind === 'pickup' ? 'Mrs Banda — 2 crates' : form.kind === 'deadline' ? 'ZRA VAT return' : 'What is happening?'} style={input} />
+              <input value={form.title} onChange={e => set('title', e.target.value)} placeholder={form.kind === 'pickup' ? 'Mrs Banda, 2 crates' : form.kind === 'deadline' ? 'ZRA VAT return' : 'What is happening?'} style={input} />
             </div>
             <div><label style={lbl}>Date *</label><input type="date" value={form.date} onChange={e => set('date', e.target.value)} style={input} /></div>
             <div>
@@ -620,7 +620,7 @@ export default function SchedulePage() {
                     </select>
                   ) : (
                     <Link href="/pricing" style={{ ...input, display: 'flex', alignItems: 'center', color: 'var(--text-4)', textDecoration: 'none' }}>
-                      Repeats monthly &amp; more — upgrade
+                      Repeats monthly &amp; more: upgrade
                     </Link>
                   )}
                 </div>
@@ -641,24 +641,24 @@ export default function SchedulePage() {
               whether their phone is one of the places. */}
           {pro && (
             <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
-              <p style={{ margin: '0 0 8px', fontSize: 16, lineHeight: 1.6, fontWeight: 700, color: 'var(--text-1)' }}>
+              <p style={{ margin: '0 0 8px', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 700, color: 'var(--text-1)' }}>
                 Where your reminders arrive
               </p>
-              <p style={{ margin: '0 0 12px', fontSize: 16, lineHeight: 1.6, color: 'var(--text-3)' }}>
+              <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
                 In the bell and on screen while AIBOS is open.
                 {devices && devices.length > 0 && ` Also as a notification on ${deviceList(devices)}.`}
                 {devices && devices.length === 0 && ' No phone or computer has notifications on yet, so each reminder is emailed to you as well.'}
                 {devices && !devices.some(isPhone) && ' To get them on your phone, open AIBOS on the phone, tap the bell, then tap Turn on.'}
               </p>
               <PhoneAlerts embedded onChange={() => void loadDevices()} />
-              <label htmlFor="sched-sound" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 16, lineHeight: 1.6, color: 'var(--text-2)', cursor: 'pointer' }}>
+              <label htmlFor="sched-sound" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', cursor: 'pointer' }}>
                 <input id="sched-sound" type="checkbox" checked={sound}
                   onChange={e => { const on = e.target.checked; setSound(on); setSoundOn(on); if (on) void playReminderSound(true); }}
                   style={{ width: 18, height: 18, accentColor: 'var(--cyan)' }} />
                 Play a sound when a notification arrives
               </label>
-              <p style={{ margin: '4px 0 0 26px', fontSize: 15, lineHeight: 1.6, color: 'var(--text-4)' }}>
-                AIBOS plays it itself wherever it is open, the installed app included, and keeps the
+              <p style={{ margin: '4px 0 0 26px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>
+                AIBOS plays it itself wherever it is open, the installed app included and keeps the
                 notification quiet so you hear it once. With AIBOS closed your phone uses its own sound.
               </p>
             </div>

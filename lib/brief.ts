@@ -70,7 +70,7 @@ export function expectedOf(receipts: BusinessEvent[]): BusinessEvent[] {
 /** The single most useful thing the owner can do right now, or null. */
 function oneThing(inp: BriefInputs, money: (n: number) => string): string | null {
   if (inp.overdueInvoices && inp.overdueInvoices.count > 0) {
-    return `chase the ${inp.overdueInvoices.count} overdue invoice${inp.overdueInvoices.count === 1 ? '' : 's'} (${money(inp.overdueInvoices.total)}) — a WhatsApp nudge usually does it`;
+    return `chase the ${inp.overdueInvoices.count} overdue invoice${inp.overdueInvoices.count === 1 ? '' : 's'} (${money(inp.overdueInvoices.total)}): a WhatsApp nudge usually does it`;
   }
   const low = inp.products.filter((p) => Number(p.reorder_level) > 0 && Number(p.on_hand ?? 0) <= Number(p.reorder_level));
   if (low.length > 0) {
@@ -106,7 +106,7 @@ export function dailyFocus(inp: BriefInputs): string[] {
   if (dueToday.length > 0) {
     const first = dueToday[0];
     const from = first.payload?.supplier ? ` from ${String(first.payload.supplier)}` : '';
-    lines.push(`Arriving today: ${deliveryName(first.payload, 'a delivery')}${from}${dueToday.length > 1 ? ` (+${dueToday.length - 1} more)` : ''} — confirm it when it lands.`);
+    lines.push(`Arriving today: ${deliveryName(first.payload, 'a delivery')}${from}${dueToday.length > 1 ? ` (+${dueToday.length - 1} more)` : ''}: confirm it when it lands.`);
   } else if (inp.expectedDeliveries.length > 0) {
     const next = inp.expectedDeliveries[0];
     lines.push(`Next delivery: ${dayLabel(new Date(next.occurred_at))}${next.payload?.supplier ? ` from ${String(next.payload.supplier)}` : ''}.`);
@@ -125,8 +125,12 @@ export function dailyFocus(inp: BriefInputs): string[] {
   return lines;
 }
 
-/** One structured brief line: emoji marker + markdown-lite text (**bold**). */
-export interface BriefLine { emoji: string; md: string }
+/** What a brief line is about. The Today card draws a line icon for it;
+ *  the chat version is plain text (no emoji anywhere in the product). */
+export type BriefKind = 'money' | 'sales' | 'day' | 'calendar' | 'overdue' | 'stock' | 'delivery' | 'focus';
+
+/** One structured brief line: its kind + markdown-lite text (**bold**). */
+export interface BriefLine { kind: BriefKind; md: string }
 
 /**
  * The Morning Brief as STRUCTURED lines — the one source of truth. The chat
@@ -146,38 +150,38 @@ export function briefLines(inp: BriefInputs): BriefLine[] {
     let m = `Cash: **${money(cash)}**.`;
     if (recv > 0) m += ` Customers owe you ${money(recv)}.`;
     if (pay > 0) m += ` You owe suppliers ${money(pay)}.`;
-    lines.push({ emoji: '💰', md: m });
+    lines.push({ kind: 'money', md: m });
   }
 
   // How the trading day is going / went.
   const tToday = sum(inp.salesToday);
   const tYest = sum(inp.salesYesterday);
   if (inp.salesToday.length > 0) {
-    lines.push({ emoji: '📈', md: `Today so far: ${inp.salesToday.length} sale${inp.salesToday.length === 1 ? '' : 's'}, **${money(tToday)}**.` });
+    lines.push({ kind: 'sales', md: `Today so far: ${inp.salesToday.length} sale${inp.salesToday.length === 1 ? '' : 's'}, **${money(tToday)}**.` });
   }
   if (inp.salesYesterday.length > 0) {
-    lines.push({ emoji: '🗓️', md: `Yesterday: ${inp.salesYesterday.length} sale${inp.salesYesterday.length === 1 ? '' : 's'}, ${money(tYest)}.` });
+    lines.push({ kind: 'day', md: `Yesterday: ${inp.salesYesterday.length} sale${inp.salesYesterday.length === 1 ? '' : 's'}, ${money(tYest)}.` });
   } else if (inp.twin && Number(inp.twin.event_count) > 0 && inp.salesToday.length === 0) {
-    lines.push({ emoji: '🗓️', md: 'No sales recorded yesterday or today yet.' });
+    lines.push({ kind: 'day', md: 'No sales recorded yesterday or today yet.' });
   }
 
   // Today's commitments (scheduler) — the day's shape, not just its money.
   if (inp.commitmentsToday && inp.commitmentsToday.length > 0) {
-    lines.push({ emoji: '📅', md: `On today: ${inp.commitmentsToday.slice(0, 3).join(' · ')}${inp.commitmentsToday.length > 3 ? ` (+${inp.commitmentsToday.length - 3} more)` : ''}.` });
+    lines.push({ kind: 'calendar', md: `On today: ${inp.commitmentsToday.slice(0, 3).join(' · ')}${inp.commitmentsToday.length > 3 ? ` (+${inp.commitmentsToday.length - 3} more)` : ''}.` });
   }
 
   // Overdue invoices — the get-paid nudge.
   if (inp.overdueInvoices && inp.overdueInvoices.count > 0) {
-    lines.push({ emoji: '⏰', md: `**${inp.overdueInvoices.count} invoice${inp.overdueInvoices.count === 1 ? '' : 's'} overdue** — ${money(inp.overdueInvoices.total)} waiting on **Invoices**.` });
+    lines.push({ kind: 'overdue', md: `**${inp.overdueInvoices.count} invoice${inp.overdueInvoices.count === 1 ? '' : 's'} overdue**: ${money(inp.overdueInvoices.total)} waiting on **Invoices**.` });
   }
 
   // Stock watch.
   const low = inp.products.filter((p) => Number(p.reorder_level) > 0 && Number(p.on_hand ?? 0) <= Number(p.reorder_level));
   if (low.length > 0) {
     const names = low.slice(0, 3).map((p) => `${p.name} (${Number(p.on_hand ?? 0)} left)`).join(', ');
-    lines.push({ emoji: '📦', md: `Stock: **${low.length} item${low.length === 1 ? '' : 's'} low** — ${names}${low.length > 3 ? '…' : ''}.` });
+    lines.push({ kind: 'stock', md: `Stock: **${low.length} item${low.length === 1 ? '' : 's'} low**: ${names}${low.length > 3 ? '…' : ''}.` });
   } else if (inp.products.length > 0) {
-    lines.push({ emoji: '📦', md: `Stock: all ${inp.products.length} items above reorder level.` });
+    lines.push({ kind: 'stock', md: `Stock: all ${inp.products.length} items above reorder level.` });
   }
 
   // Expected deliveries (pending receipts dated today+).
@@ -186,16 +190,16 @@ export function briefLines(inp: BriefInputs): BriefLine[] {
   if (dueToday.length > 0) {
     const first = dueToday[0];
     const from = first.payload?.supplier ? ` from ${String(first.payload.supplier)}` : '';
-    lines.push({ emoji: '🚚', md: `Expected today: ${deliveryName(first.payload, 'a delivery')}${from}${dueToday.length > 1 ? ` (+${dueToday.length - 1} more)` : ''} — confirm it on **Activity** when it arrives.` });
+    lines.push({ kind: 'delivery', md: `Expected today: ${deliveryName(first.payload, 'a delivery')}${from}${dueToday.length > 1 ? ` (+${dueToday.length - 1} more)` : ''}: confirm it on **Activity** when it arrives.` });
   } else if (inp.expectedDeliveries.length > 0) {
     const next = inp.expectedDeliveries[0];
-    lines.push({ emoji: '🚚', md: `Next expected delivery: ${dayLabel(new Date(next.occurred_at))}${next.payload?.supplier ? ` from ${String(next.payload.supplier)}` : ''}.` });
+    lines.push({ kind: 'delivery', md: `Next expected delivery: ${dayLabel(new Date(next.occurred_at))}${next.payload?.supplier ? ` from ${String(next.payload.supplier)}` : ''}.` });
   }
 
   // One thing today — a single, concrete next action (never a list; decision
   // simplification per ux_intelligence.md).
   const action = oneThing(inp, money);
-  if (action) lines.push({ emoji: '🎯', md: `One thing today: ${action}.` });
+  if (action) lines.push({ kind: 'focus', md: `One thing today: ${action}.` });
 
   return lines;
 }
@@ -203,10 +207,10 @@ export function briefLines(inp: BriefInputs): BriefLine[] {
 export function composeMorningBrief(inp: BriefInputs): string {
   const lines = briefLines(inp);
   if (lines.length === 0) {
-    return "**Your Morning Brief**\n\nNothing recorded yet — once you start recording sales and stock, I'll have your day summarised here every morning.";
+    return "**Your Morning Brief**\n\nNothing recorded yet: once you start recording sales and stock, I'll have your day summarised here every morning.";
   }
   return [
-    `**Your Morning Brief — ${dayLabel(new Date())}**`,
-    ...lines.map((l) => `${l.emoji} ${l.md}`),
+    `**Your Morning Brief: ${dayLabel(new Date())}**`,
+    ...lines.map((l) => `• ${l.md}`),
   ].join('\n\n');
 }

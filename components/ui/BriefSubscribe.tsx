@@ -60,7 +60,7 @@ export default function BriefSubscribe() {
   const body: React.CSSProperties = { fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: 0, lineHeight: 1.55 };
   const button: React.CSSProperties = {
     padding: '11px 16px', borderRadius: 10, border: 'none', fontSize: 'var(--fs-body)', fontWeight: 700,
-    color: '#fff', background: 'var(--cyan)', cursor: status === 'saving' ? 'default' : 'pointer',
+    color: 'var(--on-cyan)', background: 'var(--cyan)', cursor: status === 'saving' ? 'default' : 'pointer',
     opacity: status === 'saving' ? 0.6 : 1, textDecoration: 'none', textAlign: 'center',
   };
 
@@ -92,7 +92,7 @@ export default function BriefSubscribe() {
                 style={{ ...button, background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)' }}>
                 {status === 'saving' ? 'Saving…' : 'Turn it off'}
               </button>
-              <Link href="/dashboard/profile" style={{ fontSize: 'var(--fs-data)', color: 'var(--cyan)' }}>
+              <Link className="tap-link" href="/dashboard/profile" style={{ fontSize: 'var(--fs-data)', color: 'var(--cyan)' }}>
                 Change where it goes
               </Link>
             </div>

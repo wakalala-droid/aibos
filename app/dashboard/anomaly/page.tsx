@@ -67,7 +67,7 @@ export default function AnomalyPage() {
     const cStd  = Math.sqrt(costs.reduce((s, v) => s + (v - cMean) ** 2, 0) / Math.max(costs.length, 1)) || 1;
     return {
       month: String(m.Month),
-      revZ:  Math.round(Math.abs((rev  - rMean) / rStd) * 10) / 10,
+      revZ: Math.round(Math.abs((rev  - rMean) / rStd) * 10) / 10,
       costZ: Math.round(Math.abs((cost - cMean) / cStd) * 10) / 10,
       revenue: rev,
       cost,
@@ -83,9 +83,9 @@ export default function AnomalyPage() {
       title="Anomaly Detection"
       colour="var(--cyan)"
       headline={derivedAnomalies.length > 0
-        ? `We flagged ${derivedAnomalies.length} anomal${derivedAnomalies.length === 1 ? 'y' : 'ies'} in your numbers — ${critical.length} critical.`
-        : 'No anomalies yet — keep uploading and we’ll catch the outliers.'}
-      detail="See exactly which months broke trend, the z-score for each spike, and the likely root cause behind every flag — across revenue and costs."
+        ? `We flagged ${derivedAnomalies.length} anomal${derivedAnomalies.length === 1 ? 'y' : 'ies'} in your numbers: ${critical.length} critical.`
+        : 'No anomalies yet: keep uploading and we’ll catch the outliers.'}
+      detail="See exactly which months broke trend, the z-score for each spike and the likely root cause behind every flag: across revenue and costs."
     >
     <>
       <PageHeader
@@ -125,7 +125,7 @@ export default function AnomalyPage() {
         />
         <KPICard
           label="WARNINGS" value={String(warnings.length)}
-          sub="Z-score 1.5–2.0"
+          sub="Z-score 1.5 to 2.0"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="var(--blue)" strokeWidth="1.5" fill="none"/><path d="M12 9v4M12 17h.01" stroke="var(--blue)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)"
           sparkColor="var(--blue)" delay={0.18}
@@ -138,13 +138,13 @@ export default function AnomalyPage() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={scatterData} barCategoryGap="22%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+              <XAxis minTickGap={16} dataKey="month" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5}
-                label={{ value: 'Critical (2.0)', fill: 'var(--crit)', fontSize: 12, position: 'insideTopRight' }} />
+                label={{ value: 'Critical (2.0)', fill: 'var(--crit)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
               <ReferenceLine y={1.5} stroke="var(--warn)" strokeDasharray="4 3" strokeWidth={1}
-                label={{ value: 'Warning (1.5)', fill: 'var(--warn)', fontSize: 12, position: 'insideTopRight' }} />
+                label={{ value: 'Warning (1.5)', fill: 'var(--warn)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
               <Bar dataKey="revZ" name="Revenue Z" radius={[3,3,0,0]}>
                 {scatterData.map((entry, i) => (
                   <Cell key={i} fill={entry.revZ > 2 ? 'var(--crit)' : entry.revZ > 1.5 ? 'var(--warn)' : 'var(--cyan)'} fillOpacity={0.8} />
@@ -196,7 +196,7 @@ export default function AnomalyPage() {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
-                        {String(a.month)} — {String(a.field)}
+                        {String(a.month)}: {String(a.field)}
                       </span>
                       <span className="badge" style={{ color: sc, background: `color-mix(in srgb, ${sc} 10%, transparent)`, borderColor: `color-mix(in srgb, ${sc} 25%, transparent)` }}>
                         Z = {Number(a.zScore ?? 0).toFixed(1)}

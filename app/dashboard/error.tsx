@@ -37,7 +37,7 @@ export default function DashboardError({
           Something broke while loading this page
         </h1>
         <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', lineHeight: 1.6, margin: '0 0 20px' }}>
-          Your numbers are safe — nothing was changed. This was a display problem
+          Your numbers are safe: nothing was changed. This was a display problem
           on our side. Try again, or head back to your Overview.
         </p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
@@ -46,7 +46,7 @@ export default function DashboardError({
             onClick={reset}
             style={{
               padding: '9px 18px', borderRadius: 'var(--radius-md)', border: 'none', cursor: 'pointer',
-              background: 'var(--cyan)', color: '#fff',
+              background: 'var(--cyan)', color: 'var(--on-cyan)',
               fontSize: 'var(--fs-body)', fontWeight: 600,
             }}
           >

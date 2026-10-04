@@ -23,10 +23,10 @@ import { announce, type AnnounceResult } from '@/lib/api';
 const field: React.CSSProperties = {
   width: '100%', padding: '10px 12px', minHeight: 44, borderRadius: 10,
   border: '1px solid var(--border-md)', background: 'var(--bg-input)',
-  color: 'var(--text-1)', fontSize: 16, outline: 'none',
+  color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none',
 };
 const label: React.CSSProperties = {
-  display: 'block', marginBottom: 4, fontSize: 13, fontWeight: 700,
+  display: 'block', marginBottom: 4, fontSize: 'var(--fs-caps)', fontWeight: 700,
   letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-4)',
 };
 
@@ -56,8 +56,8 @@ export default function AnnounceCard() {
 
   return (
     <section className="section-card" style={{ padding: 16, marginBottom: 16 }}>
-      <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-1)', margin: '0 0 4px' }}>Tell everyone</h2>
-      <p style={{ fontSize: 16, lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 16px' }}>
+      <h2 style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 4px' }}>Tell everyone</h2>
+      <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 16px' }}>
         Goes to every account&apos;s bell and to every phone or computer with notifications on. Check who first.
       </p>
 
@@ -80,32 +80,32 @@ export default function AnnounceCard() {
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
         <button type="button" onClick={() => void run(true)} disabled={!ready || busy !== ''}
-          style={{ minHeight: 44, padding: '0 16px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 16, fontWeight: 700, cursor: ready ? 'pointer' : 'default', opacity: ready ? 1 : 0.6 }}>
+          style={{ minHeight: 44, padding: '0 16px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: ready ? 'pointer' : 'default', opacity: ready ? 1 : 0.6 }}>
           {busy === 'checking' ? 'Counting…' : 'Who would get this'}
         </button>
         <button type="button" onClick={() => void run(false)} disabled={!preview || busy !== ''}
-          style={{ minHeight: 44, padding: '0 16px', borderRadius: 10, border: '1px solid var(--text-1)', background: 'var(--text-1)', color: 'var(--bg-card)', fontSize: 16, fontWeight: 700, cursor: preview ? 'pointer' : 'default', opacity: preview ? 1 : 0.5 }}>
+          style={{ minHeight: 44, padding: '0 16px', borderRadius: 10, border: '1px solid var(--text-1)', background: 'var(--text-1)', color: 'var(--bg-card)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: preview ? 'pointer' : 'default', opacity: preview ? 1 : 0.5 }}>
           {busy === 'sending' ? 'Sending…' : 'Send it'}
         </button>
       </div>
 
       {preview && (
-        <p role="status" style={{ fontSize: 16, lineHeight: 1.6, color: 'var(--text-2)', margin: '12px 0 0' }}>
+        <p role="status" style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', margin: '12px 0 0' }}>
           {preview.people} account{preview.people === 1 ? '' : 's'} would see it in the bell
           {preview.with_devices > 0
-            ? `, and ${preview.with_devices} of them would get it on a phone or computer.`
+            ? ` and ${preview.with_devices} of them would get it on a phone or computer.`
             : '. Nobody has notifications on yet, so nothing would buzz.'}
         </p>
       )}
       {sent && (
-        <p role="status" style={{ fontSize: 16, lineHeight: 1.6, color: 'var(--good)', margin: '12px 0 0' }}>
+        <p role="status" style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--good)', margin: '12px 0 0' }}>
           Sent. {sent.told} told{sent.pushed > 0 ? `, ${sent.pushed} device${sent.pushed === 1 ? '' : 's'} buzzed` : ''}
           {sent.already > 0 ? `, ${sent.already} already had it` : ''}
           {sent.not_pushed > 0 ? `. ${sent.not_pushed} will see it when they next open AIBOS.` : '.'}
         </p>
       )}
       {error && (
-        <p role="alert" style={{ fontSize: 16, lineHeight: 1.6, color: 'var(--crit)', margin: '12px 0 0' }}>{error}</p>
+        <p role="alert" style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--crit)', margin: '12px 0 0' }}>{error}</p>
       )}
     </section>
   );

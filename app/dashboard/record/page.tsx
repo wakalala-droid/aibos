@@ -41,7 +41,7 @@ export default function RecordPage() {
       <div style={{ marginBottom: 20 }}>
         <PageHeader
           title="Record activity"
-          subtitle="Tell AIBOS what happened — it does the bookkeeping."
+          subtitle="Tell AIBOS what happened: it does the bookkeeping."
         />
         <OutboxChip style={{ marginTop: -16, marginBottom: 8 }} />
       </div>
@@ -54,7 +54,7 @@ export default function RecordPage() {
             background: 'rgba(0,212,255,0.06)',
           }}>
             <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 600 }}>
-              Finish setting up your business — it takes a minute and seeds your starting cash.
+              Finish setting up your business: it takes a minute and seeds your starting cash.
             </span>
             <span style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--cyan)' }}>
               Set up →
@@ -65,33 +65,33 @@ export default function RecordPage() {
 
       <div className="grid-main">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <SectionCard title="What happened?" subtitle="Plain language — AIBOS proposes, you confirm">
+          <SectionCard title="What happened?" subtitle="Plain language: AIBOS proposes, you confirm">
             <RecordActivity onSaved={loadRecent} />
           </SectionCard>
 
-          <SectionCard title="Recent activity" subtitle="Your latest recorded events"
-            action={<a href="/dashboard/timeline" style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textDecoration: 'none' }}>View all →</a>}>
+          <SectionCard title="Recent activity" subtitle="Your latest entries"
+            action={<a className="tap-link" href="/dashboard/timeline" style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textDecoration: 'none' }}>View all →</a>}>
             <EventList events={recent} />
           </SectionCard>
         </div>
 
         {/* Live twin snapshot + growth journey */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <SectionCard title="Live snapshot" subtitle={`${twin?.event_count ?? 0} ${(twin?.event_count ?? 0) === 1 ? 'event' : 'events'} recorded`}>
+        <SectionCard title="Live snapshot" subtitle={`${twin?.event_count ?? 0} ${(twin?.event_count ?? 0) === 1 ? 'entry' : 'entries'} recorded`}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {snapshot.map(s => (
               <div key={s.label} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
-                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   {s.label}
                 </span>
-                <span style={{ fontSize: '1.1rem', fontWeight: 600, color: s.color }}>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: s.color }}>
                   {fmt(s.value, false, sym)}
                 </span>
               </div>
             ))}
             <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 2 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   Health
                 </span>
                 <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
