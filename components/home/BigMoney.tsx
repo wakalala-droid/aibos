@@ -51,6 +51,15 @@ export default function BigMoney({ value, sym, size = 'hero', roll = false, tone
   const sign = neg ? '−' : tone === 'in' ? '+' : tone === 'out' ? '−' : '';
   const said = `${target < 0 || tone === 'out' ? 'minus ' : tone === 'in' ? 'plus ' : ''}${fmt(Math.abs(target), false, sym)}`;
 
+  if (size === 'md' && !roll) {
+    return (
+      <span className="money money-md" style={color ? { color } : undefined}>
+        <span className="sr-only">{said}</span>
+        <span aria-hidden="true">{sign}{fmt(Math.abs(v), false, sym).replace(/^-/, '')}</span>
+      </span>
+    );
+  }
+
   return (
     <span className={`money money-${size}`} style={color ? { color } : undefined}>
       <span className="sr-only">{said}</span>

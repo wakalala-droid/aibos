@@ -59,7 +59,7 @@ export default function ComingUp() {
                 <span className="row-main">
                   <span className="row-title">{item.title}</span>
                   <span className="row-sub" style={late ? { color: 'var(--red)', fontWeight: 600 } : undefined}>
-                    {late ? `Overdue, ${whenWords(when).toLowerCase()}` : whenWords(when)}
+                    {late ? `Overdue since ${whenWords(when)}` : whenWords(when)}
                   </span>
                 </span>
               </Link>

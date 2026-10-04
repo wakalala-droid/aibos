@@ -1071,6 +1071,8 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
 .money-lg { font-size: var(--fs-h1); font-weight: 500; line-height: 1.15; }
 .money-md { font-size: var(--fs-body); font-weight: 600; letter-spacing: -0.01em; }
 .money-cents { font-size: 0.5em; line-height: 1; margin-top: 0.22em; margin-left: 0.04em; letter-spacing: 0; color: var(--text-3); }
+/* Raised cents never drop under the 18px floor (30px x 0.6 = 18px). */
+.money-lg .money-cents { font-size: 0.6em; }
 .money-md .money-cents { font-size: 1em; margin: 0; color: inherit; }
 
 /* Segmented period control. */
@@ -1085,7 +1087,7 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
 
 /* Home layout grids. */
 .home-hero { display: grid; grid-template-columns: 1fr; gap: 16px; }
-.home-split { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.home-split { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
 @media (min-width: 1024px) {
   .home-hero { grid-template-columns: minmax(0, 1fr) 380px; }
   .home-split { grid-template-columns: minmax(0, 1fr) 380px; }

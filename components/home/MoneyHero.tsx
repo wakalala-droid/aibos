@@ -55,6 +55,10 @@ export default function MoneyHero({ title = 'Money right now', initialDays = 30 
   const hi = values.length ? Math.max(...values) : 0;
   const pad = Math.max((hi - lo) * 0.15, Math.abs(hi) * 0.02, 1);
   const periodLabel = PERIODS.find((p) => p.days === days)?.label ?? `${days} days`;
+  // Four dates spread inside the line, never at its very edges where they clip.
+  const ticks = line && line.points.length > 4
+    ? [0.12, 0.38, 0.62, 0.88].map((f) => line.points[Math.round(f * (line.points.length - 1))].day)
+    : line?.points.map((p) => p.day);
 
   return (
     <Panel labelledBy={headingId} explainId="simple-cash">
@@ -103,8 +107,8 @@ export default function MoneyHero({ title = 'Money right now', initialDays = 30 
                     <stop offset="100%" stopColor="#00d4ff" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="day" tickFormatter={(d: string) => dayWords(d, false)} minTickGap={48}
-                  tick={{ fontSize: 18, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} interval="preserveStartEnd" padding={{ left: 24, right: 24 }} />
+                <XAxis dataKey="day" ticks={ticks} interval={0} tickFormatter={(d: string) => dayWords(d, false)}
+                  tick={{ fontSize: 18, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
                 <YAxis hide domain={[lo - pad, hi + pad]} />
                 <Tooltip content={() => null} cursor={{ stroke: 'var(--border-strong)', strokeWidth: 1 }} />
                 <Area type="monotone" dataKey="balance" stroke="var(--chart-line)" strokeWidth={2}

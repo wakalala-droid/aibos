@@ -87,7 +87,7 @@ export default function ActivityFeed({ limit = 8 }: { limit?: number }) {
                       <span className="row-title">{who(ev)}</span>
                       <span className="row-sub">{how(ev)}{ev.status === 'pending' ? ' · waiting for you' : ''}</span>
                     </span>
-                    <BigMoney value={amountOf(ev)} sym={sym} size="md" tone={sign > 0 ? 'in' : sign < 0 ? 'out' : undefined} />
+                    {amountOf(ev) !== 0 && <BigMoney value={amountOf(ev)} sym={sym} size="md" tone={sign > 0 ? 'in' : sign < 0 ? 'out' : undefined} />}
                   </Link>
                 );
               })}

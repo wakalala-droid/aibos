@@ -51,8 +51,11 @@ export default function AICFOChat() {
 
   // Auto-scroll only if the user is already pinned to the bottom.
   useEffect(() => {
-    if (messages.length && atBottomRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Only the chat's own box scrolls. scrollIntoView moved the whole page,
+    // so Home opened scrolled down to this panel whenever history loaded.
+    const box = scrollRef.current;
+    if (messages.length && atBottomRef.current && box) {
+      box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
     }
   }, [messages, status]);
 

@@ -142,15 +142,8 @@ export default function Sidebar() {
                 >
                   <div
                     className={`nav-item${active ? ' active' : ''}`}
-                    style={{
-                      opacity: locked ? 0.4 : 1,
-                      color: active ? accent : undefined,
-                      ...(active ? { background: `color-mix(in srgb, ${accent} 10%, transparent)` } : {}),
-                    }}
+                    style={{ opacity: locked ? 0.4 : 1 }}
                   >
-                    {active && (
-                      <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 2, borderRadius: 2, background: accent }} />
-                    )}
                     <span style={{ color: active ? accent : 'var(--text-3)', flexShrink: 0, display: 'flex' }}>
                       {item.icon}
                     </span>
@@ -160,7 +153,7 @@ export default function Sidebar() {
                           initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.15 }}
                           className="nav-label"
-                          style={{ color: active ? accent : 'var(--text-2)', flex: 1 }}
+                          style={{ color: active ? 'var(--text-1)' : 'var(--text-2)', flex: 1 }}
                         >
                           {item.label}
                         </motion.span>
