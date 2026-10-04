@@ -26,8 +26,8 @@ export default function HospitalityLayout({ children }: { children: React.ReactN
   return (
     <>
       <PageHeader
-        title="Hospitality"
-        subtitle="Every unit&apos;s availability on one calendar: bookings flow straight into your books."
+        title="Rooms & Stays"
+        subtitle="Every unit&apos;s availability on one calendar. Bookings go straight into your books."
       />
       <nav aria-label="Hospitality sections" style={{ display: 'flex', gap: 4, marginBottom: 18, borderBottom: '1px solid var(--border)', overflowX: 'auto' }}>
         {TABS.map(t => {

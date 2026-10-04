@@ -75,9 +75,9 @@ export default function BenchmarksPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Operations"
+        eyebrow="Reports"
         eyebrowColour="var(--e3)"
-        title="Operational Benchmarks"
+        title="How you compare"
         subtitle={<>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</>}
       />
 
@@ -101,7 +101,7 @@ export default function BenchmarksPage() {
         </div>
       ) : (
         <SectionCard delay={0.1} style={{ position: 'relative', minHeight: 160, textAlign: 'center' }}>
-          <LockOverlay colour="var(--e3)" title="Operations Locked" description="Upload a POS export file to see QSR benchmark comparisons" />
+          <LockOverlay colour="var(--e3)" title="Needs your till data" description="Upload the sales report from your till (POS) to compare yourself with similar businesses." />
         </SectionCard>
       )}
 

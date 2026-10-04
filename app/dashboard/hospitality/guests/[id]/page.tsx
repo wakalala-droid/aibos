@@ -59,7 +59,7 @@ const ID_TYPE_LABEL: Record<string, string> = {
 };
 
 const ghostBtn: React.CSSProperties = {
-  padding: '8px 14px', minHeight: 40, borderRadius: 10, background: 'transparent',
+  padding: '8px 14px', minHeight: 44, borderRadius: 10, background: 'transparent',
   border: '1px solid var(--border-md)', color: 'var(--text-2)',
   fontSize: FS_SMALL, fontWeight: 600, cursor: 'pointer',
 };

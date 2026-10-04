@@ -20,7 +20,7 @@ import {
 const EMPTY: ProductInput = { name: '', category: '', unit: 'unit', buy_price: 0, sell_price: 0, opening_stock: 0, reorder_level: 0, supplier: '' };
 
 const input: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
+  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
   fontSize: 'var(--fs-body)', outline: 'none',
 };
@@ -128,8 +128,8 @@ export default function InventoryPage() {
   return (
     <>
       <PageHeader
-        title="Inventory"
-        subtitle="Your product catalog: prices, stock and reorder levels."
+        title="Stock"
+        subtitle="Your products: prices, how many you have and when to reorder."
       />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
@@ -142,13 +142,13 @@ export default function InventoryPage() {
         />
         <button type="button" className="touch-target" disabled={importing}
           onClick={() => loyverseRef.current?.click()}
-          style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer', opacity: importing ? 0.7 : 1 }}>
+          style={{ padding: '8px 14px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer', opacity: importing ? 0.7 : 1 }}>
           {importing ? 'Importing…' : 'Import from Loyverse'}
         </button>
         {items.length > 0 && (
           <button type="button" className="touch-target"
             onClick={() => { setTakeMode(v => !v); setCounts({}); setTakeMsg(null); }}
-            style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid var(--border-md)', background: takeMode ? 'var(--bg-badge)' : 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
+            style={{ padding: '8px 14px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: takeMode ? 'var(--bg-badge)' : 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
             {takeMode ? 'Cancel stock-take' : 'Stock-take'}
           </button>
         )}
@@ -167,14 +167,14 @@ export default function InventoryPage() {
                   <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'right' }}>system: {onHand}</span>
                   <input type="number" inputMode="decimal" aria-label={`Counted ${p.name}`} placeholder="count"
                     value={counts[p.name] ?? ''} onChange={e => setCounts(c => ({ ...c, [p.name]: e.target.value }))}
-                    style={{ ...input, minHeight: 36 }} />
+                    style={{ ...input, minHeight: 44 }} />
                 </div>
               );
             })}
           </div>
           <button type="button" className="touch-target" disabled={takeBusy || Object.keys(counts).length === 0}
             onClick={() => void submitStockTake()}
-            style={{ marginTop: 14, padding: '9px 16px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: takeBusy ? 0.7 : 1 }}>
+            style={{ marginTop: 14, padding: '9px 16px', minHeight: 44, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: takeBusy ? 0.7 : 1 }}>
             {takeBusy ? 'Saving…' : 'Save count'}
           </button>
         </SectionCard>
@@ -190,7 +190,7 @@ export default function InventoryPage() {
               <p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)', margin: '0 0 14px' }}>No products yet: add your first one, or start from a template for your {ind.label}.</p>
               <button type="button" className="touch-target" disabled={seeding}
                 onClick={() => void seedStarters()}
-                style={{ padding: '9px 16px', minHeight: 40, borderRadius: 8, border: '1px solid var(--cyan)', background: 'transparent', color: 'var(--cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
+                style={{ padding: '9px 16px', minHeight: 44, borderRadius: 8, border: '1px solid var(--cyan)', background: 'transparent', color: 'var(--cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
                 {seeding ? 'Adding…' : `Add ${starters.length} starter products`}
               </button>
             </div>

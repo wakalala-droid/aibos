@@ -20,7 +20,7 @@ export default function BreakevenPage() {
   const sym = currencySymbol || 'K';
 
   if (dataShape === 'cross_sectional') {
-    return <TimeSeriesUnavailable title="Breakeven Analysis" feature="Breakeven analysis" />;
+    return <TimeSeriesUnavailable title="Breakeven" feature="Breakeven analysis" />;
   }
 
   // ── Null-safe: compute from monthly if breakeven is null ──────────────────
@@ -64,7 +64,7 @@ export default function BreakevenPage() {
   return (
     <FeatureGate
       feature="breakeven"
-      title="Breakeven Analysis"
+      title="Breakeven"
       colour="var(--cyan)"
       headline={currentRevenue > 0
         ? `You're ${fmt(Math.abs(gap), true, sym)} ${gap >= 0 ? 'above' : 'below'} a breakeven of ${fmt(bepRevenue, true, sym)}/month.`
@@ -73,14 +73,14 @@ export default function BreakevenPage() {
     >
     <>
       <PageHeader
-        eyebrow="Financial Intelligence"
+        eyebrow="Reports"
         eyebrowColour="var(--cyan)"
-        title="Breakeven Analysis"
-        subtitle="Fixed costs · variable costs · contribution margin · breakeven point"
+        title="Breakeven"
+        subtitle="The sales you need each month to cover your costs."
       />
 
       {!hasData ? (
-        <SectionCard title="Breakeven Analysis" subtitle="Fixed vs variable costs · contribution margin · breakeven point" delay={0.1}>
+        <SectionCard title="Breakeven" subtitle="Fixed vs variable costs · contribution margin · breakeven point" delay={0.1}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center', padding: '40px 16px' }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M3 12h18M12 3v18" stroke="var(--text-4)" strokeWidth="1.5" strokeLinecap="round" opacity=".4" />

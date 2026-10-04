@@ -14,9 +14,9 @@ export default function SimulatePage() {
   return (
     <>
       <PageHeader
-        eyebrow="Financial Intelligence"
+        eyebrow="Reports"
         eyebrowColour="var(--cyan)"
-        title="Simulator"
+        title="What if"
         subtitle="Test a decision before you make it: against a copy of your numbers, never the real books."
       />
 

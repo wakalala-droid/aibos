@@ -235,8 +235,8 @@ export default function BusinessProfilePage() {
   return (
     <div style={{ padding: '8px 0 48px' }}>
       <PageHeader
-        title="Business profile"
-        subtitle="The details here power your dashboard identity: the name and logo shown in the header come from this page."
+        title="Settings"
+        subtitle="Your business details, your team, getting paid and taking your books with you."
       />
 
       <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr', maxWidth: 980 }}>
@@ -634,7 +634,7 @@ function MemoryLearnedCard() {
           </p>
         </div>
         <button type="button" onClick={() => managing ? setManaging(false) : void openManage()}
-          style={{ flexShrink: 0, minHeight: 32, padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border-md)', background: managing ? 'var(--bg-badge)' : 'transparent', color: 'var(--text-3)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-label)' }}>
+          style={{ flexShrink: 0, minHeight: 44, padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border-md)', background: managing ? 'var(--bg-badge)' : 'transparent', color: 'var(--text-3)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-label)' }}>
           {managing ? 'Done' : 'Manage'}
         </button>
       </div>
@@ -684,7 +684,7 @@ function ExportCard() {
     catch (e) { setErr((e as Error).message); }
     finally { setBusy(null); }
   }
-  const btn: React.CSSProperties = { minHeight: 40, padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
+  const btn: React.CSSProperties = { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
   return (
     <div className="section-card" style={{ marginTop: 20 }}>
       <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>Export your books</h2>
@@ -731,8 +731,8 @@ function TeamCard() {
     try { await revokeMember(m.id); load(); } catch (e) { setError((e as Error).message); }
   }
 
-  const cardInput: React.CSSProperties = { minHeight: 40, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
-  const cardBtn: React.CSSProperties = { minHeight: 36, padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-label)' };
+  const cardInput: React.CSSProperties = { minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
+  const cardBtn: React.CSSProperties = { minHeight: 44, padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-label)' };
 
   return (
     <div className="section-card" style={{ marginTop: 20 }}>
@@ -773,7 +773,7 @@ function TeamCard() {
                 </span>
               </span>
               <span style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
-                <select value={m.role} onChange={e => void changeRole(m.id, e.target.value as TeamMemberRole)} aria-label={`Role for ${m.email}`} style={{ ...cardInput, minHeight: 32, padding: '4px 8px', fontSize: 'var(--fs-label)' }}>
+                <select value={m.role} onChange={e => void changeRole(m.id, e.target.value as TeamMemberRole)} aria-label={`Role for ${m.email}`} style={{ ...cardInput, minHeight: 44, padding: '4px 8px', fontSize: 'var(--fs-label)' }}>
                   <option value="staff">Staff</option>
                   <option value="accountant">Accountant</option>
                 </select>

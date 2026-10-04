@@ -33,8 +33,8 @@ const STATUS_COLOUR: Record<Invoice['status'], string> = {
 };
 
 const lbl: React.CSSProperties = { display: 'block', fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginBottom: 4, fontWeight: 600 };
-const input: React.CSSProperties = { width: '100%', minHeight: 40, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
-const btn: React.CSSProperties = { minHeight: 36, padding: '7px 14px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
+const input: React.CSSProperties = { width: '100%', minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
+const btn: React.CSSProperties = { minHeight: 44, padding: '7px 14px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
 
 const EMPTY_LINE: InvoiceLine = { description: '', qty: 1, unit_price: 0 };
 
@@ -61,6 +61,14 @@ export default function InvoicesPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  // "New invoice" from the search box or the app icon lands on ?new=1.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('new') !== '1') return;
+    url.searchParams.delete('new');
+    window.history.replaceState(null, '', url.pathname + url.search);
+    setShowForm(true);
+  }, []);
   const [customer, setCustomer] = useState('');
   const [dueAt, setDueAt] = useState('');
   const [lines, setLines] = useState<InvoiceLine[]>([{ ...EMPTY_LINE }]);
@@ -224,10 +232,10 @@ export default function InvoicesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Record & Plan · Invoices"
+        eyebrow="Invoices and payment links"
         eyebrowColour="var(--cyan)"
-        title="Invoices"
-        subtitle="Issue, share on WhatsApp, get paid: receivables and cash stay one story"
+        title="Get paid"
+        subtitle="Send an invoice on WhatsApp and see who still owes you."
       />
 
       {error && (
@@ -324,7 +332,7 @@ export default function InvoicesPage() {
         </SectionCard>
       )}
 
-      <SectionCard title="All invoices" subtitle="Send a draft to raise the receivable; mark paid when the money lands">
+      <SectionCard title="All invoices" subtitle="Send an invoice and it counts as money owed to you; mark it paid when the money arrives.">
         {loading ? (
           <div className="skeleton" style={{ height: 120 }} />
         ) : (

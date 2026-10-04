@@ -13,7 +13,8 @@ import { useStore } from '@/lib/store';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { useAiAssistant } from '@/lib/aiAssistant';
-import { TIERS } from '@/lib/tiers';
+import { TIERS, type Tier } from '@/lib/tiers';
+import { searchPlaces } from '@/lib/nav';
 import {
   buildNotifications, fetchHappenedNotifications, markNotificationRead,
   mergeNotifications, timeAgo, type Notification as LiveNotification,
@@ -37,29 +38,9 @@ const FEED_POLL_MS = 60_000;
 // glance at the screen.
 const FEED_MIN_GAP_MS = 10_000;
 
-// Searchable destinations (kept in sync with the sidebar nav).
-const DESTINATIONS: { href: string; label: string; group: string }[] = [
-  { href: '/dashboard', label: 'Today', group: 'Financial' },
-  { href: '/dashboard/cash', label: 'Cash Intelligence', group: 'Financial' },
-  { href: '/dashboard/variance', label: 'Variance', group: 'Financial' },
-  { href: '/dashboard/forecast', label: 'Forecast', group: 'Financial' },
-  { href: '/dashboard/anomaly', label: 'Anomaly Intelligence', group: 'Financial' },
-  { href: '/dashboard/breakeven', label: 'Breakeven', group: 'Financial' },
-  { href: '/dashboard/simulate', label: 'Simulator', group: 'Financial' },
-  { href: '/dashboard/brief', label: 'Briefs', group: 'Financial' },
-  { href: '/dashboard/brief?tab=advisor', label: 'Advisor', group: 'Financial' },
-  { href: '/dashboard/invoices', label: 'Invoices', group: 'Financial' },
-  { href: '/data-studio', label: 'Data Studio', group: 'Financial' },
-  { href: '/dashboard/contacts', label: 'Contacts', group: 'Customer' },
-  { href: '/dashboard/customers', label: 'Customer Intelligence', group: 'Customer' },
-  { href: '/dashboard/churn', label: 'Churn Risk', group: 'Customer' },
-  { href: '/dashboard/products', label: 'Product Matrix', group: 'Customer' },
-  { href: '/dashboard/market', label: 'Market Intelligence', group: 'Customer' },
-  { href: '/dashboard/pos', label: 'POS Intelligence', group: 'Operations' },
-  { href: '/dashboard/benchmarks', label: 'Benchmarks', group: 'Operations' },
-  { href: '/dashboard/brief?tab=ops', label: 'Ops Brief', group: 'Operations' },
-  { href: '/pricing', label: 'Plans & Pricing', group: 'Account' },
-];
+// Places to search come from lib/nav.ts, the same list the side menu and the
+// phone bar use, so search can never drift from the menu again (UI/UX audit
+// 2026-10 A7: a hand-typed copy here had lost Record, Stock, Staff and Rooms).
 
 const sevColor = (s?: string) =>
   s === 'critical' ? 'var(--crit)' : s === 'warning' ? 'var(--warn)' : s === 'success' ? 'var(--good)' : 'var(--info)';
@@ -107,7 +88,7 @@ export default function DashboardHeader() {
   const router = useRouter();
   const { alerts, posBusinessName, tier, rfm, breakdown, twin, currencySymbol } = useStore();
   const { user, logout } = useAuth();
-  const { profile, isAdmin } = useProfile();
+  const { profile, isAdmin, teamRole } = useProfile();
   const { setOpen: setAssistantOpen, sendMessage } = useAiAssistant();
 
   const safeAlerts = Array.isArray(alerts) ? alerts : [];
@@ -258,11 +239,7 @@ export default function DashboardHeader() {
     if (open === 'search') setTimeout(() => searchInputRef.current?.focus(), 30);
   }, [open]);
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return DESTINATIONS;
-    return DESTINATIONS.filter((d) => d.label.toLowerCase().includes(q) || d.group.toLowerCase().includes(q));
-  }, [query]);
+  const results = useMemo(() => searchPlaces(query, tier as Tier, teamRole), [query, tier, teamRole]);
 
   // Data hits — the search reaches the business itself, not just page names
   // (audit F-07): customers by id, products by name, each routed to its page.
@@ -421,7 +398,7 @@ export default function DashboardHeader() {
                 aria-expanded="true"
                 aria-controls="dash-search-listbox"
                 aria-activedescendant={options.length ? `dash-search-opt-${activeIdx}` : undefined}
-                placeholder="Search pages, customers, products: or ask a question…"
+                placeholder="Find a page, a customer or a product, or ask a question…"
                 aria-label="Search pages, customers and products, or ask AIBOS"
                 style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none' }}
               />

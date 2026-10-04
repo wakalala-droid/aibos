@@ -31,7 +31,7 @@ const SCENARIOS = [
 ];
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
+  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
   fontSize: 'var(--fs-body)', outline: 'none',
 };
@@ -91,12 +91,12 @@ function RecCard({ r, onFeedback, busy }: {
             <>
               <button type="button" className="touch-target" disabled={busy}
                 onClick={() => onFeedback?.(r, 'accepted')}
-                style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--good)', background: 'transparent', color: 'var(--good)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
+                style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: '1px solid var(--good)', background: 'transparent', color: 'var(--good)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
                 Did this
               </button>
               <button type="button" className="touch-target" disabled={busy}
                 onClick={() => onFeedback?.(r, 'dismissed')}
-                style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
+                style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
                 Not relevant
               </button>
             </>
@@ -156,7 +156,7 @@ export function RecommendationList({ limit, seeAllHref, title = 'Recommendations
       action={
         seeAllHref && recs.length > (limit ?? 0)
           ? <Link className="tap-link" href={seeAllHref} style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>See all →</Link>
-          : <button type="button" onClick={load} className="touch-target" style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>Refresh</button>
+          : <button type="button" onClick={load} className="touch-target" style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>Refresh</button>
       }
     >
       {err && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{err}</div>}

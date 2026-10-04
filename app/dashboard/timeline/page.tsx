@@ -20,7 +20,7 @@ import {
 } from '@/lib/api';
 
 const chip = (active: boolean): React.CSSProperties => ({
-  padding: '6px 12px', minHeight: 32, borderRadius: 6, cursor: 'pointer',
+  padding: '6px 12px', minHeight: 44, borderRadius: 6, cursor: 'pointer',
   border: `1px solid ${active ? 'var(--cyan)' : 'var(--border-md)'}`,
   background: active ? 'rgba(0,212,255,0.08)' : 'transparent',
   color: active ? 'var(--cyan)' : 'var(--text-3)',
@@ -107,7 +107,7 @@ function TimelineInner() {
         subtitle={loading ? 'Loading…' : q.trim() ? `${shown.length} match “${q.trim()}”` : `${shown.length} record${shown.length === 1 ? '' : 's'}`}
         action={
           <button type="button" onClick={load} className="touch-target"
-            style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
+            style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
             Refresh
           </button>
         }
@@ -117,7 +117,7 @@ function TimelineInner() {
           type="search" value={q} onChange={(e) => setQ(e.target.value)}
           placeholder="Search, like fuel, Chanda or 450"
           aria-label="Search events"
-          style={{ width: '100%', minHeight: 40, padding: '8px 12px', marginBottom: 10, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
+          style={{ width: '100%', minHeight: 44, padding: '8px 12px', marginBottom: 10, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
         />
 
         {/* Filters */}

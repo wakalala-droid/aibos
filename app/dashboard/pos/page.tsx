@@ -43,9 +43,9 @@ export default function POSPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Operations"
+        eyebrow="Reports"
         eyebrowColour="var(--e3)"
-        title="POS Intelligence"
+        title="Till sales"
         subtitle={<>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</>}
       />
 
@@ -121,7 +121,7 @@ export default function POSPage() {
           defaultSort={{ key: 'revenue', dir: 'desc' }}
           emptyMessage="Upload a POS export to rank your items."
         />
-        {!hasEngine3Data && <LockOverlay colour="var(--e3)" title="Operations Locked" description="Upload a POS export file (XLS/XLSX) to unlock operations intelligence" bullets={['Category & SKU revenue breakdown','Product velocity ranking','BCG matrix classification']} />}
+        {!hasEngine3Data && <LockOverlay colour="var(--e3)" title="Needs your till data" description="Upload the sales report from your till (POS) to see what sells, how fast and when." bullets={['Sales by category and item','What sells fastest','Best sellers and slow sellers']} />}
       </SectionCard>
     </>
   );

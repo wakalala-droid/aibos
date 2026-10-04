@@ -67,7 +67,7 @@ export default function MarketingFooter() {
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    <Link href={l.href} style={{ fontSize: 'var(--fs-body)', color: '#9fabbd', textDecoration: 'none' }}>
+                    <Link href={l.href} className="tap-link" style={{ fontSize: 'var(--fs-body)', color: '#9fabbd', textDecoration: 'none' }}>
                       {l.label}
                     </Link>
                   </li>

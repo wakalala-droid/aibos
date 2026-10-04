@@ -19,7 +19,7 @@ export default function VariancePage() {
   const sym = currencySymbol || 'K';
 
   if (dataShape === 'cross_sectional') {
-    return <TimeSeriesUnavailable title="Variance Analysis" feature="Variance analysis" />;
+    return <TimeSeriesUnavailable title="Month by month" feature="Variance analysis" />;
   }
 
   // ── Null-safe derived metrics ─────────────────────────────────────────────
@@ -74,7 +74,7 @@ export default function VariancePage() {
   return (
     <FeatureGate
       feature="variance"
-      title="Variance Analysis"
+      title="Month by month"
       colour="var(--cyan)"
       headline={variances.length > 1
         ? `Your biggest swing was ${maxSpike.month}, with costs moving ${maxSpike.costChange >= 0 ? '+' : ''}${maxSpike.costChange}% month-over-month.`
@@ -83,10 +83,10 @@ export default function VariancePage() {
     >
     <>
       <PageHeader
-        eyebrow="Financial Intelligence"
+        eyebrow="Reports"
         eyebrowColour="var(--cyan)"
-        title="Variance Analysis"
-        subtitle="Month-over-month changes · cost spikes · margin trends"
+        title="Month by month"
+        subtitle="How sales, costs and profit changed each month, and which costs jumped."
       />
 
       {/* Plan vs actual (audit #37) — variance against intent, not just

@@ -211,8 +211,8 @@ function OverviewPage() {
     <>
       {/* ── Page header ─────────────────────────────────────────────────── */}
       <PageHeader
-        title="Today"
-        subtitle="Your day answered first · Financial · Customer · Operations"
+        title="Home"
+        subtitle="Your day first, then money, customers and operations."
       />
 
       {/* ── The day, answered (audit #9): brief → decide → the numbers.

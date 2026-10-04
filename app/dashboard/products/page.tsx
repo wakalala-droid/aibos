@@ -32,10 +32,10 @@ export default function ProductsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Customer Intelligence"
+        eyebrow="Reports"
         eyebrowColour="var(--e2)"
-        title="Product Intelligence"
-        subtitle="BCG classification · revenue ranking · market basket analysis"
+        title="Product performance"
+        subtitle="What earns the most, what sells most often and what sells together."
       />
 
       {/* KPI cards */}
@@ -121,7 +121,7 @@ export default function ProductsPage() {
             ))}
           </div>
         )}
-        {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Customer Intelligence Locked" description="Upload transaction data with a product column to unlock product matrix" />}
+        {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Needs your product sales" description="Record sales with the product sold, or upload a sales file, to see what earns most and what sells together." />}
       </SectionCard>
     </>
   );

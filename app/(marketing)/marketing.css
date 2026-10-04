@@ -30,25 +30,25 @@
   --text-1:         #15110f;   /* near-black ink */
   --text-2:         #322c28;
   --text-3:         #5d564f;
-  --text-4:         #857d74;
+  --text-4:         #5f5953;   /* 6.2:1 on the page (audit A3); was #857d74 at 3.6 */
 
   /* Marketing-frame accents (vivid; one per engine) */
-  --cyan:           #0a8fc7;
+  --cyan:           #075985;   /* text-safe brand blue, 7.6:1 on cards */
   --cyan-dim:       rgba(10,143,199,0.10);
-  --orange:         #e0792a;
-  --green:          #0f9d6b;
-  --purple:         #7c5cf0;
-  --blue:           #2f6df0;
+  --orange:         #c2410c;
+  --green:          #047857;
+  --purple:         #6d28d9;
+  --blue:           #1d4ed8;
 
-  --e-fin:          #0a8fc7;   /* Financial / AI CFO */
-  --e-cust:         #e0792a;   /* Customer */
-  --e-ops:          #0f9d6b;   /* Operations */
-  --e-fore:         #7c5cf0;   /* Forecasting */
-  --e-dec:          #2f6df0;   /* Decision */
+  --e-fin:          #075985;   /* Financial / AI CFO */
+  --e-cust:         #c2410c;   /* Customer */
+  --e-ops:          #047857;   /* Operations */
+  --e-fore:         #6d28d9;   /* Forecasting */
+  --e-dec:          #1d4ed8;   /* Decision */
 
-  --good:           #0f9d6b;
-  --warn:           #d97706;
-  --crit:           #dc2626;
+  --good:           #047857;
+  --warn:           #92400e;
+  --crit:           #b91c1c;
 
   --shadow-card:    0 1px 2px rgba(28,25,23,0.05), 0 10px 30px rgba(28,25,23,0.05);
   --shadow-lg:      0 18px 50px rgba(28,25,23,0.12);
@@ -176,11 +176,11 @@
   margin: 0;
   text-wrap: pretty;
 }
-.mkt-body { font-size: clamp(1rem, 1.3vw, 1.1rem); line-height: 1.65; color: var(--text-3); margin: 0; }
+.mkt-body { font-size: clamp(1.125rem, 1.4vw, 1.25rem); line-height: 1.65; color: var(--text-3); margin: 0; }
 
 /* Short list of value lines under a section headline (Humble pattern). */
 .mkt-values { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
-.mkt-values li { display: flex; gap: 12px; align-items: flex-start; font-size: clamp(1rem, 1.4vw, 1.16rem); line-height: 1.5; color: var(--text-2); }
+.mkt-values li { display: flex; gap: 12px; align-items: flex-start; font-size: clamp(1.125rem, 1.4vw, 1.25rem); line-height: 1.55; color: var(--text-2); }
 .mkt-values li svg { flex-shrink: 0; margin-top: 4px; color: var(--cyan); }
 
 /* ── Buttons ────────────────────────────────────────────────── */
@@ -188,6 +188,7 @@
   display: inline-flex; align-items: center; gap: 8px;
   font-family: 'Geist', sans-serif; font-size: var(--fs-body); font-weight: 700;
   padding: 13px 22px; border-radius: 10px; cursor: pointer;
+  min-height: 44px; justify-content: center;
   text-decoration: none; border: 1px solid transparent;
   transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
   white-space: nowrap;
@@ -386,7 +387,7 @@
    universal rule at the bottom kills the animation). */
 .mkt-aurora {
   position: absolute; inset: -15%; z-index: 0; pointer-events: none;
-  opacity: 0.62; filter: blur(13px) saturate(1.15); will-change: background-position;
+  opacity: 0.62; filter: blur(13px) saturate(1.15);
   --aurora:  repeating-linear-gradient(100deg, #3b82f6 6%, #8b5cf6 13%, #22d3ee 20%, #a5b4fc 27%, #3b82f6 34%);
   --stripes: repeating-linear-gradient(100deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.72) 6%, transparent 9%, transparent 13%, rgba(255,255,255,0.72) 16%);
   background-image: var(--stripes), var(--aurora);
@@ -395,7 +396,6 @@
      headline stays readable */
   -webkit-mask-image: radial-gradient(135% 100% at 74% -14%, #000 16%, transparent 72%);
   mask-image: radial-gradient(135% 100% at 74% -14%, #000 16%, transparent 72%);
-  animation: mkt-aurora 22s linear infinite alternate;
 }
 @keyframes mkt-aurora {
   0%   { background-position: 0% 50%, 0% 50%; }
@@ -419,7 +419,7 @@
 /* ── Hero: stack on small screens (copy first, cluster below) ── */
 @media (max-width: 879px) {
   [data-marketing] .mkt-hero-grid { grid-template-columns: 1fr !important; }
-  [data-marketing] .mkt-hero-grid > :last-child { order: -1; max-width: 380px; margin-inline: auto; }
+  [data-marketing] .mkt-hero-grid > :last-child { max-width: 420px; width: 100%; margin-inline: auto; }
 }
 
 /* ── Two-column blocks → single column on small screens ─────── */

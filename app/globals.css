@@ -1019,10 +1019,13 @@ button, [role="button"], [role="tab"] { min-width: 44px; }
   .mobile-tab {
     position: relative; flex: 1;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 3px; padding: 8px 4px 9px; min-height: 56px;
-    color: var(--text-4); text-decoration: none;
-    font-size: var(--fs-label); font-weight: 600;
+    gap: 2px; padding: 6px 2px 8px; min-height: 64px; min-width: 0;
+    color: var(--text-3); text-decoration: none;
+    font-size: var(--fs-label); font-weight: 600; line-height: 1.2; text-align: center; white-space: nowrap;
+    background: transparent; border: none; cursor: pointer; font-family: inherit;
   }
+  .mobile-tab-icon { display: flex; }
+  .mobile-tab-icon svg { width: 24px; height: 24px; }
   .mobile-tab.active { color: var(--cyan); }
   .mobile-tab.active::after {
     content: ''; position: absolute; top: 0; left: 25%; right: 25%;
@@ -1030,11 +1033,11 @@ button, [role="button"], [role="tab"] { min-width: 44px; }
   }
 
   /* Clearance: page content and the assistant launcher sit above the bar. */
-  [data-uimode="simple"] .page-container {
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  .app-shell .page-container {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
   }
-  [data-uimode="simple"] .ai-fab-wrap {
-    bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+  .app-shell .ai-fab-wrap {
+    bottom: calc(84px + env(safe-area-inset-bottom)) !important;
   }
 }
 

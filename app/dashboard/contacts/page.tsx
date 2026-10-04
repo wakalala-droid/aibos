@@ -53,8 +53,8 @@ export default function ContactsPage() {
   return (
     <>
       <PageHeader
-        title="Contacts"
-        subtitle="The customers and suppliers AIBOS learns from what you record."
+        title="Customers"
+        subtitle="Everyone you sell to or buy from, learned from what you record."
       />
 
       {error && <p role="alert" style={{ color: 'var(--crit)', fontSize: 'var(--fs-body)', margin: '0 0 14px' }}>{error}</p>}
@@ -65,7 +65,7 @@ export default function ContactsPage() {
         action={
           parties.length > 1 ? (
             <button type="button" onClick={() => { setMergeMode((v) => !v); setSelected([]); }}
-              style={{ minHeight: 32, padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border-md)', background: mergeMode ? 'var(--bg-badge)' : 'transparent', color: 'var(--text-3)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-label)' }}>
+              style={{ minHeight: 44, padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border-md)', background: mergeMode ? 'var(--bg-badge)' : 'transparent', color: 'var(--text-3)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-label)' }}>
               {mergeMode ? 'Cancel' : 'Merge duplicates'}
             </button>
           ) : undefined
@@ -106,7 +106,7 @@ export default function ContactsPage() {
               Keep <strong>{keepName}</strong>, fold <strong>{dropName}</strong> into it? AIBOS will remember they&apos;re the same from now on.
             </p>
             <button type="button" onClick={() => void doMerge()} disabled={busy}
-              style={{ minHeight: 40, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, cursor: 'pointer' }}>
+              style={{ minHeight: 44, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, cursor: 'pointer' }}>
               {busy ? 'Merging…' : 'Merge them'}
             </button>
           </div>

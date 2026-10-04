@@ -27,7 +27,7 @@ import {
 
 // ── Shared field styles (mirrors the Scheduler's form vocabulary) ────────────
 const input: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
+  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
   fontSize: 'var(--fs-body)', outline: 'none',
 };
@@ -216,8 +216,8 @@ export default function EmployeesPage() {
   return (
     <>
       <PageHeader
-        title="Employees & Payroll"
-        subtitle="Your people, their pay: PAYE, NAPSA and net pay worked out for you."
+        title="Staff"
+        subtitle="Your people and their pay, with PAYE, NAPSA and take-home pay worked out for you."
       />
 
       <div className="grid-main">
@@ -322,7 +322,7 @@ export default function EmployeesPage() {
               <input type="month" value={period} onChange={e => { setPeriod(e.target.value); setPreview(null); setRunOk(null); setRunError(null); }} style={{ ...input, width: 'auto' }} />
             </div>
             <button type="button" onClick={doPreview} disabled={busy || active.length === 0} className="touch-target"
-              style={{ padding: '9px 16px', minHeight: 40, borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: (busy || active.length === 0) ? 0.6 : 1 }}>
+              style={{ padding: '9px 16px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: (busy || active.length === 0) ? 0.6 : 1 }}>
               {busy ? 'Computing…' : 'Preview'}
             </button>
           </div>
@@ -363,7 +363,7 @@ export default function EmployeesPage() {
                           {s.employee_id && (
                             <button type="button" onClick={() => void getDoc(periodRun.id, periodRun.period, s.employee_id!)}
                               disabled={docBusy === `${periodRun.id}:${s.employee_id}`} className="touch-target"
-                              style={{ padding: '4px 9px', minHeight: 30, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                              style={{ padding: '4px 9px', minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                               {docBusy === `${periodRun.id}:${s.employee_id}` ? '…' : 'Payslip'}
                             </button>
                           )}
@@ -442,14 +442,14 @@ export default function EmployeesPage() {
                     {/* Audit #66 — the statutory pack the server has always been
                         able to render, now actually reachable. */}
                     <button type="button" onClick={() => void getDoc(r.id, r.period)} disabled={docBusy === r.id} className="touch-target"
-                      style={{ padding: '5px 10px', minHeight: 32, borderRadius: 7, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: docBusy === r.id ? 'wait' : 'pointer' }}>
+                      style={{ padding: '5px 10px', minHeight: 44, borderRadius: 7, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: docBusy === r.id ? 'wait' : 'pointer' }}>
                       {docBusy === r.id ? 'Preparing…' : 'Statutory PDF'}
                     </button>
                     {/* A run can only be made once a month, so one made by
                         mistake (the wrong month, a test) used to stay for good
                         with its wages in the books. */}
                     <button type="button" onClick={() => void removeRun(r.id, r.period)} disabled={docBusy === r.id} className="touch-target"
-                      style={{ padding: '5px 10px', minHeight: 32, borderRadius: 7, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--red)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: docBusy === r.id ? 'wait' : 'pointer' }}>
+                      style={{ padding: '5px 10px', minHeight: 44, borderRadius: 7, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--red)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: docBusy === r.id ? 'wait' : 'pointer' }}>
                       {docBusy === r.id ? 'Working…' : 'Delete run'}
                     </button>
                   </span>

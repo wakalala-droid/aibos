@@ -144,7 +144,7 @@ function nextMonthly(day: number): Date {
 }
 
 const input: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
+  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
   fontSize: 'var(--fs-body)', outline: 'none',
 };
@@ -390,7 +390,7 @@ export default function SchedulePage() {
       </div>
       {!finished && (
         <button type="button" onClick={() => markDone(it)} className="touch-target" aria-label={`Mark ${it.title} done`}
-          style={{ minHeight: 34, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--green)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+          style={{ minHeight: 44, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--green)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
           Done
         </button>
       )}
@@ -429,7 +429,7 @@ export default function SchedulePage() {
           </span>
           <button type="button" className="touch-target" disabled={statutoryBusy}
             onClick={() => void seedStatutory()}
-            style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: statutoryBusy ? 0.7 : 1 }}>
+            style={{ padding: '8px 14px', minHeight: 44, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: statutoryBusy ? 0.7 : 1 }}>
             {statutoryBusy ? 'Setting up…' : 'Set up statutory reminders'}
           </button>
         </div>
@@ -459,11 +459,11 @@ export default function SchedulePage() {
                 Record “{bridge.title}”: {fmt(bridge.amount ?? 0, false, sym)} in your books?
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                <select value={bridgeType} onChange={e => setBridgeType(e.target.value as EventType)} style={{ ...input, width: 'auto', minHeight: 36 }} aria-label="Event type">
+                <select value={bridgeType} onChange={e => setBridgeType(e.target.value as EventType)} style={{ ...input, width: 'auto', minHeight: 44 }} aria-label="Event type">
                   {BRIDGE_OPTIONS.map(t => <option key={t} value={t}>{t === 'SupplierPayment' ? 'Supplier payment' : t === 'CustomerPayment' ? 'Customer payment' : t}</option>)}
                 </select>
                 <button type="button" onClick={recordBridge} disabled={bridgeBusy}
-                  style={{ padding: '8px 16px', minHeight: 36, borderRadius: 8, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: bridgeBusy ? 0.7 : 1 }}>
+                  style={{ padding: '8px 16px', minHeight: 44, borderRadius: 8, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: bridgeBusy ? 0.7 : 1 }}>
                   {bridgeBusy ? 'Recording…' : 'Record it'}
                 </button>
                 <button type="button" onClick={() => setBridge(null)} style={{ ...ghostBtn, color: 'var(--text-3)', fontSize: 'var(--fs-data)' }}>Not now</button>
@@ -481,7 +481,7 @@ export default function SchedulePage() {
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
                 {SEEDS.map(s => (
                   <button key={s.title} type="button" onClick={() => addSeed(s)} className="touch-target"
-                    style={{ padding: '8px 14px', minHeight: 38, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
+                    style={{ padding: '8px 14px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
                     {s.title} · {s.day}{s.day === 1 ? 'st' : 'th'}
                   </button>
                 ))}
@@ -556,7 +556,7 @@ export default function SchedulePage() {
               return (
                 <button key={k} type="button" onClick={() => pickKind(k)} aria-pressed={on}
                   style={{
-                    padding: '6px 12px', minHeight: 32, borderRadius: 8, cursor: 'pointer',
+                    padding: '6px 12px', minHeight: 44, borderRadius: 8, cursor: 'pointer',
                     fontSize: 'var(--fs-label)', fontWeight: 700,
                     border: `1px solid ${on ? m.colour : 'var(--border-md)'}`,
                     background: on ? `color-mix(in srgb, ${m.colour} 12%, transparent)` : 'transparent',

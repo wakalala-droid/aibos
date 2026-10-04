@@ -606,9 +606,9 @@ export default function HospitalityPage() {
               ))}
               <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
                 Confirmed bookings post to your books:{' '}
-                <Link className="tap-link" href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Cash Intel</Link>
+                <Link className="tap-link" href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Money</Link>
                 {' · '}
-                <Link className="tap-link" href="/dashboard/timeline" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Timeline</Link>
+                <Link className="tap-link" href="/dashboard/timeline" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Activity</Link>
               </span>
             </div>
           </SectionCard>

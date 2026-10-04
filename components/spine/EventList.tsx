@@ -126,7 +126,7 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
                   <button
                     type="button" onClick={() => onConfirm(ev.id)} disabled={busyId === ev.id} className="touch-target"
                     aria-label="Confirm event"
-                    style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: 'none', background: 'var(--green-dim)', color: 'var(--green)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: 'none', background: 'var(--green-dim)', color: 'var(--green)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer' }}
                   >
                     {busyId === ev.id ? '…' : 'Confirm'}
                   </button>
@@ -135,7 +135,7 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
                   <button
                     type="button" onClick={() => onVoid(ev.id)} disabled={busyId === ev.id} className="touch-target"
                     aria-label="Void event"
-                    style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}
+                    style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}
                   >
                     {busyId === ev.id ? '…' : 'Void'}
                   </button>

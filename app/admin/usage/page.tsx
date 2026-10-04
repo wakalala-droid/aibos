@@ -66,7 +66,7 @@ export default function AdminUsagePage() {
     body = (
       <div className="section-card" role="alert" style={{ textAlign: 'center' }}>
         <p style={{ color: 'var(--crit)', margin: '0 0 12px' }}>{error}</p>
-        <button type="button" onClick={() => void load()} style={{ minHeight: 40, padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer' }}>Try again</button>
+        <button type="button" onClick={() => void load()} style={{ minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer' }}>Try again</button>
       </div>
     );
   } else if (data) {

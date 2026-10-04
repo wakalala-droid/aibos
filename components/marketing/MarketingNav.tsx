@@ -12,15 +12,7 @@ const LINKS = [
 ];
 
 export default function MarketingNav() {
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   // Close the mobile menu on resize to desktop.
   useEffect(() => {
@@ -32,12 +24,11 @@ export default function MarketingNav() {
   return (
     <header
       style={{
+        // Solid bar with a fixed hairline: a translucent blurred header re-blurs
+        // the page on every scroll frame on a phone (UI/UX audit 2026-10 A20).
         position: 'sticky', top: 0, zIndex: 60,
-        backdropFilter: 'saturate(180%) blur(14px)',
-        WebkitBackdropFilter: 'saturate(180%) blur(14px)',
-        background: scrolled ? 'color-mix(in srgb, var(--bg-page) 82%, transparent)' : 'transparent',
-        borderBottom: `1px solid ${scrolled ? 'var(--border)' : 'transparent'}`,
-        transition: 'background 0.25s ease, border-color 0.25s ease',
+        background: 'var(--bg-page)',
+        borderBottom: '1px solid var(--border)',
       }}
     >
       <nav
@@ -61,6 +52,7 @@ export default function MarketingNav() {
             <Link
               key={l.href}
               href={l.href}
+              className="tap-link"
               style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-2)', textDecoration: 'none' }}
             >
               {l.label}
@@ -70,7 +62,7 @@ export default function MarketingNav() {
 
         {/* Desktop CTAs */}
         <div className="mkt-nav-cta" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Link href="/login" style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-2)', textDecoration: 'none' }}>
+          <Link href="/login" className="tap-link" style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-2)', textDecoration: 'none' }}>
             Sign in
           </Link>
           <Link href="/login" className="mkt-btn mkt-btn-primary mkt-btn-sm">

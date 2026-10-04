@@ -58,11 +58,14 @@ export interface StrategicBriefViewProps {
   sym?: string;
   /** Marketing render: hide the page header (the section supplies its own). */
   hideHeader?: boolean;
+  /** 2 when embedded in a page that already has its own h1 (one h1 per page). */
+  headingLevel?: 1 | 2;
 }
 
 export default function StrategicBriefView({
-  kpi, health, monthly, alerts, scores, unifiedBrief = '', sym = 'K', hideHeader = false,
+  kpi, health, monthly, alerts, scores, unifiedBrief = '', sym = 'K', hideHeader = false, headingLevel = 1,
 }: StrategicBriefViewProps) {
+  const Heading = headingLevel === 2 ? 'h2' : 'h1';
   // ── Derived recommendations (identical logic to the product) ──────────────
   const recs: Array<{ title: string; recommendation: string; priority: string }> = [];
   if (kpi.avgMargin < 20) {
@@ -135,7 +138,7 @@ export default function StrategicBriefView({
       {!hideHeader && (
         <div style={{ marginBottom: 24 }}>
           <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Financial Intelligence</p>
-          <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Strategic Brief</h1>
+          <Heading style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Strategic Brief</Heading>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>AI-generated executive summary · recommendations · action plan</p>
         </div>
       )}

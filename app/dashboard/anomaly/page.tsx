@@ -89,10 +89,10 @@ export default function AnomalyPage() {
     >
     <>
       <PageHeader
-        eyebrow="Financial Intelligence"
+        eyebrow="Reports"
         eyebrowColour="var(--cyan)"
-        title="Anomaly Intelligence"
-        subtitle="Statistical outlier detection · Z-score analysis · variance flags"
+        title="Unusual spending"
+        subtitle="Months where sales or costs broke your normal pattern."
       />
 
       {/* Auto-investigation from recorded events (audit #13) — silent when

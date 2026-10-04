@@ -64,10 +64,10 @@ export default function ChurnPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Customer Intelligence"
+        eyebrow="Reports"
         eyebrowColour="var(--e2)"
-        title="Churn Risk Analysis"
-        subtitle="Churn probability · CLV at risk · Interventions ranked by urgency"
+        title="Quiet customers"
+        subtitle="Customers who have stopped coming, ranked by how much they used to spend."
       />
 
       {/* KPI cards */}
@@ -167,7 +167,7 @@ export default function ChurnPage() {
           ]}
           emptyMessage="Upload customer transaction data to rank churn risk."
         />
-        {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Customer Intelligence Locked" description="Upload transaction data to unlock churn risk analysis" />}
+        {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Needs your customer sales" description="Record sales with the customer's name, or upload a sales file, to see who has stopped coming." />}
       </SectionCard>
     </>
   );

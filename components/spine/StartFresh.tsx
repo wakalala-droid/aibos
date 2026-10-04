@@ -76,7 +76,7 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
       style={{ marginTop: 24 }}
       action={!open ? (
         <button type="button" className="touch-target" onClick={() => { setOpen(true); setDone(null); }}
-          style={{ padding: '6px 12px', minHeight: 32, borderRadius: 6, border: '1px solid var(--red)', background: 'transparent', color: 'var(--red)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
+          style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: '1px solid var(--red)', background: 'transparent', color: 'var(--red)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
           Start fresh…
         </button>
       ) : undefined}
@@ -158,11 +158,11 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
                 style={{ width: 120, padding: '8px 12px', borderRadius: 6, border: `1px solid ${armed ? 'var(--red)' : 'var(--border-md)'}`, background: 'transparent', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 600, letterSpacing: '0.08em', outline: 'none' }}
               />
               <button type="button" className="touch-target" onClick={handleReset} disabled={!armed || busy}
-                style={{ padding: '8px 16px', minHeight: 36, borderRadius: 6, border: '1px solid var(--red)', background: armed ? 'var(--red)' : 'var(--red-dim)', color: armed ? '#fff' : 'var(--red)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: armed && !busy ? 'pointer' : 'not-allowed', opacity: busy ? 0.6 : 1 }}>
+                style={{ padding: '8px 16px', minHeight: 44, borderRadius: 6, border: '1px solid var(--red)', background: armed ? 'var(--red)' : 'var(--red-dim)', color: armed ? '#fff' : 'var(--red)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: armed && !busy ? 'pointer' : 'not-allowed', opacity: busy ? 0.6 : 1 }}>
                 {busy ? 'Deleting…' : scope === 'all' ? 'Delete everything & start fresh' : 'Delete file imports'}
               </button>
               <button type="button" className="touch-target" onClick={() => { setOpen(false); setConfirmText(''); setError(null); }}
-                style={{ padding: '8px 14px', minHeight: 36, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
+                style={{ padding: '8px 14px', minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
                 Cancel
               </button>
             </div>

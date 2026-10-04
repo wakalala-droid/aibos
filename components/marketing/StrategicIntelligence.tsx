@@ -135,7 +135,7 @@ export default function StrategicIntelligence() {
         <span className="si-tip" ref={tipRef} aria-hidden />
 
         <div className="mkt-wrap si-brief">
-          <StrategicBriefView {...DEMO_BRIEF} sym="K" />
+          <StrategicBriefView {...DEMO_BRIEF} sym="K" headingLevel={2} />
         </div>
         <div className="si-brief-blur" aria-hidden />
         {/* CTA floats at the brief's fade point */}

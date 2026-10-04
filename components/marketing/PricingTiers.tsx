@@ -116,7 +116,7 @@ export default function PricingTiers({ cardPrices = null, zmwRate }: {
                 position: 'relative',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, minHeight: 26 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, minHeight: 44 }}>
                 <h3 style={{ fontSize: 'var(--fs-h3)', fontWeight: 800, color: meta.accent, margin: 0 }}>
                   {meta.name}
                 </h3>

@@ -370,12 +370,12 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
           <span style={{ display: 'flex', gap: 8 }}>
             <button type="button" className="touch-target"
               onClick={() => { setReceiptSpotlight(false); fileRef.current?.click(); }}
-              style={{ padding: '8px 14px', minHeight: 40, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
+              style={{ padding: '8px 14px', minHeight: 44, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
               Scan a receipt
             </button>
             <button type="button" className="touch-target" aria-label="Dismiss"
               onClick={() => setReceiptSpotlight(false)}
-              style={{ padding: '8px 12px', minHeight: 40, borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
+              style={{ padding: '8px 12px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
               Type instead
             </button>
           </span>
@@ -603,7 +603,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                     </div>
                   ))}
                   <button type="button" onClick={() => setLines(ls => [...ls, { name: '', qty: '' }])} className="touch-target"
-                    style={{ minHeight: 40, padding: '8px 14px', borderRadius: 8, border: '1px dashed var(--border-md)', background: 'transparent', color: 'var(--cyan)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>
+                    style={{ minHeight: 44, padding: '8px 14px', borderRadius: 8, border: '1px dashed var(--border-md)', background: 'transparent', color: 'var(--cyan)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>
                     + Add item
                   </button>
                 </div>

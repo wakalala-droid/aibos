@@ -124,10 +124,10 @@ export default function CashPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Financial Intelligence"
+        eyebrow="Money"
         eyebrowColour="var(--cyan)"
-        title="Cash Intelligence"
-        subtitle="Runway · burn rate · cash position · forward projections"
+        title="Money"
+        subtitle="What you hold, how long it lasts and where it is heading."
       />
 
       <SimpleSummary page="cash" />

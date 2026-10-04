@@ -33,10 +33,10 @@ export default function MarketPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Customer Intelligence"
+        eyebrow="Reports"
         eyebrowColour="var(--e2)"
-        title="Market Intelligence"
-        subtitle="Segment revenue breakdown · CLV distribution · AI strategic brief"
+        title="Market"
+        subtitle="Revenue by customer group, and what it means for you."
       />
 
       {/* KPI cards */}
@@ -131,7 +131,7 @@ export default function MarketPage() {
         ) : (
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Upload transaction data to generate AI market intelligence</p>
         )}
-        {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Customer Intelligence Locked" description="Upload transaction data to unlock AI-generated market insights" />}
+        {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Needs your customer sales" description="Record sales with the customer's name, or upload a sales file, to see what each customer group brings in." />}
       </SectionCard>
     </>
   );

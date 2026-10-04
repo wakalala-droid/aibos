@@ -49,7 +49,7 @@ function BriefsInner() {
             onClick={() => setTab(t.id)}
             className="touch-target"
             style={{
-              padding: '8px 16px', minHeight: 36, borderRadius: 8, cursor: 'pointer',
+              padding: '8px 16px', minHeight: 44, borderRadius: 8, cursor: 'pointer',
               fontSize: 'var(--fs-data)', fontWeight: tab === t.id ? 700 : 600,
               color: tab === t.id ? 'var(--text-1)' : 'var(--text-3)',
               background: tab === t.id ? 'var(--bg-badge)' : 'transparent',
@@ -67,7 +67,7 @@ function BriefsInner() {
         // the honest notice rather than "Best Month: Period 9".
         dataShape === 'cross_sectional'
           ? <TimeSeriesUnavailable title="Financial Brief" feature="The financial brief" />
-          : <StrategicBriefView
+          : <StrategicBriefView headingLevel={2}
               kpi={kpi}
               health={health}
               monthly={monthly}

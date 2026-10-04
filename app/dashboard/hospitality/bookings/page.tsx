@@ -296,7 +296,7 @@ export default function BookingsPage() {
                 onClick={() => setView(v.key)}
                 aria-pressed={on}
                 style={{
-                  padding: '8px 14px', minHeight: 40, borderRadius: 10, cursor: 'pointer',
+                  padding: '8px 14px', minHeight: 44, borderRadius: 10, cursor: 'pointer',
                   fontSize: FS_SMALL, fontWeight: on ? 700 : 600,
                   color: on ? 'var(--text-1)' : 'var(--text-3)',
                   background: on ? 'var(--bg-badge)' : 'transparent',
@@ -426,13 +426,13 @@ export default function BookingsPage() {
                       <Link
                         href={`/dashboard/hospitality?booking=${encodeURIComponent(b.id)}`}
                         aria-label={`Open ${guestName(b)}'s booking`}
-                        style={{ ...ghostBtn, padding: '8px 14px', minHeight: 40, display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+                        style={{ ...ghostBtn, padding: '8px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
                       >
                         Open
                       </Link>
                       {owedOn(b) > 0 && (
                         <button
-                          style={{ ...ghostBtn, padding: '8px 14px', minHeight: 40, color: 'var(--good)', borderColor: 'var(--good)', opacity: busyId === b.id ? 0.6 : 1 }}
+                          style={{ ...ghostBtn, padding: '8px 14px', minHeight: 44, color: 'var(--good)', borderColor: 'var(--good)', opacity: busyId === b.id ? 0.6 : 1 }}
                           disabled={busyId === b.id}
                           onClick={() => markPaid(b.id)}
                         >
@@ -442,14 +442,14 @@ export default function BookingsPage() {
                       {b.status === 'pending' && (
                         <>
                           <button
-                            style={{ ...primaryBtn, padding: '8px 14px', minHeight: 40, opacity: busyId === b.id ? 0.6 : 1 }}
+                            style={{ ...primaryBtn, padding: '8px 14px', minHeight: 44, opacity: busyId === b.id ? 0.6 : 1 }}
                             disabled={busyId === b.id}
                             onClick={() => answer(b.id, true)}
                           >
                             {busyId === b.id ? 'Saving…' : 'Confirm'}
                           </button>
                           <button
-                            style={{ ...ghostBtn, padding: '8px 14px', minHeight: 40 }}
+                            style={{ ...ghostBtn, padding: '8px 14px', minHeight: 44 }}
                             disabled={busyId === b.id}
                             onClick={() => { setDecliningId(decliningId === b.id ? '' : b.id); setReason(''); }}
                           >
@@ -508,7 +508,7 @@ export default function BookingsPage() {
         <p style={{ fontSize: FS_SMALL, lineHeight: 1.6, color: 'var(--text-4)', marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
           Confirming a booking records the sale in your books. It counts as money owed to you until you mark it paid,
           then it moves into your cash. You can see both in{' '}
-          <Link className="tap-link" href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Cash Intel</Link>.
+          <Link className="tap-link" href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Money</Link>.
           Turning one down changes nothing in the books: the dates simply go free again.
           A deposit or a refund is recorded on the booking itself, on the calendar.
         </p>

@@ -51,7 +51,7 @@ function fmtDate(v: string | null): string {
 }
 
 const btn = (variant: 'primary' | 'ghost'): React.CSSProperties => ({
-  minHeight: 36,
+  minHeight: 44,
   padding: '7px 12px',
   borderRadius: 8,
   fontSize: 'var(--fs-data)',
@@ -204,9 +204,9 @@ export default function AdminAccountsPage() {
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search name or email…"
         aria-label="Search accounts by name or email"
-        style={{ flex: '1 1 220px', minHeight: 42, padding: '9px 14px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none' }}
+        style={{ flex: '1 1 220px', minHeight: 44, padding: '9px 14px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none' }}
       />
-      <select aria-label="Filter by tier" value={tierFilter} onChange={(e) => setTierFilter(e.target.value as 'all' | Tier)} style={{ minHeight: 42, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
+      <select aria-label="Filter by tier" value={tierFilter} onChange={(e) => setTierFilter(e.target.value as 'all' | Tier)} style={{ minHeight: 44, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
         <option value="all">All tiers</option>
         {/* Derived from the ladder — a new tier appears here automatically
             instead of being invisible until someone remembers this list. */}
@@ -214,7 +214,7 @@ export default function AdminAccountsPage() {
           <option key={t} value={t}>{TIERS[t].name}</option>
         ))}
       </select>
-      <select aria-label="Sort accounts" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} style={{ minHeight: 42, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
+      <select aria-label="Sort accounts" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} style={{ minHeight: 44, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
         <option value="active">Sort: last active</option>
         <option value="signup">Sort: signup date</option>
       </select>

@@ -42,7 +42,7 @@ interface State {
 }
 
 const input: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
+  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
   fontSize: 'var(--fs-body)', outline: 'none',
 };
@@ -51,11 +51,11 @@ const lbl: React.CSSProperties = {
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
-  padding: '9px 16px', minHeight: 40, borderRadius: 8, border: 'none',
+  padding: '9px 16px', minHeight: 44, borderRadius: 8, border: 'none',
   background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer',
 };
 const ghostBtn: React.CSSProperties = {
-  padding: '8px 14px', minHeight: 38, borderRadius: 8, background: 'transparent',
+  padding: '8px 14px', minHeight: 44, borderRadius: 8, background: 'transparent',
   border: '1px solid var(--border-md)', color: 'var(--text-2)',
   fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer',
 };

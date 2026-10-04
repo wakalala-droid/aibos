@@ -48,7 +48,7 @@ export default function MilestoneBanner() {
         <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>{milestone.detail}</p>
       </div>
       <button type="button" aria-label="Dismiss" onClick={dismiss} className="touch-target"
-        style={{ flexShrink: 0, width: 32, minHeight: 32, borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer', fontSize: 'var(--fs-body)' }}>
+        style={{ flexShrink: 0, width: 32, minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer', fontSize: 'var(--fs-body)' }}>
         ×
       </button>
     </div>

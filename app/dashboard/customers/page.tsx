@@ -84,10 +84,10 @@ export default function CustomersPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Customer Intelligence"
+        eyebrow="Reports"
         eyebrowColour="var(--e2)"
-        title="Customer Intelligence"
-        subtitle="RFM segmentation · CLV · Retention · Churn risk"
+        title="Best customers"
+        subtitle="Who buys most, who comes back and who has gone quiet."
       />
 
       <SimpleSummary page="customers" />
@@ -207,7 +207,7 @@ export default function CustomersPage() {
           filters={segmentFilters}
           emptyMessage="Upload customer transaction data to populate RFM records."
         />
-        {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Customer Intelligence Locked" description="Upload transaction data with customer_id, date, amount, product columns" bullets={['RFM segmentation & scoring','Customer Lifetime Value tiers','Churn risk + intervention actions']} />}
+        {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Needs your customer sales" description="Record sales with the customer's name, or upload a sales file with customer, date, amount and product." bullets={['Your best customers, ranked','What each customer is worth over time','Who has gone quiet, and what to do']} />}
       </SectionCard>
     </>
   );

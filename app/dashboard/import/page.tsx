@@ -31,7 +31,7 @@ const TYPES: EventType[] = [
 ];
 
 const sel: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 40, background: 'var(--bg-input)',
+  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
   fontSize: 'var(--fs-body)', outline: 'none',
 };
@@ -272,7 +272,7 @@ export default function ImportPage() {
                     opacity: on ? 1 : 0.62,
                   }}>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', minHeight: 40 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', minHeight: 44 }}>
                         <input
                           type="checkbox" checked={on}
                           onChange={e => setKeep(k => ({ ...k, [t.id]: e.target.checked }))}
@@ -308,7 +308,7 @@ export default function ImportPage() {
                         figure is the right one. */}
                     {(t.balance_checks?.length ?? 0) > 0 && (
                       <details style={{ marginTop: 8 }}>
-                        <summary style={{ cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--amber)', minHeight: 36 }}>
+                        <summary style={{ cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--amber)', minHeight: 44 }}>
                           {t.balance_checks.length} line{t.balance_checks.length === 1 ? '' : 's'} do
                           {t.balance_checks.length === 1 ? 'es' : ''} not add up against your running balance
                         </summary>
@@ -360,7 +360,7 @@ export default function ImportPage() {
                           {' '}Details: <strong>{t.mapping.description ?? 'None'}</strong>
                         </p>
                         <button type="button" className="touch-target"
-                          style={{ ...quietBtn, padding: '6px 12px', minHeight: 36 }}
+                          style={{ ...quietBtn, padding: '6px 12px', minHeight: 44 }}
                           onClick={() => setOpen(o => ({ ...o, [t.id]: !o[t.id] }))}>
                           {open[t.id] ? 'Hide rows' : 'Show rows'}
                         </button>
@@ -495,7 +495,7 @@ export default function ImportPage() {
 
           {(result.error_count > 0 || result.skipped.length > 0) && (
             <details style={{ marginBottom: 16 }}>
-              <summary style={{ cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--text-3)', minHeight: 40 }}>
+              <summary style={{ cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--text-3)', minHeight: 44 }}>
                 What was left out and why
               </summary>
               <ul style={{ margin: '8px 0 0', paddingLeft: 18, color: 'var(--text-3)', fontSize: 'var(--fs-data)', lineHeight: 1.6 }}>

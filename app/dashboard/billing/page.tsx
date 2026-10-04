@@ -304,12 +304,12 @@ export default function BillingPage() {
                           <td>
                             {p.invoice ? (
                               <button type="button" onClick={() => void invoice(p)} disabled={busy === p.id}
-                                style={{ ...quiet, minHeight: 36, padding: '6px 12px', fontSize: 'var(--fs-label)', cursor: busy === p.id ? 'wait' : 'pointer' }}>
+                                style={{ ...quiet, minHeight: 44, padding: '6px 12px', fontSize: 'var(--fs-label)', cursor: busy === p.id ? 'wait' : 'pointer' }}>
                                 {busy === p.id ? 'Opening…' : 'Invoice'}
                               </button>
                             ) : p.receipt ? (
                               <button type="button" onClick={() => void receipt(p)} disabled={busy === p.id}
-                                style={{ ...quiet, minHeight: 36, padding: '6px 12px', fontSize: 'var(--fs-label)', cursor: busy === p.id ? 'wait' : 'pointer' }}>
+                                style={{ ...quiet, minHeight: 44, padding: '6px 12px', fontSize: 'var(--fs-label)', cursor: busy === p.id ? 'wait' : 'pointer' }}>
                                 {busy === p.id ? 'Preparing…' : 'Download'}
                               </button>
                             ) : (

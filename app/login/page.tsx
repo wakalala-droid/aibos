@@ -3,9 +3,8 @@
 export const dynamic = 'force-dynamic';
 
 import { Suspense } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase';
 import { BrandLockup } from '@/components/brand/BootSplash';
@@ -23,48 +22,18 @@ function GoogleIcon() {
   );
 }
 
-// ─── Particles ─────────────────────────────────────────────────────
-
-function Particles() {
-  const items = [
-    { left: '8%',  dur: '18s', delay: '0s',  size: 2 },
-    { left: '22%', dur: '22s', delay: '3s',  size: 3 },
-    { left: '45%', dur: '16s', delay: '7s',  size: 2 },
-    { left: '68%', dur: '20s', delay: '1s',  size: 2 },
-    { left: '85%', dur: '24s', delay: '5s',  size: 3 },
-    { left: '32%', dur: '19s', delay: '11s', size: 2 },
-    { left: '55%', dur: '21s', delay: '9s',  size: 2 },
-    { left: '75%', dur: '17s', delay: '4s',  size: 3 },
-  ];
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {items.map((p, i) => (
-        <div
-          key={i}
-          className="absolute rounded-full"
-          style={{
-            left: p.left, bottom: '-10px',
-            width: p.size, height: p.size,
-            background: 'rgba(99,179,237,0.45)',
-            boxShadow: `0 0 ${p.size * 3}px rgba(99,179,237,0.3)`,
-            animation: `particleFloat ${p.dur} ${p.delay} linear infinite`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-// ─── Logo ──────────────────────────────────────────────────────────
+// ─── Logo ──────────────────────────────────────────────────────
+// Light page, so the dark bare mark (the marketing nav's mark), no glow.
 
 function LogoMark() {
   return (
     <Image
-      src="/brand/aibos-mark-white.png"
-      alt="AIBOS, Artificial Intelligence Business Operating System"
-      width={240}
-      height={178}
-      style={{ width: 240, height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 0 18px rgba(96,165,250,0.4))' }}
+      src="/brand/aibos-mark.png"
+      alt=""
+      aria-hidden
+      width={72}
+      height={72}
+      style={{ width: 72, height: 'auto', objectFit: 'contain' }}
       priority
     />
   );
@@ -137,124 +106,91 @@ function LoginForm() {
     return () => window.removeEventListener('keydown', handler);
   }, [handleGoogleSignIn, loading]);
 
+  // UI/UX audit 2026-10 A19: the sign-in used to be a small dark glass card on
+  // a looping starfield, with most words at 12px and the legal line at 2.16:1,
+  // right after a cream marketing site. Now: the site's light paper, a still
+  // page, one heading, 18px words and a 52px Google button.
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 32, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.55, ease: 'easeOut' }}
-      className={`relative z-10 w-full max-w-md mx-4 ${shaking ? 'shake' : ''}`}
+    <main
+      className={`login-card ${shaking ? 'shake' : ''}`}
+      style={{
+        position: 'relative', zIndex: 1, width: '100%', maxWidth: 460, margin: '0 16px',
+        background: '#fffdf9', border: `1px solid ${errorMsg ? '#b91c1c' : 'rgba(28,25,23,0.14)'}`,
+        borderRadius: 16, padding: '40px 32px 32px',
+        boxShadow: '0 1px 2px rgba(28,25,23,0.05), 0 12px 32px rgba(28,25,23,0.08)',
+      }}
     >
-      {/* Glass card */}
-      <div
-        className="relative rounded-[20px] p-8 sm:p-10 overflow-hidden"
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+        <LogoMark />
+      </div>
+
+      <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, color: '#15110f', textAlign: 'center', margin: 0, letterSpacing: '-0.02em' }}>
+        Sign in to AIBOS
+      </h1>
+      <p style={{ fontSize: 'var(--fs-body)', color: '#4a443e', textAlign: 'center', margin: '8px 0 28px', lineHeight: 1.6 }}>
+        Use your Google account. There is no password to remember.
+      </p>
+
+      {errorMsg && (
+        <p role="alert" style={{ fontSize: 'var(--fs-body)', color: '#b91c1c', background: 'rgba(185,28,28,0.06)', border: '1px solid rgba(185,28,28,0.3)', borderRadius: 10, padding: '12px 14px', margin: '0 0 16px', lineHeight: 1.5 }}>
+          {errorMsg}
+        </p>
+      )}
+      {redirecting && (
+        <p role="status" style={{ fontSize: 'var(--fs-body)', color: '#075985', margin: '0 0 16px', textAlign: 'center' }}>
+          Taking you to Google…
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={handleGoogleSignIn}
+        disabled={loading || redirecting}
+        aria-label="Continue with Google"
         style={{
-          background:    'rgba(9,13,30,0.78)',
-          backdropFilter: 'blur(20px)',
-          border:        `1px solid ${errorMsg ? 'rgba(239,68,68,0.3)' : 'rgba(99,179,237,0.15)'}`,
-          boxShadow:     '0 0 0 1px rgba(99,179,237,0.08), 0 16px 48px rgba(0,0,0,0.5)',
-          transition:    'border-color 0.3s ease',
+          width: '100%', minHeight: 56, borderRadius: 10, border: '1px solid rgba(28,25,23,0.24)',
+          background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+          fontSize: 'var(--fs-body)', fontWeight: 600, color: '#15110f',
+          cursor: loading || redirecting ? 'default' : 'pointer',
+          boxShadow: '0 1px 2px rgba(28,25,23,0.06)',
         }}
       >
-        {/* Top glow line */}
-        <div style={{ position: 'absolute', top: 0, left: '12%', right: '12%', height: 1, background: 'linear-gradient(90deg,transparent,rgba(99,179,237,0.4),transparent)' }} />
-        {/* Back glow */}
-        <div style={{ position: 'absolute', inset: -1, borderRadius: 21, zIndex: -1, background: 'linear-gradient(135deg,#60a5fa,#06b6d4)', opacity: 0.12, filter: 'blur(8px)' }} />
+        {loading || redirecting ? (
+          <span aria-hidden style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.15)', borderTop: '2px solid #075985', animation: 'spin 0.8s linear infinite' }} />
+        ) : (
+          <GoogleIcon />
+        )}
+        <span>{redirecting ? 'Redirecting…' : loading ? 'Connecting…' : 'Continue with Google'}</span>
+      </button>
 
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15, duration: 0.5, type: 'spring', stiffness: 200 }}>
-            <LogoMark />
-          </motion.div>
-        </div>
-
-        {/* Divider */}
-        <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.5, duration: 0.4 }} style={{ height: 1, background: 'linear-gradient(90deg,transparent,rgba(99,179,237,0.25),transparent)', marginBottom: 28 }} />
-
-        {/* Heading */}
-        <div className="text-center mb-5">
-          <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 600, color: '#e2eeff', margin: 0 }}>Sign in to continue</h2>
-          <p style={{ fontSize: 'var(--fs-label)', color: '#4a6285', marginTop: 4 }}>Your session is protected and encrypted</p>
-        </div>
-
-        {/* Error */}
-        <AnimatePresence>
-          {errorMsg && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', marginBottom: 16, borderRadius: 8, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.1)' }}
-            >
-              <span style={{ fontSize: 'var(--fs-label)', color: '#ef4444' }}>{errorMsg}</span>
-            </motion.div>
-          )}
-          {redirecting && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', marginBottom: 16, borderRadius: 8, border: '1px solid rgba(96,165,250,0.3)', background: 'rgba(96,165,250,0.1)' }}
-            >
-              <span style={{ fontSize: 'var(--fs-label)', color: '#60a5fa' }}>Redirecting to Google…</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Google button */}
-        <motion.button
-          onClick={handleGoogleSignIn}
-          disabled={loading || redirecting}
-          whileHover={(!loading && !redirecting) ? { y: -2 } : {}}
-          whileTap={(!loading && !redirecting) ? { scale: 0.98 } : {}}
-          style={{ width: '100%', height: 52, borderRadius: 11, border: '1px solid rgba(0,0,0,0.06)', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 'var(--fs-body)', fontWeight: 500, color: '#1a1a2e', cursor: loading || redirecting ? 'not-allowed' : 'pointer', opacity: loading || redirecting ? 0.65 : 1, transition: 'box-shadow 0.15s ease' }}
-          aria-label="Continue with Google"
-        >
-          {loading || redirecting ? (
-            <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.15)', borderTop: '2px solid #3b82f6', animation: 'spin 0.8s linear infinite' }} />
-          ) : (
-            <GoogleIcon />
-          )}
-          <span>{redirecting ? 'Redirecting…' : loading ? 'Connecting…' : 'Continue with Google'}</span>
-        </motion.button>
-
-        {/* Keyboard hint */}
-        <p style={{ textAlign: 'center', fontSize: 'var(--fs-label)', color: '#2d4a70', marginTop: 12 }}>
-          Press <kbd style={{ padding: '2px 6px', border: '1px solid #2d4a70', borderRadius: 4, fontSize: 'var(--fs-label)', background: '#090d1e', color: '#4a6285' }}>Enter</kbd> to continue
-        </p>
-
-        {/* Footer */}
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(99,179,237,0.08)', textAlign: 'center', fontSize: 'var(--fs-label)', color: '#2d4a70', lineHeight: 1.8 }}>
-          Powered by AI · Built for Finance
-          <br />
-          <span style={{ fontSize: 'var(--fs-label)' }}>
-            By continuing you agree to our{' '}
-            <a href="/terms"   style={{ color: '#4a6285', textDecoration: 'underline', textUnderlineOffset: 2 }}>Terms</a>
-            {' '}and{' '}
-            <a href="/privacy" style={{ color: '#4a6285', textDecoration: 'underline', textUnderlineOffset: 2 }}>Privacy Policy</a>
-          </span>
-        </div>
-      </div>
-    </motion.div>
+      <p style={{ fontSize: 'var(--fs-body)', color: '#4a443e', textAlign: 'center', margin: '24px 0 0', lineHeight: 1.6 }}>
+        By continuing you agree to our{' '}
+        <a href="/terms" className="tap-link" style={{ color: '#075985', textDecoration: 'underline', textUnderlineOffset: 3 }}>Terms</a>
+        {' '}and{' '}
+        <a href="/privacy" className="tap-link" style={{ color: '#075985', textDecoration: 'underline', textUnderlineOffset: 3 }}>Privacy Policy</a>.
+      </p>
+    </main>
   );
 }
 
-// ─── Page — wraps LoginForm in Suspense ────────────────────────────
+// ─── Page: wraps LoginForm in Suspense ─────────────────────────────
 
 export default function LoginPage() {
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#03060d]">
-      <div className="mesh-bg" aria-hidden="true" />
-      <Particles />
-      <div
-        className="absolute inset-0 pointer-events-none"
-        aria-hidden="true"
-        style={{ backgroundImage: 'linear-gradient(rgba(99,179,237,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(99,179,237,0.03) 1px,transparent 1px)', backgroundSize: '64px 64px' }}
-      />
+    <div
+      data-theme="light"
+      style={{
+        position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: 24, padding: '32px 0',
+        background: '#f4f3ef', color: '#15110f',
+      }}
+    >
       <Suspense fallback={<BrandLockup markSize={150} />}>
         <LoginForm />
       </Suspense>
-      <div className="absolute bottom-6 left-0 right-0 flex justify-center">
-        {/* The name in full. This used to print the tech stack to customers. */}
-        <p style={{ fontSize: 'var(--fs-caps)', color: '#5b7196', letterSpacing: '0.18em', textTransform: 'uppercase', textAlign: 'center', padding: '0 16px' }}>
-          Artificial Intelligence Business Operating System
-        </p>
-      </div>
+      <p style={{ fontSize: 'var(--fs-caps)', color: '#5d564f', letterSpacing: '0.14em', textTransform: 'uppercase', textAlign: 'center', padding: '0 16px', margin: 0 }}>
+        Artificial Intelligence Business Operating System
+      </p>
     </div>
   );
 }

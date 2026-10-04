@@ -96,7 +96,7 @@ export default function ForecastPage() {
 
   // No time axis → never fabricate a forecast over item rows (SAFEGUARD).
   if (dataShape === 'cross_sectional') {
-    return <TimeSeriesUnavailable title="Forecast Engine" feature="Forecasting" />;
+    return <TimeSeriesUnavailable title="Forecast" feature="Forecasting" />;
   }
 
   const safeMonthly: Array<Record<string, unknown>> =
@@ -157,9 +157,9 @@ export default function ForecastPage() {
     >
     <>
       <PageHeader
-        eyebrow="Financial Intelligence"
+        eyebrow="Reports"
         eyebrowColour="var(--cyan)"
-        title="Forecast Engine"
+        title="Forecast"
         subtitle={<>AI-powered revenue prediction · {hasBand ? '95% prediction interval' : 'trend estimate'}</>}
       />
 

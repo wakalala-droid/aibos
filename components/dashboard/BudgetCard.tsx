@@ -57,8 +57,8 @@ export default function BudgetCard() {
   const monthLabel = new Date(month + '-01').toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   const hasBudget = (report?.lines.length ?? 0) > 0;
 
-  const input: React.CSSProperties = { width: '100%', minHeight: 38, padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
-  const btn: React.CSSProperties = { minHeight: 36, padding: '7px 14px', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
+  const input: React.CSSProperties = { width: '100%', minHeight: 44, padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
+  const btn: React.CSSProperties = { minHeight: 44, padding: '7px 14px', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
 
   return (
     <SectionCard

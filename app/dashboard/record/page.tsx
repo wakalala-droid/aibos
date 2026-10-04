@@ -40,8 +40,8 @@ export default function RecordPage() {
     <>
       <div style={{ marginBottom: 20 }}>
         <PageHeader
-          title="Record activity"
-          subtitle="Tell AIBOS what happened: it does the bookkeeping."
+          title="Record"
+          subtitle={<>Tell AIBOS what happened: it does the bookkeeping. Have a spreadsheet? <a href="/dashboard/import" className="tap-link" style={{ color: 'var(--cyan)', fontWeight: 600, textDecoration: 'none' }}>Upload a file</a></>}
         />
         <OutboxChip style={{ marginTop: -16, marginBottom: 8 }} />
       </div>

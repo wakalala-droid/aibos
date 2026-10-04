@@ -266,7 +266,7 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
                 onChange={(e) => setCustom(e.target.value)}
                 placeholder="e.g. Fr"
                 style={{
-                  width: 64, minHeight: 34, padding: '6px 8px', textAlign: 'center',
+                  width: 64, minHeight: 44, padding: '6px 8px', textAlign: 'center',
                   borderRadius: 8, border: '1px solid var(--border-md)',
                   background: 'var(--bg-input)', color: 'var(--text-1)',
                   ...geist, fontSize: 'var(--fs-body)', outline: 'none',
@@ -276,7 +276,7 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
                 type="submit"
                 disabled={!custom.trim()}
                 style={{
-                  marginLeft: 'auto', minHeight: 34, padding: '6px 14px', borderRadius: 8,
+                  marginLeft: 'auto', minHeight: 44, padding: '6px 14px', borderRadius: 8,
                   border: '1px solid var(--border-md)',
                   background: custom.trim() ? 'var(--cyan)' : 'var(--bg-badge)',
                   color: custom.trim() ? '#000' : 'var(--text-4)',
