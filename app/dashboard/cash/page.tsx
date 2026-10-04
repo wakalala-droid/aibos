@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import WhereMoneyWent from '@/components/dashboard/WhereMoneyWent';
 import { useStore } from '@/lib/store';
 import { authHeaders, getCashByMethod, type CashByMethod } from '@/lib/api';
@@ -195,7 +195,7 @@ export default function CashPage() {
       )}
 
       {/* Where the money went this month, from the recorded entries (C5). */}
-      {fromBooks && <WhereMoneyWent sym={sym} />}
+      {fromBooks && <Suspense fallback={null}><WhereMoneyWent sym={sym} /></Suspense>}
 
       {/* Runway status bar */}
       <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}

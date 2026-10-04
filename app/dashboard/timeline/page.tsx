@@ -14,6 +14,8 @@ import TidyUp from '@/components/spine/TidyUp';
 import { ALL_TYPES, typeLabel } from '@/components/spine/eventMeta';
 import { useStore } from '@/lib/store';
 import PageHeader from '@/components/ui/PageHeader';
+import PeriodChips from '@/components/ui/PeriodChips';
+import { usePeriod, periodRange, inPeriod } from '@/lib/period';
 import { undoable } from '@/lib/toast';
 import {
   listEvents, confirmEvent, voidEvent,
@@ -51,9 +53,12 @@ function TimelineInner() {
   // category, note, item, amount and type — "fuel", "chanda", "450".
   // ?q= arrives from links like "Where your money went" (Fuel, Rent...).
   const [q, setQ] = useState(params.get('q') ?? '');
+  const [period, setPeriod] = usePeriod('all');
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    const inView = status === 'active' ? events.filter((e) => e.status !== 'void') : events;
+    const range = periodRange(period);
+    const inView = (status === 'active' ? events.filter((e) => e.status !== 'void') : events)
+      .filter((e) => inPeriod(e.occurred_at, range));
     if (!needle) return inView;
     return inView.filter((e) => {
       const p = e.payload ?? {};
@@ -62,7 +67,7 @@ function TimelineInner() {
         .map((v) => String(v ?? '')).join(' ').toLowerCase();
       return hay.includes(needle);
     });
-  }, [events, q, status]);
+  }, [events, q, status, period]);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -126,6 +131,11 @@ function TimelineInner() {
           aria-label="Search your records"
           style={{ width: '100%', minHeight: 44, padding: '8px 12px', marginBottom: 10, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
         />
+
+        {/* When (C6): one tap for the usual windows, kept in the address. */}
+        <div style={{ marginBottom: 10 }}>
+          <PeriodChips value={period} onChange={setPeriod} label="When" />
+        </div>
 
         {/* Filters */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
