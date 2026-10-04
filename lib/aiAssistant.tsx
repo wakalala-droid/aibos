@@ -15,6 +15,7 @@
 import React, {
   createContext, useContext, useState, useRef, useEffect, useCallback,
 } from 'react';
+import { parsePeriod, periodRange, periodLabel } from './period';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import { fmt } from '@/lib/utils';
@@ -323,6 +324,17 @@ function buildContext(
     // Anti-fabrication contract for the model (trust is the product).
     guardrails: 'Only state numbers that appear in this context. If a figure is not provided, say you do not have it and that no data has been uploaded for it. Never estimate, assume, round-trip, or invent figures.',
   };
+  // The period picked on this page's chips (C6), so "why did costs jump?"
+  // means the window the owner is looking at.
+  if (typeof window !== 'undefined') {
+    const key = parsePeriod(new URLSearchParams(window.location.search).get('period'), 'all');
+    const range = periodRange(key);
+    if (range) {
+      const day = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const last = new Date(range[1].getFullYear(), range[1].getMonth(), range[1].getDate() - 1);
+      ctx.period_on_screen = { label: periodLabel(key), from: day(range[0]), to: day(last), page: window.location.pathname };
+    }
+  }
   // Who this business is — lets the model answer in the vertical's language
   // (a lodge's guests, a mine's offtakers) without inventing any numbers.
   if (biz && (biz.name || biz.type || biz.industry)) {
