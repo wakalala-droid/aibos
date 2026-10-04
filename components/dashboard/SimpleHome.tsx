@@ -20,6 +20,8 @@ import { useAiAssistant } from '@/lib/aiAssistant';
 import { industryOf } from '@/lib/industries';
 import { TOUR_RESTART_EVENT } from '@/components/onboarding/DashboardTour';
 import { fmt } from '@/lib/utils';
+import { MIN_MONTHS } from '@/lib/change';
+import MoneyFlow from '@/components/ui/MoneyFlow';
 import { canAccess } from '@/lib/tiers';
 import { dailyFocus } from '@/lib/brief';
 import { fetchBriefExtras } from '@/lib/briefData';
@@ -92,6 +94,7 @@ const subStyle: React.CSSProperties = {
 export default function SimpleHome() {
   const twin = useStore((s) => s.twin);
   const sym = useStore((s) => s.currencySymbol) || 'K';
+  const monthsRecorded = useStore((s) => s.monthly.length);
   const setUiMode = useStore((s) => s.setUiMode);
   const { profile } = useProfile();
   const { sendMessage, setOpen } = useAiAssistant();
@@ -213,13 +216,8 @@ export default function SimpleHome() {
       ? `Watching your ${ind.stockWord}: ${lowStock.length} item${lowStock.length === 1 ? '' : 's'} at or below reorder level.`
       : `Watching your ${ind.stockWord}: all ${products.length} items above their reorder levels.`);
   }
-  if (twin?.health_label) handled.push(`Business health: ${twin.health_label}.`);
-
-  const fade = (i: number) => ({
-    initial: { opacity: 0, y: 8 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.24, delay: i * 0.05, ease: 'easeOut' as const },
-  });
+  // The label waits for three months, as on Briefs (UI/UX audit A11).
+  if (twin?.health_label && monthsRecorded >= MIN_MONTHS) handled.push(`Business health: ${twin.health_label}.`);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -228,7 +226,7 @@ export default function SimpleHome() {
       <MilestoneBanner />
 
       {/* Greeting */}
-      <motion.div {...fade(0)}>
+      <motion.div initial={false}>
         <h1 style={{
           fontSize: 'var(--fs-h1)', fontWeight: 700,
           color: 'var(--text-1)', letterSpacing: '-0.02em', margin: 0,
@@ -245,7 +243,7 @@ export default function SimpleHome() {
 
       {/* Today's focus — the day's story, ready before the owner asks (Pro+). */}
       {focus.length > 0 && (
-        <motion.div {...fade(1)}>
+        <motion.div initial={false}>
           <Glow style={{ borderColor: 'color-mix(in srgb, var(--cyan) 25%, var(--border))' }}>
             <div className="section-card glow-inner" style={{ ...cardStyle, gap: 8 }}>
               <span className="bento-tex" aria-hidden="true" />
@@ -268,7 +266,7 @@ export default function SimpleHome() {
       )}
 
       {/* Ask bar */}
-      <motion.div {...fade(1)} data-tour="ask-bar">
+      <motion.div initial={false} data-tour="ask-bar">
         <form
           onSubmit={(e) => { e.preventDefault(); ask(question); }}
           style={{ display: 'flex', gap: 8 }}
@@ -334,7 +332,7 @@ export default function SimpleHome() {
 
       {/* The three questions that matter */}
       <motion.div
-        {...fade(2)}
+        initial={false}
         data-tour="today-cards"
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16 }}
       >
@@ -342,7 +340,7 @@ export default function SimpleHome() {
         <Link href="/dashboard/cash" className="kpi-card glow-inner" style={cardStyle} data-ai-explain="simple-cash" aria-label="Money right now: open Money page">
           <span className="bento-tex" aria-hidden="true" />
           <span style={labelStyle}>Money right now</span>
-          <span style={valueStyle}>{twin ? money(cash) : '…'}</span>
+          <span style={valueStyle}>{twin ? <MoneyFlow value={cash} sym={sym} rememberAs="cash" /> : '…'}</span>
           <span style={subStyle}>
             {twin
               ? (receivables > 0 || payables > 0
@@ -357,7 +355,7 @@ export default function SimpleHome() {
         <Link href="/dashboard/timeline" className="kpi-card glow-inner" style={cardStyle} data-ai-explain="simple-today" aria-label="Today's sales: open Activity page">
           <span className="bento-tex" aria-hidden="true" />
           <span style={labelStyle}>Today</span>
-          <span style={valueStyle}>{todaySales === null ? '…' : money(todayTotal)}</span>
+          <span style={valueStyle}>{todaySales === null ? '…' : <MoneyFlow value={todayTotal} sym={sym} rememberAs="today" />}</span>
           <span style={subStyle}>
             {todaySales === null
               ? 'Checking today\'s activity…'
@@ -391,7 +389,7 @@ export default function SimpleHome() {
       {/* Anticipated work — reorders AIBOS prepared; one tap turns a proposal
           into a pending receipt the owner confirms on arrival. */}
       {(proposals.length > 0 || followUps.length > 0) && (
-        <motion.div {...fade(3)}>
+        <motion.div initial={false}>
         <Glow>
         <div className="section-card glow-inner" style={{ ...cardStyle, gap: 14 }}>
           <span className="bento-tex" aria-hidden="true" />
@@ -504,7 +502,7 @@ export default function SimpleHome() {
 
       {/* Getting started — real signals, disappears when complete */}
       {showChecklist && (
-        <motion.div {...fade(3)}>
+        <motion.div initial={false}>
         <Glow>
         <div className="section-card glow-inner" style={{ ...cardStyle, gap: 10 }}>
           <span className="bento-tex" aria-hidden="true" />
@@ -547,7 +545,7 @@ export default function SimpleHome() {
 
       {/* Automation receipts — what AIBOS is doing without being asked */}
       {handled.length > 0 && (
-        <motion.div {...fade(4)}>
+        <motion.div initial={false}>
         <Glow>
         <div className="section-card glow-inner" style={{ ...cardStyle, gap: 8 }}>
           <span className="bento-tex" aria-hidden="true" />
@@ -568,7 +566,7 @@ export default function SimpleHome() {
       )}
 
       {/* Pro door + tour replay */}
-      <motion.div {...fade(5)} style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+      <motion.div initial={false} style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
         <button
           type="button"
           onClick={() => setUiMode('technical')}
