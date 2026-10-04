@@ -20,6 +20,12 @@ const nextConfig = {
   // .next (e.g. NEXT_DIST_DIR=.next-build npm run build). Defaults unchanged.
   distDir: process.env.NEXT_DIST_DIR || '.next',
 
+  // The build this bundle is, so an open or installed app can tell when a
+  // newer one is live (/api/version, components/pwa/UpdatePrompt.tsx).
+  env: {
+    NEXT_PUBLIC_BUILD_SHA: process.env.VERCEL_GIT_COMMIT_SHA || 'dev',
+  },
+
   // Release gate: the build must fail on real type/lint errors. The earlier
   // "temporary unblock" is removed now that dashboard typing is reconciled
   // (tsc --noEmit is clean). Do not re-disable these without fixing the cause.
