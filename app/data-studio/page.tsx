@@ -6,6 +6,7 @@
 // the casing the backend returns.
 
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { monthName } from "@/lib/change";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFinancialStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/currency";
@@ -583,7 +584,7 @@ export default function DataStudio() {
                         {i + 1}
                       </td>
                       <td style={{ padding: "11px 16px", fontSize: 'var(--fs-body)', fontWeight: 600, color: "var(--text-1)" }}>
-                        {row.month}
+                        {monthName(row.month)}
                       </td>
                       <td style={{ padding: "11px 16px", textAlign: "right", fontSize: 'var(--fs-data)', color: "var(--cyan)" }}>
                         {formatCurrency(row.revenue)}

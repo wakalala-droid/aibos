@@ -201,7 +201,7 @@ export default function StrategicBriefView({
                   Only month so far
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 5 }}>
-                  <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{health.bestMonth}</span>
+                  <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{monthName(health.bestMonth)}</span>
                   <span style={{ fontSize: 'var(--fs-label)', color: profitColour(bestProfit) }}>
                     {fmt(bestProfit, false, sym)} {bestProfit < 0 ? 'loss' : 'profit'}
                   </span>
@@ -220,7 +220,7 @@ export default function StrategicBriefView({
                 <div style={{ marginBottom: 14 }}>
                   <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Best Month</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 5 }}>
-                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{health.bestMonth}</span>
+                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{monthName(health.bestMonth)}</span>
                     <span style={{ fontSize: 'var(--fs-label)', color: profitColour(bestProfit) }}>
                       {fmt(bestProfit, false, sym)} {bestProfit < 0 ? 'loss' : 'profit'}
                     </span>
@@ -234,7 +234,7 @@ export default function StrategicBriefView({
                 <div>
                   <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>Worst Month</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 5 }}>
-                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{health.worstMonth}</span>
+                    <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{monthName(health.worstMonth)}</span>
                     <span style={{ fontSize: 'var(--fs-label)', color: profitColour(worstProfit) }}>
                       {fmt(worstProfit, false, sym)} {worstProfit < 0 ? 'loss' : 'profit'}
                     </span>
@@ -292,8 +292,8 @@ export default function StrategicBriefView({
             { label: 'Total Costs', value: fmt(kpi.totalCosts, true, sym), colour: 'var(--e2)' },
             { label: 'Net Profit', value: fmt(kpi.totalProfit, true, sym), colour: 'var(--good)' },
             { label: 'Avg Margin', value: `${kpi.avgMargin.toFixed(1)}%`, colour: 'var(--purple)' },
-            { label: 'Best Month', value: health.bestMonth, colour: profitColour(bestProfit) },
-            { label: 'Worst Month', value: health.worstMonth, colour: profitColour(worstProfit) },
+            { label: 'Best Month', value: monthName(health.bestMonth), colour: profitColour(bestProfit) },
+            { label: 'Worst Month', value: monthName(health.worstMonth), colour: profitColour(worstProfit) },
           ].map((item) => (
             <div key={item.label} style={{ padding: '12px 14px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>
               <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>{item.label}</p>

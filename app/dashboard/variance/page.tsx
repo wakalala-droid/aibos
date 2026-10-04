@@ -1,6 +1,6 @@
 'use client';
 import { useStore } from '@/lib/store';
-import { monthTick } from '@/lib/change';
+import { monthName, monthTick } from '@/lib/change';
 import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
@@ -78,7 +78,7 @@ export default function VariancePage() {
       title="Month by month"
       colour="var(--cyan)"
       headline={variances.length > 1
-        ? `Your biggest swing was ${maxSpike.month}, with costs moving ${maxSpike.costChange >= 0 ? '+' : ''}${maxSpike.costChange}% month-over-month.`
+        ? `Your biggest swing was ${monthName(maxSpike.month)}, when costs moved ${maxSpike.costChange >= 0 ? '+' : ''}${maxSpike.costChange}% on the month before.`
         : 'Upload at least two months to see month-over-month variance.'}
       detail="See month-by-month revenue and cost variance, the months that broke pattern and which line items drove every swing."
     >
@@ -197,7 +197,7 @@ export default function VariancePage() {
             <tbody>
               {variances.map((row, i) => (
                 <tr key={row.month}>
-                  <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.month}</td>
+                  <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{monthName(row.month)}</td>
                   <td>{fmt(row.revenue, false, sym)}</td>
                   <td style={{ color: row.revChange >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 600 }}>
                     {i === 0 ? 'First' : `${row.revChange >= 0 ? '+' : ''}${row.revChange.toFixed(1)}%`}

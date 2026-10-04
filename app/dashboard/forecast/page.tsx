@@ -1,7 +1,7 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { monthTick } from '@/lib/change';
+import { monthName, monthTick } from '@/lib/change';
 import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
@@ -270,7 +270,7 @@ export default function ForecastPage() {
               const vs = lastRev > 0 ? ((fv - lastRev) / lastRev * 100) : 0;
               return (
                 <tr key={`p${i}`}>
-                  <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.month}</td>
+                  <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{monthName(row.month)}</td>
                   <td style={{ color: 'var(--purple)', fontWeight: 700 }}>{fmt(fv, false, sym)}</td>
                   <td style={{ color: 'var(--text-3)' }}>{row.lower != null ? fmt(row.lower, false, sym) : 'None'}</td>
                   <td style={{ color: 'var(--text-3)' }}>{row.upper != null ? fmt(row.upper, false, sym) : 'None'}</td>

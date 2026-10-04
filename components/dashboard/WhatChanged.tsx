@@ -6,6 +6,7 @@
 // history (the honest floor is 4 recorded months).
 
 import { useEffect, useState } from 'react';
+import { monthName } from '@/lib/change';
 import Link from 'next/link';
 import { authHeaders } from '@/lib/api';
 import { useStore } from '@/lib/store';
@@ -54,7 +55,7 @@ export default function WhatChanged() {
   return (
     <SectionCard
       title="What changed"
-      subtitle={`${inv.month} vs your ${inv.baseline_months?.length ?? 0}-month baseline, from your own entries`}
+      subtitle={`${monthName(inv.month)} vs your ${inv.baseline_months?.length ?? 0}-month baseline, from your own entries`}
       style={{ marginBottom: 20 }}
     >
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 600, margin: '0 0 12px' }}>

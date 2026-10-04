@@ -1,6 +1,6 @@
 'use client';
 import { useStore } from '@/lib/store';
-import { monthTick } from '@/lib/change';
+import { monthName, monthTick } from '@/lib/change';
 import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
@@ -264,7 +264,7 @@ export default function AnomalyPage() {
                 const statCol = maxZ > 2 ? 'var(--crit)' : maxZ > 1.5 ? 'var(--warn)' : 'var(--good)';
                 return (
                   <tr key={row.month}>
-                    <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{row.month}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{monthName(row.month)}</td>
                     <td>{fmt(row.revenue, false, sym)}</td>
                     <td style={{ color: row.revZ > 2 ? 'var(--crit)' : row.revZ > 1.5 ? 'var(--warn)' : 'var(--text-3)', fontWeight: row.revZ > 1.5 ? 700 : 400 }}>
                       {row.revZ.toFixed(2)}
