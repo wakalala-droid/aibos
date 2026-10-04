@@ -42,7 +42,7 @@ export default function ComingUp() {
     .slice(0, 6);
 
   return (
-    <Panel title="Coming up" labelledBy="coming-up-title"
+    <Panel title="Coming up" labelledBy="coming-up-title" style={{ height: 'auto' }}
       action={<Link href="/dashboard/schedule" className="pill pill-quiet">Schedule</Link>}>
       {items === null ? <div className="skeleton" style={{ height: 200 }} /> : rows.length === 0 ? (
         <div style={{ display: 'grid', gap: 12, justifyItems: 'start' }}>
