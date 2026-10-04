@@ -11,6 +11,7 @@
  * else the server refuses and this card does not show.
  */
 import { useCallback, useEffect, useState } from 'react';
+import { undoable } from '@/lib/toast';
 import SectionCard from '@/components/ui/SectionCard';
 import { findTidyUp, applyTidyUp, type TidyFound, type TidyKind } from '@/lib/api';
 
@@ -53,17 +54,18 @@ export default function TidyUp({ onDone }: { onDone?: () => void }) {
     const chosen = kinds.filter((k) => picked.has(k));
     if (!chosen.length) return;
     const count = chosen.reduce((t, k) => t + found[k].length, 0);
-    if (!window.confirm(`Tidy away ${count} entr${count === 1 ? 'y' : 'ies'}? None of them carries any money. This cannot be undone.`)) return;
     setBusy(true); setNote('');
-    try {
-      const done = await applyTidyUp(chosen);
-      const total = Object.values(done).reduce((t, n) => t + (n || 0), 0);
-      setNote(`Tidied away ${total} entr${total === 1 ? 'y' : 'ies'}.`);
-      await load();
-      onDone?.();
-    } catch (e) {
-      setNote(e instanceof Error ? e.message : 'Could not tidy up.');
-    } finally { setBusy(false); }
+    undoable({
+      message: `Tidying away ${count} entr${count === 1 ? 'y' : 'ies'}. None of them carries any money.`,
+      run: async () => {
+        const done = await applyTidyUp(chosen);
+        const total = Object.values(done).reduce((t, n) => t + (n || 0), 0);
+        setNote(`Tidied away ${total} entr${total === 1 ? 'y' : 'ies'}.`);
+      },
+      onUndo: () => { setBusy(false); },
+      onDone: () => { setBusy(false); void load(); onDone?.(); },
+      onError: (e) => { setBusy(false); setNote(e.message || 'Could not tidy up.'); },
+    });
   };
 
   return (

@@ -14,6 +14,7 @@
  * extra step from the owner. "Payment link" copies it for SMS, email or a QR.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { confirmSheet, showCopyText } from '@/lib/confirm';
 import {
   listInvoices, createInvoice, sendInvoice, markInvoicePaid, cancelInvoice,
   deleteInvoice, invoiceShareText, invoicePayLink, getDebtors,
@@ -119,8 +120,8 @@ export default function InvoicesPage() {
    *  cancelling and deleting all change the books or the customer's view, and
    *  a paid invoice has no undo on this screen. `onDone` runs only when the
    *  action went through, so usage is not logged for a refusal. */
-  async function act(id: string, fn: (id: string) => Promise<unknown>, confirmText?: string, onDone?: () => void) {
-    if (confirmText && !window.confirm(confirmText)) return;
+  async function act(id: string, fn: (id: string) => Promise<unknown>, ask?: { title: string; body: string; label: string; danger?: boolean }, onDone?: () => void) {
+    if (ask && !(await confirmSheet({ title: ask.title, body: ask.body, confirmLabel: ask.label, danger: ask.danger }))) return;
     setBusyId(id); setError(null);
     try { await fn(id); onDone?.(); await load(); }
     catch (e) { setError((e as Error).message); }
@@ -164,7 +165,7 @@ export default function InvoicesPage() {
       } catch {
         // Clipboard is blocked on insecure origins and in some mobile webviews.
         // Show the link instead of silently doing nothing.
-        window.prompt('Copy this payment link:', url);
+        void showCopyText('Copy this payment link', url);
       }
     } catch (e) { setError((e as Error).message); }
     finally { setBusyId(null); }
@@ -196,11 +197,11 @@ export default function InvoicesPage() {
               <>
                 <button type="button" style={{ ...btn, color: 'var(--cyan)' }} disabled={busy}
                   onClick={() => void act(i.id, sendInvoice,
-                    `Send ${i.number}? ${fmt(i.total, false, sym)} is recorded as a sale owed by ${i.customer_name} and the invoice can no longer be edited.`,
+                    { title: `Send ${i.number}?`, body: `${fmt(i.total, false, sym)} is recorded as a sale owed by ${i.customer_name} and the invoice can no longer be edited.`, label: 'Send it' },
                     () => logUsage('event_recorded', { meta: { event_type: 'Sale', via: 'invoice_send' } }))}>
                   Send
                 </button>
-                <button type="button" style={btn} disabled={busy} onClick={() => void act(i.id, deleteInvoice, `Delete draft ${i.number}? This cannot be undone.`)}>Delete</button>
+                <button type="button" style={btn} disabled={busy} onClick={() => void act(i.id, deleteInvoice, { title: `Delete draft ${i.number}?`, body: 'This cannot be undone.', label: 'Delete', danger: true })}>Delete</button>
               </>
             )}
             {i.status === 'sent' && (
@@ -211,12 +212,12 @@ export default function InvoicesPage() {
                 </button>
                 <button type="button" style={{ ...btn, color: 'var(--good)' }} disabled={busy}
                   onClick={() => void act(i.id, markInvoicePaid,
-                    `Mark ${i.number} as paid? ${fmt(i.total, false, sym)} from ${i.customer_name} is recorded as money received today.`,
+                    { title: `Mark ${i.number} as paid?`, body: `${fmt(i.total, false, sym)} from ${i.customer_name} is recorded as money received today.`, label: 'Mark paid' },
                     () => logUsage('event_recorded', { meta: { event_type: 'CustomerPayment', via: 'invoice_paid' } }))}>
                   Mark paid
                 </button>
                 <button type="button" style={btn} disabled={busy}
-                  onClick={() => void act(i.id, cancelInvoice, `Cancel ${i.number}? The sale is taken back out of your books and the payment link stops working.`)}>
+                  onClick={() => void act(i.id, cancelInvoice, { title: `Cancel ${i.number}?`, body: 'The sale is taken back out of your books and the payment link stops working.', label: 'Cancel the invoice', danger: true })}>
                   Cancel
                 </button>
               </>

@@ -19,6 +19,7 @@
  * 14-day calendar window, which is exactly how requests went unanswered.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { confirmSheet } from '@/lib/confirm';
 import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
 import KPICard from '@/components/ui/KPICard';
@@ -377,7 +378,7 @@ export default function HospitalityPage() {
       : refund
         ? `The nights are freed and the ${fmt(paid, false, bookingSymbol(b))} paid comes out of your books as refunded.`
         : `The nights are freed. The ${fmt(paid, false, bookingSymbol(b))} already paid stays in your books as income you kept.`;
-    if (!window.confirm(`Cancel ${guestName(b)}'s stay? ${what}`)) return;
+    if (!(await confirmSheet({ title: `Cancel ${guestName(b)}'s stay?`, body: what, confirmLabel: 'Cancel the stay', cancelLabel: 'Keep the stay', danger: true }))) return;
     setBusy(true); setPanelNote(''); setError('');
     try {
       applyUpdate(await cancelBooking(b.id, refund));
@@ -390,7 +391,7 @@ export default function HospitalityPage() {
   /** Say what the guest has paid. Until then the stay is money owed to the
    *  owner, not money in their bank, so this is what moves it into cash. */
   const doPayment = async (b: Booking, status: PaymentStatus, deposit?: number) => {
-    if (status === 'refunded' && !window.confirm(`Mark ${guestName(b)}'s stay as refunded? The money from it comes out of your books.`)) return false;
+    if (status === 'refunded' && !(await confirmSheet({ title: `Mark ${guestName(b)}'s stay as refunded?`, body: 'The money from it comes out of your books.', confirmLabel: 'Mark as refunded', danger: true }))) return false;
     setBusy(true); setPanelNote(''); setEmailNote(null); setError('');
     try {
       applyUpdate(await updateBooking(b.id, deposit === undefined
@@ -1070,7 +1071,7 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
   };
 
   const remove = async (p: StayPayment) => {
-    if (!window.confirm(`Take the ${fmt(p.amount, false, symbol)} payment of ${shortDate(p.date)} off this stay? It comes out of your books.`)) return;
+    if (!(await confirmSheet({ title: `Take the ${fmt(p.amount, false, symbol)} payment of ${shortDate(p.date)} off this stay?`, body: 'It comes out of your books.', confirmLabel: 'Take it off', danger: true }))) return;
     setBusy(true); setError('');
     try {
       const out = await removeStayPayment(b.id, p.id);

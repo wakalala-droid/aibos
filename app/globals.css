@@ -872,6 +872,45 @@ select optgroup {
   top: 8px;
 }
 
+/* ── TOASTS (UI/UX audit 2026-10 B1) ────────────────────────────
+   Sonner in unstyled mode; this is all of its look. Enter 200ms, exit 150ms
+   (motion_governance.md); Sonner's own reduced-motion rule turns both off. */
+[data-sonner-toaster] { font-family: inherit !important; }
+.aibos-toast {
+  display: flex; align-items: center; gap: 12px; width: min(440px, calc(100vw - 32px));
+  padding: 12px 12px 12px 16px; border-radius: var(--radius-md);
+  background: var(--bg-card); border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg); color: var(--text-1);
+  font-size: var(--fs-body); line-height: 1.5;
+}
+.aibos-toast-title { font-size: var(--fs-body); font-weight: 600; color: var(--text-1); flex: 1; }
+.aibos-toast-desc { font-size: var(--fs-body); color: var(--text-2); }
+.aibos-toast-action {
+  margin-left: auto; min-height: 44px; min-width: 72px; padding: 0 16px;
+  border-radius: var(--radius-md); border: 1px solid var(--cyan); background: transparent;
+  color: var(--cyan); font-size: var(--fs-body); font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.aibos-toast-error { border-color: var(--red); }
+.aibos-toast-error .aibos-toast-title { color: var(--text-1); }
+[data-sonner-toast] { transition-duration: 200ms !important; }
+[data-sonner-toast][data-removed="true"] { transition-duration: 150ms !important; }
+
+/* ── CONFIRM SHEET (UI/UX audit 2026-10 B2) ─────────────────────
+   Native <dialog>: bottom sheet on phones, centred card from 640px. */
+dialog.confirm-sheet {
+  border: none; padding: 0; background: transparent; color: inherit;
+  width: 100%; max-width: 100%; margin: auto auto 0; max-height: 90vh;
+}
+dialog.confirm-sheet::backdrop { background: rgba(0,0,0,0.55); }
+dialog.confirm-sheet .confirm-sheet-card { border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom); }
+dialog.confirm-sheet[open] { animation: sheet-in 200ms ease-out both; }
+@keyframes sheet-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@media (min-width: 640px) {
+  dialog.confirm-sheet { width: min(480px, calc(100vw - 32px)); margin: auto; }
+  dialog.confirm-sheet .confirm-sheet-card { border-radius: 16px; }
+  @keyframes sheet-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+}
+
 /* ── TAP TARGETS (accessibility_system.md TOUCH TARGET RULE, audit A4) ──
    Every control is at least 44x44 at every breakpoint, not just on phones.
    Inline styles may set a smaller height; min-height wins over height.

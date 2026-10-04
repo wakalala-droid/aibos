@@ -11,6 +11,7 @@
  * touches tax tables — they add people and press Run.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { confirmSheet } from '@/lib/confirm';
 import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
 import { useStore } from '@/lib/store';
@@ -91,11 +92,13 @@ export default function EmployeesPage() {
   const [docError, setDocError] = useState<string | null>(null);
 
   async function removeRun(runId: string, runPeriod: string) {
-    if (!window.confirm(
-      `Delete the payroll run for ${runPeriod}? Its wages come out of your books, ` +
-      'tax payments it drafted that you have not paid are removed and any staff loan ' +
-      'instalment it took is given back. You can then run that month again.',
-    )) return;
+    if (!(await confirmSheet({
+      title: `Delete the payroll run for ${runPeriod}?`,
+      body: 'Its wages come out of your books, tax payments it drafted that you have not paid are removed '
+        + 'and any staff loan instalment it took is given back. You can then run that month again.',
+      confirmLabel: 'Delete the run',
+      danger: true,
+    }))) return;
     setDocBusy(runId); setDocError(null); setRunOk(null);
     try {
       const out = await deletePayrollRun(runId);
@@ -178,7 +181,7 @@ export default function EmployeesPage() {
     // Deleting is permanent: the register entry, pay details and loan balance
     // go. Past payslips keep the name, but nothing can be run for them again.
     const who = employees.find(e => e.id === id)?.name || 'this employee';
-    if (!window.confirm(`Delete ${who}? Their pay details and loan balance are removed for good. Past payslips stay.`)) return;
+    if (!(await confirmSheet({ title: `Delete ${who}?`, body: 'Their pay details and loan balance are removed for good. Past payslips stay.', confirmLabel: 'Delete', danger: true }))) return;
     try { await deleteEmployee(id); if (editId === id) cancelEdit(); setPreview(null); await load(); }
     catch (e) { setError((e as Error).message); }
   }

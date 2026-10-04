@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { ThemeProvider, FOUC_SCRIPT } from '@/lib/theme';
 import AppShell from '@/components/layout/AppShell';
 import { OfflineSync } from '@/components/pwa/OfflineSync';
+import AppToaster from '@/components/ui/AppToaster';
+import ConfirmSheet from '@/components/ui/ConfirmSheet';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -40,6 +42,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <AppShell>{children}</AppShell>
           <OfflineSync />
+          <AppToaster />
+          <ConfirmSheet />
         </ThemeProvider>
       </body>
     </html>

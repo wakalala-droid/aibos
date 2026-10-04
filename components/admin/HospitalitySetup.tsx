@@ -16,6 +16,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { confirmSheet } from '@/lib/confirm';
 import { slugFrom } from '@/lib/slug';
 
 interface UnitRow {
@@ -234,8 +235,8 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
               {busy === 'mint' ? 'Working…' : token ? 'New key' : 'Mint the website key'}
             </button>
             {token && (
-              <button type="button" style={ghostBtn} disabled={busy !== ''} onClick={() => {
-                if (confirm('Take this customer’s website offline? It stops showing availability and stops taking requests.')) void act('clear');
+              <button type="button" style={ghostBtn} disabled={busy !== ''} onClick={async () => {
+                if (await confirmSheet({ title: 'Take this customer’s website offline?', body: 'It stops showing availability and stops taking requests.', confirmLabel: 'Take it offline', danger: true })) void act('clear');
               }}>
                 Take offline
               </button>

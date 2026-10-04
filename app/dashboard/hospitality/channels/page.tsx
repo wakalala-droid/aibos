@@ -9,6 +9,7 @@
  * needing full OTA API partnership.
  */
 import { useCallback, useEffect, useState } from 'react';
+import { confirmSheet } from '@/lib/confirm';
 import SectionCard from '@/components/ui/SectionCard';
 import { useAuth } from '@/hooks/useAuth';
 import { slugFrom } from '@/lib/slug';
@@ -113,7 +114,7 @@ function UnitChannels({ unit, channels, onChange, onError }: { unit: Unit; chann
     finally { setBusy(''); }
   };
   const remove = async (id: string) => {
-    if (!confirm('Remove this channel? Imported bookings keep their history.')) return;
+    if (!(await confirmSheet({ title: 'Remove this channel?', body: 'Bookings it already brought in keep their history.', confirmLabel: 'Remove', danger: true }))) return;
     setBusy(id); onError('');
     try { await deleteChannel(id); await onChange(); }
     catch (e) { onError(e instanceof Error ? e.message : 'Could not remove.'); }
@@ -221,12 +222,12 @@ function WebsiteCard({ properties, units, onChange, onError }: {
   };
 
   const rotate = async (p: Property) => {
-    if (!confirm('Make a new key? Your website stops working until you paste the new one in.')) return;
+    if (!(await confirmSheet({ title: 'Make a new key?', body: 'Your website stops working until you paste the new one in.', confirmLabel: 'Make a new key' }))) return;
     await mint(p);
   };
 
   const disconnect = async (p: Property) => {
-    if (!confirm('Take the website offline? It will no longer show availability or take requests.')) return;
+    if (!(await confirmSheet({ title: 'Take the website offline?', body: 'It will no longer show availability or take requests.', confirmLabel: 'Take it offline', danger: true }))) return;
     setBusy(p.id); onError('');
     try { await clearSiteToken(p.id); await onChange(); }
     catch (e) { onError(e instanceof Error ? e.message : 'Could not disconnect.'); }

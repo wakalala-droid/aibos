@@ -14,6 +14,7 @@ import TidyUp from '@/components/spine/TidyUp';
 import { ALL_TYPES, typeLabel } from '@/components/spine/eventMeta';
 import { useStore } from '@/lib/store';
 import PageHeader from '@/components/ui/PageHeader';
+import { undoable } from '@/lib/toast';
 import {
   listEvents, confirmEvent, voidEvent,
   type BusinessEvent, type EventStatus, type EventType,
@@ -39,8 +40,8 @@ function TimelineInner() {
   const initType = params.get('type');
   const initStatus = params.get('status');
   // 'active' (the default) is everything still in the books: confirmed and
-  // pending. Voided records are kept for the audit trail but no longer fill
-  // the list; the Voided chip shows them.
+  // pending. Removed records are kept for the audit trail but no longer fill
+  // the list; the Removed chip shows them.
   const [status, setStatus] = useState<EventStatus | 'all' | 'active'>(
     (['confirmed', 'pending', 'void', 'all'] as string[]).includes(initStatus ?? '') ? (initStatus as EventStatus | 'all') : 'active');
   const [type, setType] = useState<EventType | 'all'>(
@@ -86,13 +87,18 @@ function TimelineInner() {
     finally { setBusyId(null); }
   }
 
-  async function handleVoid(id: string) {
-    // Voiding takes the entry out of every figure. It stays listed as void.
-    if (!window.confirm('Void this entry? It is taken out of your figures and stays listed as void.')) return;
-    setBusyId(id);
-    try { await voidEvent(id); await load(); refreshTwin(); }
-    catch (e) { setError((e as Error).message); }
-    finally { setBusyId(null); }
+  // Remove with Undo (UI/UX audit 2026-10 C2): the row goes at once and the
+  // removal is sent after 5 seconds unless the owner taps Undo. A removed entry
+  // stays listed under "Removed" and leaves your figures.
+  function handleVoid(id: string) {
+    setEvents((xs) => xs.filter((x) => x.id !== id));
+    undoable({
+      message: 'Entry removed from your figures',
+      run: () => voidEvent(id),
+      onUndo: () => { void load(); },
+      onDone: () => { void load(); refreshTwin(); },
+      onError: (e) => { setError(e.message); void load(); },
+    });
   }
 
   return (
@@ -124,7 +130,7 @@ function TimelineInner() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
           {(['active', 'confirmed', 'pending', 'void', 'all'] as const).map(s => (
             <button key={s} type="button" onClick={() => setStatus(s)} style={chip(status === s)}>
-              {s === 'active' ? 'In your books' : s === 'all' ? 'Everything' : s === 'void' ? 'Voided' : s.charAt(0).toUpperCase() + s.slice(1)}
+              {s === 'active' ? 'In your books' : s === 'all' ? 'Everything' : s === 'void' ? 'Removed' : s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
         </div>
@@ -151,6 +157,7 @@ function TimelineInner() {
             busyId={busyId}
             onConfirm={handleConfirm}
             onVoid={handleVoid}
+            onChanged={() => { void load(); refreshTwin(); }}
             emptyHint="No events match these filters. Record activity to get started."
           />
         )}

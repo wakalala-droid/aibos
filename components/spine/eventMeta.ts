@@ -79,7 +79,7 @@ export function fmtDate(iso: string): string {
 export const STATUS_COLOR: Record<string, { fg: string; bg: string; label: string }> = {
   confirmed: { fg: 'var(--green)', bg: 'var(--green-dim)', label: 'Confirmed' },
   pending:  { fg: 'var(--amber)', bg: 'rgba(251,191,36,0.12)', label: 'Pending' },
-  void:     { fg: 'var(--text-4)', bg: 'var(--bg-badge)', label: 'Voided' },
+  void:     { fg: 'var(--text-3)', bg: 'var(--bg-badge)', label: 'Removed' },
 };
 
 export const ALL_TYPES: EventType[] = [

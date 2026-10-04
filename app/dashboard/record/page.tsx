@@ -71,7 +71,7 @@ export default function RecordPage() {
 
           <SectionCard title="Recent activity" subtitle="Your latest entries"
             action={<a className="tap-link" href="/dashboard/timeline" style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textDecoration: 'none' }}>View all →</a>}>
-            <EventList events={recent} />
+            <EventList events={recent} onChanged={() => { loadRecent(); refreshTwin(); }} />
           </SectionCard>
         </div>
 

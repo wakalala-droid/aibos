@@ -16,6 +16,7 @@
  * says where, so an owner can see their phone is set up before relying on it.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { undoable } from '@/lib/toast';
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
@@ -285,9 +286,16 @@ export default function SchedulePage() {
   }
 
   async function remove(id: string) {
-    if (!window.confirm('Delete this from your schedule? If it repeats, the repeats stop too.')) return;
-    try { await deleteScheduleItem(id); if (editId === id) cancelEdit(); await load(); }
-    catch (e) { setError((e as Error).message); }
+    const it = items.find((x) => x.id === id);
+    if (editId === id) cancelEdit();
+    setItems((xs) => xs.filter((x) => x.id !== id));
+    undoable({
+      message: it?.recurrence ? 'Removed, with its repeats' : 'Removed from your schedule',
+      run: () => deleteScheduleItem(id),
+      onUndo: () => { void load(); },
+      onDone: () => { void load(); },
+      onError: (e) => { setError(e.message); void load(); },
+    });
   }
 
   async function addSeed(seed: { title: string; kind: ScheduleKind; day: number }) {

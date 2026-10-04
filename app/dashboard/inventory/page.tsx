@@ -6,6 +6,7 @@
  * drive the Advisor's LowStockEngine.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { undoable } from '@/lib/toast';
 import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
@@ -66,9 +67,14 @@ export default function InventoryPage() {
 
   async function remove(id: string) {
     const name = items.find(p => p.id === id)?.name || "this product";
-    if (!window.confirm(`Delete ${name} from your catalog? Sales already recorded stay in your books.`)) return;
-    try { await deleteProduct(id); await load(); }
-    catch (e) { setError((e as Error).message); }
+    setItems((xs) => xs.filter((p) => p.id !== id));
+    undoable({
+      message: `${name} removed. Sales already recorded stay in your books.`,
+      run: () => deleteProduct(id),
+      onUndo: () => { void load(); },
+      onDone: () => { void load(); },
+      onError: (e) => { setError(e.message); void load(); },
+    });
   }
 
   // Industry starter products (audit #51) — one tap seeds a template catalog.

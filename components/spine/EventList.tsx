@@ -5,17 +5,19 @@
  * confirm / void actions. Used by the Timeline and the Record page's recent list.
  */
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import type { BusinessEvent } from '@/lib/api';
 import { amountOf, cashSign, summarize, fmtDate, STATUS_COLOR } from './eventMeta';
+import EntryEditor from './EntryEditor';
 
 interface Props {
   events: BusinessEvent[];
   busyId?: string | null;
   onConfirm?: (id: string) => void;
   onVoid?: (id: string) => void;
+  /** Turns on "Fix": called after an entry was corrected, to reload. */
+  onChanged?: () => void;
   emptyHint?: string;
 }
 
@@ -38,9 +40,10 @@ function correctionLines(corrections?: Record<string, unknown>): { when: string;
   return out.sort((a, b) => b.when.localeCompare(a.when));
 }
 
-export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint }: Props) {
+export default function EventList({ events, busyId, onConfirm, onVoid, onChanged, emptyHint }: Props) {
   const sym = useStore(s => s.currencySymbol) || 'K';
   const [openHistory, setOpenHistory] = useState<string | null>(null);
+  const [fixing, setFixing] = useState<string | null>(null);
 
   if (!events.length) {
     return (
@@ -52,16 +55,15 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {events.map((ev, i) => {
+      {events.map((ev) => {
         const sign = cashSign(ev);
         const amt = amountOf(ev);
         const voided = ev.status === 'void';
         const st = STATUS_COLOR[ev.status] ?? STATUS_COLOR.pending;
         const moneyColor = voided ? 'var(--text-4)' : sign > 0 ? 'var(--green)' : sign < 0 ? 'var(--red)' : 'var(--text-2)';
         return (
-          <motion.div
+          <div
             key={ev.id}
-            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: Math.min(i * 0.02, 0.2) }}
             style={{
               display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
               borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-card)',
@@ -120,29 +122,42 @@ export default function EventList({ events, busyId, onConfirm, onVoid, emptyHint
             <span className="badge" style={{ background: st.bg, color: st.fg }}>{st.label}</span>
 
             {/* Actions */}
-            {!voided && (onConfirm || onVoid) && (
-              <div style={{ display: 'flex', gap: 6 }}>
+            {!voided && (onConfirm || onVoid || onChanged) && (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {onConfirm && ev.status === 'pending' && (
                   <button
-                    type="button" onClick={() => onConfirm(ev.id)} disabled={busyId === ev.id} className="touch-target"
-                    aria-label="Confirm event"
-                    style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: 'none', background: 'var(--green-dim)', color: 'var(--green)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer' }}
+                    type="button" onClick={() => onConfirm(ev.id)} disabled={busyId === ev.id}
+                    aria-label={`Confirm entry: ${summarize(ev)}`}
+                    style={{ padding: '0 14px', borderRadius: 'var(--radius-sm)', border: 'none', background: 'var(--green-dim)', color: 'var(--green)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer' }}
                   >
                     {busyId === ev.id ? '…' : 'Confirm'}
                   </button>
                 )}
+                {onChanged && (
+                  <button
+                    type="button" onClick={() => setFixing(fixing === ev.id ? null : ev.id)} disabled={busyId === ev.id}
+                    aria-expanded={fixing === ev.id}
+                    aria-label={`Fix entry: ${summarize(ev)}`}
+                    style={{ padding: '0 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--cyan)', background: 'transparent', color: 'var(--cyan)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Fix
+                  </button>
+                )}
                 {onVoid && (
                   <button
-                    type="button" onClick={() => onVoid(ev.id)} disabled={busyId === ev.id} className="touch-target"
-                    aria-label="Void event"
-                    style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}
+                    type="button" onClick={() => onVoid(ev.id)} disabled={busyId === ev.id}
+                    aria-label={`Remove entry: ${summarize(ev)}`}
+                    style={{ padding: '0 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}
                   >
-                    {busyId === ev.id ? '…' : 'Void'}
+                    {busyId === ev.id ? '…' : 'Remove'}
                   </button>
                 )}
               </div>
             )}
-          </motion.div>
+            {fixing === ev.id && onChanged && (
+              <EntryEditor ev={ev} onCancel={() => setFixing(null)} onDone={() => { setFixing(null); onChanged(); }} />
+            )}
+          </div>
         );
       })}
     </div>

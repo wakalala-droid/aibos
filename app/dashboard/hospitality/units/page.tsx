@@ -8,6 +8,7 @@
  * feed and (later) full API sync pulls from this record — edit once, never per-listing.
  */
 import { useCallback, useEffect, useState } from 'react';
+import { confirmSheet } from '@/lib/confirm';
 import SectionCard from '@/components/ui/SectionCard';
 import { slugFrom } from '@/lib/slug';
 import { fmt, symbolForToken, CURRENCIES } from '@/lib/currency';
@@ -166,7 +167,7 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
   const remove = async () => {
     // Bookings are deleted with the unit (0015 cascades them), and the money
     // from its stays comes out of the books. This used to promise the opposite.
-    if (!confirm(`Delete “${unit.unit_name}”? Every booking on it is deleted too and the money from those stays is taken out of your books. This cannot be undone.`)) return;
+    if (!(await confirmSheet({ title: `Delete “${unit.unit_name}”?`, body: 'Every booking on it is deleted too and the money from those stays is taken out of your books. This cannot be undone.', confirmLabel: 'Delete the unit', danger: true }))) return;
     setBusy(true); onError('');
     try { await deleteUnit(unit.id); await onSaved(); }
     catch (e) { onError(e instanceof Error ? e.message : 'Could not delete unit.'); }

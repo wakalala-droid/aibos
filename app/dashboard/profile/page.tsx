@@ -5,6 +5,7 @@
 // the header profile chip; the chip's name + logo are sourced from this page.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { confirmSheet } from '@/lib/confirm';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
@@ -440,7 +441,7 @@ function GetPaidCard() {
   }
 
   async function disconnect() {
-    if (!window.confirm('Stop taking mobile money? Your payment links will ask customers to pay you directly until you connect again.')) return;
+    if (!(await confirmSheet({ title: 'Stop taking mobile money?', body: 'Your payment links will ask customers to pay you directly until you connect again.', confirmLabel: 'Stop', danger: true }))) return;
     setBusy('disconnect'); setError(null);
     try {
       setAccount(await disconnectPaymentAccount());
@@ -727,7 +728,7 @@ function TeamCard() {
   }
   async function remove(m: TeamMember) {
     // One tap used to remove someone's access with no way to see it coming.
-    if (!window.confirm(`Remove ${m.email}? They lose access to your books straight away.`)) return;
+    if (!(await confirmSheet({ title: `Remove ${m.email}?`, body: 'They lose access to your books straight away.', confirmLabel: 'Remove', danger: true }))) return;
     try { await revokeMember(m.id); load(); } catch (e) { setError((e as Error).message); }
   }
 
