@@ -36,9 +36,9 @@ export default function AdminUsagePage() {
 
   const nav = (
     <nav aria-label="Admin sections" style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-      <Link href="/admin" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Accounts</Link>
-      <Link href="/admin/usage" aria-current="page" style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Usage</Link>
-      <Link href="/admin/proposals" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Proposals</Link>
+      <Link href="/admin" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)' }}>Accounts</Link>
+      <Link href="/admin/usage" aria-current="page" style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Usage</Link>
+      <Link href="/admin/proposals" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)' }}>Proposals</Link>
     </nav>
   );
 
@@ -66,7 +66,7 @@ export default function AdminUsagePage() {
     body = (
       <div className="section-card" role="alert" style={{ textAlign: 'center' }}>
         <p style={{ color: 'var(--crit)', margin: '0 0 12px' }}>{error}</p>
-        <button type="button" onClick={() => void load()} style={{ minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer' }}>Try again</button>
+        <button type="button" onClick={() => void load()} style={{ minHeight: 44, padding: '9px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer' }}>Try again</button>
       </div>
     );
   } else if (data) {
@@ -96,8 +96,8 @@ export default function AdminUsagePage() {
               return (
                 <div key={label} style={{ display: 'grid', gridTemplateColumns: '170px 1fr 72px', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', fontWeight: 600 }}>{label}</span>
-                  <div style={{ height: 10, borderRadius: 5, background: 'var(--bg-badge)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, borderRadius: 5, background: 'var(--cyan)', transition: 'width .4s ease' }} />
+                  <div style={{ height: 10, borderRadius: 'var(--radius-sm)', background: 'var(--bg-badge)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, borderRadius: 'var(--radius-sm)', background: 'var(--cyan)', transition: 'width .4s ease' }} />
                   </div>
                   <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-1)', fontWeight: 700, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {count} · {pct}%
@@ -144,7 +144,7 @@ export default function AdminUsagePage() {
           ) : (
             <div style={{ display: 'grid', gap: 8 }}>
               {data.topAccounts.map((t) => (
-                <Link key={t.user_id} href={`/admin/${t.user_id}`} className="dash-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: 8, textDecoration: 'none', border: '1px solid var(--border)' }}>
+                <Link key={t.user_id} href={`/admin/${t.user_id}`} className="dash-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: 'var(--radius-md)', textDecoration: 'none', border: '1px solid var(--border)' }}>
                   <span style={{ minWidth: 0 }}>
                     <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{t.business_name || 'None'}</span>
                     <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginLeft: 8 }}>{t.email}</span>

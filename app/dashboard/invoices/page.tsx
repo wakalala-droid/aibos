@@ -34,8 +34,8 @@ const STATUS_COLOUR: Record<Invoice['status'], string> = {
 };
 
 const lbl: React.CSSProperties = { display: 'block', fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginBottom: 4, fontWeight: 600 };
-const input: React.CSSProperties = { width: '100%', minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
-const btn: React.CSSProperties = { minHeight: 44, padding: '7px 14px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
+const input: React.CSSProperties = { width: '100%', minHeight: 44, padding: '8px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
+const btn: React.CSSProperties = { minHeight: 44, padding: '7px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
 
 const EMPTY_LINE: InvoiceLine = { description: '', qty: 1, unit_price: 0 };
 
@@ -312,7 +312,7 @@ export default function InvoicesPage() {
           </div>
           <div style={{ display: 'grid', gap: 8 }}>
             {aging.customers.slice(0, 8).map((d) => (
-              <div key={d.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
+              <div key={d.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
                 <span style={{ minWidth: 0 }}>
                   <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{d.name}</span>
                   <span style={{ fontSize: 'var(--fs-label)', color: d.oldest_days > 60 ? 'var(--crit)' : d.oldest_days > 30 ? 'var(--warn)' : 'var(--text-3)', marginLeft: 8 }}>

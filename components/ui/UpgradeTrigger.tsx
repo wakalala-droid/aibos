@@ -72,7 +72,7 @@ export default function UpgradeTrigger() {
       aria-label="Upgrade suggestion"
       style={{
         display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
-        padding: '14px 16px', borderRadius: 12, marginBottom: 20,
+        padding: '14px 16px', borderRadius: 'var(--radius-md)', marginBottom: 20,
         background: `color-mix(in srgb, ${active.colour} 8%, var(--bg-card))`,
         border: `1px solid color-mix(in srgb, ${active.colour} 30%, var(--border))`,
       }}
@@ -101,7 +101,7 @@ export default function UpgradeTrigger() {
           aria-label="Dismiss upgrade suggestion"
           onClick={() => setDismissed((d) => [...d, active.id])}
           style={{
-            width: 32, height: 32, borderRadius: 8, cursor: 'pointer',
+            width: 32, height: 32, borderRadius: 'var(--radius-md)', cursor: 'pointer',
             border: '1px solid var(--border-md)', background: 'transparent',
             color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}

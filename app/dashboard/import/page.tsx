@@ -185,7 +185,7 @@ export default function ImportPage() {
       )}
 
       {error && (
-        <div role="alert" style={{ margin: '12px 0', padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>
+        <div role="alert" style={{ margin: '12px 0', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>
           {error}
         </div>
       )}

@@ -12,8 +12,8 @@ import PageHeader from '@/components/ui/PageHeader';
 
 const CAT_COLORS = ['var(--e3)','var(--blue)','var(--warn)','var(--purple)','var(--e2)','var(--crit)','var(--text-3)'];
 // The API ranks speed with emoji; the owner reads words.
-const VEL_COLOR: Record<string, string> = { '🔥': 'var(--good)', '✅': 'var(--text-2)', '⚠': 'var(--warn)' };
-const VEL_WORD: Record<string, string> = { '🔥': 'Fast', '✅': 'Steady', '⚠': 'Slow' };
+const VEL_COLOR: Record<string, string> = { '\u{1F525}': 'var(--good)', '\u2705': 'var(--text-2)', '\u26A0': 'var(--warn)' };
+const VEL_WORD: Record<string, string> = { '\u{1F525}': 'Fast', '\u2705': 'Steady', '\u26A0': 'Slow' };
 
 // Top-items columns. Rank (#) follows the current sort — it's the row's place
 // in whatever ordering the user chose, not a frozen revenue rank.

@@ -87,7 +87,7 @@ function ManualPayment({ userId, currentTier, onSaved }: { userId: string; curre
     }
   }
 
-  const field: React.CSSProperties = { minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
+  const field: React.CSSProperties = { minHeight: 44, padding: '8px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
   return (
     <div className="section-card" style={{ marginBottom: 16 }}>
       <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Record a manual payment</p>
@@ -109,7 +109,7 @@ function ManualPayment({ userId, currentTier, onSaved }: { userId: string; curre
           </select>
         </label>
         <button type="button" onClick={() => void save()} disabled={busy}
-          style={{ alignSelf: 'flex-end', minHeight: 44, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, fontSize: 'var(--fs-body)', cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+          style={{ alignSelf: 'flex-end', minHeight: 44, padding: '9px 16px', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, fontSize: 'var(--fs-body)', cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
           {busy ? 'Saving…' : 'Record payment'}
         </button>
       </div>
@@ -182,7 +182,7 @@ function BillingFromJoin({ userId, currentTier, joinedAt, scheduledUntil, onSave
     }
   }
 
-  const field: React.CSSProperties = { minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
+  const field: React.CSSProperties = { minHeight: 44, padding: '8px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
   return (
     <div className="section-card" style={{ marginBottom: 16 }}>
       <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Bill from the day they joined</p>
@@ -206,7 +206,7 @@ function BillingFromJoin({ userId, currentTier, joinedAt, scheduledUntil, onSave
           </select>
         </label>
         <button type="button" onClick={() => void start()} disabled={busy}
-          style={{ alignSelf: 'flex-end', minHeight: 44, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, fontSize: 'var(--fs-body)', cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+          style={{ alignSelf: 'flex-end', minHeight: 44, padding: '9px 16px', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, fontSize: 'var(--fs-body)', cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
           {busy ? 'Saving…' : 'Start billing'}
         </button>
       </div>
@@ -280,7 +280,7 @@ export default function AdminAccountDetailPage() {
         {back}
         <div className="section-card" role="alert" style={{ textAlign: 'center' }}>
           <p style={{ color: 'var(--crit)', margin: '0 0 12px' }}>{error || 'Account not found.'}</p>
-          <button type="button" onClick={() => void load()} style={{ minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer' }}>Try again</button>
+          <button type="button" onClick={() => void load()} style={{ minHeight: 44, padding: '9px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer' }}>Try again</button>
         </div>
       </div>
     );

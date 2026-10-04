@@ -193,7 +193,7 @@ export function FloatingAiAssistant() {
                   </button>
                 )}
                 <button type="button" onClick={() => setOpen(false)} aria-label="Close assistant"
-                  style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: 'none', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer' }}>
+                  style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius-md)', border: 'none', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer' }}>
                   {Icon.close}
                 </button>
               </div>
@@ -277,7 +277,7 @@ export function FloatingAiAssistant() {
 
             {/* Composer */}
             <div style={{ padding: '12px 14px 14px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 12, padding: '12px 12px 10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', padding: '12px 12px 10px' }}>
                 <label htmlFor="ai-assistant-input" className="sr-only">Ask AIBOS</label>
                 <textarea id="ai-assistant-input" ref={inputRef} value={input} rows={2}
                   onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))} onKeyDown={handleKey}
@@ -310,7 +310,7 @@ export function FloatingAiAssistant() {
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 9 }}>
                 <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
-                  Press <kbd style={{ background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 4, padding: '1px 5px', color: 'var(--text-3)' }}>Shift + Enter</kbd> for new line
+                  Press <kbd style={{ background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-sm)', padding: '1px 5px', color: 'var(--text-3)' }}>Shift + Enter</kbd> for new line
                 </span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 'var(--fs-label)', color: online ? 'var(--good)' : 'var(--warn)' }}>
                   <span style={{ width: 5, height: 5, borderRadius: '50%', background: online ? 'var(--good)' : 'var(--warn)' }} />
@@ -363,7 +363,7 @@ export function FloatingAiAssistant() {
 function ToolBtn({ children, label, onClick, active }: { children: React.ReactNode; label: string; onClick: () => void; active?: boolean }) {
   return (
     <button type="button" onClick={onClick} aria-label={label} title={label}
-      style={{ width: 34, height: 34, borderRadius: 8, border: 'none', background: active ? 'color-mix(in srgb, var(--crit) 18%, transparent)' : 'transparent',
+      style={{ width: 34, height: 34, borderRadius: 'var(--radius-md)', border: 'none', background: active ? 'color-mix(in srgb, var(--crit) 18%, transparent)' : 'transparent',
         color: active ? 'var(--crit)' : 'var(--text-3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease' }}
       onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = 'var(--bg-card-hover)'; e.currentTarget.style.color = 'var(--text-1)'; } }}
       onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-3)'; } }}>

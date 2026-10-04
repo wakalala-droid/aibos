@@ -133,7 +133,7 @@ function TimelineInner() {
           type="search" value={q} onChange={(e) => setQ(e.target.value)}
           placeholder="Search, like fuel, Chanda or 450"
           aria-label="Search your records"
-          style={{ width: '100%', minHeight: 44, padding: '8px 12px', marginBottom: 10, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
+          style={{ width: '100%', minHeight: 44, padding: '8px 12px', marginBottom: 10, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
         />
 
         {onlyIds.size > 0 && (
@@ -168,7 +168,7 @@ function TimelineInner() {
         </label>
 
         {error && (
-          <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>
+          <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>
             {error}
           </div>
         )}

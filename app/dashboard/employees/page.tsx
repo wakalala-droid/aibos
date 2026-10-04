@@ -227,7 +227,7 @@ export default function EmployeesPage() {
         {/* ── People (register — free) ─────────────────────────────────────── */}
         <SectionCard title="Your people" explainId="employees.register"
           subtitle={loading ? 'Loading…' : `${active.length} active${employees.length > active.length ? ` · ${employees.length - active.length} left` : ''}`}>
-          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
+          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
 
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 48 }} />)}</div>
@@ -325,7 +325,7 @@ export default function EmployeesPage() {
               <input type="month" value={period} onChange={e => { setPeriod(e.target.value); setPreview(null); setRunOk(null); setRunError(null); }} style={{ ...input, width: 'auto' }} />
             </div>
             <button type="button" onClick={doPreview} disabled={busy || active.length === 0} className="touch-target"
-              style={{ padding: '9px 16px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: (busy || active.length === 0) ? 0.6 : 1 }}>
+              style={{ padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: (busy || active.length === 0) ? 0.6 : 1 }}>
               {busy ? 'Computing…' : 'Preview'}
             </button>
           </div>
@@ -333,8 +333,8 @@ export default function EmployeesPage() {
           {active.length === 0 && (
             <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>Add an employee first, then preview a period.</p>
           )}
-          {runError && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{runError}</div>}
-          {runOk && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'color-mix(in srgb, var(--green) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--green) 40%, transparent)', color: 'var(--green)', fontSize: 'var(--fs-data)' }}>{runOk}</div>}
+          {runError && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{runError}</div>}
+          {runOk && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'color-mix(in srgb, var(--green) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--green) 40%, transparent)', color: 'var(--green)', fontSize: 'var(--fs-data)' }}>{runOk}</div>}
 
           {/* Preview table */}
           {preview && preview.payslips.length > 0 && (

@@ -152,7 +152,7 @@ export default function InstallPrompt() {
       aria-label="Install AIBOS as an app"
       style={{
         display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
-        padding: '14px 16px', margin: '0 0 16px', borderRadius: 12,
+        padding: '14px 16px', margin: '0 0 16px', borderRadius: 'var(--radius-md)',
         border: '1px solid color-mix(in srgb, var(--cyan) 40%, transparent)',
         background: 'color-mix(in srgb, var(--cyan) 9%, transparent)',
       }}
@@ -195,7 +195,7 @@ export default function InstallPrompt() {
             onClick={() => void install()}
             disabled={busy}
             style={{
-              minHeight: 44, padding: '10px 18px', borderRadius: 8, border: 'none',
+              minHeight: 44, padding: '10px 18px', borderRadius: 'var(--radius-md)', border: 'none',
               background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700,
               cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1,
             }}
@@ -207,7 +207,7 @@ export default function InstallPrompt() {
           type="button"
           onClick={dismiss}
           style={{
-            minHeight: 44, padding: '10px 16px', borderRadius: 8,
+            minHeight: 44, padding: '10px 16px', borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border-md)', background: 'transparent',
             color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer',
           }}

@@ -33,7 +33,7 @@ const STEPS = ['Business', 'Money', 'Operations', 'Review'];
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '12px 14px', minHeight: 48,
-  background: 'var(--bg-input)', border: '1px solid var(--border-md)', borderRadius: 8,
+  background: 'var(--bg-input)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)',
   color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none',
 };
 const labelStyle: React.CSSProperties = {
@@ -343,7 +343,7 @@ export default function OnboardingPage() {
                   </div>
 
                   <button type="button" onClick={() => router.push('/dashboard/record?receipt=1')} className="touch-target"
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 12, border: '1px solid var(--cyan)', background: 'var(--cyan-dim)', cursor: 'pointer' }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cyan)', background: 'var(--cyan-dim)', cursor: 'pointer' }}>
                     <span aria-hidden style={{ display: 'inline-flex', color: 'var(--cyan)' }}><Camera size={26} strokeWidth={2} /></span>
                     <span>
                       <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>Scan your last receipt</span>
@@ -352,7 +352,7 @@ export default function OnboardingPage() {
                   </button>
 
                   <button type="button" onClick={() => router.push('/dashboard/record')} className="touch-target"
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 12, border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: 'pointer' }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: 'pointer' }}>
                     <span aria-hidden style={{ display: 'inline-flex', color: 'var(--text-2)' }}><MessageSquare size={26} strokeWidth={2} /></span>
                     <span>
                       <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>Record a sale in words</span>
@@ -361,7 +361,7 @@ export default function OnboardingPage() {
                   </button>
 
                   <button type="button" onClick={() => void seedStarters()} disabled={seeding || seeded} className="touch-target"
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 12, border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: seeded ? 'default' : 'pointer', opacity: seeded ? 0.75 : 1 }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: seeded ? 'default' : 'pointer', opacity: seeded ? 0.75 : 1 }}>
                     <span aria-hidden style={{ display: 'inline-flex', color: seeded ? 'var(--good)' : 'var(--text-2)' }}>{seeded ? <CircleCheck size={26} strokeWidth={2} /> : <Package size={26} strokeWidth={2} />}</span>
                     <span>
                       <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
@@ -412,7 +412,7 @@ export default function OnboardingPage() {
           </AnimatePresence>
 
           {error && (
-            <div style={{ marginTop: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>
+            <div style={{ marginTop: 16, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>
               {error}
             </div>
           )}

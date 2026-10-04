@@ -16,7 +16,7 @@ export default function ChartTooltip({ active, payload, label, sym = 'K', curren
     <div style={{
       background: 'var(--tooltip-bg)',
       border: '1px solid var(--tooltip-border)',
-      borderRadius: 8, padding: '10px 14px',
+      borderRadius: 'var(--radius-md)', padding: '10px 14px',
       boxShadow: 'var(--shadow-lg)',
     }}>
       {label && (

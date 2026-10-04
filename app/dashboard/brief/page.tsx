@@ -49,7 +49,7 @@ function BriefsInner() {
             onClick={() => setTab(t.id)}
             className="touch-target"
             style={{
-              padding: '8px 16px', minHeight: 44, borderRadius: 8, cursor: 'pointer',
+              padding: '8px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', cursor: 'pointer',
               fontSize: 'var(--fs-data)', fontWeight: tab === t.id ? 700 : 600,
               color: tab === t.id ? 'var(--text-1)' : 'var(--text-3)',
               background: tab === t.id ? 'var(--bg-badge)' : 'transparent',

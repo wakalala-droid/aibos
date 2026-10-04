@@ -227,7 +227,7 @@ export default function VariancePage() {
                 <motion.div key={alert.id ?? i}
                   initial={false} animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.34 + i * 0.04 }}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 14px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', border: '1px solid var(--border)' }}
                 >
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: sevColor, flexShrink: 0, marginTop: 4 }} />
                   <div style={{ flex: 1 }}>

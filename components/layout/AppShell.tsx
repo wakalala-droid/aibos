@@ -109,7 +109,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               onClick={toggleMobileNav}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 44, height: 44, borderRadius: 8,
+                width: 44, height: 44, borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
                 color: 'var(--text-2)', cursor: 'pointer',
               }}
@@ -131,7 +131,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               onClick={toggle}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 44, height: 44, borderRadius: 8,
+                width: 44, height: 44, borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
                 color: 'var(--text-3)', cursor: 'pointer',
               }}

@@ -57,8 +57,8 @@ export default function BudgetCard() {
   const monthLabel = new Date(month + '-01').toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   const hasBudget = (report?.lines.length ?? 0) > 0;
 
-  const input: React.CSSProperties = { width: '100%', minHeight: 44, padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
-  const btn: React.CSSProperties = { minHeight: 44, padding: '7px 14px', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
+  const input: React.CSSProperties = { width: '100%', minHeight: 44, padding: '7px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
+  const btn: React.CSSProperties = { minHeight: 44, padding: '7px 14px', borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
 
   return (
     <SectionCard
@@ -108,8 +108,8 @@ export default function BudgetCard() {
                     {l.pct_of_target !== null && <span style={{ color: colour, fontWeight: 600, marginLeft: 8 }}>{l.pct_of_target.toFixed(0)}%</span>}
                   </span>
                 </div>
-                <div style={{ height: 8, borderRadius: 4, background: 'var(--bg-badge)', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${barPct}%`, borderRadius: 4, background: colour, transition: 'width .4s ease' }} />
+                <div style={{ height: 8, borderRadius: 'var(--radius-sm)', background: 'var(--bg-badge)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${barPct}%`, borderRadius: 'var(--radius-sm)', background: colour, transition: 'width .4s ease' }} />
                 </div>
               </div>
             );

@@ -79,7 +79,7 @@ export default function QrScanner({ onResult, onClose }: { onResult: (text: stri
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <h3 className="section-title">Scan receipt QR</h3>
           <button type="button" onClick={handleClose} aria-label="Close" className="touch-target"
-            style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', cursor: 'pointer' }}>✕</button>
+            style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', cursor: 'pointer' }}>✕</button>
         </div>
 
         {supported ? (
@@ -107,7 +107,7 @@ export default function QrScanner({ onResult, onClose }: { onResult: (text: stri
             </label>
             <textarea value={paste} onChange={e => setPaste(e.target.value)} rows={3}
               placeholder="Paste the decoded QR text / URL here"
-              style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-md)', borderRadius: 8, color: 'var(--text-1)', fontSize: 'var(--fs-data)', outline: 'none', resize: 'vertical' }} />
+              style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', color: 'var(--text-1)', fontSize: 'var(--fs-data)', outline: 'none', resize: 'vertical' }} />
             <button type="button" onClick={() => paste.trim() && onResult(paste.trim())} disabled={!paste.trim()} className="touch-target"
               style={{ marginTop: 10, width: '100%', padding: '12px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: paste.trim() ? 'pointer' : 'default', opacity: paste.trim() ? 1 : 0.5 }}>
               Use this code
@@ -115,7 +115,7 @@ export default function QrScanner({ onResult, onClose }: { onResult: (text: stri
           </div>
         )}
 
-        {error && <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
+        {error && <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
 
         {supported && (
           <button type="button" onClick={() => setSupported(false)}

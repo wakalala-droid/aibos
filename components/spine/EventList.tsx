@@ -100,7 +100,7 @@ export default function EventList({ events, busyId, onConfirm, onVoid, onChanged
                 )}
               </div>
               {openHistory === ev.id && (
-                <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: 'var(--bg-badge)', display: 'grid', gap: 4 }}>
+                <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', display: 'grid', gap: 4 }}>
                   {correctionLines(ev.corrections).map((c, ci) => (
                     <div key={ci} style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
                       <span style={{ textTransform: 'capitalize', color: 'var(--text-2)', fontWeight: 600 }}>{c.field}</span>: {c.from} <span aria-hidden>→</span> <span style={{ color: 'var(--text-1)' }}>{c.to}</span>

@@ -17,7 +17,7 @@ function BenchmarkCard({ b, delay }: { b: any; delay: number }) {
   const pct = Math.min(Math.abs(b.actual / Math.max(b.benchmark, 1)) * 100, 110);
   return (
     <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}
-      style={{ background: 'var(--bg-card)', border: `1px solid ${cfg.border}`, borderRadius: 12, padding: '20px', boxShadow: 'var(--shadow-card)', position: 'relative', overflow: 'hidden' }}>
+      style={{ background: 'var(--bg-card)', border: `1px solid ${cfg.border}`, borderRadius: 'var(--radius-md)', padding: '20px', boxShadow: 'var(--shadow-card)', position: 'relative', overflow: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
         <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0, maxWidth: 130 }}>{b.label}</p>
         <span className="badge" style={{ color: cfg.color, background: cfg.bg, borderColor: cfg.border }}>{cfg.label}</span>
@@ -110,7 +110,7 @@ export default function BenchmarksPage() {
         <AttachMeter label="Drink Attach Rate" value={drinkAttach} benchmark={80} color="var(--e3)" />
         <AttachMeter label="Side Attach Rate"  value={sideAttach}  benchmark={30} color="var(--blue)" />
         {drinkAttach < 80 && (
-          <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.18)', marginTop: 4 }}>
+          <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.18)', marginTop: 4 }}>
             <p style={{ fontSize: 'var(--fs-data)', color: 'var(--warn)', margin: 0, lineHeight: 1.5 }}>
               Drink attach {drinkAttach.toFixed(1)}% is {(80 - drinkAttach).toFixed(1)}% below the 80% QSR benchmark. Train staff on proactive drink recommendations at every order.
             </p>

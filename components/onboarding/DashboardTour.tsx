@@ -198,7 +198,7 @@ export default function DashboardTour() {
           </div>
           {idx > 0 && (
             <button type="button" onClick={() => setIdx(idx - 1)} style={{
-              padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-md)',
+              padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)',
               background: 'transparent', color: 'var(--text-3)', cursor: 'pointer',
               fontSize: 'var(--fs-data)', fontWeight: 600,
             }}>
@@ -207,7 +207,7 @@ export default function DashboardTour() {
           )}
           {!last && (
             <button type="button" onClick={finish} style={{
-              padding: '8px 12px', borderRadius: 8, border: 'none',
+              padding: '8px 12px', borderRadius: 'var(--radius-md)', border: 'none',
               background: 'transparent', color: 'var(--text-4)', cursor: 'pointer',
               fontSize: 'var(--fs-data)', fontWeight: 600,
             }}>
@@ -218,7 +218,7 @@ export default function DashboardTour() {
             type="button"
             onClick={last ? finish : () => setIdx(idx + 1)}
             style={{
-              padding: '8px 16px', borderRadius: 8, border: 'none',
+              padding: '8px 16px', borderRadius: 'var(--radius-md)', border: 'none',
               background: 'var(--cyan)', color: 'var(--on-cyan)', cursor: 'pointer',
               fontSize: 'var(--fs-data)', fontWeight: 700,
             }}

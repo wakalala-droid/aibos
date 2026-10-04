@@ -13,9 +13,9 @@ import PageHeader from '@/components/ui/PageHeader';
 // Keys are the API's class values; `name` is what the owner reads (no emoji, no BCG jargon).
 const BCG: Record<string, { name: string; color: string; border: string; bg: string; desc: string }> = {
   '⭐ Star':          { name: 'Best sellers',        color: 'var(--warn)',   border: 'rgba(251,191,36,0.25)',  bg: 'rgba(251,191,36,0.06)',  desc: 'Earn a lot and sell often'  },
-  '🐄 Cash Cow':      { name: 'Big earners',         color: 'var(--good)',   border: 'rgba(52,211,153,0.25)',  bg: 'rgba(52,211,153,0.06)',  desc: 'Earn a lot from fewer sales'   },
+  '\u{1F404} Cash Cow':      { name: 'Big earners',         color: 'var(--good)',   border: 'rgba(52,211,153,0.25)',  bg: 'rgba(52,211,153,0.06)',  desc: 'Earn a lot from fewer sales'   },
   '❓ Question Mark': { name: 'Popular, low value',  color: 'var(--blue)',   border: 'rgba(96,165,250,0.25)',  bg: 'rgba(96,165,250,0.06)',  desc: 'Sell often but earn little'   },
-  '🐕 Dog':           { name: 'Slow sellers',        color: 'var(--text-3)', border: 'rgba(71,85,105,0.25)',   bg: 'rgba(71,85,105,0.06)',   desc: 'Earn little and sell rarely'    },
+  '\u{1F415} Dog':           { name: 'Slow sellers',        color: 'var(--text-3)', border: 'rgba(71,85,105,0.25)',   bg: 'rgba(71,85,105,0.06)',   desc: 'Earn little and sell rarely'    },
 };
 
 export default function ProductsPage() {
@@ -64,7 +64,7 @@ export default function ProductsPage() {
           return (
             <div key={classLabel} style={{
               background: 'var(--bg-card)', border: `1px solid ${cfg.border}`,
-              borderRadius: 12, padding: '18px 20px',
+              borderRadius: 'var(--radius-md)', padding: '18px 20px',
               boxShadow: 'var(--shadow-card)', position: 'relative', overflow: 'hidden',
             }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: cfg.color, opacity: 0.6 }} />
@@ -110,7 +110,7 @@ export default function ProductsPage() {
             {basketPairs.slice(0, 9).map((pair, i) => (
               <motion.div key={i}
                 initial={false} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 + i * 0.04 }}
-                style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: 8, padding: '11px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}
+                style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '11px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-1)', fontWeight: 600 }}>{pair.product_a}</span>

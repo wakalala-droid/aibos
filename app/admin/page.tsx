@@ -53,7 +53,7 @@ function fmtDate(v: string | null): string {
 const btn = (variant: 'primary' | 'ghost'): React.CSSProperties => ({
   minHeight: 44,
   padding: '7px 12px',
-  borderRadius: 8,
+  borderRadius: 'var(--radius-md)',
   fontSize: 'var(--fs-data)',
   fontWeight: 700,
   cursor: 'pointer',
@@ -334,9 +334,9 @@ export default function AdminAccountsPage() {
     <div style={{ padding: '8px 0 48px' }}>
       {header}
       <nav aria-label="Admin sections" style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <Link href="/admin" aria-current="page" style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Accounts</Link>
-        <Link href="/admin/usage" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Usage</Link>
-        <Link href="/admin/proposals" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 8 }}>Proposals</Link>
+        <Link href="/admin" aria-current="page" style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Accounts</Link>
+        <Link href="/admin/usage" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)' }}>Usage</Link>
+        <Link href="/admin/proposals" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)' }}>Proposals</Link>
       </nav>
       <SystemHealth />
       {/* One message to every account, when something changes that customers

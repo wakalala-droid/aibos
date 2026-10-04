@@ -102,7 +102,7 @@ export default function BusinessSwitcher() {
     <div ref={wrapRef} style={{ position: 'relative' }}>
       <button type="button" onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open}
         className="touch-target"
-        style={{ display: 'flex', alignItems: 'center', gap: 6, maxWidth: 200, padding: '6px 10px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
+        style={{ display: 'flex', alignItems: 'center', gap: 6, maxWidth: 200, padding: '6px 10px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
         <span aria-hidden style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--cyan)', flexShrink: 0 }} />
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
         <span aria-hidden style={{ color: 'var(--text-4)' }}>▾</span>
@@ -148,19 +148,19 @@ export default function BusinessSwitcher() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <input value={name} onChange={(e) => setName(e.target.value)} placeholder="New business name"
                     aria-label="New business name" autoFocus
-                    style={{ minHeight: 44, padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-data)' }} />
+                    style={{ minHeight: 44, padding: '7px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-data)' }} />
                   {error && <span style={{ fontSize: 'var(--fs-label)', color: 'var(--crit)' }}>{error}</span>}
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button type="button" onClick={() => void add()} disabled={busy || !name.trim()}
-                      style={{ flex: 1, minHeight: 44, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>
+                      style={{ flex: 1, minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>
                       {busy ? 'Adding…' : 'Add & switch'}
                     </button>
-                    <button type="button" onClick={() => { setAdding(false); setError(null); }} style={{ minHeight: 44, padding: '0 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>Cancel</button>
+                    <button type="button" onClick={() => { setAdding(false); setError(null); }} style={{ minHeight: 44, padding: '0 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>Cancel</button>
                   </div>
                 </div>
               ) : canMulti ? (
                 <button type="button" onClick={() => setAdding(true)}
-                  style={{ width: '100%', minHeight: 44, borderRadius: 8, border: '1px dashed var(--border-md)', background: 'transparent', color: 'var(--cyan)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>
+                  style={{ width: '100%', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px dashed var(--border-md)', background: 'transparent', color: 'var(--cyan)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>
                   + Add a business
                 </button>
               ) : (

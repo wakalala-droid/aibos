@@ -13,7 +13,7 @@ export default function LockOverlay({ colour = 'var(--cyan)', title, description
       position: 'absolute', inset: 0, zIndex: 20,
       background: 'var(--overlay-bg)',
       backdropFilter: 'blur(8px)',
-      borderRadius: 12,
+      borderRadius: 'var(--radius-md)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: 28, textAlign: 'center',
@@ -36,7 +36,7 @@ export default function LockOverlay({ colour = 'var(--cyan)', title, description
         style={{
           marginTop: 18,
           background: colour, color: '#fff', border: 'none',
-          borderRadius: 8, padding: '9px 22px',
+          borderRadius: 'var(--radius-md)', padding: '9px 22px',
           fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer',
         }}
       >

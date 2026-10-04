@@ -100,7 +100,7 @@ export default function SystemHealth() {
           onClick={() => void check()}
           disabled={loading}
           style={{
-            marginLeft: 'auto', minHeight: 44, padding: '7px 12px', borderRadius: 8,
+            marginLeft: 'auto', minHeight: 44, padding: '7px 12px', borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border-md)', background: 'var(--bg-card)',
             color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600,
             cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.6 : 1,

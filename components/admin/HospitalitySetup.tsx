@@ -52,11 +52,11 @@ const lbl: React.CSSProperties = {
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
-  padding: '9px 16px', minHeight: 44, borderRadius: 8, border: 'none',
+  padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none',
   background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer',
 };
 const ghostBtn: React.CSSProperties = {
-  padding: '8px 14px', minHeight: 44, borderRadius: 8, background: 'transparent',
+  padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', background: 'transparent',
   border: '1px solid var(--border-md)', color: 'var(--text-2)',
   fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer',
 };
@@ -152,7 +152,7 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
 
       {error && (
         <p role="alert" style={{
-          margin: '0 0 12px', padding: '10px 12px', borderRadius: 8, fontSize: 'var(--fs-body)', lineHeight: 1.6,
+          margin: '0 0 12px', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', lineHeight: 1.6,
           background: 'color-mix(in srgb, var(--crit) 10%, transparent)',
           border: '1px solid color-mix(in srgb, var(--crit) 35%, transparent)', color: 'var(--crit)',
         }}>
@@ -162,7 +162,7 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
 
       {!state.entitled && (
         <p style={{
-          margin: '0 0 12px', padding: '10px 12px', borderRadius: 8, fontSize: 'var(--fs-body)', lineHeight: 1.6,
+          margin: '0 0 12px', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', lineHeight: 1.6,
           background: 'color-mix(in srgb, var(--warn) 10%, transparent)',
           border: '1px solid color-mix(in srgb, var(--warn) 35%, transparent)', color: 'var(--text-1)',
         }}>

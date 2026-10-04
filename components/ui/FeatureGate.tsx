@@ -44,7 +44,7 @@ export default function FeatureGate({
       <>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
-          padding: '8px 12px', marginBottom: 8, borderRadius: 8,
+          padding: '8px 12px', marginBottom: 8, borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border)', background: 'var(--bg-badge)',
         }}>
           <span className="badge" style={{ color: 'var(--cyan)', borderColor: 'var(--cyan)' }}>FREE</span>

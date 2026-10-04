@@ -604,7 +604,7 @@ function OverviewPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {safeAlerts.slice(0, 4).map((a: any, i: number) => (
                   <div key={i} style={{
-                    padding: '10px 12px', borderRadius: 8,
+                    padding: '10px 12px', borderRadius: 'var(--radius-md)',
                     background: 'var(--bg-badge)', border: '1px solid var(--border)',
                   }}>
                     <p style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
@@ -631,7 +631,7 @@ function OverviewPage() {
               <Link key={item.href} href={item.href} style={{ textDecoration: 'none', display: 'block', marginBottom: 6 }}>
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '10px 12px', borderRadius: 8,
+                  padding: '10px 12px', borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--border)', background: 'var(--bg-badge)',
                   transition: 'border-color 0.15s ease',
                 }}

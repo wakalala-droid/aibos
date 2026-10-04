@@ -106,7 +106,7 @@ export default async function PricingPage() {
                 </p>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span aria-hidden style={{ display: 'grid', placeItems: 'center', width: 40, height: 40, borderRadius: 12, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', color: 'var(--text-3)' }}>
+                <span aria-hidden style={{ display: 'grid', placeItems: 'center', width: 40, height: 40, borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', color: 'var(--text-3)' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
                 </span>
                 <Link href="/login" className="mkt-btn mkt-btn-secondary mkt-btn-sm">Unlock with Pro</Link>

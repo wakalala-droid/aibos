@@ -103,7 +103,7 @@ export default function ContactsPage() {
               return (
                 <div key={p.id}
                   onClick={mergeMode ? () => toggle(p.id) : undefined}
-                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, cursor: mergeMode ? 'pointer' : 'default', border: `1px solid ${sel ? 'var(--cyan)' : 'var(--border)'}`, background: sel ? 'var(--cyan-dim)' : 'transparent' }}>
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 'var(--radius-md)', cursor: mergeMode ? 'pointer' : 'default', border: `1px solid ${sel ? 'var(--cyan)' : 'var(--border)'}`, background: sel ? 'var(--cyan-dim)' : 'transparent' }}>
                   <span style={{ minWidth: 0 }}>
                     <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{p.name}</span>
                     <span className="badge" style={{ marginLeft: 8, color: 'var(--text-3)', borderColor: 'var(--border)' }}>{KIND_LABEL[p.kind]}</span>
@@ -127,12 +127,12 @@ export default function ContactsPage() {
         )}
 
         {mergeMode && selected.length === 2 && (
-          <div style={{ marginTop: 14, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--cyan)', background: 'var(--bg-card)' }}>
+          <div style={{ marginTop: 14, padding: '12px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cyan)', background: 'var(--bg-card)' }}>
             <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', margin: '0 0 10px' }}>
               Keep <strong>{keepName}</strong>, fold <strong>{dropName}</strong> into it? AIBOS will remember they&apos;re the same from now on.
             </p>
             <button type="button" onClick={() => void doMerge()} disabled={busy}
-              style={{ minHeight: 44, padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, cursor: 'pointer' }}>
+              style={{ minHeight: 44, padding: '9px 16px', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontWeight: 700, cursor: 'pointer' }}>
               {busy ? 'Merging…' : 'Merge them'}
             </button>
           </div>

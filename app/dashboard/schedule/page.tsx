@@ -398,7 +398,7 @@ export default function SchedulePage() {
       </div>
       {!finished && (
         <button type="button" onClick={() => markDone(it)} className="touch-target" aria-label={`Mark ${it.title} done`}
-          style={{ minHeight: 44, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--green)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+          style={{ minHeight: 44, padding: '6px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--green)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
           Done
         </button>
       )}
@@ -437,7 +437,7 @@ export default function SchedulePage() {
           </span>
           <button type="button" className="touch-target" disabled={statutoryBusy}
             onClick={() => void seedStatutory()}
-            style={{ padding: '8px 14px', minHeight: 44, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: statutoryBusy ? 0.7 : 1 }}>
+            style={{ padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: statutoryBusy ? 0.7 : 1 }}>
             {statutoryBusy ? 'Setting up…' : 'Set up statutory reminders'}
           </button>
         </div>
@@ -448,7 +448,7 @@ export default function SchedulePage() {
           title="Coming up" explainId="schedule.agenda"
           subtitle={loading ? 'Loading…' : `${items.filter(i => i.status === 'scheduled').length} scheduled`}
           action={
-            <div role="group" aria-label="Schedule view" style={{ display: 'flex', height: 28, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
+            <div role="group" aria-label="Schedule view" style={{ display: 'flex', height: 28, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
               {(['agenda', 'month'] as const).map(v => (
                 <button key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v}
                   style={{ padding: '0 12px', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-label)', fontWeight: 700, background: view === v ? 'var(--cyan)' : 'transparent', color: view === v ? 'var(--on-cyan)' : 'var(--text-4)' }}>
@@ -458,7 +458,7 @@ export default function SchedulePage() {
             </div>
           }
         >
-          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
+          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
 
           {/* Record bridge — the just-completed commitment can land in the books. */}
           {bridge && (
@@ -471,7 +471,7 @@ export default function SchedulePage() {
                   {BRIDGE_OPTIONS.map(t => <option key={t} value={t}>{t === 'SupplierPayment' ? 'Supplier payment' : t === 'CustomerPayment' ? 'Customer payment' : t}</option>)}
                 </select>
                 <button type="button" onClick={recordBridge} disabled={bridgeBusy}
-                  style={{ padding: '8px 16px', minHeight: 44, borderRadius: 8, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: bridgeBusy ? 0.7 : 1 }}>
+                  style={{ padding: '8px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: bridgeBusy ? 0.7 : 1 }}>
                   {bridgeBusy ? 'Recording…' : 'Record it'}
                 </button>
                 <button type="button" onClick={() => setBridge(null)} style={{ ...ghostBtn, color: 'var(--text-3)', fontSize: 'var(--fs-data)' }}>Not now</button>
@@ -489,7 +489,7 @@ export default function SchedulePage() {
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
                 {SEEDS.map(s => (
                   <button key={s.title} type="button" onClick={() => addSeed(s)} className="touch-target"
-                    style={{ padding: '8px 14px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
+                    style={{ padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
                     {s.title} · {s.day}{s.day === 1 ? 'st' : 'th'}
                   </button>
                 ))}
@@ -529,7 +529,7 @@ export default function SchedulePage() {
                   <button key={cell.key} type="button" onClick={() => setSelectedDay(cell.key === selectedDay ? null : cell.key)}
                     aria-label={`Day ${cell.day}${cell.items.length ? `, ${cell.items.length} item${cell.items.length === 1 ? '' : 's'}` : ''}`}
                     style={{
-                      minHeight: 44, borderRadius: 8, cursor: 'pointer',
+                      minHeight: 44, borderRadius: 'var(--radius-md)', cursor: 'pointer',
                       border: `1px solid ${cell.key === selectedDay ? 'var(--cyan)' : cell.key === dayKey(new Date()) ? 'var(--border-md)' : 'transparent'}`,
                       background: cell.key === selectedDay ? 'color-mix(in srgb, var(--cyan) 10%, transparent)' : 'transparent',
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '6px 2px',
@@ -564,7 +564,7 @@ export default function SchedulePage() {
               return (
                 <button key={k} type="button" onClick={() => pickKind(k)} aria-pressed={on}
                   style={{
-                    padding: '6px 12px', minHeight: 44, borderRadius: 8, cursor: 'pointer',
+                    padding: '6px 12px', minHeight: 44, borderRadius: 'var(--radius-md)', cursor: 'pointer',
                     fontSize: 'var(--fs-label)', fontWeight: 700,
                     border: `1px solid ${on ? m.colour : 'var(--border-md)'}`,
                     background: on ? `color-mix(in srgb, ${m.colour} 12%, transparent)` : 'transparent',

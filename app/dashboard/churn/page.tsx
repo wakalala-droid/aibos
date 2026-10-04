@@ -95,10 +95,10 @@ export default function ChurnPage() {
           {high.map((r, i) => (
             <motion.div key={r.customer_id}
               initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.06 }}
-              style={{ background: 'var(--bg-card)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 12, padding: '18px 20px', marginBottom: 10, position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-card)' }}
+              style={{ background: 'var(--bg-card)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius-md)', padding: '18px 20px', marginBottom: 10, position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-card)' }}
             >
               {/* Left accent bar */}
-              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: 'var(--crit)', borderRadius: '12px 0 0 12px' }} />
+              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: 'var(--crit)', borderRadius: '10px 0 0 10px' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
@@ -115,7 +115,7 @@ export default function ChurnPage() {
                 </div>
               </div>
               <div style={{ marginBottom: 12 }}><RiskBar risk={r.churn_risk} /></div>
-              <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.14)' }}>
+              <div style={{ padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.14)' }}>
                 <p style={{ fontSize: 'var(--fs-data)', color: 'var(--crit)', margin: 0 }}>{r.intervention}</p>
               </div>
             </motion.div>
@@ -132,9 +132,9 @@ export default function ChurnPage() {
           {med.map((r, i) => (
             <motion.div key={r.customer_id}
               initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.06 }}
-              style={{ background: 'var(--bg-card)', border: '1px solid rgba(251,191,36,0.20)', borderRadius: 12, padding: '16px 18px', marginBottom: 8, position: 'relative', boxShadow: 'var(--shadow-card)' }}
+              style={{ background: 'var(--bg-card)', border: '1px solid rgba(251,191,36,0.20)', borderRadius: 'var(--radius-md)', padding: '16px 18px', marginBottom: 8, position: 'relative', boxShadow: 'var(--shadow-card)' }}
             >
-              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: 'var(--warn)', borderRadius: '12px 0 0 12px' }} />
+              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: 'var(--warn)', borderRadius: '10px 0 0 10px' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>

@@ -117,7 +117,7 @@ export default function BreakevenPage() {
 
       {/* Status banner */}
       <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-        style={{ background: 'var(--bg-card)', border: `1px solid ${statusColor}`, borderRadius: 12, padding: '18px 22px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: 'var(--shadow-card)' }}>
+        style={{ background: 'var(--bg-card)', border: `1px solid ${statusColor}`, borderRadius: 'var(--radius-md)', padding: '18px 22px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: 'var(--shadow-card)' }}>
         <div>
           <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Breakeven Status</p>
           <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: statusColor, margin: 0 }}>

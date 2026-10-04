@@ -136,7 +136,7 @@ function Strip({ title, body, action }: { title: string; body: string; action?: 
 }
 
 const actionStyle: React.CSSProperties = {
-  display: 'inline-block', padding: '9px 16px', minHeight: 44, borderRadius: 8,
+  display: 'inline-block', padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)',
   border: '1px solid var(--border-md)', background: 'var(--bg-input)',
   color: 'var(--text-1)', fontSize: 'var(--fs-body)', fontWeight: 600, textDecoration: 'none',
   cursor: 'pointer', lineHeight: '20px',

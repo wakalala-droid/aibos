@@ -69,7 +69,7 @@ export default function DataManifestCard({
           {manifest.flags.map((f, i) => (
             <div key={i} role="note" style={{
               display: 'flex', gap: 8, alignItems: 'flex-start', padding: '8px 10px',
-              borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', border: '1px solid var(--border)',
             }}>
               <span aria-hidden="true" style={{ color: 'var(--warn)', fontWeight: 700, lineHeight: 1.4 }}>!</span>
               <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', margin: 0, lineHeight: 1.5 }}>{f}</p>

@@ -54,3 +54,9 @@ jobs:
         # client sends on both the streaming hop and its buffered fallback.
         # Drop it and one question costs two of three free questions.
         run: python3 scripts/check_chat_contract.py
+
+      - name: Check the design rules hold
+        # UI/UX audit 2026-10 Part E phase 4: nothing under the 18px floor
+        # (16 for spaced capitals), no long dashes or emoji in on-screen words,
+        # corners on the 6/10/16 scale. Each was swept once; this keeps it so.
+        run: python3 scripts/check_design_contract.py

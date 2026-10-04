@@ -408,7 +408,7 @@ export default function DashboardHeader() {
                 aria-activedescendant={options.length ? `dash-search-opt-${activeIdx}` : undefined}
                 placeholder="Find a page, a customer or a product, or ask a question…"
                 aria-label="Search pages, customers and products, or ask AIBOS"
-                style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none' }}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none' }}
               />
             </div>
             <div id="dash-search-listbox" role="listbox" aria-label="Search results" style={{ maxHeight: 320, overflowY: 'auto', padding: 6 }}>
@@ -416,7 +416,7 @@ export default function DashboardHeader() {
                 const active = i === activeIdx;
                 const base: React.CSSProperties = {
                   width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '9px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                  padding: '9px 10px', borderRadius: 'var(--radius-md)', border: 'none', cursor: 'pointer',
                   background: active ? 'var(--table-row-hover)' : 'transparent',
                   outline: active ? '1px solid var(--border-md)' : 'none',
                 };
@@ -554,21 +554,21 @@ export default function DashboardHeader() {
               </span>
             </div>
             <div style={{ padding: 6 }}>
-              <Link href="/pricing" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
+              <Link href="/pricing" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
                 {tier === 'growth' ? 'Manage plan' : 'Upgrade plan'}
               </Link>
-              <Link href="/dashboard/profile" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
+              <Link href="/dashboard/profile" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
                 Your business data
               </Link>
-              <button type="button" role="menuitem" onClick={() => setOpen('shortcuts')} className="dash-row" style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
+              <button type="button" role="menuitem" onClick={() => setOpen('shortcuts')} className="dash-row" style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
                 Keyboard shortcuts &amp; tips
               </button>
               {isAdmin && (
-                <Link href="/admin" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 8, fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
+                <Link href="/admin" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
                   Admin panel
                 </Link>
               )}
-              <button type="button" role="menuitem" onClick={() => { setOpen(null); logout(); }} className="dash-row" style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--crit)' }}>
+              <button type="button" role="menuitem" onClick={() => { setOpen(null); logout(); }} className="dash-row" style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--crit)' }}>
                 Sign out
               </button>
             </div>
@@ -599,7 +599,7 @@ export default function DashboardHeader() {
                 ['Hold a card', 'Long-press any metric and AIBOS explains it'],
               ].map(([key, tip]) => (
                 <div key={key} style={{ display: 'flex', gap: 12, alignItems: 'baseline', padding: '7px 0' }}>
-                  <kbd style={{ flexShrink: 0, minWidth: 92, textAlign: 'center', fontSize: 'var(--fs-label)', color: 'var(--text-2)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 5, padding: '2px 8px', fontFamily: 'inherit' }}>{key}</kbd>
+                  <kbd style={{ flexShrink: 0, minWidth: 92, textAlign: 'center', fontSize: 'var(--fs-label)', color: 'var(--text-2)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-sm)', padding: '2px 8px', fontFamily: 'inherit' }}>{key}</kbd>
                   <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', lineHeight: 1.5 }}>{tip}</span>
                 </div>
               ))}

@@ -236,7 +236,7 @@ export default function DataStudio() {
               onClick={() => setTab(t)}
               style={{
                 padding: "8px 16px",
-                borderRadius: 8,
+                borderRadius: 'var(--radius-md)',
                 fontSize: 'var(--fs-data)',
                 fontWeight: 600,
                 cursor: "pointer",
@@ -312,7 +312,7 @@ export default function DataStudio() {
                       marginTop: 10,
                       fontSize: 'var(--fs-label)',
                       padding: "8px 12px",
-                      borderRadius: 8,
+                      borderRadius: 'var(--radius-md)',
                       overflow: "hidden",
                       background: "rgba(239,68,68,0.08)",
                       border: "1px solid rgba(239,68,68,0.25)",
@@ -417,7 +417,7 @@ export default function DataStudio() {
                                 style={{
                                   fontSize: 'var(--fs-label)',
                                   padding: "2px 6px",
-                                  borderRadius: 4,
+                                  borderRadius: 'var(--radius-sm)',
                                   background: h.mode === "ai" ? "var(--cyan-dim)" : "var(--bg-page)",
                                   color: h.mode === "ai" ? "var(--cyan)" : "var(--text-3)",
                                   border: "1px solid var(--border)",
@@ -502,7 +502,7 @@ export default function DataStudio() {
                       textAlign: "left",
                       fontSize: 'var(--fs-label)',
                       padding: "8px 10px",
-                      borderRadius: 8,
+                      borderRadius: 'var(--radius-md)',
                       background: "var(--bg-card)",
                       color: "var(--text-3)",
                       border: "1px solid var(--border)",

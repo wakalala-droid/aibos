@@ -156,7 +156,7 @@ export default function PricingTiers({ cardPrices = null, zmwRate }: {
               </ul>
 
               {action.disabled ? (
-                <span style={{ textAlign: 'center', fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-3)', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
+                <span style={{ textAlign: 'center', fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-3)', padding: '12px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
                   {action.label}
                 </span>
               ) : (

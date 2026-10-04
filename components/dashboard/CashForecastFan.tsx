@@ -56,7 +56,7 @@ export default function CashForecastFan() {
         {fc.bands.map((b) => {
           const worried = b.p10 <= 0;
           return (
-            <div key={b.month_ahead} style={{ display: 'grid', gridTemplateColumns: '56px 1fr 1fr 1fr', gap: 10, alignItems: 'baseline', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
+            <div key={b.month_ahead} style={{ display: 'grid', gridTemplateColumns: '56px 1fr 1fr 1fr', gap: 10, alignItems: 'baseline', padding: '9px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
               <span style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>{monthLabel(b.month_ahead)}</span>
               <span style={{ fontSize: 'var(--fs-data)', color: worried ? 'var(--crit)' : 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>
                 <span style={{ fontSize: 'var(--fs-caps)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>cautious </span>{fmt(b.p10, true, sym)}

@@ -252,7 +252,7 @@ export default function BusinessProfilePage() {
                 <img src={form.logo_url} alt="" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
               </span>
             ) : (
-              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 12, flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-body)', fontWeight: 800 }}>
+              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 'var(--radius-md)', flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-body)', fontWeight: 800 }}>
                 {initials}
               </span>
             )}
@@ -519,7 +519,7 @@ function GetPaidCard() {
                 payment updates to this address:
               </p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                <code style={{ fontSize: 'var(--fs-h3)', color: 'var(--text-1)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', padding: '9px 12px', borderRadius: 8, wordBreak: 'break-all' }}>
+                <code style={{ fontSize: 'var(--fs-h3)', color: 'var(--text-1)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', padding: '9px 12px', borderRadius: 'var(--radius-md)', wordBreak: 'break-all' }}>
                   {account.webhook_url}
                 </code>
                 <button type="button" onClick={() => void copyWebhook(account.webhook_url as string)}
@@ -668,7 +668,7 @@ function MemoryLearnedCard() {
           {manageError && mappings.length === 0 ? null : mappings.length === 0 ? (
             <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Nothing learned yet.</span>
           ) : mappings.map((m) => (
-            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)' }}>
+            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
               <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)', minWidth: 0 }}>{describe(m)}</span>
               <button type="button" onClick={() => void forget(m.id)} aria-label="Forget this"
                 style={{ flexShrink: 0, background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', textDecoration: 'underline', fontSize: 'var(--fs-label)' }}>Forget</button>
@@ -689,7 +689,7 @@ function ExportCard() {
     catch (e) { setErr((e as Error).message); }
     finally { setBusy(null); }
   }
-  const btn: React.CSSProperties = { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
+  const btn: React.CSSProperties = { minHeight: 44, padding: '9px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
   return (
     <div className="section-card" style={{ marginTop: 20 }}>
       <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>Export your books</h2>
@@ -736,8 +736,8 @@ function TeamCard() {
     try { await revokeMember(m.id); load(); } catch (e) { setError((e as Error).message); }
   }
 
-  const cardInput: React.CSSProperties = { minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
-  const cardBtn: React.CSSProperties = { minHeight: 44, padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-label)' };
+  const cardInput: React.CSSProperties = { minHeight: 44, padding: '8px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
+  const cardBtn: React.CSSProperties = { minHeight: 44, padding: '7px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-label)' };
 
   return (
     <div className="section-card" style={{ marginTop: 20 }}>
@@ -770,7 +770,7 @@ function TeamCard() {
       ) : (
         <div style={{ display: 'grid', gap: 8 }}>
           {members.map(m => (
-            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
+            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
               <span style={{ minWidth: 0 }}>
                 <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 600 }}>{m.email}</span>
                 <span className="badge" style={{ marginLeft: 8, color: m.status === 'active' ? 'var(--good)' : 'var(--warn)', borderColor: 'var(--border)' }}>
@@ -952,13 +952,13 @@ function InviteCard({ userId }: { userId: string }) {
         you both get a month of Pro+ free: applied by our team for now.
       </p>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <code style={{ fontSize: 'var(--fs-data)', color: 'var(--text-1)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', padding: '9px 12px', borderRadius: 8, wordBreak: 'break-all' }}>
+        <code style={{ fontSize: 'var(--fs-data)', color: 'var(--text-1)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', padding: '9px 12px', borderRadius: 'var(--radius-md)', wordBreak: 'break-all' }}>
           {link}
         </code>
         <button
           type="button"
           onClick={() => void copy()}
-          style={{ padding: '9px 14px', borderRadius: 8, cursor: 'pointer', border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: copied ? 'var(--green)' : 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 700 }}
+          style={{ padding: '9px 14px', borderRadius: 'var(--radius-md)', cursor: 'pointer', border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: copied ? 'var(--green)' : 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 700 }}
         >
           {copied ? 'Copied' : 'Copy link'}
         </button>
@@ -966,7 +966,7 @@ function InviteCard({ userId }: { userId: string }) {
           href={`https://wa.me/?text=${encodeURIComponent(waText)}`}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ padding: '9px 14px', borderRadius: 8, textDecoration: 'none', background: 'var(--green-dim)', color: 'var(--green)', border: '1px solid color-mix(in srgb, var(--green) 35%, transparent)', fontSize: 'var(--fs-data)', fontWeight: 700 }}
+          style={{ padding: '9px 14px', borderRadius: 'var(--radius-md)', textDecoration: 'none', background: 'var(--green-dim)', color: 'var(--green)', border: '1px solid color-mix(in srgb, var(--green) 35%, transparent)', fontSize: 'var(--fs-data)', fontWeight: 700 }}
         >
           Share on WhatsApp
         </a>

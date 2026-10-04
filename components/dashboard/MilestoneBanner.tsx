@@ -37,7 +37,7 @@ export default function MilestoneBanner() {
   return (
     <div role="status" style={{
       display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', marginBottom: 20,
-      borderRadius: 12, border: '1px solid color-mix(in srgb, var(--cyan) 35%, transparent)',
+      borderRadius: 'var(--radius-md)', border: '1px solid color-mix(in srgb, var(--cyan) 35%, transparent)',
       background: 'linear-gradient(120deg, color-mix(in srgb, var(--cyan) 10%, transparent), transparent)',
     }}>
       <span aria-hidden style={{ display: 'inline-flex', flexShrink: 0, color: 'var(--cyan)' }}>
@@ -48,7 +48,7 @@ export default function MilestoneBanner() {
         <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>{milestone.detail}</p>
       </div>
       <button type="button" aria-label="Dismiss" onClick={dismiss} className="touch-target"
-        style={{ flexShrink: 0, width: 32, minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer', fontSize: 'var(--fs-body)' }}>
+        style={{ flexShrink: 0, width: 32, minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer', fontSize: 'var(--fs-body)' }}>
         ×
       </button>
     </div>

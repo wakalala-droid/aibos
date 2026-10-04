@@ -135,7 +135,7 @@ const lbl: React.CSSProperties = {
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
-  padding: '10px 18px', minHeight: 44, borderRadius: 8, border: 'none', background: 'var(--cyan)',
+  padding: '10px 18px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)',
   color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.6, cursor: 'pointer',
 };
 const quietBtn: React.CSSProperties = {
@@ -443,7 +443,7 @@ export default function HospitalityPage() {
   return (
     <>
       {error && (
-        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--crit)', color: 'var(--crit)', fontSize: 'var(--fs-body)', lineHeight: 1.6 }}>
+        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--crit)', color: 'var(--crit)', fontSize: 'var(--fs-body)', lineHeight: 1.6 }}>
           {error}
         </div>
       )}
@@ -536,7 +536,7 @@ export default function HospitalityPage() {
                     aria-label="Show the calendar from this date"
                     value={iso(gridStart)}
                     onChange={e => { if (e.target.value) setGridStart(parseISO(e.target.value)); }}
-                    style={{ height: 34, padding: '0 8px', borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
+                    style={{ height: 34, padding: '0 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
                   />
                 </label>
                 <button onClick={() => openDraft('')} style={primaryBtn}>+ Booking</button>
@@ -581,7 +581,7 @@ export default function HospitalityPage() {
                             ? `${guestName(bk) || 'No name given'} · ${statusLabel(bk.status)} · ${shortDate(bk.check_in)} to ${shortDate(bk.check_out)}`
                             : 'Free. Click to book.'}
                           style={{
-                            height: 34, borderRadius: 5, cursor: 'pointer',
+                            height: 34, borderRadius: 'var(--radius-sm)', cursor: 'pointer',
                             border: bk ? 'none' : '1px dashed var(--border)',
                             background: bk ? `color-mix(in srgb, ${colour} 24%, transparent)` : 'transparent',
                             borderLeft: isStart ? `3px solid ${colour}` : (bk ? 'none' : '1px dashed var(--border)'),
@@ -682,7 +682,7 @@ export default function HospitalityPage() {
 }
 
 const navBtn: React.CSSProperties = {
-  width: 34, height: 34, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
+  width: 34, height: 34, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
   color: 'var(--text-2)', cursor: 'pointer', fontSize: 'var(--fs-body)', lineHeight: 1,
 };
 
@@ -1088,7 +1088,7 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
         <div style={{ display: 'grid', gap: 6, marginBottom: 10 }}>
           <div style={{ ...lbl, marginBottom: 0 }}>Payments received</div>
           {list.map((p) => (
-            <div key={p.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 14px', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
+            <div key={p.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 14px', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
               <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{fmt(p.amount, false, symbol)}</span>
               <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>{shortDate(p.date)} · {METHOD_LABEL[p.method] ?? p.method}</span>
               <button onClick={() => remove(p)} disabled={busy}

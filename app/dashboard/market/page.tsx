@@ -119,7 +119,7 @@ export default function MarketPage() {
 
       {/* AI Brief */}
       <SectionCard title="AI Market Intelligence Brief" subtitle="Customer Intelligence · Kwacha analysis" delay={0.24} style={{ position: 'relative' }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--e2)', borderRadius: '12px 12px 0 0', opacity: 0.6 }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--e2)', borderRadius: '10px 10px 0 0', opacity: 0.6 }} />
         {briefLines.length > 0 ? (
           briefLines.map((line, i) => (
             <motion.div key={i} initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.08 }}

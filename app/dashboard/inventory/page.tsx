@@ -143,12 +143,12 @@ export default function InventoryPage() {
           variant="button" accept=".csv,text/csv" label="Import from Loyverse"
           busy={importing} busyLabel="Importing…"
           onFile={(f) => void importLoyverse(f)} onError={setError}
-          style={{ padding: '8px 14px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer', opacity: importing ? 0.7 : 1 }}
+          style={{ padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer', opacity: importing ? 0.7 : 1 }}
         />
         {items.length > 0 && (
           <button type="button" className="touch-target"
             onClick={() => { setTakeMode(v => !v); setCounts({}); setTakeMsg(null); }}
-            style={{ padding: '8px 14px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: takeMode ? 'var(--bg-badge)' : 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
+            style={{ padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: takeMode ? 'var(--bg-badge)' : 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
             {takeMode ? 'Cancel stock-take' : 'Stock-take'}
           </button>
         )}
@@ -174,7 +174,7 @@ export default function InventoryPage() {
           </div>
           <button type="button" className="touch-target" disabled={takeBusy || Object.keys(counts).length === 0}
             onClick={() => void submitStockTake()}
-            style={{ marginTop: 14, padding: '9px 16px', minHeight: 44, borderRadius: 8, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: takeBusy ? 0.7 : 1 }}>
+            style={{ marginTop: 14, padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: takeBusy ? 0.7 : 1 }}>
             {takeBusy ? 'Saving…' : 'Save count'}
           </button>
         </SectionCard>
@@ -182,7 +182,7 @@ export default function InventoryPage() {
 
       <div className="grid-main">
         <SectionCard title="Products" subtitle={loading ? 'Loading…' : `${items.length} product${items.length === 1 ? '' : 's'}`}>
-          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
+          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 48 }} />)}</div>
           ) : items.length === 0 ? (
@@ -190,7 +190,7 @@ export default function InventoryPage() {
               <p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)', margin: '0 0 14px' }}>No products yet: add your first one, or start from a template for your {ind.label}.</p>
               <button type="button" className="touch-target" disabled={seeding}
                 onClick={() => void seedStarters()}
-                style={{ padding: '9px 16px', minHeight: 44, borderRadius: 8, border: '1px solid var(--cyan)', background: 'transparent', color: 'var(--cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
+                style={{ padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--cyan)', background: 'transparent', color: 'var(--cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
                 {seeding ? 'Adding…' : `Add ${starters.length} starter products`}
               </button>
             </div>

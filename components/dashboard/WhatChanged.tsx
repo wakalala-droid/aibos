@@ -67,7 +67,7 @@ export default function WhatChanged() {
           const bad = (d.direction === 'out') === up; // more spend / less income = bad
           const colour = bad ? 'var(--crit)' : 'var(--good)';
           return (
-            <div key={`${d.direction}-${d.label}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
+            <div key={`${d.direction}-${d.label}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '9px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
               <span style={{ minWidth: 0 }}>
                 {/* Drill-through (audit #31): the events behind this driver. */}
                 <Link href={`/dashboard/timeline?type=${encodeURIComponent(d.event_type)}`}

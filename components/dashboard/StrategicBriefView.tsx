@@ -295,7 +295,7 @@ export default function StrategicBriefView({
             { label: 'Best Month', value: monthName(health.bestMonth), colour: profitColour(bestProfit) },
             { label: 'Worst Month', value: monthName(health.worstMonth), colour: profitColour(worstProfit) },
           ].map((item) => (
-            <div key={item.label} style={{ padding: '12px 14px', borderRadius: 8, background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>
+            <div key={item.label} style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>
               <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 5px' }}>{item.label}</p>
               <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: item.colour, margin: 0, letterSpacing: '-0.02em' }}>{item.value}</p>
             </div>

@@ -82,7 +82,7 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
       ) : undefined}
     >
       {done && (
-        <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid var(--green)', color: 'var(--green)', fontSize: 'var(--fs-data)' }}>
+        <div style={{ padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(34,197,94,0.08)', border: '1px solid var(--green)', color: 'var(--green)', fontSize: 'var(--fs-data)' }}>
           {done}
         </div>
       )}
@@ -169,7 +169,7 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
           </div>
 
           {error && (
-            <div style={{ padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>
+            <div style={{ padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>
               {error}
             </div>
           )}

@@ -69,7 +69,7 @@ export function RunwayBar({ runway, target = 18 }: { runway: number; target?: nu
   const pct = Math.min((runway / target) * 100, 100);
   const color = runway >= 12 ? 'var(--good)' : runway >= 6 ? 'var(--warn)' : 'var(--crit)';
   return (
-    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '18px 20px' }}>
+    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '18px 20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <div>
           <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
@@ -77,8 +77,8 @@ export function RunwayBar({ runway, target = 18 }: { runway: number; target?: nu
         </div>
         <span style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color }}>{runway}mo <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontWeight: 400 }}>/ {target}mo</span></span>
       </div>
-      <div style={{ position: 'relative', height: 8, borderRadius: 8, background: 'var(--border)', overflow: 'hidden', marginBottom: 10 }}>
-        <motion.div style={{ height: '100%', background: color, borderRadius: 8 }} initial={false} animate={{ width: `${pct}%` }} transition={{ duration: 1.2, ease: 'easeOut' }} />
+      <div style={{ position: 'relative', height: 8, borderRadius: 'var(--radius-md)', background: 'var(--border)', overflow: 'hidden', marginBottom: 10 }}>
+        <motion.div style={{ height: '100%', background: color, borderRadius: 'var(--radius-md)' }} initial={false} animate={{ width: `${pct}%` }} transition={{ duration: 1.2, ease: 'easeOut' }} />
         <div style={{ position: 'absolute', left: `${Math.min((12 / target) * 100, 98)}%`, top: 0, bottom: 0, width: 2, background: 'var(--text-4)', opacity: 0.5 }} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>

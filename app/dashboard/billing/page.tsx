@@ -55,7 +55,7 @@ const receiptNumber = (id: string) => `AIBOS-${id.replace(/[^a-z0-9]/gi, '').toU
 
 const button: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-  padding: '10px 18px', minHeight: 44, borderRadius: 8, border: 'none',
+  padding: '10px 18px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none',
   background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700,
   textDecoration: 'none', cursor: 'pointer',
 };
@@ -153,7 +153,7 @@ export default function BillingPage() {
       />
 
       {error && (
-        <div role="alert" style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--crit)', color: 'var(--crit)', fontSize: 'var(--fs-body)', lineHeight: 1.6 }}>
+        <div role="alert" style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--crit)', color: 'var(--crit)', fontSize: 'var(--fs-body)', lineHeight: 1.6 }}>
           {error}
         </div>
       )}

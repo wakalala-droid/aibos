@@ -62,7 +62,7 @@ export default function LiveDashboard() {
         </div>
 
         {/* Real revenue/profit chart */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 12, padding: '14px 14px 10px', marginBottom: 16 }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', padding: '14px 14px 10px', marginBottom: 16 }}>
           <p style={{ margin: '0 0 6px', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Sales and profit by month</p>
           <RevenueChart data={chartData} sym="K" height={170} />
         </div>

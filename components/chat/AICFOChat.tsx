@@ -72,7 +72,7 @@ export default function AICFOChat() {
       aria-label="Ask AIBOS"
       style={{
         display: 'flex', flexDirection: 'column', height: '100%',
-        background: 'var(--bg-card)', borderRadius: 12, overflow: 'hidden',
+        background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', overflow: 'hidden',
         border: '1px solid var(--border)',
       }}
     >
@@ -85,7 +85,7 @@ export default function AICFOChat() {
           {messages.length > 0 && (
             <button type="button" onClick={clearConversation} disabled={loading}
               title="Start a new conversation. The AI forgets this one."
-              style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-2)', border: '1px solid var(--border-md)', borderRadius: 8, padding: '5px 10px', background: 'transparent', cursor: loading ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: loading ? 0.5 : 1 }}>
+              style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-2)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', padding: '5px 10px', background: 'transparent', cursor: loading ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: loading ? 0.5 : 1 }}>
               New chat
             </button>
           )}
@@ -190,7 +190,7 @@ export default function AICFOChat() {
 
       {/* Input bar */}
       <div style={{ padding: '12px 16px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 12, padding: '10px 12px 10px 16px', transition: 'border-color 0.15s ease' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', padding: '10px 12px 10px 16px', transition: 'border-color 0.15s ease' }}>
           <label htmlFor="cfo-chat-input" className="sr-only">Message to AIBOS</label>
           <textarea
             id="cfo-chat-input" ref={inputRef} value={input}
@@ -200,7 +200,7 @@ export default function AICFOChat() {
             onInput={(e) => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 120)}px`; }}
           />
           <button type="button" onClick={() => submit(input)} disabled={!input.trim() || loading} aria-label="Send message"
-            style={{ width: 34, height: 34, borderRadius: 8, border: 'none', background: input.trim() && !loading ? 'linear-gradient(135deg, #0097b2, #00d4ff)' : 'var(--border)', cursor: input.trim() && !loading ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', color: input.trim() && !loading ? '#fff' : 'var(--text-4)', flexShrink: 0, transition: 'all 0.15s ease' }}>
+            style={{ width: 34, height: 34, borderRadius: 'var(--radius-md)', border: 'none', background: input.trim() && !loading ? 'linear-gradient(135deg, #0097b2, #00d4ff)' : 'var(--border)', cursor: input.trim() && !loading ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', color: input.trim() && !loading ? '#fff' : 'var(--text-4)', flexShrink: 0, transition: 'all 0.15s ease' }}>
             <SendIcon size={14} />
           </button>
         </div>

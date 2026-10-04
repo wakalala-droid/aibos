@@ -308,7 +308,7 @@ export default function Sidebar() {
             </span>
           </span>
           {!planLoading && tier !== 'growth' && (
-            <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--on-cyan)', background: 'var(--cyan)', padding: '5px 10px', borderRadius: 8, whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--on-cyan)', background: 'var(--cyan)', padding: '5px 10px', borderRadius: 'var(--radius-md)', whiteSpace: 'nowrap' }}>
               Upgrade
             </span>
           )}
@@ -327,7 +327,7 @@ export default function Sidebar() {
           aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           style={{
-            width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border-md)',
+            width: 32, height: 32, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)',
             background: 'var(--bg-badge)', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--text-3)', flexShrink: 0,
@@ -345,7 +345,7 @@ export default function Sidebar() {
             aria-label={simple ? 'Switch to Pro mode: show all intelligence tabs' : 'Switch to Simple mode'}
             title={simple ? 'Switch to Pro mode' : 'Switch to Simple mode'}
             style={{
-              width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border-md)',
+              width: 32, height: 32, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)',
               background: 'var(--bg-badge)', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: simple ? 'var(--text-3)' : 'var(--cyan)', flexShrink: 0,

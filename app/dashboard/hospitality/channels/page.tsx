@@ -32,11 +32,11 @@ const lbl: React.CSSProperties = {
   textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
 };
 const primaryBtn: React.CSSProperties = {
-  padding: '8px 14px', minHeight: 44, borderRadius: 8, border: 'none', background: 'var(--cyan)',
+  padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)',
   color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
 };
 const ghostBtn: React.CSSProperties = {
-  padding: '7px 12px', minHeight: 44, borderRadius: 8, background: 'transparent',
+  padding: '7px 12px', minHeight: 44, borderRadius: 'var(--radius-md)', background: 'transparent',
   border: '1px solid var(--border-md)', color: 'var(--text-3)',
   fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer',
 };
@@ -74,7 +74,7 @@ export default function ChannelsPage() {
 
   return (
     <>
-      {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
+      {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
       {loading && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>Loading…</p>}
       {noUnits && <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>Add a unit first: channels attach to a unit.</p>}
 
@@ -532,7 +532,7 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
           {logo ? (
             // The email itself is white, so the preview is too: what the guest sees.
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt={`${p.name} logo`} style={{ height: 56, maxWidth: 240, objectFit: 'contain', background: '#fff', borderRadius: 8, padding: 8, border: '1px solid var(--border-md)' }} />
+            <img src={logo} alt={`${p.name} logo`} style={{ height: 56, maxWidth: 240, objectFit: 'contain', background: '#fff', borderRadius: 'var(--radius-md)', padding: 8, border: '1px solid var(--border-md)' }} />
           ) : (
             <span style={{ ...BODY, color: 'var(--text-3)' }}>No logo yet, so your property&rsquo;s name is shown in its place.</span>
           )}

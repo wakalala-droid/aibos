@@ -96,7 +96,7 @@ export default function TidyUp({ onDone }: { onDone?: () => void }) {
             ))}
           </div>
           <button type="button" onClick={() => void tidy()} disabled={busy || !kinds.some((k) => picked.has(k))}
-            style={{ padding: '10px 18px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.7 : 1 }}>
+            style={{ padding: '10px 18px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.7 : 1 }}>
             {busy ? 'Tidying…' : 'Tidy away the ticked ones'}
           </button>
         </>

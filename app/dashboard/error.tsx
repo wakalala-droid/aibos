@@ -24,7 +24,7 @@ export default function DashboardError({
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: 24 }}>
       <div className="section-card" style={{ maxWidth: 440, textAlign: 'center' }}>
         <div aria-hidden="true" style={{
-          width: 44, height: 44, borderRadius: 12, margin: '0 auto 16px',
+          width: 44, height: 44, borderRadius: 'var(--radius-md)', margin: '0 auto 16px',
           background: 'var(--red-dim)', border: '1px solid color-mix(in srgb, var(--crit) 30%, transparent)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>

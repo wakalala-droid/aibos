@@ -432,7 +432,7 @@ export default function SimpleHome() {
                     onClick={() => void onDraft(p)}
                     disabled={st === 'drafting'}
                     style={{
-                      padding: '8px 14px', borderRadius: 8, border: 'none', cursor: st === 'drafting' ? 'default' : 'pointer',
+                      padding: '8px 14px', borderRadius: 'var(--radius-md)', border: 'none', cursor: st === 'drafting' ? 'default' : 'pointer',
                       background: 'var(--cyan)', color: 'var(--on-cyan)',
                       fontSize: 'var(--fs-data)', fontWeight: 700,
                       opacity: st === 'drafting' ? 0.6 : 1, transition: 'all 0.15s ease',
@@ -468,7 +468,7 @@ export default function SimpleHome() {
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      padding: '8px 14px', borderRadius: 8, textDecoration: 'none',
+                      padding: '8px 14px', borderRadius: 'var(--radius-md)', textDecoration: 'none',
                       background: 'var(--green-dim)', color: 'var(--green)',
                       border: '1px solid color-mix(in srgb, var(--green) 35%, transparent)',
                       fontSize: 'var(--fs-data)', fontWeight: 700,
@@ -480,7 +480,7 @@ export default function SimpleHome() {
                     type="button"
                     onClick={() => onFollowUpDone(f.customerId)}
                     style={{
-                      padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                      padding: '8px 12px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                       border: '1px solid var(--border-md)', background: 'transparent',
                       color: 'var(--text-3)', fontSize: 'var(--fs-data)', fontWeight: 600,
                     }}

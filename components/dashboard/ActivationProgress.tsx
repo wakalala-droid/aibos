@@ -46,7 +46,7 @@ export default function ActivationProgress() {
 
   return (
     <div role="status" style={{
-      padding: '14px 16px', marginBottom: 20, borderRadius: 12,
+      padding: '14px 16px', marginBottom: 20, borderRadius: 'var(--radius-md)',
       border: `1px solid ${reached ? 'var(--good)' : 'var(--border-md)'}`,
       background: reached ? 'color-mix(in srgb, var(--good) 8%, transparent)' : 'var(--bg-card)',
     }}>
@@ -58,8 +58,8 @@ export default function ActivationProgress() {
           {Math.min(days, GOAL_DAYS)} / {GOAL_DAYS} days
         </span>
       </div>
-      <div style={{ height: 8, borderRadius: 4, background: 'var(--bg-badge)', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, borderRadius: 4, background: reached ? 'var(--good)' : 'var(--cyan)', transition: 'width .5s ease' }} />
+      <div style={{ height: 8, borderRadius: 'var(--radius-sm)', background: 'var(--bg-badge)', overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${pct}%`, borderRadius: 'var(--radius-sm)', background: reached ? 'var(--good)' : 'var(--cyan)', transition: 'width .5s ease' }} />
       </div>
       <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '10px 0 0' }}>
         {reached ? (
