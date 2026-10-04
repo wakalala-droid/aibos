@@ -13,6 +13,7 @@ import { useProfile } from '@/lib/profile';
 import { tabBarDoors, isDoorActive } from '@/lib/nav';
 import type { Tier } from '@/lib/tiers';
 import { IC } from './navIcons';
+import { openRecordSheet } from '@/lib/recordSheet';
 
 export default function MobileTabBar() {
   const pathname = usePathname();
@@ -26,6 +27,22 @@ export default function MobileTabBar() {
     <nav className="mobile-tabbar" aria-label="Quick navigation">
       {doors.map((d) => {
         const active = isDoorActive(d.href, pathname);
+        // Record opens the form over this page instead of leaving it (C3).
+        // On the Record page itself the form is already there.
+        if (d.href === '/dashboard/record' && !active) {
+          return (
+            <button
+              key={d.href}
+              type="button"
+              aria-haspopup="dialog"
+              className="mobile-tab"
+              onClick={() => { setMobileNav(false); openRecordSheet(); }}
+            >
+              <span aria-hidden="true" className="mobile-tab-icon">{IC[d.icon]}</span>
+              <span>{d.short ?? d.label}</span>
+            </button>
+          );
+        }
         return (
           <Link
             key={d.href}

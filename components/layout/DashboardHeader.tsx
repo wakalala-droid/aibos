@@ -6,7 +6,8 @@
 // both themes; all controls are keyboard-operable and labelled.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { openRecordSheet } from '@/lib/recordSheet';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
@@ -257,7 +258,14 @@ export default function DashboardHeader() {
     return [...customers, ...products];
   }, [query, rfm, breakdown]);
 
-  const go = (href: string) => { setOpen(null); setQuery(''); router.push(href); };
+  const pathname = usePathname();
+  // "Record a sale" and "Record an expense" open the Record sheet over this
+  // page instead of leaving it (C3); the Record page itself still opens.
+  const go = (href: string, group?: string) => {
+    setOpen(null); setQuery('');
+    if (group === 'Do' && href === '/dashboard/record' && pathname !== '/dashboard/record') { openRecordSheet(); return; }
+    router.push(href);
+  };
 
   // Natural-language queries route straight into the AI CFO — search and the
   // assistant are one front door, not two features.
@@ -282,7 +290,7 @@ export default function DashboardHeader() {
   useEffect(() => { setActiveIdx(0); }, [query, open]);
   const activate = (opt: PaletteOption | undefined) => {
     if (!opt) return;
-    if (opt.kind === 'nav') go(opt.href);
+    if (opt.kind === 'nav') go(opt.href, opt.group);
     else askAibos();
   };
   const onSearchKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -417,7 +425,7 @@ export default function DashboardHeader() {
                     <button
                       key={`nav-${opt.href}-${opt.label}`} id={`dash-search-opt-${i}`}
                       type="button" role="option" aria-selected={active}
-                      onClick={() => go(opt.href)}
+                      onClick={() => go(opt.href, opt.group)}
                       onMouseEnter={() => setActiveIdx(i)}
                       className="dash-row"
                       style={{ ...base, justifyContent: 'space-between' }}

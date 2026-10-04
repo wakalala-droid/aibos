@@ -989,6 +989,25 @@ dialog.confirm-sheet[open] { animation: sheet-in 200ms ease-out both; }
   @keyframes sheet-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
 }
 
+/* ── RECORD SHEET (UI/UX audit 2026-10 C3, B10) ───────────────────
+   The Record form over any page. Bottom sheet on phones, centred from 640px,
+   opaque (no blur). */
+dialog.record-sheet {
+  border: none; padding: 0; background: transparent; color: inherit;
+  width: 100%; max-width: 100%; margin: auto auto 0; max-height: 92vh;
+}
+dialog.record-sheet::backdrop { background: rgba(0,0,0,0.55); }
+dialog.record-sheet .record-sheet-card {
+  background: var(--bg-card); border: 1px solid var(--border-md);
+  border-radius: 16px 16px 0 0; padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+  max-height: 92vh; overflow-y: auto; box-shadow: var(--shadow-lg);
+}
+dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
+@media (min-width: 640px) {
+  dialog.record-sheet { width: min(640px, calc(100vw - 32px)); margin: auto; }
+  dialog.record-sheet .record-sheet-card { border-radius: 16px; padding: 24px; }
+}
+
 /* ── FILE DROP (UI/UX audit 2026-10 A29, B6, C4) ──────────────────
    One control for every file: components/ui/FileDrop.tsx. The zone is a real
    button; "or drop it here" shows only where a mouse can drag. */
