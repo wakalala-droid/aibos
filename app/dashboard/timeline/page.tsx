@@ -49,7 +49,8 @@ function TimelineInner() {
 
   // Free-text search across the record (audit #38): matches customer, supplier,
   // category, note, item, amount and type — "fuel", "chanda", "450".
-  const [q, setQ] = useState('');
+  // ?q= arrives from links like "Where your money went" (Fuel, Rent...).
+  const [q, setQ] = useState(params.get('q') ?? '');
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const inView = status === 'active' ? events.filter((e) => e.status !== 'void') : events;
