@@ -10,6 +10,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { confirmSheet } from '@/lib/confirm';
+import FileDrop from '@/components/ui/FileDrop';
 import SectionCard from '@/components/ui/SectionCard';
 import { useAuth } from '@/hooks/useAuth';
 import { slugFrom } from '@/lib/slug';
@@ -432,10 +433,8 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
      row-level security refuses the browser's own upload on any database whose
      storage policies were never applied. It still lands in this user's own
      folder. PNG or JPG only: Gmail and Outlook show an SVG as a broken image. */
-  const onLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file || !user) return;
+  const onLogo = async (file: File) => {
+    if (!user) return;
     if (!/^image\/(png|jpe?g)$/.test(file.type)) {
       setMessage({ text: 'Use a PNG or JPG logo. Most email apps cannot show other kinds.', tone: 'warn' });
       return;
@@ -537,10 +536,13 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
           ) : (
             <span style={{ ...BODY, color: 'var(--text-3)' }}>No logo yet, so your property&rsquo;s name is shown in its place.</span>
           )}
-          <label style={{ ...ghostBtn, fontSize: 'var(--fs-body)', minHeight: 44, display: 'inline-flex', alignItems: 'center', opacity: busy ? 0.6 : 1 }}>
-            {busy === 'logo' ? 'Uploading…' : logo ? 'Replace logo' : 'Upload logo'}
-            <input type="file" accept="image/png,image/jpeg" onChange={onLogo} disabled={Boolean(busy) || notReady} style={{ display: 'none' }} />
-          </label>
+          <FileDrop
+            variant="button" accept="image/png,image/jpeg" maxBytes={2 * 1024 * 1024}
+            label={logo ? 'Replace logo' : 'Upload logo'} busy={busy === 'logo'} disabled={Boolean(busy) || notReady}
+            onFile={(f) => void onLogo(f)}
+            onError={(m) => setMessage({ text: m, tone: 'warn' })}
+            style={{ ...ghostBtn, fontSize: 'var(--fs-body)', minHeight: 44, display: 'inline-flex', alignItems: 'center', opacity: busy ? 0.6 : 1 }}
+          />
           {logo && (
             <button type="button" style={{ ...ghostBtn, fontSize: 'var(--fs-body)', minHeight: 44 }} disabled={Boolean(busy)} onClick={removeLogo}>
               Remove

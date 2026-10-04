@@ -987,6 +987,42 @@ dialog.confirm-sheet[open] { animation: sheet-in 200ms ease-out both; }
   @keyframes sheet-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
 }
 
+/* ── FILE DROP (UI/UX audit 2026-10 A29, B6, C4) ──────────────────
+   One control for every file: components/ui/FileDrop.tsx. The zone is a real
+   button; "or drop it here" shows only where a mouse can drag. */
+.file-drop {
+  width: 100%; min-height: 128px; padding: 24px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  border: 2px dashed var(--border-md); border-radius: var(--radius-md);
+  background: var(--upload-bg); color: var(--text-1);
+  font: inherit; font-size: var(--fs-body); cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.file-drop:hover:not(:disabled), .file-drop[data-over] { border-color: var(--cyan); background: var(--cyan-dim); }
+.file-drop:disabled { cursor: default; opacity: 0.75; }
+.file-drop-icon { color: var(--cyan); display: flex; }
+.file-drop-label { font-weight: 700; }
+.file-drop-sub { color: var(--text-3); }
+@media (pointer: coarse) { .file-drop-sub { display: none; } }
+.file-drop-hint { margin: 8px 0 0; font-size: var(--fs-body); color: var(--text-3); }
+.file-drop-error { margin: 8px 0 0; font-size: var(--fs-body); color: var(--red); width: 100%; }
+.file-drop-button { font-family: inherit; gap: 8px; }
+.file-drop-button[data-over] { outline: 2px dashed var(--cyan); outline-offset: 2px; }
+
+/* The page-wide "drop it anywhere" hint. Visual only: pointer events pass
+   through, so a FileDrop under it still takes a file dropped onto it. */
+.drop-anywhere {
+  position: fixed; inset: 0; z-index: 90; pointer-events: none;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: color-mix(in srgb, var(--bg-page) 80%, transparent);
+  border: 3px dashed var(--cyan);
+}
+.drop-anywhere p {
+  max-width: 480px; margin: 0; padding: 20px 24px; border-radius: var(--radius-lg);
+  background: var(--bg-card); border: 1px solid var(--border-md);
+  font-size: var(--fs-h3); font-weight: 700; color: var(--text-1); text-align: center; line-height: 1.4;
+}
+
 /* ── TAP TARGETS (accessibility_system.md TOUCH TARGET RULE, audit A4) ──
    Every control is at least 44x44 at every breakpoint, not just on phones.
    Inline styles may set a smaller height; min-height wins over height.

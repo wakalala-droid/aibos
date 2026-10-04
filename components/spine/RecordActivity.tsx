@@ -19,6 +19,8 @@ import {
 } from '@/lib/api';
 import { createEventOrQueue } from '@/lib/outbox';
 import QrScanner from './QrScanner';
+import FileDrop from '@/components/ui/FileDrop';
+import { takePendingFile } from '@/lib/pendingFile';
 
 const TYPES: EventType[] = [
   'Sale', 'Purchase', 'Expense', 'InventoryReceipt', 'InventoryAdjustment',
@@ -119,7 +121,16 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
   // Provenance: which input produced the event being reviewed. Saved on confirm so
   // the Timeline shows the true source (voice/qr/receipt), not "manual".
   const [origin, setOrigin] = useState<EventSource>('manual');
-  const fileRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  // A receipt photo dropped or pasted on any page waits in lib/pendingFile
+  // while the app opens Record; read it as soon as this form is here (C4).
+  const receiptRef = useRef<(f: File) => void>(() => {});
+  useEffect(() => {
+    const pick = () => { const f = takePendingFile('receipt'); if (f) receiptRef.current(f); };
+    pick();
+    window.addEventListener('aibos:pending-file', pick);
+    return () => window.removeEventListener('aibos:pending-file', pick);
+  }, []);
 
   // Voice capture (Web Speech API) — Initiative 2. Progressive enhancement: the
   // mic only appears where the browser supports it; typing always works.
@@ -164,6 +175,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     }
   }
 
+  receiptRef.current = (f: File) => { void handleReceipt(f); };
   async function handleReceipt(file: File) {
     if (fileRef.current) fileRef.current.value = '';  // allow re-picking the same file
     setOrigin('receipt');
@@ -432,31 +444,22 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
             <rect x="8" y="8" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5"/>
           </svg>
         </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={e => { const f = e.target.files?.[0]; if (f) handleReceipt(f); }}
-          style={{ display: 'none' }}
-        />
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          disabled={busy}
-          aria-label="Photograph or upload a receipt"
-          className="touch-target"
+        <FileDrop
+          variant="button" iconOnly photo accept="image/*" capture="environment"
+          label="Photograph or upload a receipt" disabled={busy} pickerRef={fileRef}
+          onFile={(f) => handleReceipt(f)} onError={setError}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3 8a2 2 0 012-2h1.5l1-1.5h5l1 1.5H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+              <circle cx="12" cy="12.5" r="3" stroke="currentColor" strokeWidth="1.5"/>
+            </svg>
+          }
           style={{
             width: 44, minHeight: 44, borderRadius: 10, cursor: busy ? 'default' : 'pointer',
             border: '1px solid var(--border-md)', background: 'var(--bg-input)',
             color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M3 8a2 2 0 012-2h1.5l1-1.5h5l1 1.5H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-            <circle cx="12" cy="12.5" r="3" stroke="currentColor" strokeWidth="1.5"/>
-          </svg>
-        </button>
+        />
         <button
           type="button"
           onClick={() => handleClassify()}

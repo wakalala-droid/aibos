@@ -12,7 +12,9 @@
  * expense category it actually concerns. Where it cannot know — a wage paid to
  * somebody not on the worker list — it ASKS, once, instead of guessing.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import FileDrop from '@/components/ui/FileDrop';
+import { takePendingFile } from '@/lib/pendingFile';
 import SectionCard from '@/components/ui/SectionCard';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
@@ -75,7 +77,6 @@ export default function ImportPage() {
   const { profile } = useProfile();
   const currency = (profile?.currency as string | null) || 'ZMW';
   const currencySymbol = currency === 'ZMW' ? 'K' : currency === 'USD' ? '$' : `${currency} `;
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
   const [phase, setPhase] = useState<'idle' | 'scanning' | 'review' | 'importing' | 'done'>('idle');
@@ -114,6 +115,14 @@ export default function ImportPage() {
     }
   }, []);
 
+  // A spreadsheet dropped on another page arrives here already chosen (C4).
+  useEffect(() => {
+    const pick = () => { const f = takePendingFile('sheet'); if (f) void onPick(f); };
+    pick();
+    window.addEventListener('aibos:pending-file', pick);
+    return () => window.removeEventListener('aibos:pending-file', pick);
+  }, [onPick]);
+
   async function commit(force = false) {
     if (!scan || !file) return;
     setError(null); setRepeat(null); setPhase('importing');
@@ -144,7 +153,6 @@ export default function ImportPage() {
   function reset() {
     setScan(null); setResult(null); setPhase('idle'); setError(null);
     setFile(null); setRepeat(null); setKeep({}); setTypes({}); setAnswers({}); setOpen({}); setAnalysed(false);
-    if (fileRef.current) fileRef.current.value = '';
   }
 
   const keptTables = scan?.tables.filter(t => keep[t.id]) ?? [];
@@ -160,16 +168,13 @@ export default function ImportPage() {
 
       {(phase === 'idle' || phase === 'scanning') && (
         <SectionCard title="Choose a file" subtitle="Excel (.xlsx/.xls) or CSV: every sheet is read together, no tab switching">
-          <input
-            ref={fileRef} type="file" accept=".xlsx,.xls,.csv"
-            onChange={e => { const f = e.target.files?.[0]; if (f) void onPick(f); }}
-            disabled={phase === 'scanning'}
-            style={{
-              display: 'block', width: '100%', padding: '20px', minHeight: 56,
-              border: '1px dashed var(--upload-border)', borderRadius: 10,
-              background: 'var(--upload-bg)', color: 'var(--text-2)',
-              fontSize: 'var(--fs-body)', cursor: 'pointer',
-            }}
+          <FileDrop
+            accept=".xlsx,.xls,.csv"
+            label="Choose a file"
+            hint="Excel or CSV, up to 4 MB."
+            busy={phase === 'scanning'}
+            busyLabel="Reading your file…"
+            onFile={(f) => void onPick(f)}
           />
           {phase === 'scanning' && (
             <p style={{ marginTop: 12, color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>

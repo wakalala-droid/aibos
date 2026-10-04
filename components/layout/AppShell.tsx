@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { MotionConfig } from 'framer-motion';
 import Sidebar from './Sidebar';
 import MobileTabBar from './MobileTabBar';
+import DropAnywhere from './DropAnywhere';
 import { useStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme';
 import { ProfileProvider } from '@/lib/profile';
@@ -146,6 +147,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Simple mode: thumb-reach bottom tabs on phones (hidden at lg+). */}
         <MobileTabBar />
+
+        {/* Drop or paste a receipt or spreadsheet on any page (C4). */}
+        <DropAnywhere />
       </div>
     </MotionConfig>
     </AiAssistantProvider>

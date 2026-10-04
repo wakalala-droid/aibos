@@ -5,6 +5,7 @@
 // the header profile chip; the chip's name + logo are sourced from this page.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import FileDrop from '@/components/ui/FileDrop';
 import { confirmSheet } from '@/lib/confirm';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
@@ -96,7 +97,6 @@ export default function BusinessProfilePage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [logoBusy, setLogoBusy] = useState(false);
   const hydrated = useRef(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   // Populate the form from the loaded profile once.
   useEffect(() => {
@@ -180,10 +180,8 @@ export default function BusinessProfilePage() {
     a picture. /api/uploads/logo does the write with the service key, still
     inside this user's own folder, and saves logo_url in the same step.
   */
-  async function onLogo(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file || !user) return;
+  async function onLogo(file: File) {
+    if (!user) return;
     if (!LOGO_TYPES.includes(file.type)) {
       setSave('error');
       setErrorMsg('Use a PNG, JPG, WEBP or GIF image for the logo.');
@@ -259,15 +257,13 @@ export default function BusinessProfilePage() {
               </span>
             )}
             <div>
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={logoBusy}
+              <FileDrop
+                variant="button" accept="image/png,image/jpeg,image/webp,image/gif" maxBytes={LOGO_MAX_BYTES}
+                label={form.logo_url ? 'Replace logo' : 'Upload logo'} busy={logoBusy}
+                onFile={(f) => void onLogo(f)}
+                onError={(m) => { setSave('error'); setErrorMsg(m); }}
                 style={{ minHeight: 44, padding: '10px 16px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: logoBusy ? 'wait' : 'pointer', opacity: logoBusy ? 0.6 : 1 }}
-              >
-                {logoBusy ? 'Uploading…' : form.logo_url ? 'Replace logo' : 'Upload logo'}
-              </button>
-              <input ref={fileRef} type="file" accept="image/*" onChange={onLogo} aria-label="Upload business logo" style={{ display: 'none' }} />
+              />
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '8px 0 0' }}>
                 PNG or JPG · shown in the header
               </p>

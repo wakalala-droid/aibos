@@ -5,7 +5,8 @@
  * On-hand is derived from events (Slice B). Low-stock items are flagged and also
  * drive the Advisor's LowStockEngine.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import FileDrop from '@/components/ui/FileDrop';
 import { undoable } from '@/lib/toast';
 import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/utils';
@@ -112,7 +113,6 @@ export default function InventoryPage() {
   }
 
   // Loyverse catalog import (audit #29) — idempotent, existing names skipped.
-  const loyverseRef = useRef<HTMLInputElement | null>(null);
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<string | null>(null);
   async function importLoyverse(file: File) {
@@ -139,18 +139,12 @@ export default function InventoryPage() {
       />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
-        <input
-          ref={loyverseRef}
-          type="file"
-          accept=".csv,text/csv"
-          onChange={e => { const f = e.target.files?.[0]; if (f) void importLoyverse(f); e.target.value = ''; }}
-          style={{ display: 'none' }}
+        <FileDrop
+          variant="button" accept=".csv,text/csv" label="Import from Loyverse"
+          busy={importing} busyLabel="Importing…"
+          onFile={(f) => void importLoyverse(f)} onError={setError}
+          style={{ padding: '8px 14px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer', opacity: importing ? 0.7 : 1 }}
         />
-        <button type="button" className="touch-target" disabled={importing}
-          onClick={() => loyverseRef.current?.click()}
-          style={{ padding: '8px 14px', minHeight: 44, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer', opacity: importing ? 0.7 : 1 }}>
-          {importing ? 'Importing…' : 'Import from Loyverse'}
-        </button>
         {items.length > 0 && (
           <button type="button" className="touch-target"
             onClick={() => { setTakeMode(v => !v); setCounts({}); setTakeMsg(null); }}
