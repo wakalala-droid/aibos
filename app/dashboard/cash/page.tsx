@@ -1,6 +1,12 @@
 'use client';
 import { Suspense, useEffect, useState } from 'react';
 import WhereMoneyWent from '@/components/dashboard/WhereMoneyWent';
+import Link from 'next/link';
+import { ArrowUpRight } from 'lucide-react';
+import MoneyHero from '@/components/home/MoneyHero';
+import WhereItIs from '@/components/home/WhereItIs';
+import Panel from '@/components/home/Panel';
+import BigMoney from '@/components/home/BigMoney';
 import { useStore } from '@/lib/store';
 import { authHeaders, getCashByMethod, type CashByMethod } from '@/lib/api';
 import CashForecastFan from '@/components/dashboard/CashForecastFan';
@@ -131,7 +137,45 @@ export default function CashPage() {
 
       <SimpleSummary page="cash" />
 
-      {/* KPI cards */}
+      {/* Redesign pilot: from recorded books, the money hero with its living
+          line and where the money is, then three plain facts. */}
+      {fromBooks && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 }}>
+          <div className="home-hero">
+            <MoneyHero />
+            <WhereItIs />
+          </div>
+          <div className="home-trio">
+            <Panel title="Spending a month" labelledBy="money-burn-title"
+              action={<Link href="/dashboard/timeline?type=Expense" className="icon-pill" aria-label="See expenses"><ArrowUpRight aria-hidden="true" /></Link>}>
+              <BigMoney value={monthlyBurn} sym={sym} size="lg" />
+              <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>On average, from your records</p>
+            </Panel>
+            <Panel title="How long it lasts" labelledBy="money-runway-title">
+              <span className="money money-lg" style={{ color: notShrinking ? 'var(--green)' : runwayColor }}>
+                {notShrinking ? 'Not shrinking' : `${runway} months`}
+              </span>
+              <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                {notShrinking ? 'Money coming in covers your spending' : `At this spending, against a ${runwayTarget}-month target`}
+              </p>
+            </Panel>
+            <Panel title={outlookCard.label.charAt(0) + outlookCard.label.slice(1).toLowerCase()} labelledBy="money-outlook-title">
+              <span className="money money-lg">{outlookCard.value}</span>
+              <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{outlookCard.sub}</p>
+            </Panel>
+          </div>
+          {split && (split.cash < 0 || split.mobile_money < 0 || split.bank < 0 || Math.abs(split.unsaid) > 0.005) && (
+            <p style={{ fontSize: 'var(--fs-label)', lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
+              A figure below zero means more was recorded going out that way than coming in. Record money you move
+              between them (for example, cash taken to the bank) and say how each payment was made and these even out.
+              Together they always add up to your {fmt(split.total, false, sym)}.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* KPI cards: for figures from an uploaded file */}
+      {!fromBooks && (
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
           label="CASH POSITION" value={fmt(currentCash, false, sym)} sub="current balance"
@@ -163,35 +207,6 @@ export default function CashPage() {
           sparkColor="var(--purple)" delay={0.18}
         />
       </div>
-
-      {/* Where the money is (upgrade 9): the one cash figure, split by how each
-          payment was made. Shown for recorded books only. */}
-      {fromBooks && split && (
-        <SectionCard title="Where your money is" subtitle="Your cash, split by how each payment was made" delay={0.08} style={{ marginBottom: 20 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12 }}>
-            {([
-              ['Cash', split.cash],
-              ['Mobile money', split.mobile_money],
-              ['Bank and card', split.bank],
-              ...(Math.abs(split.unsaid) > 0.005 ? [['Not said how', split.unsaid] as [string, number]] : []),
-              ...(Math.abs(split.opening) > 0.005 ? [['Starting balance', split.opening] as [string, number]] : []),
-            ] as [string, number][]).map(([label, value]) => (
-              <div key={label} style={{ padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-badge)' }}>
-                <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
-                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: value < 0 ? 'var(--crit)' : 'var(--text-1)', marginTop: 2 }}>
-                  {fmt(value, false, sym)}
-                </div>
-              </div>
-            ))}
-          </div>
-          {(split.cash < 0 || split.mobile_money < 0 || split.bank < 0 || Math.abs(split.unsaid) > 0.005) && (
-            <p style={{ fontSize: 'var(--fs-label)', lineHeight: 1.6, color: 'var(--text-4)', margin: '12px 0 0' }}>
-              A figure below zero means more was recorded going out that way than coming in. Record money you move
-              between them (for example, cash taken to the bank) and say how each payment was made and these even out.
-              Together they always add up to your {fmt(split.total, false, sym)}.
-            </p>
-          )}
-        </SectionCard>
       )}
 
       {/* Where the money went this month, from the recorded entries (C5). */}

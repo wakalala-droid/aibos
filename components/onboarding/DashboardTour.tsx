@@ -26,7 +26,7 @@ interface Stop {
 
 const STOPS: Stop[] = [
   { anchor: 'ask-bar',     title: 'Just ask',              body: 'Type any question about your business (“How much cash do I have?”) and AIBOS answers from your real records. Never a made-up number.' },
-  { anchor: 'today-cards', title: 'Your day at a glance',  body: 'Money right now, today\'s sales and whether stock needs attention. These update themselves as you record.' },
+  { anchor: 'today-cards', title: 'Your day at a glance',  body: 'Today\'s sales, money owed to you and whether stock needs attention. These update themselves as you record.' },
   { anchor: 'nav-record',  title: 'Record what happens',   body: 'Sold something? Paid someone? Say it in plain words and AIBOS does the bookkeeping: cash, stock and debts stay current.' },
   { anchor: 'ask-aibos',   title: 'AIBOS is always here',  body: 'Your AI advisor lives one click away on every page. You can also press and hold any card to have it explained.' },
   { anchor: 'mode-toggle', title: 'Simple or Pro',         body: 'Simple mode shows the essentials. Flip to Pro any time for every chart, forecast and intelligence engine: nothing is hidden for good.' },

@@ -22,18 +22,18 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
     title: 'AIBOS',
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0a0e1a',
+  themeColor: '#f4f3ef',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-theme="dark" suppressHydrationWarning>
+    <html lang="en" data-theme="light" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
         {/* The opening screen's mark, fetched with the page rather than after it. */}

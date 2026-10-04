@@ -43,6 +43,8 @@ export interface FileDropProps {
   style?: React.CSSProperties;
   /** Lets another button on the page open the same picker. */
   pickerRef?: React.MutableRefObject<HTMLInputElement | null>;
+  /** Extra class for the "button" variant (e.g. "pill"). */
+  className?: string;
 }
 
 const ext = (name: string) => (name.match(/\.[^.]+$/)?.[0] ?? '').toLowerCase();
@@ -70,7 +72,7 @@ function kindsInWords(accept: string): string {
 
 export default function FileDrop({
   onFile, accept, label, hint, variant = 'zone', capture, maxBytes, photo = false,
-  disabled = false, busy = false, busyLabel = 'Uploading…', iconOnly = false, icon, onError, style, pickerRef,
+  disabled = false, busy = false, busyLabel = 'Uploading…', iconOnly = false, icon, onError, style, pickerRef, className,
 }: FileDropProps) {
   const input = useRef<HTMLInputElement | null>(null);
   const hintId = useId();
@@ -139,7 +141,7 @@ export default function FileDrop({
           disabled={off}
           aria-label={iconOnly ? label : undefined}
           data-over={over || undefined}
-          className="file-drop-button"
+          className={`file-drop-button${className ? ` ${className}` : ''}`}
           style={style}
         >
           {icon}

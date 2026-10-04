@@ -8,7 +8,7 @@ import InsightCard from '@/components/ui/InsightCard';
 import AICFOChat from '@/components/chat/AICFOChat';
 import SimpleHome from '@/components/dashboard/SimpleHome';
 import DecisionsQueue from '@/components/dashboard/DecisionsQueue';
-import TodayBrief from '@/components/dashboard/TodayBrief';
+import HomeTop from '@/components/home/HomeTop';
 import { useLiveCustomerIntel } from '@/hooks/useLiveCustomerIntel';
 import MilestoneBanner from '@/components/dashboard/MilestoneBanner';
 import ActivationProgress from '@/components/dashboard/ActivationProgress';
@@ -18,11 +18,9 @@ import FeatureGate from '@/components/ui/FeatureGate';
 import UpgradeTrigger from '@/components/ui/UpgradeTrigger';
 import BriefSubscribe from '@/components/ui/BriefSubscribe';
 import DataManifestCard from '@/components/ui/DataManifestCard';
-import UpcomingStrip from '@/components/schedule/UpcomingStrip';
 import CustomMetricsCard from '@/components/ui/CustomMetricsCard';
 import BorderGlow from '@/components/ui/BorderGlow';
 import EngineScoreCard from '@/components/ui/EngineScoreCard';
-import PageHeader from '@/components/ui/PageHeader';
 import EmptyState from '@/components/ui/EmptyState';
 import { bloomProps } from '@/lib/cometStyle';
 import Link from 'next/link';
@@ -218,17 +216,11 @@ function OverviewPage() {
 
   return (
     <>
-      {/* ── Page header ─────────────────────────────────────────────────── */}
-      <PageHeader
-        title="Home"
-        subtitle="Your day first, then money, customers and operations."
-      />
-
-      {/* ── The day, answered (audit #9): brief → decide → the numbers.
-             Everything below this block is the evidence for it. ─────────── */}
+      {/* ── The day, answered: the redesigned home top (shared with Simple
+             mode), then what to decide, then the numbers behind it. ─────── */}
       <ActivationProgress />
       <MilestoneBanner />
-      <TodayBrief />
+      <HomeTop />
       <DecisionsQueue />
       <div id="decide">
         <RecommendationList limit={3} title="Decide next" subtitle="From your Digital Twin: evidence attached" seeAllHref="/dashboard/brief?tab=advisor" />
@@ -237,8 +229,10 @@ function OverviewPage() {
       {/* ── Contextual upgrade trigger (only at moments of demonstrated value) ── */}
       <UpgradeTrigger />
 
-      {/* ── Coming up — next commitments from the Scheduler (all tiers) ──── */}
-      <UpcomingStrip />
+      {/* Your numbers: the analysis that backs the day above. */}
+      <h2 style={{ margin: '8px 0 16px', fontSize: 'var(--fs-h2)', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-1)' }}>
+        Your numbers
+      </h2>
 
       {/* ── Engine score strip ──────────────────────────────────────────── */}
       <div className="grid-engines" style={{ marginBottom: 24 }}>
