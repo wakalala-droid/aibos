@@ -26,7 +26,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 CODE_DIRS = ("app", "components", "lib", "hooks")
-SKIP = ("node_modules", ".next", "app/admin/design")   # the design page shows the old sizes on purpose
+SKIP = ("node_modules", ".next")
 
 PX = re.compile(r"fontSize:\s*['\"]?(\d+(?:\.\d+)?)(px|rem)?['\"]?\s*[,}]")
 RADIUS = re.compile(r"borderRadius:\s*['\"]?(4|5|8|12)(?:px)?['\"]?\s*[,}\s]")

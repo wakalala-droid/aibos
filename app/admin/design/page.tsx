@@ -13,14 +13,17 @@ import EmptyState from '@/components/ui/EmptyState';
 import PageHeader from '@/components/ui/PageHeader';
 import DataTable, { type DataTableColumn } from '@/components/ui/DataTable';
 
+// The scale since the UI/UX audit of October 2026 (Part E): nothing in a
+// sentence under 18px, spaced capitals 16px. Values live in globals.css.
 const TYPE_SCALE = [
-  { token: '--fs-display', px: '32px', sample: 'K284,500', note: 'KPI values: one per card' },
-  { token: '--fs-h1',      px: '28px', sample: 'Page display heading', note: 'reserved' },
-  { token: '--fs-h2',      px: '22px', sample: 'Page title (PageHeader)', note: 'one per page' },
-  { token: '--fs-h3',      px: '18px', sample: 'Section card title', note: '' },
-  { token: '--fs-body',    px: '14px', sample: 'Body copy, nav labels, buttons and inputs.', note: '' },
-  { token: '--fs-data',    px: '13px', sample: 'Table cells · dense data · sublines', note: '' },
-  { token: '--fs-label',   px: '12px', sample: 'MICRO LABELS · EYEBROWS · BADGES', note: 'the floor: nothing smaller' },
+  { token: '--fs-display', px: '36px', sample: 'K284,500', note: 'KPI values: one per card' },
+  { token: '--fs-h1',      px: '30px', sample: 'Page display heading', note: 'reserved' },
+  { token: '--fs-h2',      px: '24px', sample: 'Page title (PageHeader)', note: 'one per page' },
+  { token: '--fs-h3',      px: '20px', sample: 'Section card title', note: '' },
+  { token: '--fs-body',    px: '18px', sample: 'Body copy, nav labels, buttons and inputs.', note: 'the floor for words' },
+  { token: '--fs-data',    px: '18px', sample: 'Table cells, dense data, sub-lines', note: '' },
+  { token: '--fs-label',   px: '18px', sample: 'Time stamps, chips, helper text', note: '' },
+  { token: '--fs-caps',    px: '16px', sample: 'SPACED CAPITALS ONLY', note: 'labels, eyebrows, badges' },
 ];
 
 const COLOR_GROUPS: { name: string; tokens: string[] }[] = [
@@ -149,7 +152,11 @@ export default function DesignGalleryPage() {
             <li>Geist is the only typeface: every text, every number, everywhere.</li>
             <li>Every card ships the bento dot texture + cursor BorderGlow (core chrome).</li>
             <li>Glow light effects are dark-mode only; light mode keeps static borders + dot grain.</li>
-            <li>Font sizes come from the 7 tokens; 12px is the floor.</li>
+            <li>Font sizes come from the tokens: nothing in a sentence under 18px, spaced capitals 16px.</li>
+            <li>Every word reads at 4.5:1 or better in both themes (aim 7:1); every control is at least 44px.</li>
+            <li>Nothing animates in when a page opens; motion is cause and effect only.</li>
+            <li>Corners: 6, 10 or 16 (cards 14). No long dashes or emoji in on-screen words.</li>
+            <li>Everyday removals get Undo; money and customer actions ask in the confirm sheet. Never the browser&rsquo;s pop-ups.</li>
             <li>Status colours (good/warn/crit/info) never double as brand or series colours.</li>
             <li>Motion communicates state; auto-playing decorative loops are banned.</li>
             <li>2px line indicators for status/active marking: never 3px ribbons.</li>
