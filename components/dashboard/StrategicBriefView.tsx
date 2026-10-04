@@ -16,7 +16,7 @@ function BriefPoint({ text, index, colour }: { text: string; index: number; colo
   const c = colour ?? 'var(--cyan)';
   return (
     <motion.div
-      initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + index * 0.08 }}
+      initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + index * 0.08 }}
       style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '13px 0', borderTop: index > 0 ? '1px solid var(--border)' : 'none' }}
     >
       <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: `color-mix(in srgb, ${c} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${c} 25%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-label)', fontWeight: 700, color: c }}>
@@ -31,7 +31,7 @@ function RecommendationCard({ title, recommendation, priority, index }: { title:
   const priorityColour = priority === 'high' || priority === 'critical' ? 'var(--crit)' : priority === 'medium' ? 'var(--warn)' : 'var(--good)';
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + index * 0.07 }}
+      initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + index * 0.07 }}
       style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 12, alignItems: 'flex-start' }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, paddingTop: 3 }}>
@@ -168,7 +168,7 @@ export default function StrategicBriefView({
             <svg width="130" height="130" viewBox="0 0 130 130">
               <circle cx="65" cy="65" r="52" fill="none" stroke="var(--border)" strokeWidth="10" />
               <motion.circle cx="65" cy="65" r="52" fill="none" stroke={healthColour} strokeWidth="10" strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 52}`} strokeDashoffset={2 * Math.PI * 52}
+                strokeDasharray={`${2 * Math.PI * 52}`} strokeDashoffset={2 * Math.PI * 52} initial={false}
                 animate={{ strokeDashoffset: 2 * Math.PI * 52 * (1 - (scoreReady ? health.score : 0) / 100) }}
                 transition={{ duration: 1.4, ease: 'easeOut', delay: 0.3 }} style={{ transform: 'rotate(-90deg)', transformOrigin: '65px 65px' }} />
             </svg>
@@ -208,7 +208,7 @@ export default function StrategicBriefView({
                 </div>
                 <div className="progress-track">
                   <motion.div className="progress-fill" style={{ background: profitColour(bestProfit) }}
-                    initial={{ width: 0 }} animate={{ width: '100%' }}
+                    initial={false} animate={{ width: '100%' }}
                     transition={{ duration: 1, ease: 'easeOut', delay: 0.4 }} />
                 </div>
                 <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '6px 0 0' }}>
@@ -227,7 +227,7 @@ export default function StrategicBriefView({
                   </div>
                   <div className="progress-track">
                     <motion.div className="progress-fill" style={{ background: profitColour(bestProfit) }}
-                      initial={{ width: 0 }} animate={{ width: barWidth(bestProfit) }}
+                      initial={false} animate={{ width: barWidth(bestProfit) }}
                       transition={{ duration: 1, ease: 'easeOut', delay: 0.4 }} />
                   </div>
                 </div>
@@ -241,7 +241,7 @@ export default function StrategicBriefView({
                   </div>
                   <div className="progress-track">
                     <motion.div className="progress-fill" style={{ background: profitColour(worstProfit) }}
-                      initial={{ width: 0 }} animate={{ width: barWidth(worstProfit) }}
+                      initial={false} animate={{ width: barWidth(worstProfit) }}
                       transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }} />
                   </div>
                 </div>
@@ -259,7 +259,7 @@ export default function StrategicBriefView({
                 ].map((item) => (
                   <div key={item.label} style={{ flex: 1 }}>
                     <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.label}</p>
-                    <div className="progress-track" style={{ marginBottom: 3 }}><motion.div className="progress-fill" style={{ background: item.measured ? item.colour : 'var(--border-md)' }} initial={{ width: 0 }} animate={{ width: item.measured ? `${item.score}%` : '0%' }} transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }} /></div>
+                    <div className="progress-track" style={{ marginBottom: 3 }}><motion.div className="progress-fill" style={{ background: item.measured ? item.colour : 'var(--border-md)' }} initial={false} animate={{ width: item.measured ? `${item.score}%` : '0%' }} transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }} /></div>
                     <span style={{ fontSize: 'var(--fs-label)', color: item.measured ? item.colour : 'var(--text-4)', fontWeight: 700 }}>
                       {item.measured ? item.score : 'No data yet'}
                     </span>

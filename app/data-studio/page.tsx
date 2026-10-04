@@ -552,7 +552,7 @@ export default function DataStudio() {
             </div>
           ) : (
             <div style={{ overflowX: "auto" }}>
-              <table className="w-full" style={{ borderCollapse: "collapse" }}>
+              <table className="w-full card-table" style={{ borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ background: "var(--bg-page)", borderBottom: "1px solid var(--border)" }}>
                     {["#", "Period", "Revenue", "Costs", "Profit", "Margin"].map((h) => (

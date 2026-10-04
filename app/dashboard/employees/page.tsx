@@ -339,7 +339,7 @@ export default function EmployeesPage() {
           {/* Preview table */}
           {preview && preview.payslips.length > 0 && (
             <div style={{ overflowX: 'auto', marginBottom: 12 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 460 }}>
+              <table className="card-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: 460 }}>
                 <thead>
                   <tr>
                     <th style={{ ...th, textAlign: 'left' }}>Employee</th>

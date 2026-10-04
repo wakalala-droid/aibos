@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 function BriefPoint({ text, index }: { text: string; index: number }) {
   const content = text.replace(/^\d+\.\s*/, '').trim();
   return (
-    <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + index * 0.07 }}
+    <motion.div initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + index * 0.07 }}
       style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: index > 0 ? '1px solid var(--border)' : 'none' }}>
       <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: 'var(--cyan-dim)', border: '1px solid rgba(0,212,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--cyan)' }}>{index + 1}</span>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>{content}</p>
@@ -70,7 +70,7 @@ export default function OpsBriefView() {
                 <>
                   <p style={{ fontSize: 'var(--fs-display)', fontWeight: 800, color: scoreColor(item.s), margin: '8px 0 10px', letterSpacing: '-0.03em' }}>{item.s}</p>
                   <div className="progress-track">
-                    <motion.div className="progress-fill" style={{ background: scoreColor(item.s) }} initial={{ width: 0 }} animate={{ width: `${item.s}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
+                    <motion.div className="progress-fill" style={{ background: scoreColor(item.s) }} initial={false} animate={{ width: `${item.s}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
                   </div>
                 </>
               ) : (

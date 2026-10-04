@@ -53,7 +53,8 @@ export default function LiveDashboard() {
         </div>
 
         {/* Real KPI cards — cursor glow + recharts sparklines */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
+        {/* Fit, never clip, on a phone (UI/UX audit A17). */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 12, marginBottom: 16 }}>
           <KPICard label="REVENUE" value={kz(last.Revenue)} growth={mom(last.Revenue, prev.Revenue)} sub="vs last month" sparkData={revSpark} sparkColor="var(--spark-revenue)" icon={RevIcon} iconBg="rgba(96,165,250,0.15)" delay={0} />
           <KPICard label="NET PROFIT" value={kz(lastProfit)} growth={mom(lastProfit, prevProfit)} sub="vs last month" sparkData={profSpark} sparkColor="var(--spark-profit)" icon={ProfitIcon} iconBg="rgba(52,211,153,0.15)" delay={0.06} />
           <KPICard label="CASH ON HAND" value={kz(cashLast)} growth={mom(cashLast, cashPrev)} sub="vs last month" sparkData={DEMO_CASH} sparkColor="var(--cyan)" icon={CashIcon} iconBg="rgba(0,212,255,0.15)" delay={0.12} />
@@ -62,15 +63,15 @@ export default function LiveDashboard() {
 
         {/* Real revenue/profit chart */}
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 12, padding: '14px 14px 10px', marginBottom: 16 }}>
-          <p style={{ margin: '0 0 6px', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Revenue Intelligence · monthly</p>
+          <p style={{ margin: '0 0 6px', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Sales and profit by month</p>
           <RevenueChart data={chartData} sym="K" height={170} />
         </div>
 
         {/* Real engine score cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-          <EngineScoreCard label="FINANCIAL" sub="Cash · P&L" score={DEMO_SCORES.e1_score} colour="var(--e1)" href="/dashboard/cash" />
-          <EngineScoreCard label="CUSTOMER" sub="RFM · Churn" score={DEMO_SCORES.e2_score} colour="var(--e2)" href="/dashboard/customers" />
-          <EngineScoreCard label="OPERATIONS" sub="POS · Velocity" score={DEMO_SCORES.e3_score} colour="var(--e3)" href="/dashboard/pos" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 10 }}>
+          <EngineScoreCard label="MONEY" sub="Cash and profit" score={DEMO_SCORES.e1_score} colour="var(--e1)" href="/dashboard/cash" />
+          <EngineScoreCard label="CUSTOMERS" sub="Who buys" score={DEMO_SCORES.e2_score} colour="var(--e2)" href="/dashboard/customers" />
+          <EngineScoreCard label="OPERATIONS" sub="What sells" score={DEMO_SCORES.e3_score} colour="var(--e3)" href="/dashboard/pos" />
         </div>
       </div>
     </div>

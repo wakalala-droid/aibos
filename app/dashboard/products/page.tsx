@@ -106,7 +106,7 @@ export default function ProductsPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
             {basketPairs.slice(0, 9).map((pair, i) => (
               <motion.div key={i}
-                initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 + i * 0.04 }}
+                initial={false} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 + i * 0.04 }}
                 style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: 8, padding: '11px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

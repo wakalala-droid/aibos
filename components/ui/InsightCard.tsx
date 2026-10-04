@@ -1,5 +1,4 @@
 'use client';
-import { motion } from 'framer-motion';
 
 interface InsightCardProps {
   insight: string;
@@ -19,16 +18,11 @@ const ENGINE_COLORS: Record<string, string> = {
   E1: 'var(--e1)', E2: 'var(--e2)', E3: 'var(--e3)',
 };
 
-export default function InsightCard({ insight, action, priority, sourceEngines = [], index = 0 }: InsightCardProps) {
+export default function InsightCard({ insight, action, priority, sourceEngines = [] }: InsightCardProps) {
   const cfg = PRIORITY_MAP[priority] ?? PRIORITY_MAP.low;
 
   return (
-    <motion.div
-      className="insight-card"
-      initial={{ opacity: 0, x: -8 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.35, delay: index * 0.07 }}
-    >
+    <div className="insight-card">
       {/* Left: severity indicator */}
       <div className="insight-severity">
         <div className="severity-dot" style={{ background: cfg.dot }} />
@@ -59,6 +53,6 @@ export default function InsightCard({ insight, action, priority, sourceEngines =
           </span>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }

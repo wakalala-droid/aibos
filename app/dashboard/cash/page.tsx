@@ -196,7 +196,7 @@ export default function CashPage() {
       )}
 
       {/* Runway status bar */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         style={{ background: 'var(--bg-card)', border: `1px solid var(--border)`, borderRadius: 12, padding: '20px 24px', marginBottom: 20, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <div>
@@ -216,7 +216,7 @@ export default function CashPage() {
         {/* Runway bar */}
         <div style={{ position: 'relative', height: 8, borderRadius: 8, background: 'var(--border)', overflow: 'hidden', marginBottom: 10 }}>
           <motion.div style={{ height: '100%', background: runwayColor, borderRadius: 8 }}
-            initial={{ width: 0 }} animate={{ width: `${runwayPct}%` }}
+            initial={false} animate={{ width: `${runwayPct}%` }}
             transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }} />
           {/* Target marker */}
           <div style={{ position: 'absolute', left: `${Math.min((12 / runwayTarget) * 100, 98)}%`, top: 0, bottom: 0, width: 2, background: 'var(--text-4)', opacity: 0.5 }} />

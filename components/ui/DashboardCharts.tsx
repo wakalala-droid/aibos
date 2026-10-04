@@ -78,7 +78,7 @@ export function RunwayBar({ runway, target = 18 }: { runway: number; target?: nu
         <span style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color }}>{runway}mo <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontWeight: 400 }}>/ {target}mo</span></span>
       </div>
       <div style={{ position: 'relative', height: 8, borderRadius: 8, background: 'var(--border)', overflow: 'hidden', marginBottom: 10 }}>
-        <motion.div style={{ height: '100%', background: color, borderRadius: 8 }} initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 1.2, ease: 'easeOut' }} />
+        <motion.div style={{ height: '100%', background: color, borderRadius: 8 }} initial={false} animate={{ width: `${pct}%` }} transition={{ duration: 1.2, ease: 'easeOut' }} />
         <div style={{ position: 'absolute', left: `${Math.min((12 / target) * 100, 98)}%`, top: 0, bottom: 0, width: 2, background: 'var(--text-4)', opacity: 0.5 }} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>

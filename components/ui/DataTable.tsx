@@ -77,6 +77,10 @@ export default function DataTable<T>({
       : { key, dir: 'desc' }));
   };
   const onFilter = (i: number) => { setActiveFilter(i); setPage(0); };
+  // On phones the header row is hidden (rows become cards), so sorting moves
+  // into one picker above the cards. Numbers read high to low, words A to Z.
+  const sortable = columns.filter(c => c.sortValue);
+  const numeric = (c: DataTableColumn<T>) => rows.length > 0 && typeof c.sortValue!(rows[0]) === 'number';
 
   const chipStyle = (on: boolean): React.CSSProperties => ({
     padding: '4px 12px', borderRadius: 999, cursor: 'pointer',
@@ -100,6 +104,26 @@ export default function DataTable<T>({
             </button>
           ))}
         </div>
+      )}
+
+      {sortable.length > 0 && (
+        <label className="dt-sort-mobile">
+          <span>Sort by</span>
+          <select
+            value={sort ? `${sort.key}:${sort.dir}` : ''}
+            onChange={(e) => {
+              const [key, dir] = e.target.value.split(':');
+              setPage(0);
+              setSort(key ? { key, dir: dir as 'asc' | 'desc' } : null);
+            }}
+          >
+            <option value="">As listed</option>
+            {sortable.flatMap(c => [
+              <option key={`${c.key}:desc`} value={`${c.key}:desc`}>{c.label}, {numeric(c) ? 'highest first' : 'Z to A'}</option>,
+              <option key={`${c.key}:asc`} value={`${c.key}:asc`}>{c.label}, {numeric(c) ? 'lowest first' : 'A to Z'}</option>,
+            ])}
+          </select>
+        </label>
       )}
 
       <div style={{ overflowX: 'auto' }}>
@@ -141,7 +165,7 @@ export default function DataTable<T>({
             {paged.map((row, i) => (
               <tr key={rowKey(row, i)}>
                 {columns.map(col => (
-                  <td key={col.key} style={col.align === 'right' ? { textAlign: 'right' } : undefined}>
+                  <td key={col.key} data-label={col.label} style={col.align === 'right' ? { textAlign: 'right' } : undefined}>
                     {col.render(row, safePage * pageSize + i)}
                   </td>
                 ))}

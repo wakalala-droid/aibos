@@ -753,6 +753,82 @@ h1, h2, h3, h4 { line-height: 1.25; }
   border-bottom: none;
 }
 
+/* ── TABLES AS CARDS ON PHONES (UI/UX audit 2026-10 A18, B3) ──
+   Below 768px each row is a card and each value sits beside its column name,
+   read from data-label (DataTable writes it; components/ui/TableCards.tsx adds
+   it to every other table). No sideways scrolling at small sizes. A table that
+   must stay a grid takes class "keep-table". */
+.dt-sort-mobile { display: none; }
+@media (max-width: 767px) {
+  table.data-table:not(.keep-table),
+  table.card-table:not(.keep-table) {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    border-collapse: separate;
+  }
+  table.data-table:not(.keep-table) thead,
+  table.card-table:not(.keep-table) thead {
+    /* Hidden on screen, still read: the column names now sit in each card. */
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+  }
+  table.data-table:not(.keep-table) tbody,
+  table.card-table:not(.keep-table) tbody,
+  table.data-table:not(.keep-table) tfoot,
+  table.card-table:not(.keep-table) tfoot { display: block; }
+  table.data-table:not(.keep-table) tr,
+  table.card-table:not(.keep-table) tr {
+    display: block;
+    padding: 4px 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+  }
+  table.data-table:not(.keep-table) tr:hover td { background: transparent; }
+  table.data-table:not(.keep-table) td,
+  table.data-table:not(.keep-table) tbody th,
+  table.card-table:not(.keep-table) td,
+  table.card-table:not(.keep-table) tbody th {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    width: auto !important;
+    padding: 10px 0 !important;
+    border: none !important;
+    border-bottom: 1px solid var(--table-border) !important;
+    text-align: right !important;
+    font-size: var(--fs-data);
+    white-space: normal !important;
+  }
+  table.data-table:not(.keep-table) tr > :last-child,
+  table.card-table:not(.keep-table) tr > :last-child { border-bottom: none !important; }
+  table.data-table:not(.keep-table) td[data-label]:not([data-label=""])::before,
+  table.data-table:not(.keep-table) tbody th[data-label]:not([data-label=""])::before,
+  table.card-table:not(.keep-table) td[data-label]:not([data-label=""])::before,
+  table.card-table:not(.keep-table) tbody th[data-label]:not([data-label=""])::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    max-width: 50%;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-3);
+  }
+  /* A cell with nothing in it adds no line to the card. */
+  table.data-table:not(.keep-table) td:empty,
+  table.card-table:not(.keep-table) td:empty { display: none !important; }
+  .dt-sort-mobile {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    margin-bottom: 12px; font-size: var(--fs-body); color: var(--text-2);
+  }
+  .dt-sort-mobile select {
+    flex: 1; min-width: 180px; padding: 8px 12px; border-radius: var(--radius-md);
+    border: 1px solid var(--border-md); background: var(--bg-input); color: var(--text-1); font-size: var(--fs-body);
+  }
+}
+
 /* ── SKELETON SHIMMER ───────────────────────────────────────── */
 /* Single shimmer sweep, 1.4s loop (motion_governance.md). Reduced-motion
    media query below freezes it to a static muted block. */

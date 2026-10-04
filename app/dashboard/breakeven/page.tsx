@@ -116,7 +116,7 @@ export default function BreakevenPage() {
       </div>
 
       {/* Status banner */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         style={{ background: 'var(--bg-card)', border: `1px solid ${statusColor}`, borderRadius: 12, padding: '18px 22px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: 'var(--shadow-card)' }}>
         <div>
           <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Breakeven Status</p>
@@ -158,7 +158,7 @@ export default function BreakevenPage() {
               <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>{item.label}</p>
               <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: item.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{fmt(item.value, false, sym)}</p>
               <div className="progress-track" style={{ marginBottom: 6 }}>
-                <motion.div className="progress-fill" style={{ background: item.color }} initial={{ width: 0 }} animate={{ width: `${item.pct}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
+                <motion.div className="progress-fill" style={{ background: item.color }} initial={false} animate={{ width: `${item.pct}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
               </div>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>{item.desc}</p>
             </div>

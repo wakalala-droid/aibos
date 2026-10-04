@@ -15,7 +15,7 @@ function RiskBar({ risk }: { risk: number }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <div className="progress-track" style={{ flex: 1 }}>
         <motion.div className="progress-fill" style={{ background: color }}
-          initial={{ width: 0 }} animate={{ width: `${risk}%` }}
+          initial={false} animate={{ width: `${risk}%` }}
           transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }} />
       </div>
       <span style={{ fontSize: 'var(--fs-label)', color, minWidth: 30, textAlign: 'right' }}>
@@ -94,7 +94,7 @@ export default function ChurnPage() {
           </p>
           {high.map((r, i) => (
             <motion.div key={r.customer_id}
-              initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.06 }}
+              initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.06 }}
               style={{ background: 'var(--bg-card)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 12, padding: '18px 20px', marginBottom: 10, position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-card)' }}
             >
               {/* Left accent bar */}
@@ -131,7 +131,7 @@ export default function ChurnPage() {
           </p>
           {med.map((r, i) => (
             <motion.div key={r.customer_id}
-              initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.06 }}
+              initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.06 }}
               style={{ background: 'var(--bg-card)', border: '1px solid rgba(251,191,36,0.20)', borderRadius: 12, padding: '16px 18px', marginBottom: 8, position: 'relative', boxShadow: 'var(--shadow-card)' }}
             >
               <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: 'var(--warn)', borderRadius: '12px 0 0 12px' }} />

@@ -49,7 +49,7 @@ function CardFrame({
   return (
     <motion.div
       className="section-card"
-      initial={{ opacity: 0, y: 8 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, delay, ease: 'easeOut' }}
       style={{ position: 'relative', overflow: 'hidden', borderColor: `color-mix(in srgb, ${colour} 22%, var(--border))` }}

@@ -1,8 +1,6 @@
 'use client';
-import { useId } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import Sparkline from './Sparkline';
 import BorderGlow from './BorderGlow';
 import { bloomProps } from '@/lib/cometStyle';
 import { fmt } from '@/lib/utils';
@@ -41,11 +39,9 @@ const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
 export default function KPICard({
   label, sublabel, value, sub = 'vs prior period',
   growth, change, points = false, icon, iconBg = 'rgba(96,165,250,0.15)',
-  sparkData, sparkColor = '#60a5fa', delay = 0, score, goodWhenUp = true,
+  sparkData, sparkColor = '#60a5fa', score, goodWhenUp = true,
   explainId, drillHref, drillLabel = 'See the records',
 }: KPICardProps) {
-  const spark = sparkData?.map((v, i) => ({ v, i }));
-  const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
   // Badge colour reflects good/bad, not just direction: rising costs are red.
   const dir = change ? change.diff : growth;
   const badgeGood = dir !== undefined && (goodWhenUp ? dir >= 0 : dir <= 0);
@@ -57,12 +53,9 @@ export default function KPICard({
   const bloom = bloomProps(score, sparkColor);
 
   return (
-    <motion.div
-      style={{ height: '100%' }}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-    >
+    // No entrance animation (UI/UX audit 2026-10 A16): the figures are there
+    // the moment the page is, which matters most on a slow phone.
+    <div style={{ height: '100%' }}>
     <BorderGlow
       glowColor={CURSOR_GLOW}
       backgroundColor="var(--bg-card)"
@@ -85,7 +78,9 @@ export default function KPICard({
         <span className="bento-tex" aria-hidden="true" />
 
         {/* Top row: icon + label + growth badge */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
+        {/* Wraps on a narrow card so the change badge drops below the label
+            instead of being cut off at the edge (UI/UX audit A17). */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {icon && (
               <div className="kpi-icon" style={{ background: iconBg }}>
@@ -112,35 +107,12 @@ export default function KPICard({
         <p className="kpi-value">{value}</p>
 
         {/* Sub + sparkline row */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 }}>
           <p className="kpi-sub">{sub}</p>
-          {spark && spark.length > 1 && (
-            // Decorative trend hint — the value + growth badge carry the data.
-            <div aria-hidden="true" style={{ width: 90, height: 40, marginBottom: -4 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={spark} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
-                  <defs>
-                    <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={sparkColor} stopOpacity={0.28} />
-                      <stop offset="100%" stopColor={sparkColor} stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <Area
-                    type="monotone"
-                    dataKey="v"
-                    stroke={sparkColor}
-                    strokeWidth={1.8}
-                    fill={`url(#${gradId})`}
-                    fillOpacity={1}
-                    // Fill from the line down to the series minimum so the
-                    // gradient never renders above the line (negative values
-                    // otherwise baseline at 0 and fill upward).
-                    baseValue="dataMin"
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+          {sparkData && sparkData.length > 1 && (
+            // Decorative trend hint: the value and the change badge carry the data.
+            <div style={{ marginBottom: -4, flexShrink: 0 }}>
+              <Sparkline data={sparkData} color={sparkColor} />
             </div>
           )}
         </div>
@@ -153,6 +125,6 @@ export default function KPICard({
         )}
       </div>
     </BorderGlow>
-    </motion.div>
+    </div>
   );
 }

@@ -122,24 +122,28 @@ function TimelineInner() {
         <input
           type="search" value={q} onChange={(e) => setQ(e.target.value)}
           placeholder="Search, like fuel, Chanda or 450"
-          aria-label="Search events"
+          aria-label="Search your records"
           style={{ width: '100%', minHeight: 44, padding: '8px 12px', marginBottom: 10, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
         />
 
         {/* Filters */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
           {(['active', 'confirmed', 'pending', 'void', 'all'] as const).map(s => (
-            <button key={s} type="button" onClick={() => setStatus(s)} style={chip(status === s)}>
+            <button key={s} type="button" aria-pressed={status === s} onClick={() => setStatus(s)} style={chip(status === s)}>
               {s === 'active' ? 'In your books' : s === 'all' ? 'Everything' : s === 'void' ? 'Removed' : s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
-          <button type="button" onClick={() => setType('all')} style={chip(type === 'all')}>All types</button>
-          {ALL_TYPES.map(t => (
-            <button key={t} type="button" onClick={() => setType(t)} style={chip(type === t)}>{typeLabel(t)}</button>
-          ))}
-        </div>
+        {/* One picker instead of 16 chips: at 18px the chips filled a phone
+            screen before the first record (UI/UX audit 2026-10 Part E). */}
+        <label style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginBottom: 16, fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
+          <span>Type</span>
+          <select value={type} onChange={(e) => setType(e.target.value as EventType | 'all')}
+            style={{ flex: 1, minWidth: 200, maxWidth: 360, padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
+            <option value="all">All types</option>
+            {ALL_TYPES.map(t => <option key={t} value={t}>{typeLabel(t)}</option>)}
+          </select>
+        </label>
 
         {error && (
           <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>

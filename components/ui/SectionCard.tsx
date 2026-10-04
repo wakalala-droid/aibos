@@ -1,5 +1,4 @@
 'use client';
-import { motion } from 'framer-motion';
 import BorderGlow from './BorderGlow';
 
 interface SectionCardProps {
@@ -14,7 +13,7 @@ interface SectionCardProps {
 }
 
 // React Bits cursor edge-glow, tuned to match the KPI cards so the whole
-// dashboard shares one visual language. `style` stays on the outer motion.div
+// dashboard shares one visual language. `style` stays on the outer div
 // (margins / position / minHeight behave exactly as before); the inner panel
 // carries `glow-inner`, which strips its own border/shadow so the wrapper draws
 // the cursor-reactive border.
@@ -22,15 +21,12 @@ const CURSOR_GLOW = '190 95 62';
 const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
 
 export default function SectionCard({
-  title, subtitle, children, style = {}, delay = 0, action, explainId,
+  title, subtitle, children, style = {}, action, explainId,
 }: SectionCardProps) {
   return (
-    <motion.div
-      style={style}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-    >
+    // No entrance animation (UI/UX audit 2026-10 A16). `delay` is still
+    // accepted from older callers and ignored.
+    <div style={style}>
       <BorderGlow
         glowColor={CURSOR_GLOW}
         backgroundColor="var(--bg-card)"
@@ -60,6 +56,6 @@ export default function SectionCard({
           {children}
         </div>
       </BorderGlow>
-    </motion.div>
+    </div>
   );
 }

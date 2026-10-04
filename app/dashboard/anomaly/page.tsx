@@ -178,7 +178,7 @@ export default function AnomalyPage() {
               const diff = (a.value ?? 0) - (a.expected ?? 0);
               return (
                 <motion.div key={a.id ?? i}
-                  initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                  initial={false} animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.22 + i * 0.05 }}
                   style={{
                     display: 'grid', gridTemplateColumns: 'auto 1fr auto',

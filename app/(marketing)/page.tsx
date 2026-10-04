@@ -138,7 +138,7 @@ export default function MarketingHome() {
               <span className="mkt-glow" style={{ top: '-35%', left: '50%', transform: 'translateX(-50%)', width: 520, height: 520, background: 'radial-gradient(circle, rgba(0,212,255,0.30), transparent 60%)' }} />
               <div style={{ position: 'relative', zIndex: 1 }}>
                 {/* Real KPI strip */}
-                <div data-theme="dark" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, maxWidth: 620, margin: '0 auto 36px' }}>
+                <div data-theme="dark" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: 12, maxWidth: 620, margin: '0 auto 36px' }}>
                   <KPICard label="REVENUE" value="K284,500" growth={8.2} sub="vs last month" sparkData={[198000, 214500, 231000, 248000, 263000, 284500]} sparkColor="var(--spark-revenue)" delay={0} />
                   <KPICard label="NET PROFIT" value="K61,800" growth={10.4} sub="vs last month" sparkData={[39600, 45000, 49600, 53500, 56000, 61800]} sparkColor="var(--spark-profit)" delay={0.06} />
                   <KPICard label="CASH" value="K96,200" growth={-2.8} sub="vs last month" sparkData={[120000, 112000, 118000, 104000, 99000, 96200]} sparkColor="var(--cyan)" delay={0.12} />

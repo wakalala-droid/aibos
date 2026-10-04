@@ -16,7 +16,7 @@ function BenchmarkCard({ b, delay }: { b: any; delay: number }) {
   const cfg = STATUS[b.status as keyof typeof STATUS] ?? STATUS.good;
   const pct = Math.min(Math.abs(b.actual / Math.max(b.benchmark, 1)) * 100, 110);
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}
+    <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}
       style={{ background: 'var(--bg-card)', border: `1px solid ${cfg.border}`, borderRadius: 12, padding: '20px', boxShadow: 'var(--shadow-card)', position: 'relative', overflow: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
         <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0, maxWidth: 130 }}>{b.label}</p>
@@ -27,7 +27,7 @@ function BenchmarkCard({ b, delay }: { b: any; delay: number }) {
       </p>
       <div className="progress-track" style={{ marginBottom: 8 }}>
         <motion.div className="progress-fill" style={{ background: cfg.color }}
-          initial={{ width: 0 }} animate={{ width: `${Math.min(pct, 100)}%` }}
+          initial={false} animate={{ width: `${Math.min(pct, 100)}%` }}
           transition={{ duration: 1, ease: 'easeOut', delay: delay + 0.2 }} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -54,7 +54,7 @@ function AttachMeter({ label, value, benchmark, color }: { label: string; value:
       </div>
       <div className="progress-track" style={{ height: 6 }}>
         <motion.div className="progress-fill" style={{ background: barCol, height: '100%' }}
-          initial={{ width: 0 }} animate={{ width: `${Math.min(value / benchmark * 100, 100)}%` }}
+          initial={false} animate={{ width: `${Math.min(value / benchmark * 100, 100)}%` }}
           transition={{ duration: 1.1, ease: 'easeOut', delay: 0.2 }} />
       </div>
       <p style={{ fontSize: 'var(--fs-label)', color: barCol, textAlign: 'right', margin: '4px 0 0' }}>

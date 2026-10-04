@@ -4,6 +4,7 @@ import AppShell from '@/components/layout/AppShell';
 import { OfflineSync } from '@/components/pwa/OfflineSync';
 import AppToaster from '@/components/ui/AppToaster';
 import ConfirmSheet from '@/components/ui/ConfirmSheet';
+import TableCards from '@/components/ui/TableCards';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <OfflineSync />
           <AppToaster />
           <ConfirmSheet />
+          <TableCards />
         </ThemeProvider>
       </body>
     </html>
