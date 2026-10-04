@@ -47,7 +47,14 @@ export interface ChatMessage {
    *  upgrade prompt, "the AI is resting". Remembering them would make the AI
    *  read its own error messages as part of the conversation. */
   ephemeral?: boolean;
+  /** Set on answers that came from the AI (not canned lines), which can be
+   *  checked with "Right" / "That's wrong" (UI/UX audit C7). What the answer
+   *  read on the way, in words with entry ids (C8); empty when not known. */
+  reads?: ChatRead[];
 }
+
+/** One lookup an answer made: "Read 214 sales from 1 to 30 September 2026". */
+export interface ChatRead { tool: string; said: string; ids: string[] }
 
 interface ExplainTarget {
   id: string;
@@ -786,6 +793,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         }
       };
       let stopped: string | null = null;
+      const reads: ChatRead[] = [];   // what each lookup read (C8)
       // A refusal (no plan, no AI key, a bad request) now arrives as a frame,
       // because the API opens the answer before it checks anything.
       let gate: { code: number; detail: string } | null = null;
@@ -803,11 +811,13 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
           try {
             const msg = JSON.parse(line.slice(5).trim()) as {
               t?: string; tool?: string; status?: string; error?: string; done?: boolean; retry?: boolean;
+              read?: ChatRead;
               gate?: number; detail?: unknown;
             };
             if (msg.gate) gate = { code: msg.gate, detail: typeof msg.detail === 'string' ? msg.detail : '' };
             else if (msg.t) { write(msg.t); setStatus(null); }
             else if (msg.tool) setStatus(TOOL_STATUS[msg.tool] ?? 'Looking that up…');
+            else if (msg.read && typeof msg.read.said === 'string') reads.push({ ...msg.read, ids: Array.isArray(msg.read.ids) ? msg.read.ids : [] });
             else if (msg.status === 'thinking') setStatus((s) => s ?? 'Thinking…');
             // retry:false is a spent allowance: the buffered path would only
             // spend another request against the same limit.
@@ -824,6 +834,8 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         return 'answered';
       }
       if (bubble.id) {
+        const answered = bubble.id;
+        setMessages((p) => p.map((m) => (m.id === answered ? { ...m, reads: [...reads] } : m)));
         if (stopped) write(`\n\n${stopped}`);
         setOnline(true);
         return 'answered';
@@ -1098,7 +1110,9 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       }
       setOnline(true);
       const reply = (data.reply as string) ?? (data.response as string) ?? '';
-      if (reply.trim()) pushAssistant(reply);
+      if (reply.trim()) {
+        setMessages((p) => [...p, { id: `a-${Date.now()}-${p.length}`, role: 'assistant', content: reply, timestamp: nowTime(), reads: [] }]);
+      }
       else pushAssistant(failureText(null), true);
     } finally {
       setLoading(false);

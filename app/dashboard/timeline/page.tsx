@@ -54,11 +54,15 @@ function TimelineInner() {
   // ?q= arrives from links like "Where your money went" (Fuel, Rent...).
   const [q, setQ] = useState(params.get('q') ?? '');
   const [period, setPeriod] = usePeriod('all');
+  // ?ids= arrives from an AI answer's "Open the entries it used" (C7, C8).
+  const idsParam = params.get('ids') ?? '';
+  const onlyIds = useMemo(() => new Set(idsParam.split(',').filter(Boolean)), [idsParam]);
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const range = periodRange(period);
     const inView = (status === 'active' ? events.filter((e) => e.status !== 'void') : events)
-      .filter((e) => inPeriod(e.occurred_at, range));
+      .filter((e) => inPeriod(e.occurred_at, range))
+      .filter((e) => !onlyIds.size || onlyIds.has(e.id));
     if (!needle) return inView;
     return inView.filter((e) => {
       const p = e.payload ?? {};
@@ -67,7 +71,7 @@ function TimelineInner() {
         .map((v) => String(v ?? '')).join(' ').toLowerCase();
       return hay.includes(needle);
     });
-  }, [events, q, status, period]);
+  }, [events, q, status, period, onlyIds]);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -131,6 +135,13 @@ function TimelineInner() {
           aria-label="Search your records"
           style={{ width: '100%', minHeight: 44, padding: '8px 12px', marginBottom: 10, borderRadius: 8, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
         />
+
+        {onlyIds.size > 0 && (
+          <p role="status" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, margin: '0 0 12px', padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'var(--cyan-dim)', fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>
+            Showing the {onlyIds.size} {onlyIds.size === 1 ? 'entry' : 'entries'} an answer used. Fix any that are wrong.
+            <a href="/dashboard/timeline" className="tap-link" style={{ color: 'var(--cyan)', fontWeight: 600 }}>Show everything</a>
+          </p>
+        )}
 
         {/* When (C6): one tap for the usual windows, kept in the address. */}
         <div style={{ marginBottom: 10 }}>

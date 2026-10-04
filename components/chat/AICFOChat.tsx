@@ -9,6 +9,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAiAssistant } from '@/lib/aiAssistant';
 import RichText from '@/components/chat/RichText';
+import AnswerCheck from '@/components/chat/AnswerCheck';
 
 // Questions any business can ask of its own books. These used to assume facts
 // from a demo ("What drove the September cost spike?"), which every real
@@ -136,9 +137,9 @@ export default function AICFOChat() {
 
         {/* Messages */}
         <AnimatePresence initial={false}>
-          {messages.map((msg) => (
+          {messages.map((msg, i) => (
             <motion.div key={msg.id} initial={{ opacity: 0, y: 8, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.25, ease: 'easeOut' }}
-              style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 12 }}>
+              style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 12 }}>
               <div style={{
                 maxWidth: '85%',
                 background: msg.role === 'user' ? 'linear-gradient(135deg, #0097b2, #00d4ff)' : 'var(--bg-badge)',
@@ -149,12 +150,19 @@ export default function AICFOChat() {
                 <div style={{ fontSize: 'var(--fs-body)', margin: '0 0 6px' }}>
                   {msg.role === 'assistant'
                     ? <RichText text={msg.content} />
-                    : <p style={{ margin: 0, color: '#fff', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{msg.content}</p>}
+                    : <p style={{ margin: 0, color: '#04121a', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{msg.content}</p>}
                 </div>
-                <p style={{ fontSize: 'var(--fs-label)', color: msg.role === 'user' ? 'rgba(255,255,255,0.55)' : 'var(--text-4)', margin: 0, textAlign: msg.role === 'user' ? 'right' : 'left' }}>
+                <p style={{ fontSize: 'var(--fs-label)', color: msg.role === 'user' ? 'rgba(4,18,26,0.75)' : 'var(--text-4)', margin: 0, textAlign: msg.role === 'user' ? 'right' : 'left' }}>
                   {msg.timestamp}
                 </p>
               </div>
+              {msg.role === 'assistant' && msg.reads !== undefined && !msg.ephemeral && (
+                <AnswerCheck
+                  message={msg}
+                  question={messages[i - 1]?.role === 'user' ? messages[i - 1].content : undefined}
+                  settled={!(loading && i === messages.length - 1)}
+                />
+              )}
             </motion.div>
           ))}
         </AnimatePresence>

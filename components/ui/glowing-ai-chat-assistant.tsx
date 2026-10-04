@@ -21,6 +21,7 @@ import { useTheme } from '@/lib/theme';
 import { TIERS } from '@/lib/tiers';
 import { useAiAssistant, MAX_CHARS } from '@/lib/aiAssistant';
 import { DEFAULT_PROMPTS } from '@/lib/aiKnowledge';
+import AnswerCheck from '@/components/chat/AnswerCheck';
 import RichText from '@/components/chat/RichText';
 
 // ── Minimal stroke icons (2px, per visual_language_system.md) ────────────────
@@ -214,9 +215,9 @@ export function FloatingAiAssistant() {
               )}
 
               <AnimatePresence initial={false}>
-                {messages.map((m) => (
+                {messages.map((m, i) => (
                   <motion.div key={m.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: 'easeOut' }}
-                    style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
                     <div style={{
                       maxWidth: '88%',
                       background: m.role === 'user' ? 'linear-gradient(135deg, #0097b2, #00d4ff)' : 'var(--bg-badge)',
@@ -227,11 +228,18 @@ export function FloatingAiAssistant() {
                     }}>
                       {m.role === 'assistant'
                         ? <RichText text={m.content} />
-                        : <p style={{ margin: 0, lineHeight: 1.55, color: '#fff' }}>{m.content}</p>}
-                      <p style={{ fontSize: 'var(--fs-label)', margin: '5px 0 0', textAlign: m.role === 'user' ? 'right' : 'left', color: m.role === 'user' ? 'rgba(255,255,255,0.6)' : 'var(--text-4)' }}>
+                        : <p style={{ margin: 0, lineHeight: 1.55, color: '#04121a' }}>{m.content}</p>}
+                      <p style={{ fontSize: 'var(--fs-label)', margin: '5px 0 0', textAlign: m.role === 'user' ? 'right' : 'left', color: m.role === 'user' ? 'rgba(4,18,26,0.75)' : 'var(--text-4)' }}>
                         {m.timestamp}
                       </p>
                     </div>
+                    {m.role === 'assistant' && m.reads !== undefined && !m.ephemeral && (
+                      <AnswerCheck
+                        message={m}
+                        question={messages[i - 1]?.role === 'user' ? messages[i - 1].content : undefined}
+                        settled={!(loading && i === messages.length - 1)}
+                      />
+                    )}
                   </motion.div>
                 ))}
               </AnimatePresence>

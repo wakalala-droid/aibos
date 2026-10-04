@@ -19,7 +19,9 @@ export type UsageEvent =
   | 'onboarding_completed' | 'event_recorded' | 'brief_viewed'
   // Setup Wizard identity match confirmed — the honest measure of whether the
   // lookup is worth what the Places calls cost.
-  | 'identity_match_applied';
+  | 'identity_match_applied'
+  // "Right" / "That's wrong" under an AI answer (UI/UX audit 2026-10 C7).
+  | 'answer_feedback';
 export type UsageEngine = 'engine1' | 'engine2' | 'engine3' | 'cross';
 
 interface LogOptions {
