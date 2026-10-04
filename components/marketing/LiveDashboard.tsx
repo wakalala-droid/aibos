@@ -68,7 +68,7 @@ export default function LiveDashboard() {
         </div>
 
         {/* Real engine score cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: 10 }}>
           <EngineScoreCard label="MONEY" sub="Cash and profit" score={DEMO_SCORES.e1_score} colour="var(--e1)" href="/dashboard/cash" />
           <EngineScoreCard label="CUSTOMERS" sub="Who buys" score={DEMO_SCORES.e2_score} colour="var(--e2)" href="/dashboard/customers" />
           <EngineScoreCard label="OPERATIONS" sub="What sells" score={DEMO_SCORES.e3_score} colour="var(--e3)" href="/dashboard/pos" />

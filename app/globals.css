@@ -1083,10 +1083,14 @@ button, [role="button"], [role="tab"] { min-width: 44px; }
   .grid-2      { grid-template-columns: repeat(2, 1fr); }
   .grid-3      { grid-template-columns: repeat(2, 1fr); }
 }
+/* Four score tiles in a row need about 1200px: below that "CUSTOMERS" and
+   "OPERATIONS" at 16px caps were cut off, so they stay two by two. */
+@media (min-width: 1200px) {
+  .grid-engines{ grid-template-columns: auto repeat(3, 1fr); }
+}
 /* Desktop — 1024px+ */
 @media (min-width: 1024px) {
   .grid-kpi    { grid-template-columns: repeat(4, 1fr); }
-  .grid-engines{ grid-template-columns: auto repeat(3, 1fr); }
   .grid-main   { grid-template-columns: 1fr 340px; }
   .grid-3      { grid-template-columns: repeat(3, 1fr); }
 }
