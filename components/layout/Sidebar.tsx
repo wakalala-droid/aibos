@@ -78,7 +78,7 @@ export default function Sidebar() {
         style={{
           height: 56, width: '100%', display: 'flex', alignItems: 'center', gap: 10,
           padding: col ? '0 15px' : '0 16px 0 18px',
-          borderBottom: '1px solid var(--border)', cursor: 'pointer', flexShrink: 0,
+          cursor: 'pointer', flexShrink: 0,
           background: 'transparent', border: 'none', borderRadius: 0, textAlign: 'left',
         }}
       >
@@ -244,16 +244,7 @@ export default function Sidebar() {
               onClick={() => setMobileNav(false)}
               style={{ textDecoration: 'none', display: 'block' }}
             >
-              <div
-                className={`nav-item${pathname.startsWith('/admin') ? ' active' : ''}`}
-                style={{
-                  color: pathname.startsWith('/admin') ? 'var(--cyan)' : undefined,
-                  ...(pathname.startsWith('/admin') ? { background: 'color-mix(in srgb, var(--cyan) 10%, transparent)' } : {}),
-                }}
-              >
-                {pathname.startsWith('/admin') && (
-                  <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 2, borderRadius: 2, background: 'var(--cyan)' }} />
-                )}
+              <div className={`nav-item${pathname.startsWith('/admin') ? ' active' : ''}`}>
                 <span style={{ color: pathname.startsWith('/admin') ? 'var(--cyan)' : 'var(--text-3)', flexShrink: 0, display: 'flex' }}>
                   {IC.admin}
                 </span>
@@ -263,7 +254,7 @@ export default function Sidebar() {
                       initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.15 }}
                       className="nav-label"
-                      style={{ color: pathname.startsWith('/admin') ? 'var(--cyan)' : 'var(--text-2)', flex: 1 }}
+                      style={{ color: pathname.startsWith('/admin') ? 'var(--text-1)' : 'var(--text-2)', flex: 1 }}
                     >
                       Admin
                     </motion.span>
@@ -284,14 +275,14 @@ export default function Sidebar() {
           onClick={() => setMobileNav(false)}
           aria-label={tier === 'free' ? 'Free plan. See the plans' : `${TIERS[tier].name} plan. Open plan and billing`}
           style={{
-            margin: '4px 12px 8px', padding: '10px 12px', borderRadius: 10,
-            border: '1px solid var(--border)', background: 'var(--bg-badge)',
+            margin: '4px 12px 8px', padding: '10px 12px', borderRadius: 'var(--radius-md)',
+            background: 'var(--pill-bg)',
             textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
           }}
         >
           <span style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              Current plan
+            <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+              Your plan
             </span>
             {/* Signing in on a new device starts from a blank cache, which reads
                 as Free, so a Growth owner was shown "Free" and "Upgrade" until the
@@ -301,7 +292,7 @@ export default function Sidebar() {
             </span>
           </span>
           {!planLoading && tier !== 'growth' && (
-            <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--on-cyan)', background: 'var(--cyan)', padding: '5px 10px', borderRadius: 'var(--radius-md)', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--on-brand)', background: 'var(--brand-fill)', padding: '6px 14px', borderRadius: 999, whiteSpace: 'nowrap' }}>
               Upgrade
             </span>
           )}
@@ -311,7 +302,7 @@ export default function Sidebar() {
       {/* Footer */}
       <div style={{
         padding: col ? '10px 14px' : '10px 16px 12px',
-        borderTop: '1px solid var(--border)', flexShrink: 0,
+        flexShrink: 0,
         display: 'flex', alignItems: 'center', gap: 10,
       }}>
         <button
@@ -319,13 +310,7 @@ export default function Sidebar() {
           onClick={toggle}
           aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-          style={{
-            width: 32, height: 32, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)',
-            background: 'var(--bg-badge)', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--text-3)', flexShrink: 0,
-            transition: 'all 0.15s ease',
-          }}
+          className="icon-pill"
         >
           {isDark ? IC.sun : IC.moon}
         </button>
@@ -337,48 +322,24 @@ export default function Sidebar() {
             onClick={() => setUiMode(simple ? 'technical' : 'simple')}
             aria-label={simple ? 'Switch to Pro mode: show all intelligence tabs' : 'Switch to Simple mode'}
             title={simple ? 'Switch to Pro mode' : 'Switch to Simple mode'}
-            style={{
-              width: 32, height: 32, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)',
-              background: 'var(--bg-badge)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: simple ? 'var(--text-3)' : 'var(--cyan)', flexShrink: 0,
-              transition: 'all 0.15s ease',
-            }}
+            className="icon-pill"
+            style={{ color: simple ? 'var(--text-3)' : 'var(--cyan)' }}
           >
             {IC.sliders}
           </button>
         ) : (
-          <div
-            role="group"
-            aria-label="Interface mode"
-            data-tour="mode-toggle"
-            style={{
-              display: 'flex', height: 44, borderRadius: 10, overflow: 'hidden',
-              border: '1px solid var(--border-md)', background: 'var(--bg-badge)', flexShrink: 0,
-            }}
-          >
-            {(['simple', 'technical'] as const).map((m) => {
-              const on = uiMode === m;
-              return (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setUiMode(m)}
-                  aria-pressed={on}
-                  aria-label={m === 'simple' ? 'Simple mode (the essentials in plain language' : 'Pro mode) all intelligence tabs'}
-                  style={{
-                    padding: '0 10px', border: 'none', cursor: 'pointer',
-                    fontSize: 'var(--fs-label)', fontWeight: 700,
-                    letterSpacing: '0.02em',
-                    background: on ? 'var(--cyan)' : 'transparent',
-                    color: on ? 'var(--on-cyan)' : 'var(--text-4)',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  {m === 'simple' ? 'Simple' : 'Pro'}
-                </button>
-              );
-            })}
+          <div role="group" aria-label="Interface mode" data-tour="mode-toggle" className="seg" style={{ flexShrink: 0 }}>
+            {(['simple', 'technical'] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setUiMode(m)}
+                aria-pressed={uiMode === m}
+                aria-label={m === 'simple' ? 'Simple mode: the essentials in plain language' : 'Pro mode: every report'}
+              >
+                {m === 'simple' ? 'Simple' : 'Pro'}
+              </button>
+            ))}
           </div>
         )}
         <AnimatePresence>

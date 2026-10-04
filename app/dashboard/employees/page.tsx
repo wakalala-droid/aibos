@@ -13,7 +13,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { confirmSheet } from '@/lib/confirm';
 import Link from 'next/link';
+import { Pencil, Trash2, FileText, Play, Eye } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
+import Stat from '@/components/ui/Stat';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
@@ -27,15 +29,19 @@ import {
 } from '@/lib/api';
 
 // ── Shared field styles (mirrors the Scheduler's form vocabulary) ────────────
-const input: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
-  border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', outline: 'none',
-};
-const lbl: React.CSSProperties = { fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
-const ghostBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-label)' };
-const th: React.CSSProperties = { fontSize: 'var(--fs-caps)', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right', padding: '4px 6px', whiteSpace: 'nowrap' };
-const td: React.CSSProperties = { fontSize: 'var(--fs-data)', color: 'var(--text-2)', textAlign: 'right', padding: '6px', whiteSpace: 'nowrap' };
+// Table heads in the quiet sentence case every table now uses (redesign 2026-10).
+const th: React.CSSProperties = { fontSize: 'var(--fs-label)', fontWeight: 500, color: 'var(--text-3)', textAlign: 'right', padding: '8px 8px 12px', whiteSpace: 'nowrap', borderBottom: '1px solid var(--border)' };
+const td: React.CSSProperties = { fontSize: 'var(--fs-data)', color: 'var(--text-2)', textAlign: 'right', padding: '12px 8px', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' };
+
+function initials(name: string): string {
+  return name.trim().split(/\s+/).slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('') || '?';
+}
+
+/** "September 2026" for a YYYY-MM pay period. */
+function periodWords(period: string): string {
+  const [y, m] = period.split('-').map(Number);
+  return new Date(y, (m || 1) - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+}
 
 interface FormState {
   name: string; position: string; employment_type: EmploymentType;
@@ -215,6 +221,19 @@ export default function EmployeesPage() {
   const active = useMemo(() => employees.filter(e => e.status === 'active'), [employees]);
   const periodRun = useMemo(() => runs.find(r => r.period === period), [runs, period]);
   const alreadyRun = !!periodRun;
+  const monthlyWages = active.reduce((a, e) => a + (e.basic_pay || 0), 0);
+  // The next payday anyone on staff is due, on the owner's own calendar.
+  const nextPayday = useMemo(() => {
+    if (!active.length) return null;
+    const today = new Date();
+    const dates = active.map((e) => {
+      const d = new Date(today.getFullYear(), today.getMonth(), Math.min(28, Math.max(1, e.pay_day || 28)));
+      if (d < new Date(today.getFullYear(), today.getMonth(), today.getDate())) d.setMonth(d.getMonth() + 1);
+      return d;
+    });
+    return dates.sort((a, b) => a.getTime() - b.getTime())[0];
+  }, [active]);
+  const lastRun = runs[0];
 
   return (
     <>
@@ -223,11 +242,21 @@ export default function EmployeesPage() {
         subtitle="Your people and their pay, with PAYE, NAPSA and take-home pay worked out for you."
       />
 
+      <div className="home-trio" style={{ marginBottom: 16 }}>
+        <Stat label="On staff" count={active.length} loading={loading}
+          sub={employees.length > active.length ? `${employees.length - active.length} have left` : active.length === 1 ? 'person' : 'people'} />
+        <Stat label="Wages a month" money={monthlyWages} sym={sym} loading={loading}
+          sub="Before PAYE, NAPSA and NHIMA" />
+        <Stat label="Next payday" loading={loading}
+          text={nextPayday ? nextPayday.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : 'None yet'}
+          sub={lastRun ? `Last run was ${periodWords(lastRun.period)}` : 'No payroll run yet'} />
+      </div>
+
       <div className="grid-main">
         {/* ── People (register — free) ─────────────────────────────────────── */}
         <SectionCard title="Your people" explainId="employees.register"
-          subtitle={loading ? 'Loading…' : `${active.length} active${employees.length > active.length ? ` · ${employees.length - active.length} left` : ''}`}>
-          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
+          >
+          {error && <div role="alert" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>{error}</div>}
 
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 48 }} />)}</div>
@@ -238,76 +267,80 @@ export default function EmployeesPage() {
           ) : (
             <div>
               {employees.map(e => (
-                <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--border)', opacity: e.status === 'left' ? 0.5 : 1 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div key={e.id} className="row" style={{ opacity: e.status === 'left' ? 0.55 : 1 }}>
+                  <span className="avatar avatar-brand" aria-hidden="true">{initials(e.name)}</span>
+                  <span className="row-main">
+                    <span className="row-title">
                       {e.name}
                       {e.position && <span style={{ color: 'var(--text-3)', fontWeight: 500 }}> · {e.position}</span>}
-                    </div>
-                    <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
-                      {money(e.basic_pay)}/mo · paid {e.pay_day}{e.pay_day === 1 ? 'st' : 'th'}
+                    </span>
+                    <span className="row-sub" style={{ whiteSpace: 'normal' }}>
+                      Paid on the {e.pay_day}{e.pay_day === 1 ? 'st' : e.pay_day === 2 ? 'nd' : e.pay_day === 3 ? 'rd' : 'th'}
                       {e.employment_type === 'contract' ? ' · contract' : ''}
                       {e.gratuity_eligible ? ` · gratuity ${Math.round(e.gratuity_rate * 100)}%` : ''}
-                      {e.loan_balance > 0 ? ` · loan ${money(e.loan_balance)}` : ''}
-                    </div>
-                  </div>
-                  <button type="button" onClick={() => editEmployee(e)} style={{ ...ghostBtn, color: 'var(--cyan)' }}>Edit</button>
-                  <button type="button" onClick={() => removeEmployee(e.id)} style={{ ...ghostBtn, color: 'var(--text-4)' }}>Delete</button>
+                      {e.loan_balance > 0 ? ` · owes ${money(e.loan_balance)} on a loan` : ''}
+                      {e.status === 'left' ? ' · has left' : ''}
+                    </span>
+                  </span>
+                  <span className="row-amount">{money(e.basic_pay)}<span style={{ color: 'var(--text-3)', fontWeight: 400 }}> a month</span></span>
+                  <span className="row-actions">
+                    <button type="button" className="icon-pill" onClick={() => editEmployee(e)} aria-label={`Change ${e.name}`}><Pencil aria-hidden="true" /></button>
+                    <button type="button" className="icon-pill danger" onClick={() => removeEmployee(e.id)} aria-label={`Remove ${e.name}`}><Trash2 aria-hidden="true" /></button>
+                  </span>
                 </div>
               ))}
             </div>
           )}
 
           {/* Add / edit form */}
-          <div style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 14 }}>
-            <div style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-2)', marginBottom: 10 }}>
-              {editId ? 'Edit employee' : 'Add employee'}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Name *</label><input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Grace Banda" style={input} /></div>
-              <div><label style={lbl}>Role</label><input value={form.position} onChange={e => set('position', e.target.value)} placeholder="Cashier" style={input} /></div>
-              <div><label style={lbl}>Monthly pay ({sym})</label><input type="number" min="0" value={form.basic_pay} onChange={e => set('basic_pay', e.target.value)} placeholder="8000" style={input} /></div>
+          <div style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+            <h3 className="panel-title" style={{ marginBottom: 12 }}>
+              {editId ? 'Change a person' : 'Add a person'}
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
+              <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Name</label><input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Grace Banda" className="field" /></div>
+              <div><label className="field-label">Role</label><input value={form.position} onChange={e => set('position', e.target.value)} placeholder="Cashier" className="field" /></div>
+              <div><label className="field-label">Monthly pay ({sym})</label><input type="number" min="0" value={form.basic_pay} onChange={e => set('basic_pay', e.target.value)} placeholder="8000" className="field" /></div>
               <div>
-                <label style={lbl}>Type</label>
-                <select value={form.employment_type} onChange={e => set('employment_type', e.target.value as EmploymentType)} style={input}>
+                <label className="field-label">Type</label>
+                <select value={form.employment_type} onChange={e => set('employment_type', e.target.value as EmploymentType)} className="field">
                   <option value="permanent">Permanent</option>
                   <option value="contract">Fixed-term contract</option>
                 </select>
               </div>
-              <div><label style={lbl}>Pay day</label><input type="number" min="1" max="28" value={form.pay_day} onChange={e => set('pay_day', e.target.value)} style={input} /></div>
+              <div><label className="field-label">Pay day</label><input type="number" min="1" max="28" value={form.pay_day} onChange={e => set('pay_day', e.target.value)} className="field" /></div>
 
               <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <button type="button" onClick={() => setMoreOpen(o => !o)} style={{ ...ghostBtn, color: 'var(--cyan)', fontSize: 'var(--fs-label)' }}>
-                  {moreOpen ? 'Fewer options' : 'Loan, gratuity & IDs'}
+                <button type="button" className="pill pill-quiet" aria-expanded={moreOpen} onClick={() => setMoreOpen(o => !o)}>
+                  {moreOpen ? 'Fewer options' : 'Loan, gratuity and IDs'}
                 </button>
               </div>
 
               {moreOpen && (
                 <>
-                  <div><label style={lbl}>Staff loan balance ({sym})</label><input type="number" min="0" value={form.loan_balance} onChange={e => set('loan_balance', e.target.value)} placeholder="0" style={input} /></div>
-                  <div><label style={lbl}>Deduct per month ({sym})</label><input type="number" min="0" value={form.loan_monthly} onChange={e => set('loan_monthly', e.target.value)} placeholder="0" style={input} /></div>
+                  <div><label className="field-label">Staff loan balance ({sym})</label><input type="number" min="0" value={form.loan_balance} onChange={e => set('loan_balance', e.target.value)} placeholder="0" className="field" /></div>
+                  <div><label className="field-label">Deduct per month ({sym})</label><input type="number" min="0" value={form.loan_monthly} onChange={e => set('loan_monthly', e.target.value)} placeholder="0" className="field" /></div>
                   {form.employment_type === 'contract' && (
                     <>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'end', paddingBottom: 8 }}>
-                        <input id="emp-grat" type="checkbox" checked={form.gratuity_eligible} onChange={e => set('gratuity_eligible', e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--cyan)' }} />
-                        <label htmlFor="emp-grat" style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', cursor: 'pointer' }}>Accrues gratuity</label>
+                        <input id="emp-grat" type="checkbox" checked={form.gratuity_eligible} onChange={e => set('gratuity_eligible', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
+                        <label htmlFor="emp-grat" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>Earns gratuity</label>
                       </div>
-                      <div><label style={lbl}>Gratuity rate (%)</label><input type="number" min="25" value={form.gratuity_rate} onChange={e => set('gratuity_rate', e.target.value)} disabled={!form.gratuity_eligible} style={{ ...input, opacity: form.gratuity_eligible ? 1 : 0.5 }} /></div>
+                      <div><label className="field-label">Gratuity rate (%)</label><input type="number" min="25" value={form.gratuity_rate} onChange={e => set('gratuity_rate', e.target.value)} disabled={!form.gratuity_eligible} className="field" style={{ opacity: form.gratuity_eligible ? 1 : 0.5 }} /></div>
                     </>
                   )}
-                  <div><label style={lbl}>NAPSA number</label><input value={form.napsa_number} onChange={e => set('napsa_number', e.target.value)} style={input} /></div>
-                  <div><label style={lbl}>TPIN</label><input value={form.tpin} onChange={e => set('tpin', e.target.value)} style={input} /></div>
-                  <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Notes</label><input value={form.notes} onChange={e => set('notes', e.target.value)} style={input} /></div>
+                  <div><label className="field-label">NAPSA number</label><input value={form.napsa_number} onChange={e => set('napsa_number', e.target.value)} className="field" /></div>
+                  <div><label className="field-label">TPIN</label><input value={form.tpin} onChange={e => set('tpin', e.target.value)} className="field" /></div>
+                  <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Notes</label><input value={form.notes} onChange={e => set('notes', e.target.value)} className="field" /></div>
                 </>
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-              <button type="button" onClick={saveEmployee} disabled={saving} className="touch-target"
-                style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
-                {saving ? 'Saving…' : editId ? 'Update' : 'Add employee'}
+            <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+              <button type="button" onClick={saveEmployee} disabled={saving} className="pill pill-primary">
+                {saving ? 'Saving…' : editId ? 'Save changes' : 'Add this person'}
               </button>
-              {editId && <button type="button" onClick={cancelEdit} className="touch-target" style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>}
+              {editId && <button type="button" onClick={cancelEdit} className="pill pill-quiet">Cancel</button>}
             </div>
           </div>
         </SectionCard>
@@ -319,22 +352,21 @@ export default function EmployeesPage() {
             <span className="badge" style={{ background: 'color-mix(in srgb, var(--cyan) 12%, transparent)', color: 'var(--cyan)' }}>{needTier}</span>
           )}>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 12 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 16 }}>
             <div>
-              <label style={lbl}>Pay period</label>
-              <input type="month" value={period} onChange={e => { setPeriod(e.target.value); setPreview(null); setRunOk(null); setRunError(null); }} style={{ ...input, width: 'auto' }} />
+              <label className="field-label">Pay period</label>
+              <input type="month" value={period} onChange={e => { setPeriod(e.target.value); setPreview(null); setRunOk(null); setRunError(null); }} className="field" style={{ width: 'auto' }} />
             </div>
-            <button type="button" onClick={doPreview} disabled={busy || active.length === 0} className="touch-target"
-              style={{ padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: (busy || active.length === 0) ? 0.6 : 1 }}>
-              {busy ? 'Computing…' : 'Preview'}
+            <button type="button" onClick={doPreview} disabled={busy || active.length === 0} className="pill">
+              <Eye aria-hidden="true" />{busy ? 'Working it out…' : 'Preview'}
             </button>
           </div>
 
           {active.length === 0 && (
-            <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>Add an employee first, then preview a period.</p>
+            <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>Add a person first, then preview a month.</p>
           )}
-          {runError && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{runError}</div>}
-          {runOk && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'color-mix(in srgb, var(--green) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--green) 40%, transparent)', color: 'var(--green)', fontSize: 'var(--fs-data)' }}>{runOk}</div>}
+          {runError && <div role="alert" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>{runError}</div>}
+          {runOk && <div role="status" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--green-dim)', color: 'var(--green)', fontSize: 'var(--fs-body)' }}>{runOk}</div>}
 
           {/* Preview table */}
           {preview && preview.payslips.length > 0 && (
@@ -365,9 +397,8 @@ export default function EmployeesPage() {
                         <td style={td}>
                           {s.employee_id && (
                             <button type="button" onClick={() => void getDoc(periodRun.id, periodRun.period, s.employee_id!)}
-                              disabled={docBusy === `${periodRun.id}:${s.employee_id}`} className="touch-target"
-                              style={{ padding: '4px 9px', minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                              {docBusy === `${periodRun.id}:${s.employee_id}` ? '…' : 'Payslip'}
+                              disabled={docBusy === `${periodRun.id}:${s.employee_id}`} className="pill pill-quiet">
+                              <FileText aria-hidden="true" />{docBusy === `${periodRun.id}:${s.employee_id}` ? 'Preparing…' : 'Payslip'}
                             </button>
                           )}
                         </td>
@@ -376,8 +407,8 @@ export default function EmployeesPage() {
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr style={{ borderTop: '2px solid var(--border-md)' }}>
-                    <td style={{ ...td, textAlign: 'left', fontWeight: 700, color: 'var(--text-2)' }}>Total · {preview.totals.headcount}</td>
+                  <tr style={{ borderTop: '1px solid var(--border-md)' }}>
+                    <td style={{ ...td, textAlign: 'left', fontWeight: 700, color: 'var(--text-2)' }}>Total for {preview.totals.headcount}</td>
                     <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.gross)}</td>
                     <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.napsa_employee)}</td>
                     <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.nhima_employee)}</td>
@@ -393,37 +424,36 @@ export default function EmployeesPage() {
                 {alreadyRun ? (
                   <span style={{ fontSize: 'var(--fs-data)', color: 'var(--amber)' }}>Payroll for {period} has already been run.</span>
                 ) : pro ? (
-                  <button type="button" onClick={doRun} disabled={busy} className="touch-target"
-                    style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: busy ? 0.7 : 1 }}>
-                    {busy ? 'Running…' : `Run payroll & post to books`}
+                  <button type="button" onClick={doRun} disabled={busy} className="pill pill-primary">
+                    <Play aria-hidden="true" />{busy ? 'Running…' : 'Run payroll and record the wages'}
                   </button>
                 ) : (
-                  <Link href="/pricing" style={{ padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, textDecoration: 'none' }}>
+                  <Link href="/pricing" className="pill pill-primary">
                     Unlock payroll: upgrade to {needTier}
                   </Link>
                 )}
                 {preview.payslips.some(s => s.gratuity_accrued > 0) && (
-                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
-                    + {money(preview.totals.gratuity_accrued)} gratuity accrued (employer cost)
+                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                    Plus {money(preview.totals.gratuity_accrued)} gratuity set aside (your cost)
                   </span>
                 )}
               </div>
 
               {/* Statutory remittances that running will draft (pending, due next month). */}
               {preview.remittances.length > 0 && (
-                <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 10, border: '1px dashed var(--border-md)', background: 'var(--bg-badge)' }}>
-                  <div style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-3)', marginBottom: 6 }}>
-                    Also drafted for you{preview.remittances[0]?.due_date ? ` · due ${fmtDue(preview.remittances[0].due_date)}` : ''}
-                  </div>
-                  <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                <div style={{ marginTop: 16 }}>
+                  <h3 className="panel-title" style={{ marginBottom: 8 }}>
+                    Also drafted for you{preview.remittances[0]?.due_date ? `, due ${fmtDue(preview.remittances[0].due_date)}` : ''}
+                  </h3>
+                  <div className="mini-stats">
                     {preview.remittances.map((r: RemittanceDraft) => (
-                      <span key={r.tax_type} style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>
-                        <span style={{ color: 'var(--text-4)' }}>{r.tax_type} → {r.authority}: </span>
-                        <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>{money(r.amount)}</span>
-                      </span>
+                      <div key={r.tax_type} className="mini-stat">
+                        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{r.tax_type} to {r.authority}</span>
+                        <span className="money money-md">{money(r.amount)}</span>
+                      </div>
                     ))}
                   </div>
-                  <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 6 }}>
+                  <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 8 }}>
                     Posted as pending payments: confirm each when you pay ZRA / NAPSA / NHIMA.
                   </div>
                 </div>
@@ -434,26 +464,25 @@ export default function EmployeesPage() {
           {/* Past runs */}
           {runs.length > 0 && (
             <div style={{ marginTop: 4 }}>
-              <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', marginBottom: 4 }}>Past runs</div>
+              <p className="day-label">Past runs</p>
               {runs.map(r => (
-                <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)' }}>
-                    {r.period} <span style={{ color: 'var(--text-4)', fontWeight: 500 }}>· {r.totals.headcount} paid</span>
+                <div key={r.id} className="row" style={{ flexWrap: 'wrap' }}>
+                  <span className="avatar avatar-out" aria-hidden="true"><FileText /></span>
+                  <span className="row-main">
+                    <span className="row-title">{periodWords(r.period)}</span>
+                    <span className="row-sub">{r.totals.headcount} paid, {money(r.totals.net)} take-home</span>
                   </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>{money(r.totals.net)} net</span>
+                  <span className="row-actions">
                     {/* Audit #66 — the statutory pack the server has always been
                         able to render, now actually reachable. */}
-                    <button type="button" onClick={() => void getDoc(r.id, r.period)} disabled={docBusy === r.id} className="touch-target"
-                      style={{ padding: '5px 10px', minHeight: 44, borderRadius: 7, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: docBusy === r.id ? 'wait' : 'pointer' }}>
-                      {docBusy === r.id ? 'Preparing…' : 'Statutory PDF'}
+                    <button type="button" onClick={() => void getDoc(r.id, r.period)} disabled={docBusy === r.id} className="pill pill-quiet">
+                      <FileText aria-hidden="true" />{docBusy === r.id ? 'Preparing…' : 'Tax pack PDF'}
                     </button>
                     {/* A run can only be made once a month, so one made by
                         mistake (the wrong month, a test) used to stay for good
                         with its wages in the books. */}
-                    <button type="button" onClick={() => void removeRun(r.id, r.period)} disabled={docBusy === r.id} className="touch-target"
-                      style={{ padding: '5px 10px', minHeight: 44, borderRadius: 7, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--red)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: docBusy === r.id ? 'wait' : 'pointer' }}>
-                      {docBusy === r.id ? 'Working…' : 'Delete run'}
+                    <button type="button" onClick={() => void removeRun(r.id, r.period)} disabled={docBusy === r.id} className="pill pill-quiet" style={{ color: 'var(--red)' }}>
+                      <Trash2 aria-hidden="true" />{docBusy === r.id ? 'Working…' : 'Delete run'}
                     </button>
                   </span>
                 </div>
@@ -466,7 +495,7 @@ export default function EmployeesPage() {
 
           {/* Rate transparency — AIBOS-maintained, the owner never edits these. */}
           {rates && (
-            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 12, lineHeight: 1.5 }}>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 16, lineHeight: 1.6 }}>
               Using {rates.currency} statutory rates effective {rates.effective_from}: NAPSA {Math.round(rates.napsa_rate * 100)}% (ceiling {money(rates.napsa_ceiling)}), NHIMA {Math.round(rates.nhima_rate * 100)}%, PAYE up to {Math.round((rates.paye_bands.at(-1)?.rate ?? 0) * 100)}%. Kept current for you: no tax tables to manage.
             </p>
           )}

@@ -14,6 +14,7 @@ import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import { listEvents, type BusinessEvent } from '@/lib/api';
+import BigMoney from '@/components/home/BigMoney';
 import PageHeader from '@/components/ui/PageHeader';
 
 export default function RecordPage() {
@@ -31,17 +32,18 @@ export default function RecordPage() {
   useEffect(() => { refreshTwin(); loadRecent(); }, [refreshTwin, loadRecent]);
 
   const snapshot = [
-    { label: 'Cash', value: twin?.cash ?? 0, color: 'var(--cyan)' },
-    { label: 'Revenue', value: twin?.total_revenue ?? 0, color: 'var(--spark-revenue)' },
-    { label: 'Profit', value: twin?.total_profit ?? 0, color: 'var(--green)' },
+    { label: 'Cash', value: twin?.cash ?? 0 },
+    { label: 'Sales so far', value: twin?.total_revenue ?? 0 },
+    { label: 'Profit so far', value: twin?.total_profit ?? 0 },
   ];
 
   return (
     <>
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 8 }}>
         <PageHeader
           title="Record"
-          subtitle={<>Tell AIBOS what happened: it does the bookkeeping. Have a spreadsheet? <a href="/dashboard/import" className="tap-link" style={{ color: 'var(--cyan)', fontWeight: 600, textDecoration: 'none' }}>Upload a file</a></>}
+          subtitle="Tell AIBOS what happened: it does the bookkeeping."
+          actions={<a href="/dashboard/import" className="pill">Upload a spreadsheet</a>}
         />
         <OutboxChip style={{ marginTop: -16, marginBottom: 8 }} />
       </div>
@@ -50,54 +52,41 @@ export default function RecordPage() {
         <a href="/onboarding" style={{ textDecoration: 'none', display: 'block', marginBottom: 16 }}>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
-            padding: '14px 16px', borderRadius: 10, border: '1px solid var(--cyan)',
-            background: 'rgba(0,212,255,0.06)',
+            padding: 16, borderRadius: 'var(--radius-md)', background: 'var(--cyan-dim)',
           }}>
             <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 600 }}>
               Finish setting up your business: it takes a minute and seeds your starting cash.
             </span>
-            <span style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--cyan)' }}>
-              Set up →
-            </span>
+            <span className="pill pill-primary">Set up</span>
           </div>
         </a>
       )}
 
       <div className="grid-main">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <SectionCard title="What happened?" subtitle="Plain language: AIBOS proposes, you confirm">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <SectionCard title="What happened?" subtitle="In your own words. AIBOS fills in the details and you check them.">
             <RecordActivity onSaved={loadRecent} />
           </SectionCard>
 
-          <SectionCard title="Recent activity" subtitle="Your latest entries"
-            action={<a className="tap-link" href="/dashboard/timeline" style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', textDecoration: 'none' }}>View all →</a>}>
+          <SectionCard title="Recent activity"
+            action={<a className="pill pill-quiet" href="/dashboard/timeline">See all</a>}>
             <EventList events={recent} onChanged={() => { loadRecent(); refreshTwin(); }} />
           </SectionCard>
         </div>
 
         {/* Live twin snapshot + growth journey */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <SectionCard title="Live snapshot" subtitle={`${twin?.event_count ?? 0} ${(twin?.event_count ?? 0) === 1 ? 'entry' : 'entries'} recorded`}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <SectionCard title="Right now" subtitle={`${twin?.event_count ?? 0} ${(twin?.event_count ?? 0) === 1 ? 'entry' : 'entries'} recorded`}>
+          <div>
             {snapshot.map(s => (
-              <div key={s.label} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
-                <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  {s.label}
-                </span>
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: s.color }}>
-                  {fmt(s.value, false, sym)}
-                </span>
+              <div key={s.label} className="row" style={{ minHeight: 48 }}>
+                <span className="row-main"><span className="row-title" style={{ fontWeight: 500, color: 'var(--text-2)' }}>{s.label}</span></span>
+                <BigMoney value={s.value} sym={sym} size="md" roll />
               </div>
             ))}
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 2 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  Health
-                </span>
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
-                  {twin?.health_label ?? 'No Data'}
-                </span>
-              </div>
+            <div className="row" style={{ minHeight: 48 }}>
+              <span className="row-main"><span className="row-title" style={{ fontWeight: 500, color: 'var(--text-2)' }}>Health</span></span>
+              <span className="row-amount">{twin?.health_label ?? 'Not enough yet'}</span>
             </div>
           </div>
         </SectionCard>

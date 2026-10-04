@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 // EmptyState — what a section shows before it has anything to show (audit F-09,
 // UI/UX audit 2026-10 B9). Honest chip, one plain sentence at body size and a
-// real 44px button, so the next step is obvious and easy to hit on a phone.
+// 44px pill (redesign 2026-10), so the next step is obvious and easy to hit on a phone.
 // The chip never says "Coming soon" unless the feature truly isn't built.
 
 interface EmptyStateProps {
@@ -21,13 +21,9 @@ interface EmptyStateProps {
 export default function EmptyState({ colour = 'var(--cyan)', chip = 'Nothing yet', text, action, secondary }: EmptyStateProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '4px 0 2px' }}>
-      <span style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
-        fontSize: 'var(--fs-caps)', fontWeight: 700,
-        textTransform: 'uppercase', letterSpacing: '0.06em', color: colour,
-        background: `color-mix(in srgb, ${colour} 12%, transparent)`,
-        border: `1px solid color-mix(in srgb, ${colour} 30%, transparent)`,
-        padding: '4px 10px', borderRadius: 'var(--radius-sm)',
+      <span className="badge" style={{
+        alignSelf: 'flex-start', color: colour,
+        background: `color-mix(in srgb, ${colour} 10%, transparent)`,
       }}>
         {chip}
       </span>
@@ -35,28 +31,12 @@ export default function EmptyState({ colour = 'var(--cyan)', chip = 'Nothing yet
         {text}
       </p>
       {(action || secondary) && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           {action && (
-            <Link
-              href={action.href}
-              className="tap-link"
-              style={{
-                justifyContent: 'center', padding: '0 18px', borderRadius: 'var(--radius-md)',
-                border: `1px solid ${colour}`, color: colour, background: 'transparent',
-                fontSize: 'var(--fs-body)', fontWeight: 600, textDecoration: 'none',
-              }}
-            >
-              {action.label}
-            </Link>
+            <Link href={action.href} className="pill">{action.label}</Link>
           )}
           {secondary && (
-            <Link
-              href={secondary.href}
-              className="tap-link"
-              style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none' }}
-            >
-              {secondary.label}
-            </Link>
+            <Link href={secondary.href} className="pill pill-quiet">{secondary.label}</Link>
           )}
         </div>
       )}

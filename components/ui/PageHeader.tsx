@@ -1,38 +1,27 @@
-// PageHeader — the one way a dashboard page introduces itself (audit F-08).
-// Eyebrow (category, never a repeat of the title) · H1 · subtitle. Owning this
-// in a component keeps every page's header identical and stops per-page drift.
+// PageHeader: the one way a dashboard page introduces itself (audit F-08,
+// redesign 2026-10). A plain title in the Home voice, one quiet line under it
+// and the page's actions as pills on the right, the same on every page.
+// The old coloured eyebrow is gone: the menu already says where you are.
 
 interface PageHeaderProps {
-  /** Small uppercase category label above the title — a CATEGORY, not the title again. */
+  /** Ignored since the redesign; kept so older callers still compile. */
   eyebrow?: React.ReactNode;
-  /** Accent for the eyebrow (an engine colour or var(--cyan)). */
+  /** Ignored since the redesign. */
   eyebrowColour?: string;
   title: React.ReactNode;
   subtitle?: React.ReactNode;
+  /** The page's actions, as pills (className="pill" / "pill pill-primary"). */
+  actions?: React.ReactNode;
 }
 
-export default function PageHeader({ eyebrow, eyebrowColour = 'var(--cyan)', title, subtitle }: PageHeaderProps) {
+export default function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   return (
-    <div style={{ marginBottom: 24 }}>
-      {eyebrow && (
-        <p style={{
-          fontSize: 'var(--fs-caps)', fontWeight: 600, color: eyebrowColour,
-          textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px',
-        }}>
-          {eyebrow}
-        </p>
-      )}
-      <h1 style={{
-        fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--text-1)',
-        margin: 0, letterSpacing: '-0.03em',
-      }}>
-        {title}
-      </h1>
-      {subtitle && (
-        <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: '4px 0 0' }}>
-          {subtitle}
-        </p>
-      )}
+    <div className="page-head">
+      <div style={{ minWidth: 0 }}>
+        <h1 className="page-title">{title}</h1>
+        {subtitle && <p className="page-sub">{subtitle}</p>}
+      </div>
+      {actions && <div className="page-actions">{actions}</div>}
     </div>
   );
 }

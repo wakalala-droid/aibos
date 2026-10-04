@@ -105,6 +105,7 @@
   --blue:           #60a5fa;
   --purple:         #a78bfa;
   --amber:          #fbbf24;
+  --amber-dim:      rgba(251,191,36,0.12);
   --red:            #f87171;
   --red-dim:        rgba(239,68,68,0.12);
 
@@ -210,6 +211,7 @@
   --blue:           #1d4ed8;
   --purple:         #6d28d9;
   --amber:          #92400e; /* warnings: 7.1:1 on cards */
+  --amber-dim:      rgba(217,119,6,0.10);
   --red:            #b91c1c;
   --red-dim:        rgba(220,38,38,0.08);
 
@@ -338,8 +340,8 @@ h1, h2, h3, h4 { line-height: 1.25; }
   gap: 10px;
   margin-bottom: 16px;
 }
-.dash-iconbtn:hover { background: var(--bg-card-hover); color: var(--text-1); border-color: var(--border-strong); }
-.dash-profile:hover { border-color: var(--border-strong); background: var(--bg-card-hover); }
+.dash-iconbtn:hover { color: var(--text-1); }
+.dash-profile:hover { background: var(--pill-bg-hover) !important; }
 
 /* Visible search / command bar (audit F-07). Full bar on desktop; collapses to
    a 38px icon button below lg so the mobile header trio stays compact. */
@@ -349,16 +351,18 @@ h1, h2, h3, h4 { line-height: 1.25; }
   border: 1px solid transparent; background: var(--pill-bg);
   color: var(--text-3); cursor: pointer; min-width: 0;
   transition: background 0.15s ease;
+  /* Mercury puts search on the left of the top bar, wide and calm. */
+  flex: 0 1 440px; margin-right: auto;
 }
 .dash-searchbar:hover { background: var(--pill-bg-hover); color: var(--text-1); }
-.dash-searchbar-hint { font-size: var(--fs-data); color: var(--text-4); white-space: nowrap; }
+.dash-searchbar-hint { flex: 1; text-align: left; font-size: var(--fs-data); color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dash-searchbar-kbd {
   font-size: var(--fs-label); color: var(--text-4);
   border: 1px solid var(--border-md); border-radius: var(--radius-sm);
   padding: 1px 6px; background: var(--bg-badge); font-family: inherit;
 }
 @media (max-width: 1023px) {
-  .dash-searchbar { width: 44px; padding: 0; justify-content: center; }
+  .dash-searchbar { flex: 0 0 44px; width: 44px; margin-right: 0; padding: 0; justify-content: center; }
   .dash-searchbar-hint, .dash-searchbar-kbd { display: none; }
 }
 .dash-pop {
@@ -372,12 +376,12 @@ h1, h2, h3, h4 { line-height: 1.25; }
   box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
-.dash-row:hover { background: var(--table-row-hover); }
+.dash-row:hover { background: var(--pill-bg); }
 
 @media (max-width: 1023px) {
   /* On mobile the profile chip shows just the avatar to save space. */
   .dash-profile-name { display: none; }
-  .dash-profile { padding: 5px !important; }
+  .dash-profile { padding: 8px !important; }
 }
 
 /* ── KPI CARD — exactly matching E1 ────────────────────────── */
@@ -393,27 +397,24 @@ h1, h2, h3, h4 { line-height: 1.25; }
     var(--bg-card);
   border: 1px solid var(--border-md);
   border-radius: 14px;
-  padding: 20px;
+  padding: 24px;
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-card), inset 0 1px 0 var(--card-top);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Flat at rest and on hover (redesign 2026-10): nothing lifts. */
 .kpi-card:hover {
   border-color: var(--border-strong);
-  box-shadow: var(--shadow-lg), inset 0 1px 0 var(--card-top);
-  transform: translateY(-2px);
 }
 
 .kpi-card .kpi-label {
   font-family: 'Geist', sans-serif;
-  font-size: var(--fs-caps);
-  font-weight: 500;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0 0 4px;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-2);
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -426,20 +427,20 @@ h1, h2, h3, h4 { line-height: 1.25; }
      clips what overflows. The widest below a million, "-K999,999.99", measures
      6.44em in Geist bold, so 15% of the card's width always fits it: full size
      on a roomy card, a little smaller on a narrow one, never below 20px. */
-  font-size: clamp(1.25rem, 15cqi, var(--fs-display));
-  font-weight: 800;
+  font-size: clamp(1.25rem, 14cqi, var(--fs-h1));
+  font-weight: 500;
   color: var(--text-1);
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin: 8px 0 4px;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin: 12px 0 4px;
   font-variant-numeric: tabular-nums; /* money never dances as it updates */
 }
 
 .kpi-card .kpi-sub {
   font-family: 'Geist', sans-serif;
   font-size: var(--fs-label);
-  color: var(--text-4);
-  letter-spacing: 0.02em;
+  color: var(--text-3);
+  margin: 0;
 }
 
 .kpi-card .kpi-badge {
@@ -449,8 +450,8 @@ h1, h2, h3, h4 { line-height: 1.25; }
   font-family: 'Geist', sans-serif;
   font-size: var(--fs-label);
   font-weight: 600;
-  padding: 2px 7px;
-  border-radius: var(--radius-sm);
+  padding: 2px 10px;
+  border-radius: 999px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -470,8 +471,8 @@ h1, h2, h3, h4 { line-height: 1.25; }
 }
 
 .kpi-card .kpi-icon {
-  width: 30px; height: 30px;
-  border-radius: var(--radius-md);
+  width: 36px; height: 36px;
+  border-radius: 999px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
@@ -576,18 +577,17 @@ h1, h2, h3, h4 { line-height: 1.25; }
 
 .section-title {
   font-family: 'Geist', sans-serif;
-  font-size: var(--fs-h3);
+  font-size: var(--fs-body);
   font-weight: 600;
-  color: var(--text-1);
-  margin: 0 0 4px;
+  color: var(--text-2);
+  margin: 0;
 }
 
 .section-sub {
   font-family: 'Geist', sans-serif;
   font-size: var(--fs-label);
   color: var(--text-3);
-  letter-spacing: 0.02em;
-  margin: 0 0 20px;
+  margin: -4px 0 16px;
 }
 
 /* ── CORPORATE INSIGHT CARD ─────────────────────────────────── */
@@ -724,9 +724,10 @@ h1, h2, h3, h4 { line-height: 1.25; }
   font-family: 'Geist', sans-serif;
   font-size: var(--fs-label);
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
+  padding: 2px 10px;
+  border-radius: 999px;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 
 /* ── TABLE ──────────────────────────────────────────────────── */
@@ -737,19 +738,18 @@ h1, h2, h3, h4 { line-height: 1.25; }
 
 .data-table th {
   text-align: left;
-  padding: 8px 12px;
+  padding: 8px 12px 12px;
   font-family: 'Geist', sans-serif;
-  font-size: var(--fs-caps);
-  font-weight: 600;
+  font-size: var(--fs-label);
+  font-weight: 500;
   color: var(--text-3);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   border-bottom: 1px solid var(--border);
-  background: var(--table-head-bg);
+  background: transparent;
+  white-space: nowrap;
 }
 
 .data-table td {
-  padding: 11px 12px;
+  padding: 14px 12px;
   font-family: 'Geist', sans-serif;
   font-size: var(--fs-data);
   color: var(--text-2);
@@ -757,8 +757,8 @@ h1, h2, h3, h4 { line-height: 1.25; }
   font-variant-numeric: tabular-nums; /* aligned digit columns */
 }
 
-.data-table tr:hover td {
-  background: var(--table-row-hover);
+.data-table tbody tr:hover td {
+  background: var(--pill-bg);
 }
 
 .data-table tr:last-child td {
@@ -1111,6 +1111,7 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
 .avatar-in { background: var(--green-dim); color: var(--green); }
 .avatar-out { background: var(--red-dim); color: var(--red); }
 .avatar-brand { background: var(--cyan-dim); color: var(--cyan); }
+.avatar-warn { background: var(--amber-dim); color: var(--amber); }
 .row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .row-title { font-size: var(--fs-body); font-weight: 600; color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row-sub { font-size: var(--fs-label); color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1128,6 +1129,72 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
   .pill, .icon-pill, .row-link, .seg button { transition: none; }
   .pill:active, .icon-pill:active { transform: none; }
 }
+
+/* ── REDESIGN ROLLOUT (every page, 4 Oct 2026) ─────────────────
+   Page heads, form fields, filter chips and stat rows shared by every page,
+   so the whole product speaks the Home and Money language. */
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.page-title { margin: 0; font-size: var(--fs-h1); font-weight: 600; letter-spacing: -0.02em; line-height: 1.25; color: var(--text-1); }
+.page-sub { margin: 4px 0 0; font-size: var(--fs-body); color: var(--text-3); }
+.page-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Form fields: 44px, hairline, soft focus ring. */
+.field {
+  width: 100%; min-height: 44px; padding: 8px 14px; border-radius: var(--radius-md);
+  border: 1px solid var(--border-md); background: var(--bg-card); color: var(--text-1);
+  font-family: inherit; font-size: var(--fs-body); transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field:hover { border-color: var(--border-strong); }
+.field:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px var(--cyan-dim); }
+.field::placeholder { color: var(--text-4); }
+.field-label { display: block; margin-bottom: 6px; font-size: var(--fs-label); font-weight: 600; color: var(--text-2); }
+.quiet-label { font-size: var(--fs-label); font-weight: 500; color: var(--text-3); }
+
+/* Filter chips: quiet pills; the chosen one is filled with ink. */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px; border-radius: 999px;
+  border: 1px solid transparent; background: var(--pill-bg); color: var(--text-2); cursor: pointer;
+  font-family: inherit; font-size: var(--fs-body); font-weight: 500; white-space: nowrap; text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.chip:hover { background: var(--pill-bg-hover); color: var(--text-1); }
+.chip:active { transform: scale(0.97); }
+.chip[aria-pressed="true"], .chip[aria-current="page"], .chip[aria-selected="true"] { background: var(--text-1); color: var(--bg-card); }
+.chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.chip-count { opacity: 0.7; font-variant-numeric: tabular-nums; }
+
+/* Stat: a quiet label over one figure in the money voice. */
+.stat-label { margin: 0; font-size: var(--fs-body); font-weight: 600; color: var(--text-2); }
+.stat-value { margin: 12px 0 4px; font-size: var(--fs-h1); font-weight: 500; letter-spacing: -0.035em; line-height: 1.15; color: var(--text-1); font-variant-numeric: tabular-nums; }
+.stat-sub { margin: 0; font-size: var(--fs-label); color: var(--text-3); }
+
+/* Small figures side by side inside a panel (owed by age, stock by state). */
+.mini-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 8px; }
+.mini-stat { display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; border-radius: var(--radius-md); background: var(--pill-bg); min-width: 0; }
+
+/* An invoice or bill line: what, how many, price, remove. Wraps on a phone. */
+.line-grid { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) 90px 130px 44px; margin-bottom: 8px; }
+@media (max-width: 639px) {
+  .line-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px; }
+  .line-grid > :first-child { grid-column: 1 / -1; }
+}
+
+/* A row's amount on the right of a statement list. */
+.row-amount { flex-shrink: 0; font-size: var(--fs-body); font-weight: 600; color: var(--text-1); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.row-amount.in { color: var(--green); }
+.row-amount.out { color: var(--red); }
+.row-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+/* A static row (no link): same rhythm as .row-link. */
+.row {
+  display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 8px 10px; margin: 0 -10px;
+  border-radius: var(--radius-md); color: var(--text-1);
+  transition: background 0.12s ease;
+}
+.row:hover { background: var(--pill-bg); }
+
+/* Small round button for remove/close inside a row. */
+.icon-pill.danger:hover { color: var(--red); }
 
 /* ── FILE DROP (UI/UX audit 2026-10 A29, B6, C4) ──────────────────
    One control for every file: components/ui/FileDrop.tsx. The zone is a real
@@ -1280,7 +1347,7 @@ button, [role="button"], [role="tab"] { min-width: 44px; }
     position: sticky;
     top: 0;
     z-index: 40;
-    background: var(--bg-sidebar);
+    background: var(--bg-page);
     border-bottom: 1px solid var(--border);
   }
 
@@ -1321,13 +1388,11 @@ button, [role="button"], [role="tab"] { min-width: 44px; }
     font-size: var(--fs-label); font-weight: 600; line-height: 1.2; text-align: center; white-space: nowrap;
     background: transparent; border: none; cursor: pointer; font-family: inherit;
   }
-  .mobile-tab-icon { display: flex; }
+  .mobile-tab-icon { display: flex; align-items: center; justify-content: center; width: 56px; height: 30px; border-radius: 999px; transition: background 0.15s ease; }
   .mobile-tab-icon svg { width: 24px; height: 24px; }
-  .mobile-tab.active { color: var(--cyan); }
-  .mobile-tab.active::after {
-    content: ''; position: absolute; top: 0; left: 25%; right: 25%;
-    height: 2px; border-radius: 2px; background: var(--cyan);
-  }
+  .mobile-tab:active .mobile-tab-icon { transform: scale(0.94); }
+  .mobile-tab.active { color: var(--text-1); }
+  .mobile-tab.active .mobile-tab-icon { background: var(--pill-bg); color: var(--cyan); }
 
   /* Clearance: page content and the assistant launcher sit above the bar. */
   .app-shell .page-container {

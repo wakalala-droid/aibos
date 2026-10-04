@@ -1,14 +1,17 @@
 'use client';
 /**
- * AIBOS — Event list (Evolution spine). Mobile-first stacked rows (one record per
- * row, key fields only — responsive_design_system.md DATA TABLE RULE), with optional
- * confirm / void actions. Used by the Timeline and the Record page's recent list.
+ * AIBOS — Event list (Evolution spine), as a statement (redesign 2026-10).
+ * Entries read the way a bank shows them: grouped by day, a round in/out mark,
+ * who or what on top, how it moved underneath and the amount in green or red,
+ * with Confirm, Fix and Remove on the row. Used by Activity and the Record
+ * page's recent list.
  */
 import { useState } from 'react';
+import { ArrowDownLeft, ArrowUpRight, Repeat, Check, Pencil, Trash2 } from 'lucide-react';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import type { BusinessEvent } from '@/lib/api';
-import { amountOf, cashSign, summarize, fmtDate, STATUS_COLOR } from './eventMeta';
+import { amountOf, cashSign, summarize, whoOf, howOf, dayHeading, byDay, STATUS_COLOR } from './eventMeta';
 import EntryEditor from './EntryEditor';
 
 interface Props {
@@ -47,119 +50,104 @@ export default function EventList({ events, busyId, onConfirm, onVoid, onChanged
 
   if (!events.length) {
     return (
-      <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>
+      <p style={{ padding: '24px 0', margin: 0, color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>
         {emptyHint ?? 'No activity yet. Record your first business event above.'}
-      </div>
+      </p>
     );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {events.map((ev) => {
-        const sign = cashSign(ev);
-        const amt = amountOf(ev);
-        const voided = ev.status === 'void';
-        const st = STATUS_COLOR[ev.status] ?? STATUS_COLOR.pending;
-        const moneyColor = voided ? 'var(--text-4)' : sign > 0 ? 'var(--green)' : sign < 0 ? 'var(--red)' : 'var(--text-2)';
-        return (
-          <div
-            key={ev.id}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
-              borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-card)',
-              opacity: voided ? 0.6 : 1, flexWrap: 'wrap',
-            }}
-          >
-            {/* Direction dot */}
-            <span aria-hidden style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: moneyColor }} />
-
-            {/* Summary + date */}
-            <div style={{ flex: 1, minWidth: 140 }}>
-              <div style={{
-                fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)',
-                textDecoration: voided ? 'line-through' : 'none',
-              }}>
-                {summarize(ev)}
-              </div>
-              <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                <span>{fmtDate(ev.occurred_at)} · {ev.source}</span>
-                {/* Trust provenance (audit #62): how sure we were when it wasn't
-                    typed by hand: surfaced so AI-read events are never silent. */}
-                {ev.source !== 'manual' && typeof ev.confidence === 'number' && ev.confidence < 0.99 && (
-                  <span title="How confident the reading was" style={{ color: 'var(--warn)', fontWeight: 600 }}>
-                    ~{Math.round(ev.confidence * 100)}% sure
+    <div>
+      {byDay(events).map((g) => (
+        <div key={g.key}>
+          <p className="day-label">{dayHeading(g.key)}</p>
+          {g.rows.map((ev) => {
+            const sign = cashSign(ev);
+            const amt = amountOf(ev);
+            const voided = ev.status === 'void';
+            const st = STATUS_COLOR[ev.status] ?? STATUS_COLOR.pending;
+            const busy = busyId === ev.id;
+            const edited = !!ev.corrections && Object.keys(ev.corrections).length > 0;
+            return (
+              <div key={ev.id}>
+                <div className="row" style={{ flexWrap: 'wrap', opacity: voided ? 0.6 : 1 }}>
+                  <span className={`avatar ${voided ? '' : sign > 0 ? 'avatar-in' : sign < 0 ? 'avatar-out' : ''}`} aria-hidden="true">
+                    {sign > 0 ? <ArrowDownLeft /> : sign < 0 ? <ArrowUpRight /> : <Repeat />}
                   </span>
-                )}
-                {/* Edit history (audit #61): click to reveal exactly what changed. */}
-                {ev.corrections && Object.keys(ev.corrections).length > 0 && (
-                  <button type="button" onClick={() => setOpenHistory(openHistory === ev.id ? null : ev.id)}
-                    aria-expanded={openHistory === ev.id}
-                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--cyan)', fontWeight: 600, fontSize: 'var(--fs-label)' }}>
-                    · edited {openHistory === ev.id ? '▲' : '▾'}
-                  </button>
-                )}
-              </div>
-              {openHistory === ev.id && (
-                <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', display: 'grid', gap: 4 }}>
-                  {correctionLines(ev.corrections).map((c, ci) => (
-                    <div key={ci} style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-                      <span style={{ textTransform: 'capitalize', color: 'var(--text-2)', fontWeight: 600 }}>{c.field}</span>: {c.from} <span aria-hidden>→</span> <span style={{ color: 'var(--text-1)' }}>{c.to}</span>
-                    </div>
-                  ))}
+                  <span className="row-main" style={{ minWidth: 160 }}>
+                    <span className="row-title" style={{ textDecoration: voided ? 'line-through' : 'none' }}>{whoOf(ev)}</span>
+                    <span className="row-sub" style={{ whiteSpace: 'normal' }}>
+                      {howOf(ev)}
+                      {/* Trust provenance (audit #62): how sure the reading was
+                          when it wasn't typed by hand, so AI-read entries are never silent. */}
+                      {ev.source !== 'manual' && typeof ev.confidence === 'number' && ev.confidence < 0.99 && (
+                        <span style={{ color: 'var(--warn)', fontWeight: 600 }}> · about {Math.round(ev.confidence * 100)}% sure</span>
+                      )}
+                      {/* Edit history (audit #61): tap to see exactly what changed. */}
+                      {edited && (
+                        <>
+                          {' · '}
+                          <button type="button" onClick={() => setOpenHistory(openHistory === ev.id ? null : ev.id)}
+                            aria-expanded={openHistory === ev.id}
+                            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--cyan)', fontWeight: 600, fontSize: 'inherit', fontFamily: 'inherit' }}>
+                            {openHistory === ev.id ? 'Hide changes' : 'Changed'}
+                          </button>
+                        </>
+                      )}
+                    </span>
+                  </span>
+
+                  {ev.status !== 'confirmed' && (
+                    <span className="badge" style={{ background: st.bg, color: st.fg }}>{st.label}</span>
+                  )}
+
+                  <span className={`row-amount${voided ? '' : sign > 0 ? ' in' : sign < 0 ? ' out' : ''}`}>
+                    {amt ? `${sign < 0 ? '−' : sign > 0 ? '+' : ''}${fmt(Math.abs(amt), false, sym)}` : ''}
+                  </span>
+
+                  {!voided && (onConfirm || onVoid || onChanged) && (
+                    <span className="row-actions">
+                      {onConfirm && ev.status === 'pending' && (
+                        <button type="button" className="pill" onClick={() => onConfirm(ev.id)} disabled={busy}
+                          aria-label={`Confirm entry: ${summarize(ev)}`} style={{ color: 'var(--green)' }}>
+                          <Check aria-hidden="true" />{busy ? 'Saving…' : 'Confirm'}
+                        </button>
+                      )}
+                      {onChanged && (
+                        <button type="button" className="pill pill-quiet" onClick={() => setFixing(fixing === ev.id ? null : ev.id)} disabled={busy}
+                          aria-expanded={fixing === ev.id} aria-label={`Fix entry: ${summarize(ev)}`}>
+                          <Pencil aria-hidden="true" />Fix
+                        </button>
+                      )}
+                      {onVoid && (
+                        <button type="button" className="pill pill-quiet" onClick={() => onVoid(ev.id)} disabled={busy}
+                          aria-label={`Remove entry: ${summarize(ev)}`}>
+                          <Trash2 aria-hidden="true" />Remove
+                        </button>
+                      )}
+                    </span>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Amount */}
-            <div style={{
-              fontSize: 'var(--fs-body)', fontWeight: 600,
-              color: moneyColor, whiteSpace: 'nowrap',
-            }}>
-              {amt ? `${sign < 0 ? '−' : sign > 0 ? '+' : ''}${fmt(Math.abs(amt), false, sym)}` : 'None'}
-            </div>
-
-            {/* Status */}
-            <span className="badge" style={{ background: st.bg, color: st.fg }}>{st.label}</span>
-
-            {/* Actions */}
-            {!voided && (onConfirm || onVoid || onChanged) && (
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {onConfirm && ev.status === 'pending' && (
-                  <button
-                    type="button" onClick={() => onConfirm(ev.id)} disabled={busyId === ev.id}
-                    aria-label={`Confirm entry: ${summarize(ev)}`}
-                    style={{ padding: '0 14px', borderRadius: 'var(--radius-sm)', border: 'none', background: 'var(--green-dim)', color: 'var(--green)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer' }}
-                  >
-                    {busyId === ev.id ? '…' : 'Confirm'}
-                  </button>
+                {openHistory === ev.id && (
+                  <div style={{ margin: '4px 0 8px 54px', padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--pill-bg)', display: 'grid', gap: 4 }}>
+                    {correctionLines(ev.corrections).map((c, ci) => (
+                      <div key={ci} style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                        <span style={{ textTransform: 'capitalize', color: 'var(--text-2)', fontWeight: 600 }}>{c.field}</span>: {c.from} <span aria-hidden>→</span><span className="sr-only">changed to</span> <span style={{ color: 'var(--text-1)' }}>{c.to}</span>
+                      </div>
+                    ))}
+                  </div>
                 )}
-                {onChanged && (
-                  <button
-                    type="button" onClick={() => setFixing(fixing === ev.id ? null : ev.id)} disabled={busyId === ev.id}
-                    aria-expanded={fixing === ev.id}
-                    aria-label={`Fix entry: ${summarize(ev)}`}
-                    style={{ padding: '0 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--cyan)', background: 'transparent', color: 'var(--cyan)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}
-                  >
-                    Fix
-                  </button>
-                )}
-                {onVoid && (
-                  <button
-                    type="button" onClick={() => onVoid(ev.id)} disabled={busyId === ev.id}
-                    aria-label={`Remove entry: ${summarize(ev)}`}
-                    style={{ padding: '0 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}
-                  >
-                    {busyId === ev.id ? '…' : 'Remove'}
-                  </button>
+                {fixing === ev.id && onChanged && (
+                  <div style={{ margin: '4px 0 12px' }}>
+                    <EntryEditor ev={ev} onCancel={() => setFixing(null)} onDone={() => { setFixing(null); onChanged(); }} />
+                  </div>
                 )}
               </div>
-            )}
-            {fixing === ev.id && onChanged && (
-              <EntryEditor ev={ev} onCancel={() => setFixing(null)} onDone={() => { setFixing(null); onChanged(); }} />
-            )}
-          </div>
-        );
-      })}
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }

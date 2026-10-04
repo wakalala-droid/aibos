@@ -58,15 +58,6 @@ const ID_TYPE_LABEL: Record<string, string> = {
   other: 'ID document',
 };
 
-const ghostBtn: React.CSSProperties = {
-  padding: '8px 14px', minHeight: 44, borderRadius: 10, background: 'transparent',
-  border: '1px solid var(--border-md)', color: 'var(--text-2)',
-  fontSize: FS_SMALL, fontWeight: 600, cursor: 'pointer',
-};
-const capsLabel: React.CSSProperties = {
-  fontSize: FS_CAPS, fontWeight: 700, color: 'var(--text-4)',
-  textTransform: 'uppercase', letterSpacing: '0.05em',
-};
 
 function fmtDay(value: string): string {
   const d = new Date(`${value}T00:00:00`);
@@ -91,7 +82,7 @@ function Badge({ text, colour }: { text: string; colour: string }) {
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div style={{ minWidth: 140 }}>
-      <div style={capsLabel}>{label}</div>
+      <div className="quiet-label">{label}</div>
       <div style={{ fontSize: FS_BODY, lineHeight: 1.6, color: 'var(--text-1)', marginTop: 4 }}>{value}</div>
     </div>
   );
@@ -215,7 +206,7 @@ export default function GuestProfilePage() {
                         {ID_TYPE_LABEL[guest.id_document_type ?? 'other'] ?? 'ID document'}: {revealed}
                       </span>
                     ) : canReveal ? (
-                      <button style={ghostBtn} onClick={reveal} title="Reveal sealed ID">
+                      <button className="pill pill-quiet" onClick={reveal} title="Reveal sealed ID">
                         {guest.id_document_masked || 'ID on file'} · reveal
                       </button>
                     ) : (
@@ -234,7 +225,7 @@ export default function GuestProfilePage() {
             </div>
 
             <div>
-              <div style={capsLabel}>Staff notes (private)</div>
+              <div className="quiet-label">Staff notes (private)</div>
               <p style={{ fontSize: FS_BODY, lineHeight: 1.6, color: guest.notes ? 'var(--text-2)' : 'var(--text-4)', marginTop: 4 }}>
                 {guest.notes || 'Nothing written down yet.'}
               </p>
@@ -279,11 +270,11 @@ export default function GuestProfilePage() {
               <div style={{ overflowX: 'auto' }}>
                 <div style={{ minWidth: 720 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: COLUMNS, gap: 12, padding: '0 12px 8px 14px', borderBottom: '1px solid var(--border)' }}>
-                    <span style={capsLabel}>Stay</span>
-                    <span style={capsLabel}>Unit</span>
-                    <span style={capsLabel}>Nights</span>
-                    <span style={{ ...capsLabel, textAlign: 'right' }}>Amount</span>
-                    <span style={capsLabel}>Status</span>
+                    <span className="quiet-label">Stay</span>
+                    <span className="quiet-label">Unit</span>
+                    <span className="quiet-label">Nights</span>
+                    <span className="quiet-label" style={{ textAlign: 'right' }}>Amount</span>
+                    <span className="quiet-label">Status</span>
                   </div>
 
                   {stays.map(b => {

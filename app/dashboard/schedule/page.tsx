@@ -18,7 +18,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { undoable } from '@/lib/toast';
 import Link from 'next/link';
-import { Bell } from 'lucide-react';
+import { Bell, Users, Package, Truck, Landmark, CalendarClock, Check, Pencil, Trash2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
 import PhoneAlerts from '@/components/pwa/PhoneAlerts';
 import { playReminderSound, setSoundOn, soundOn } from '@/lib/sound';
@@ -43,6 +43,10 @@ const KIND_META: Record<ScheduleKind, { label: string; colour: string }> = {
   payment_due: { label: 'Payment',  colour: 'var(--amber)'  },
   reminder:   { label: 'Reminder', colour: 'var(--text-3)' },
   other:      { label: 'Other',    colour: 'var(--text-3)' },
+};
+const KIND_ICON: Record<ScheduleKind, React.ReactNode> = {
+  meeting: <Users />, pickup: <Package />, delivery: <Truck />, deadline: <Landmark />,
+  payment_due: <Landmark />, reminder: <Bell />, other: <CalendarClock />,
 };
 const QUICK_KINDS: ScheduleKind[] = ['meeting', 'pickup', 'delivery', 'deadline', 'payment_due', 'reminder'];
 
@@ -144,13 +148,8 @@ function nextMonthly(day: number): Date {
   return candidate > now ? candidate : new Date(now.getFullYear(), now.getMonth() + 1, day, 9, 0);
 }
 
-const input: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
-  border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', outline: 'none',
-};
-const lbl: React.CSSProperties = { fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
-const ghostBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-label)' };
+// A locked choice reads like a field, so the form keeps its shape on Free.
+const lockedField: React.CSSProperties = { display: 'flex', alignItems: 'center', color: 'var(--text-3)', textDecoration: 'none' };
 
 export default function SchedulePage() {
   const sym = useStore(s => s.currencySymbol) || 'K';
@@ -356,25 +355,24 @@ export default function SchedulePage() {
     return cells;
   }, [items, monthCursor]);
 
-  const kindBadge = (kind: ScheduleKind) => {
+  const kindMark = (kind: ScheduleKind) => {
     const m = KIND_META[kind];
     return (
-      <span className="badge" style={{ background: `color-mix(in srgb, ${m.colour} 12%, transparent)`, color: m.colour, flexShrink: 0 }}>
-        {m.label}
+      <span className="avatar" aria-hidden="true" style={{ background: `color-mix(in srgb, ${m.colour} 12%, transparent)`, color: m.colour }}>
+        {KIND_ICON[kind]}
       </span>
     );
   };
 
   const itemRow = (when: Date, it: ScheduleItem, finished = false) => (
-    <div key={`${it.id}-${when.getTime()}`} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--border)', opacity: finished ? 0.55 : 1 }}>
-      {kindBadge(it.kind)}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: finished ? 'line-through' : 'none' }}>
+    <div key={`${it.id}-${when.getTime()}`} className="row" style={{ flexWrap: 'wrap', opacity: finished ? 0.55 : 1 }}>
+      {kindMark(it.kind)}
+      <div className="row-main" style={{ minWidth: 160 }}>
+        <div className="row-title" style={{ textDecoration: finished ? 'line-through' : 'none' }}>
           {it.title}
-          {(it.amount ?? 0) > 0 && <span style={{ color: 'var(--text-3)', fontWeight: 500 }}> · {fmt(it.amount!, false, sym)}</span>}
         </div>
-        <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
-          {fmtDay(when)}{it.all_day ? '' : ` · ${fmtTime(when)}`}
+        <div className="row-sub" style={{ whiteSpace: 'normal' }}>
+          {KIND_META[it.kind].label} · {fmtDay(when)}{it.all_day ? '' : ` · ${fmtTime(when)}`}
           {it.with_whom ? ` · ${it.with_whom}` : ''}{it.location ? ` · ${it.location}` : ''}
           {/* When its reminder goes out. Only on plans that send them. */}
           {pro && !finished && it.status === 'scheduled' && remindShort(it) && (
@@ -393,26 +391,28 @@ export default function SchedulePage() {
             );
           })()}
           {finished && ` · ${it.status === 'done' ? 'done' : 'missed'}`}
-          {it.linked_event_id && ' · recorded ✓'}
+          {it.linked_event_id && ' · recorded in your books'}
         </div>
       </div>
-      {!finished && (
-        <button type="button" onClick={() => markDone(it)} className="touch-target" aria-label={`Mark ${it.title} done`}
-          style={{ minHeight: 44, padding: '6px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--green)', fontSize: 'var(--fs-label)', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
-          Done
-        </button>
-      )}
-      {!finished && <button type="button" onClick={() => edit(it)} style={{ ...ghostBtn, color: 'var(--cyan)' }}>Edit</button>}
-      <button type="button" onClick={() => remove(it.id)} style={{ ...ghostBtn, color: 'var(--text-4)' }}>Delete</button>
+      {(it.amount ?? 0) > 0 && <span className="row-amount">{fmt(it.amount!, false, sym)}</span>}
+      <span className="row-actions">
+        {!finished && (
+          <button type="button" onClick={() => markDone(it)} className="pill" aria-label={`Mark ${it.title} done`} style={{ color: 'var(--green)' }}>
+            <Check aria-hidden="true" />Done
+          </button>
+        )}
+        {!finished && <button type="button" className="icon-pill" onClick={() => edit(it)} aria-label={`Change ${it.title}`}><Pencil aria-hidden="true" /></button>}
+        <button type="button" className="icon-pill danger" onClick={() => remove(it.id)} aria-label={`Remove ${it.title}`}><Trash2 aria-hidden="true" /></button>
+      </span>
     </div>
   );
 
   const group = (label: string, entries: Array<[Date, ScheduleItem]>, warn = false) =>
     entries.length === 0 ? null : (
-      <div key={label} style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: warn ? 'var(--amber)' : 'var(--text-4)', marginBottom: 2 }}>
+      <div key={label} style={{ marginBottom: 8 }}>
+        <p className="day-label" style={warn ? { color: 'var(--red)' } : undefined}>
           {label}
-        </div>
+        </p>
         {entries.map(([when, it]) => itemRow(when, it))}
       </div>
     );
@@ -425,20 +425,27 @@ export default function SchedulePage() {
       <PageHeader
         title="Schedule"
         subtitle="Meetings, pick-ups and deadlines: your week, one glance."
+        actions={
+          <button type="button" className="pill pill-primary"
+            onClick={() => { cancelEdit(); document.getElementById('sched-title')?.focus(); }}>
+            <Plus aria-hidden="true" />Add to schedule
+          </button>
+        }
       />
 
       {/* Statutory autopilot (audit #25): one tap seeds recurring PAYE/NAPSA/
           NHIMA reminders, amounts from the latest payroll run. Hidden once
           all three exist. */}
       {pro && !loading && !items.some(i => i.title === 'NAPSA contribution') && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '12px 14px', marginBottom: 16, borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
-          <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
-            <strong style={{ color: 'var(--text-1)' }}>Never miss ZRA, NAPSA or NHIMA again</strong>: recurring reminders on the 10th, amounts filled from your last payroll run.
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', padding: '16px 24px', marginBottom: 16, borderRadius: 'var(--radius-card)', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 14, flex: '1 1 320px' }}>
+            <span className="avatar avatar-brand" aria-hidden="true"><Landmark /></span>
+            <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
+              <strong style={{ color: 'var(--text-1)' }}>Never miss ZRA, NAPSA or NHIMA again.</strong> Reminders on the 10th of every month, with amounts from your last payroll.
+            </span>
           </span>
-          <button type="button" className="touch-target" disabled={statutoryBusy}
-            onClick={() => void seedStatutory()}
-            style={{ padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: statutoryBusy ? 0.7 : 1 }}>
-            {statutoryBusy ? 'Setting up…' : 'Set up statutory reminders'}
+          <button type="button" className="pill" disabled={statutoryBusy} onClick={() => void seedStatutory()}>
+            {statutoryBusy ? 'Setting up…' : 'Set them up'}
           </button>
         </div>
       )}
@@ -448,33 +455,31 @@ export default function SchedulePage() {
           title="Coming up" explainId="schedule.agenda"
           subtitle={loading ? 'Loading…' : `${items.filter(i => i.status === 'scheduled').length} scheduled`}
           action={
-            <div role="group" aria-label="Schedule view" style={{ display: 'flex', height: 28, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
+            <div role="group" aria-label="Schedule view" className="seg">
               {(['agenda', 'month'] as const).map(v => (
-                <button key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v}
-                  style={{ padding: '0 12px', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-label)', fontWeight: 700, background: view === v ? 'var(--cyan)' : 'transparent', color: view === v ? 'var(--on-cyan)' : 'var(--text-4)' }}>
-                  {v === 'agenda' ? 'Agenda' : 'Month'}
+                <button key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v}>
+                  {v === 'agenda' ? 'List' : 'Month'}
                 </button>
               ))}
             </div>
           }
         >
-          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
+          {error && <div role="alert" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>{error}</div>}
 
           {/* Record bridge — the just-completed commitment can land in the books. */}
           {bridge && (
-            <div style={{ marginBottom: 14, padding: '12px 14px', borderRadius: 10, border: '1px solid color-mix(in srgb, var(--green) 40%, transparent)', background: 'color-mix(in srgb, var(--green) 8%, transparent)' }}>
-              <div style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', marginBottom: 8 }}>
+            <div style={{ marginBottom: 16, padding: 16, borderRadius: 'var(--radius-md)', background: 'var(--green-dim)' }}>
+              <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', marginBottom: 12 }}>
                 Record “{bridge.title}”: {fmt(bridge.amount ?? 0, false, sym)} in your books?
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                <select value={bridgeType} onChange={e => setBridgeType(e.target.value as EventType)} style={{ ...input, width: 'auto', minHeight: 44 }} aria-label="Event type">
+                <select value={bridgeType} onChange={e => setBridgeType(e.target.value as EventType)} className="field" style={{ width: 'auto' }} aria-label="Record it as">
                   {BRIDGE_OPTIONS.map(t => <option key={t} value={t}>{t === 'SupplierPayment' ? 'Supplier payment' : t === 'CustomerPayment' ? 'Customer payment' : t}</option>)}
                 </select>
-                <button type="button" onClick={recordBridge} disabled={bridgeBusy}
-                  style={{ padding: '8px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: bridgeBusy ? 0.7 : 1 }}>
+                <button type="button" onClick={recordBridge} disabled={bridgeBusy} className="pill pill-primary">
                   {bridgeBusy ? 'Recording…' : 'Record it'}
                 </button>
-                <button type="button" onClick={() => setBridge(null)} style={{ ...ghostBtn, color: 'var(--text-3)', fontSize: 'var(--fs-data)' }}>Not now</button>
+                <button type="button" onClick={() => setBridge(null)} className="pill pill-quiet">Not now</button>
               </div>
             </div>
           )}
@@ -482,19 +487,18 @@ export default function SchedulePage() {
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 48 }} />)}</div>
           ) : !hasAny ? (
-            <div style={{ padding: '20px 8px', textAlign: 'center' }}>
-              <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 14px' }}>
+            <div style={{ padding: '8px 0' }}>
+              <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 16px' }}>
                 Nothing scheduled yet. Start with the dates every Zambian business keeps:
               </p>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <div className="chips">
                 {SEEDS.map(s => (
-                  <button key={s.title} type="button" onClick={() => addSeed(s)} className="touch-target"
-                    style={{ padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
-                    {s.title} · {s.day}{s.day === 1 ? 'st' : 'th'}
+                  <button key={s.title} type="button" onClick={() => addSeed(s)} className="chip">
+                    <Plus aria-hidden="true" style={{ width: 18, height: 18 }} />{s.title} · {s.day}{s.day === 1 ? 'st' : 'th'}
                   </button>
                 ))}
               </div>
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 12 }}>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 12 }}>
                 {pro ? 'One tap: each repeats monthly.' : `One tap adds the next due date. On ${needTier} they repeat monthly on their own.`}
               </p>
             </div>
@@ -507,46 +511,48 @@ export default function SchedulePage() {
               {group('Later', groups.later)}
               {groups.finished.length > 0 && (
                 <div style={{ marginBottom: 4 }}>
-                  <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', marginBottom: 2 }}>Recently finished</div>
+                  <p className="day-label">Recently finished</p>
                   {groups.finished.slice(0, 5).map(([when, it]) => itemRow(when, it, true))}
                 </div>
               )}
             </>
           ) : (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <button type="button" aria-label="Previous month" onClick={() => { setSelectedDay(null); setMonthCursor(c => new Date(c.getFullYear(), c.getMonth() - 1, 1)); }} style={{ ...ghostBtn, color: 'var(--text-2)', fontSize: 'var(--fs-body)', padding: '4px 10px' }}>‹</button>
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
-                  {monthCursor.toLocaleDateString([], { month: 'long', year: 'numeric' })}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <button type="button" className="icon-pill" aria-label="Previous month" onClick={() => { setSelectedDay(null); setMonthCursor(c => new Date(c.getFullYear(), c.getMonth() - 1, 1)); }}><ChevronLeft aria-hidden="true" /></button>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>
+                  {monthCursor.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
                 </span>
-                <button type="button" aria-label="Next month" onClick={() => { setSelectedDay(null); setMonthCursor(c => new Date(c.getFullYear(), c.getMonth() + 1, 1)); }} style={{ ...ghostBtn, color: 'var(--text-2)', fontSize: 'var(--fs-body)', padding: '4px 10px' }}>›</button>
+                <button type="button" className="icon-pill" aria-label="Next month" onClick={() => { setSelectedDay(null); setMonthCursor(c => new Date(c.getFullYear(), c.getMonth() + 1, 1)); }}><ChevronRight aria-hidden="true" /></button>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 4 }}>
                 {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
-                  <div key={d} style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, color: 'var(--text-4)', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '2px 0' }}>{d}</div>
+                  <div key={d} style={{ fontSize: 'var(--fs-label)', fontWeight: 500, color: 'var(--text-3)', textAlign: 'center', padding: '4px 0' }}>{d}</div>
                 ))}
                 {monthDays.map((cell, i) => cell === null ? <div key={`x${i}`} /> : (
                   <button key={cell.key} type="button" onClick={() => setSelectedDay(cell.key === selectedDay ? null : cell.key)}
                     aria-label={`Day ${cell.day}${cell.items.length ? `, ${cell.items.length} item${cell.items.length === 1 ? '' : 's'}` : ''}`}
+                    aria-pressed={cell.key === selectedDay}
                     style={{
-                      minHeight: 44, borderRadius: 'var(--radius-md)', cursor: 'pointer',
-                      border: `1px solid ${cell.key === selectedDay ? 'var(--cyan)' : cell.key === dayKey(new Date()) ? 'var(--border-md)' : 'transparent'}`,
-                      background: cell.key === selectedDay ? 'color-mix(in srgb, var(--cyan) 10%, transparent)' : 'transparent',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '6px 2px',
+                      minHeight: 52, borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                      border: `1px solid ${cell.key === dayKey(new Date()) && cell.key !== selectedDay ? 'var(--border-strong)' : 'transparent'}`,
+                      background: cell.key === selectedDay ? 'var(--text-1)' : cell.items.length ? 'var(--pill-bg)' : 'transparent',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '6px 2px',
+                      fontFamily: 'inherit',
                     }}>
-                    <span style={{ fontSize: 'var(--fs-label)', fontWeight: cell.key === dayKey(new Date()) ? 800 : 500, color: 'var(--text-2)' }}>{cell.day}</span>
-                    <span style={{ display: 'flex', gap: 2 }}>
+                    <span style={{ fontSize: 'var(--fs-label)', fontWeight: cell.key === dayKey(new Date()) ? 700 : 500, color: cell.key === selectedDay ? 'var(--bg-card)' : 'var(--text-1)' }}>{cell.day}</span>
+                    <span style={{ display: 'flex', gap: 3 }}>
                       {cell.items.slice(0, 3).map((it, j) => (
-                        <span key={j} style={{ width: 5, height: 5, borderRadius: 3, background: KIND_META[it.kind].colour }} />
+                        <span key={j} style={{ width: 6, height: 6, borderRadius: 3, background: cell.key === selectedDay ? 'var(--bg-card)' : KIND_META[it.kind].colour }} />
                       ))}
                     </span>
                   </button>
                 ))}
               </div>
               {selectedDay && (
-                <div style={{ marginTop: 14, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+                <div style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
                   {selDayItems.length === 0
-                    ? <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>Nothing on this day.</p>
+                    ? <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>Nothing on this day.</p>
                     : selDayItems.map(it => itemRow(new Date(it.next_occurrences?.[0] ?? it.starts_at), it, it.status !== 'scheduled'))}
                 </div>
               )}
@@ -555,41 +561,30 @@ export default function SchedulePage() {
         </SectionCard>
 
         {/* ── Quick add / edit ─────────────────────────────────────────────── */}
-        <SectionCard title={editId ? 'Edit item' : 'Quick add'} explainId="schedule.quickadd"
-          subtitle={editId ? 'Update the details' : 'Three taps: what, when, add'}>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-            {QUICK_KINDS.map(k => {
-              const on = form.kind === k;
-              const m = KIND_META[k];
-              return (
-                <button key={k} type="button" onClick={() => pickKind(k)} aria-pressed={on}
-                  style={{
-                    padding: '6px 12px', minHeight: 44, borderRadius: 'var(--radius-md)', cursor: 'pointer',
-                    fontSize: 'var(--fs-label)', fontWeight: 700,
-                    border: `1px solid ${on ? m.colour : 'var(--border-md)'}`,
-                    background: on ? `color-mix(in srgb, ${m.colour} 12%, transparent)` : 'transparent',
-                    color: on ? m.colour : 'var(--text-3)',
-                  }}>
-                  {m.label}
-                </button>
-              );
-            })}
+        <SectionCard title={editId ? 'Change this' : 'Add to your schedule'} explainId="schedule.quickadd"
+          subtitle={editId ? undefined : 'What, when, add.'}>
+          <div className="chips" role="group" aria-label="What kind" style={{ marginBottom: 16 }}>
+            {QUICK_KINDS.map(k => (
+              <button key={k} type="button" className="chip" onClick={() => pickKind(k)} aria-pressed={form.kind === k}>
+                {KIND_META[k].label}
+              </button>
+            ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
             <div style={{ gridColumn: '1 / -1' }}>
-              <label style={lbl}>Title *</label>
-              <input value={form.title} onChange={e => set('title', e.target.value)} placeholder={form.kind === 'pickup' ? 'Mrs Banda, 2 crates' : form.kind === 'deadline' ? 'ZRA VAT return' : 'What is happening?'} style={input} />
+              <label htmlFor="sched-title" className="field-label">What</label>
+              <input id="sched-title" value={form.title} onChange={e => set('title', e.target.value)} placeholder={form.kind === 'pickup' ? 'Mrs Banda, 2 crates' : form.kind === 'deadline' ? 'ZRA VAT return' : 'What is happening?'} className="field" />
             </div>
-            <div><label style={lbl}>Date *</label><input type="date" value={form.date} onChange={e => set('date', e.target.value)} style={input} /></div>
+            <div><label htmlFor="sched-date" className="field-label">Date</label><input id="sched-date" type="date" value={form.date} onChange={e => set('date', e.target.value)} className="field" /></div>
             <div>
-              <label style={lbl}>Time</label>
-              <input type="time" value={form.time} onChange={e => set('time', e.target.value)} disabled={form.allDay} style={{ ...input, opacity: form.allDay ? 0.5 : 1 }} />
+              <label htmlFor="sched-time" className="field-label">Time</label>
+              <input id="sched-time" type="time" value={form.time} onChange={e => set('time', e.target.value)} disabled={form.allDay} className="field" style={{ opacity: form.allDay ? 0.5 : 1 }} />
             </div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input id="sched-allday" type="checkbox" checked={form.allDay} onChange={e => setAllDay(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--cyan)' }} />
-              <label htmlFor="sched-allday" style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', cursor: 'pointer' }}>All day</label>
-              <button type="button" onClick={() => setMoreOpen(o => !o)} style={{ ...ghostBtn, color: 'var(--cyan)', marginLeft: 'auto', fontSize: 'var(--fs-label)' }}>
+              <input id="sched-allday" type="checkbox" checked={form.allDay} onChange={e => setAllDay(e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
+              <label htmlFor="sched-allday" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>All day</label>
+              <button type="button" className="pill pill-quiet" aria-expanded={moreOpen} onClick={() => setMoreOpen(o => !o)} style={{ marginLeft: 'auto' }}>
                 {moreOpen ? 'Fewer options' : 'More options'}
               </button>
             </div>
@@ -597,15 +592,15 @@ export default function SchedulePage() {
             {/* When the reminder goes out. In the main form, not under More
                 options: a reminder nobody knew they could set never arrives. */}
             <div style={{ gridColumn: '1 / -1' }}>
-              <label htmlFor="sched-remind" style={lbl}>Remind me {pro ? '' : `· ${needTier}`}</label>
+              <label htmlFor="sched-remind" className="field-label">Remind me {pro ? '' : `· ${needTier}`}</label>
               {pro ? (
                 <select id="sched-remind" value={form.remind}
                   onChange={e => setForm(p => ({ ...p, remind: Number(e.target.value), remindTouched: true }))}
-                  style={input}>
+                  className="field">
                   {remindChoices(form.allDay).map(([m, label]) => <option key={m} value={m}>{label}</option>)}
                 </select>
               ) : (
-                <Link href="/pricing" style={{ ...input, display: 'flex', alignItems: 'center', color: 'var(--text-4)', textDecoration: 'none' }}>
+                <Link href="/pricing" className="field" style={lockedField}>
                   Reminders on your phone come with {needTier}. See plans
                 </Link>
               )}
@@ -613,13 +608,13 @@ export default function SchedulePage() {
 
             {moreOpen && (
               <>
-                <div><label style={lbl}>With whom</label><input value={form.withWhom} onChange={e => set('withWhom', e.target.value)} placeholder="Customer / supplier" style={input} /></div>
-                <div><label style={lbl}>Where</label><input value={form.location} onChange={e => set('location', e.target.value)} style={input} /></div>
-                <div><label style={lbl}>Amount ({sym})</label><input type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="Powers one-tap recording" style={input} /></div>
+                <div><label className="field-label">With whom</label><input value={form.withWhom} onChange={e => set('withWhom', e.target.value)} placeholder="Customer / supplier" className="field" /></div>
+                <div><label className="field-label">Where</label><input value={form.location} onChange={e => set('location', e.target.value)} className="field" /></div>
+                <div><label className="field-label">Amount ({sym})</label><input type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="Powers one-tap recording" className="field" /></div>
                 <div>
-                  <label style={lbl}>Repeats {pro ? '' : `· ${needTier}`}</label>
+                  <label className="field-label">Repeats {pro ? '' : `· ${needTier}`}</label>
                   {pro ? (
-                    <select value={form.repeat} onChange={e => set('repeat', e.target.value as RepeatChoice)} style={input}>
+                    <select value={form.repeat} onChange={e => set('repeat', e.target.value as RepeatChoice)} className="field">
                       <option value="none">Does not repeat</option>
                       <option value="daily">Daily</option>
                       <option value="weekly">Weekly</option>
@@ -627,31 +622,30 @@ export default function SchedulePage() {
                       <option value="monthly">Monthly</option>
                     </select>
                   ) : (
-                    <Link href="/pricing" style={{ ...input, display: 'flex', alignItems: 'center', color: 'var(--text-4)', textDecoration: 'none' }}>
-                      Repeats monthly &amp; more: upgrade
+                    <Link href="/pricing" className="field" style={lockedField}>
+                      Repeats monthly and more: upgrade
                     </Link>
                   )}
                 </div>
-                <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Notes</label><input value={form.notes} onChange={e => set('notes', e.target.value)} style={input} /></div>
+                <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Notes</label><input value={form.notes} onChange={e => set('notes', e.target.value)} className="field" /></div>
               </>
             )}
           </div>
 
           <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-            <button type="button" onClick={save} disabled={saving} className="touch-target"
-              style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
-              {saving ? 'Saving…' : editId ? 'Update' : 'Add to schedule'}
+            <button type="button" onClick={save} disabled={saving} className="pill pill-primary">
+              {saving ? 'Saving…' : editId ? 'Save changes' : 'Add to schedule'}
             </button>
-            {editId && <button type="button" onClick={cancelEdit} className="touch-target" style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>}
+            {editId && <button type="button" onClick={cancelEdit} className="pill pill-quiet">Cancel</button>}
           </div>
 
           {/* Where reminders arrive, so an owner knows before relying on it
               whether their phone is one of the places. */}
           {pro && (
             <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
-              <p style={{ margin: '0 0 8px', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 700, color: 'var(--text-1)' }}>
+              <h3 className="panel-title" style={{ marginBottom: 8 }}>
                 Where your reminders arrive
-              </p>
+              </h3>
               <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
                 In the bell and on screen while AIBOS is open.
                 {devices && devices.length > 0 && ` Also as a notification on ${deviceList(devices)}.`}
@@ -662,10 +656,10 @@ export default function SchedulePage() {
               <label htmlFor="sched-sound" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', cursor: 'pointer' }}>
                 <input id="sched-sound" type="checkbox" checked={sound}
                   onChange={e => { const on = e.target.checked; setSound(on); setSoundOn(on); if (on) void playReminderSound(true); }}
-                  style={{ width: 18, height: 18, accentColor: 'var(--cyan)' }} />
+                  style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
                 Play a sound when a notification arrives
               </label>
-              <p style={{ margin: '4px 0 0 26px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>
+              <p style={{ margin: '4px 0 0 30px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
                 AIBOS plays it itself wherever it is open, the installed app included and keeps the
                 notification quiet so you hear it once. With AIBOS closed your phone uses its own sound.
               </p>

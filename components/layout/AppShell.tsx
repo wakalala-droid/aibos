@@ -102,23 +102,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <header className="mobile-topbar">
             <button
               type="button"
-              className="touch-target"
+              className="icon-pill"
               aria-label="Open navigation menu"
               aria-expanded={mobileNavOpen}
               aria-controls="primary-navigation"
               onClick={toggleMobileNav}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 44, height: 44, borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
-                color: 'var(--text-2)', cursor: 'pointer',
-              }}
             >
               <HamburgerIcon />
             </button>
 
             <span style={{
-              fontSize: 'var(--fs-body)', fontWeight: 800,
+              fontSize: 'var(--fs-body)', fontWeight: 700,
               color: 'var(--text-1)', letterSpacing: '-0.02em',
             }}>
               AIBOS
@@ -126,15 +120,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
             <button
               type="button"
-              className="touch-target"
+              className="icon-pill"
               aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               onClick={toggle}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 44, height: 44, borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
-                color: 'var(--text-3)', cursor: 'pointer',
-              }}
             >
               {isDark ? <SunIcon /> : <MoonIcon />}
             </button>

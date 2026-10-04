@@ -82,25 +82,16 @@ export default function DataTable<T>({
   const sortable = columns.filter(c => c.sortValue);
   const numeric = (c: DataTableColumn<T>) => rows.length > 0 && typeof c.sortValue!(rows[0]) === 'number';
 
-  const chipStyle = (on: boolean): React.CSSProperties => ({
-    padding: '4px 12px', borderRadius: 999, cursor: 'pointer',
-    fontSize: 'var(--fs-label)', fontWeight: 600,
-    border: `1px solid ${on ? 'var(--cyan)' : 'var(--border-md)'}`,
-    background: on ? 'var(--cyan-dim)' : 'var(--bg-badge)',
-    color: on ? 'var(--cyan)' : 'var(--text-3)',
-    transition: 'all 0.15s ease',
-  });
-
   return (
     <div>
       {filters && filters.length > 0 && (
-        <div role="group" aria-label="Filter rows" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
-          <button type="button" aria-pressed={activeFilter === -1} onClick={() => onFilter(-1)} style={chipStyle(activeFilter === -1)}>
-            All ({rows.length})
+        <div role="group" aria-label="Filter rows" className="chips" style={{ marginBottom: 16 }}>
+          <button type="button" className="chip" aria-pressed={activeFilter === -1} onClick={() => onFilter(-1)}>
+            All <span className="chip-count">{rows.length}</span>
           </button>
           {filters.map((f, i) => (
-            <button key={f.label} type="button" aria-pressed={activeFilter === i} onClick={() => onFilter(i)} style={chipStyle(activeFilter === i)}>
-              {f.label} ({rows.filter(f.predicate).length})
+            <button key={f.label} type="button" className="chip" aria-pressed={activeFilter === i} onClick={() => onFilter(i)}>
+              {f.label} <span className="chip-count">{rows.filter(f.predicate).length}</span>
             </button>
           ))}
         </div>
@@ -187,34 +178,14 @@ export default function DataTable<T>({
           <span className="tnum" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
             {from}–{to} of {sorted.length}
           </span>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              type="button"
-              onClick={() => setPage(p => Math.max(0, p - 1))}
-              disabled={safePage === 0}
-              aria-label="Previous page"
-              style={{
-                padding: '5px 12px', borderRadius: 'var(--radius-sm)', cursor: safePage === 0 ? 'default' : 'pointer',
-                border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
-                color: safePage === 0 ? 'var(--text-4)' : 'var(--text-2)',
-                fontSize: 'var(--fs-label)', fontWeight: 600, opacity: safePage === 0 ? 0.5 : 1,
-              }}
-            >
-              ← Prev
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="button" className="pill pill-quiet" onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={safePage === 0} aria-label="Previous page">
+              Previous
             </button>
-            <button
-              type="button"
-              onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
-              disabled={safePage >= pageCount - 1}
-              aria-label="Next page"
-              style={{
-                padding: '5px 12px', borderRadius: 'var(--radius-sm)', cursor: safePage >= pageCount - 1 ? 'default' : 'pointer',
-                border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
-                color: safePage >= pageCount - 1 ? 'var(--text-4)' : 'var(--text-2)',
-                fontSize: 'var(--fs-label)', fontWeight: 600, opacity: safePage >= pageCount - 1 ? 0.5 : 1,
-              }}
-            >
-              Next →
+            <button type="button" className="pill pill-quiet" onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
+              disabled={safePage >= pageCount - 1} aria-label="Next page">
+              Next
             </button>
           </div>
         </div>

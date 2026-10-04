@@ -30,11 +30,6 @@ const SCENARIOS = [
   { type: 'hire', label: 'Hire staff', unit: '', value: 1 },
 ];
 
-const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
-  border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', outline: 'none',
-};
 
 function RecCard({ r, onFeedback, busy }: {
   r: Recommendation;
@@ -216,21 +211,21 @@ export function WhatIfPanel() {
   return (
     <SectionCard title="What if…" subtitle="Runs against a copy: your data is untouched">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <select value={scenario} onChange={e => { setScenario(e.target.value); setSim(null); }} style={inputStyle}>
+        <select value={scenario} onChange={e => { setScenario(e.target.value); setSim(null); }} className="field">
           {SCENARIOS.map(s => <option key={s.type} value={s.type}>{s.label}</option>)}
         </select>
 
         {isHire ? (
           <>
             <label style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase' }}>How many</label>
-            <input type="number" value={count} min={1} onChange={e => setCount(Number(e.target.value))} style={inputStyle} />
+            <input type="number" value={count} min={1} onChange={e => setCount(Number(e.target.value))} className="field" />
             <label style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase' }}>Monthly salary ({sym})</label>
-            <input type="number" value={salary} min={0} onChange={e => setSalary(Number(e.target.value))} style={inputStyle} />
+            <input type="number" value={salary} min={0} onChange={e => setSalary(Number(e.target.value))} className="field" />
           </>
         ) : (
           <>
             <label style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase' }}>Change (%)</label>
-            <input type="number" value={value} min={-100} max={500} onChange={e => setValue(Number(e.target.value))} style={inputStyle} />
+            <input type="number" value={value} min={-100} max={500} onChange={e => setValue(Number(e.target.value))} className="field" />
           </>
         )}
 

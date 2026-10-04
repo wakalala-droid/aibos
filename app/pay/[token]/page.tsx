@@ -344,7 +344,7 @@ export default function PayInvoicePage() {
                       disabled={phase === 'waiting' || phone.trim().length < 9}
                       style={{
                         width: '100%', minHeight: 52, marginTop: 16, borderRadius: 10,
-                        border: 'none', background: 'var(--cyan)', color: '#08111a',
+                        border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)',
                         fontSize: 'var(--fs-body)', fontWeight: 700,
                         cursor: phase === 'waiting' ? 'default' : 'pointer',
                         opacity: phase === 'waiting' || phone.trim().length < 9 ? 0.6 : 1,

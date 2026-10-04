@@ -67,25 +67,7 @@ function fmtDate(v: string | null): string {
     : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: 'var(--fs-data)',
-  fontWeight: 600,
-  color: 'var(--text-2)',
-  marginBottom: 6,
-};
 
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  minHeight: 44,
-  padding: '11px 14px',
-  borderRadius: 10,
-  border: '1px solid var(--border-md)',
-  background: 'var(--bg-input)',
-  color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)',
-  outline: 'none',
-};
 
 export default function BusinessProfilePage() {
   const { user } = useAuth();
@@ -272,49 +254,49 @@ export default function BusinessProfilePage() {
 
           <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
             <div>
-              <label htmlFor="bp-name" style={labelStyle}>Business name <span style={{ color: 'var(--crit)' }}>*</span></label>
-              <input id="bp-name" value={form.business_name} onChange={(e) => set('business_name', e.target.value)} required aria-required="true" aria-invalid={!nameValid} style={inputStyle} placeholder="e.g. Lusaka Bites" />
+              <label htmlFor="bp-name" className="field-label">Business name <span style={{ color: 'var(--crit)' }}>*</span></label>
+              <input id="bp-name" value={form.business_name} onChange={(e) => set('business_name', e.target.value)} required aria-required="true" aria-invalid={!nameValid} className="field" placeholder="e.g. Lusaka Bites" />
               {!nameValid && <p style={{ fontSize: 'var(--fs-label)', color: 'var(--crit)', margin: '6px 0 0' }}>A business name is required.</p>}
             </div>
 
             <div>
-              <label htmlFor="bp-type" style={labelStyle}>Business type</label>
-              <select id="bp-type" value={form.business_type} onChange={(e) => set('business_type', e.target.value)} style={inputStyle}>
+              <label htmlFor="bp-type" className="field-label">Business type</label>
+              <select id="bp-type" value={form.business_type} onChange={(e) => set('business_type', e.target.value)} className="field">
                 <option value="">Select a type…</option>
                 {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
 
             <div>
-              <label htmlFor="bp-industry" style={labelStyle}>Industry / sub-type</label>
-              <input id="bp-industry" value={form.industry} onChange={(e) => set('industry', e.target.value)} style={inputStyle} placeholder="e.g. Fast food" />
+              <label htmlFor="bp-industry" className="field-label">Industry / sub-type</label>
+              <input id="bp-industry" value={form.industry} onChange={(e) => set('industry', e.target.value)} className="field" placeholder="e.g. Fast food" />
             </div>
 
             <div>
-              <label htmlFor="bp-location" style={labelStyle}>Location</label>
-              <input id="bp-location" value={form.location} onChange={(e) => set('location', e.target.value)} style={inputStyle} placeholder="Lusaka" />
+              <label htmlFor="bp-location" className="field-label">Location</label>
+              <input id="bp-location" value={form.location} onChange={(e) => set('location', e.target.value)} className="field" placeholder="Lusaka" />
             </div>
 
             <div>
-              <label htmlFor="bp-currency" style={labelStyle}>Currency</label>
-              <select id="bp-currency" value={form.currency} onChange={(e) => set('currency', e.target.value)} style={inputStyle}>
+              <label htmlFor="bp-currency" className="field-label">Currency</label>
+              <select id="bp-currency" value={form.currency} onChange={(e) => set('currency', e.target.value)} className="field">
                 {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{`${c.code}: ${c.name} (${c.symbol})`}</option>)}
               </select>
             </div>
 
             <div>
-              <label htmlFor="bp-phone" style={labelStyle}>Phone</label>
-              <input id="bp-phone" type="tel" inputMode="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} style={inputStyle} placeholder="e.g. 097 123 4567" />
+              <label htmlFor="bp-phone" className="field-label">Phone</label>
+              <input id="bp-phone" type="tel" inputMode="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} className="field" placeholder="e.g. 097 123 4567" />
             </div>
 
             <div>
-              <label htmlFor="bp-whatsapp" style={labelStyle}>WhatsApp</label>
-              <input id="bp-whatsapp" type="tel" inputMode="tel" value={form.whatsapp} onChange={(e) => set('whatsapp', e.target.value)} style={inputStyle} placeholder="e.g. 097 123 4567" />
+              <label htmlFor="bp-whatsapp" className="field-label">WhatsApp</label>
+              <input id="bp-whatsapp" type="tel" inputMode="tel" value={form.whatsapp} onChange={(e) => set('whatsapp', e.target.value)} className="field" placeholder="e.g. 097 123 4567" />
             </div>
 
             <div>
-              <label htmlFor="bp-email" style={labelStyle}>Contact email</label>
-              <input id="bp-email" type="email" value={form.contact_email} onChange={(e) => set('contact_email', e.target.value)} aria-invalid={!emailValid} style={inputStyle} placeholder="hello@yourbusiness.com" />
+              <label htmlFor="bp-email" className="field-label">Contact email</label>
+              <input id="bp-email" type="email" value={form.contact_email} onChange={(e) => set('contact_email', e.target.value)} aria-invalid={!emailValid} className="field" placeholder="hello@yourbusiness.com" />
               {!emailValid && <p style={{ fontSize: 'var(--fs-label)', color: 'var(--crit)', margin: '6px 0 0' }}>Enter a valid email address.</p>}
             </div>
           </div>
@@ -554,7 +536,7 @@ function GetPaidCard() {
             </p>
           )}
           <div>
-            <label htmlFor="lenco-key" style={{ ...labelStyle, fontSize: 'var(--fs-h3)', color: 'var(--text-1)' }}>
+            <label htmlFor="lenco-key" className="field-label" style={{ fontSize: 'var(--fs-h3)', color: 'var(--text-1)' }}>
               Lenco API key
             </label>
             <input
@@ -566,7 +548,7 @@ function GetPaidCard() {
               onChange={(e) => { setKey(e.target.value); if (error) setError(null); }}
               aria-invalid={Boolean(error)}
               aria-describedby={error ? 'lenco-key-error' : undefined}
-              style={{ ...inputStyle, minHeight: 48, fontSize: 'var(--fs-h3)' }}
+              className="field" style={{ minHeight: 48, fontSize: 'var(--fs-h3)' }}
               placeholder="Paste the whole key"
             />
           </div>

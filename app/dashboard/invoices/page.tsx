@@ -24,18 +24,29 @@ import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import { logUsage } from '@/lib/usage';
 import { fmt } from '@/lib/utils';
+import { Plus, X, MessageCircle } from 'lucide-react';
 import PageHeader from '@/components/ui/PageHeader';
 import SectionCard from '@/components/ui/SectionCard';
-import KPICard from '@/components/ui/KPICard';
+import Stat from '@/components/ui/Stat';
 import DataTable, { type DataTableColumn } from '@/components/ui/DataTable';
 
 const STATUS_COLOUR: Record<Invoice['status'], string> = {
   draft: 'var(--text-3)', sent: 'var(--warn)', paid: 'var(--good)', cancelled: 'var(--text-4)',
 };
 
-const lbl: React.CSSProperties = { display: 'block', fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginBottom: 4, fontWeight: 600 };
-const input: React.CSSProperties = { width: '100%', minHeight: 44, padding: '8px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
-const btn: React.CSSProperties = { minHeight: 44, padding: '7px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
+const STATUS_WORD: Record<Invoice['status'], string> = {
+  draft: 'Draft', sent: 'Waiting', paid: 'Paid', cancelled: 'Cancelled',
+};
+
+/** "12 Oct" for a stored YYYY-MM-DD date. */
+function dateWords(iso: string): string {
+  const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function initials(name: string): string {
+  return name.trim().split(/\s+/).slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('') || '?';
+}
 
 const EMPTY_LINE: InvoiceLine = { description: '', qty: 1, unit_price: 0 };
 
@@ -173,57 +184,62 @@ export default function InvoicesPage() {
 
   const columns: DataTableColumn<Invoice>[] = [
     { key: 'number', label: 'Invoice', sortValue: i => i.number,
-      render: i => <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>{i.number}</span> },
+      render: i => <span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{i.number}</span> },
     { key: 'customer_name', label: 'Customer', sortValue: i => i.customer_name,
-      render: i => i.customer_name },
-    { key: 'total', label: 'Total', sortValue: i => i.total,
-      render: i => <span style={{ fontWeight: 600 }}>{fmt(i.total, false, sym)}</span> },
+      render: i => (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+          <span className="avatar" aria-hidden="true">{initials(i.customer_name)}</span>
+          <span style={{ color: 'var(--text-1)', fontWeight: 500 }}>{i.customer_name}</span>
+        </span>
+      ) },
+    { key: 'total', label: 'Amount', sortValue: i => i.total, align: 'right',
+      render: i => <span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{fmt(i.total, false, sym)}</span> },
     { key: 'due_at', label: 'Due', sortValue: i => i.due_at ?? '',
       render: i => i.due_at
-        ? <span style={{ color: isOverdue(i) ? 'var(--crit)' : undefined, fontWeight: isOverdue(i) ? 600 : undefined }}>{i.due_at.slice(0, 10)}{isOverdue(i) ? ' · overdue' : ''}</span>
-        : 'None' },
+        ? <span style={{ color: isOverdue(i) ? 'var(--crit)' : undefined, fontWeight: isOverdue(i) ? 600 : undefined }}>{isOverdue(i) ? `Overdue since ${dateWords(i.due_at)}` : dateWords(i.due_at)}</span>
+        : <span style={{ color: 'var(--text-4)' }}>No date</span> },
     { key: 'status', label: 'Status', sortValue: i => i.status,
       render: i => (
-        <span className="badge" style={{ color: STATUS_COLOUR[i.status], borderColor: 'var(--border)', textTransform: 'capitalize' }}>
-          {i.status}
+        <span className="badge" style={{ color: STATUS_COLOUR[i.status], background: `color-mix(in srgb, ${STATUS_COLOUR[i.status]} 12%, transparent)` }}>
+          {STATUS_WORD[i.status]}
         </span>
       ) },
     { key: 'actions', label: '', sortValue: () => 0,
       render: i => {
         const busy = busyId === i.id;
         return (
-          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+          <div className="row-actions">
             {i.status === 'draft' && (
               <>
-                <button type="button" style={{ ...btn, color: 'var(--cyan)' }} disabled={busy}
+                <button type="button" className="pill pill-primary" disabled={busy}
                   onClick={() => void act(i.id, sendInvoice,
                     { title: `Send ${i.number}?`, body: `${fmt(i.total, false, sym)} is recorded as a sale owed by ${i.customer_name} and the invoice can no longer be edited.`, label: 'Send it' },
                     () => logUsage('event_recorded', { meta: { event_type: 'Sale', via: 'invoice_send' } }))}>
                   Send
                 </button>
-                <button type="button" style={btn} disabled={busy} onClick={() => void act(i.id, deleteInvoice, { title: `Delete draft ${i.number}?`, body: 'This cannot be undone.', label: 'Delete', danger: true })}>Delete</button>
+                <button type="button" className="pill pill-quiet" disabled={busy} onClick={() => void act(i.id, deleteInvoice, { title: `Delete draft ${i.number}?`, body: 'This cannot be undone.', label: 'Delete', danger: true })}>Delete</button>
               </>
             )}
             {i.status === 'sent' && (
               <>
-                <button type="button" style={btn} disabled={busy} onClick={() => void share(i)}>Share on WhatsApp</button>
-                <button type="button" style={btn} disabled={busy} onClick={() => void copyLink(i)}>
+                <button type="button" className="pill" disabled={busy} onClick={() => void share(i)}><MessageCircle aria-hidden="true" />WhatsApp</button>
+                <button type="button" className="pill" disabled={busy} onClick={() => void copyLink(i)}>
                   {copiedId === i.id ? 'Link copied' : 'Payment link'}
                 </button>
-                <button type="button" style={{ ...btn, color: 'var(--good)' }} disabled={busy}
+                <button type="button" className="pill" style={{ color: 'var(--good)' }} disabled={busy}
                   onClick={() => void act(i.id, markInvoicePaid,
                     { title: `Mark ${i.number} as paid?`, body: `${fmt(i.total, false, sym)} from ${i.customer_name} is recorded as money received today.`, label: 'Mark paid' },
                     () => logUsage('event_recorded', { meta: { event_type: 'CustomerPayment', via: 'invoice_paid' } }))}>
                   Mark paid
                 </button>
-                <button type="button" style={btn} disabled={busy}
+                <button type="button" className="pill pill-quiet" disabled={busy}
                   onClick={() => void act(i.id, cancelInvoice, { title: `Cancel ${i.number}?`, body: 'The sale is taken back out of your books and the payment link stops working.', label: 'Cancel the invoice', danger: true })}>
                   Cancel
                 </button>
               </>
             )}
             {i.status === 'paid' && i.paid_at && (
-              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>paid {i.paid_at.slice(0, 10)}</span>
+              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Paid {dateWords(i.paid_at)}</span>
             )}
           </div>
         );
@@ -233,61 +249,61 @@ export default function InvoicesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Invoices and payment links"
-        eyebrowColour="var(--cyan)"
         title="Get paid"
         subtitle="Send an invoice on WhatsApp and see who still owes you."
+        actions={
+          <button type="button" className={showForm ? 'pill' : 'pill pill-primary'} aria-expanded={showForm} onClick={() => setShowForm(v => !v)}>
+            {showForm ? <><X aria-hidden="true" />Close</> : <><Plus aria-hidden="true" />New invoice</>}
+          </button>
+        }
       />
 
       {error && (
         <p role="alert" style={{ color: 'var(--crit)', fontSize: 'var(--fs-body)', margin: '0 0 14px' }}>{error}</p>
       )}
 
-      <div className="grid-kpi" style={{ marginBottom: 20 }}>
-        <KPICard label="OUTSTANDING" value={fmt(outstanding, false, sym)} sub="sent, awaiting payment" sparkColor="var(--warn)" delay={0} />
-        <KPICard label="OVERDUE" value={String(overdue)} sub="past due date" sparkColor="var(--crit)" delay={0.06} />
-        <KPICard label="COLLECTED" value={fmt(paidTotal, false, sym)} sub="paid invoices, all time" sparkColor="var(--good)" delay={0.12} />
-      </div>
-
-      <div style={{ marginBottom: 16 }}>
-        <button type="button" style={{ ...btn, color: 'var(--cyan)', borderColor: 'var(--cyan)' }} onClick={() => setShowForm(v => !v)}>
-          {showForm ? 'Close' : '+ New invoice'}
-        </button>
+      <div className="home-trio" style={{ marginBottom: 16 }}>
+        <Stat label="Waiting to be paid" money={outstanding} sym={sym} loading={loading}
+          sub={outstanding > 0 ? 'Sent and not paid yet' : 'Nobody owes you on an invoice'} />
+        <Stat label="Overdue" count={overdue} loading={loading} valueTone={overdue > 0 ? 'bad' : undefined}
+          sub={overdue > 0 ? `invoice${overdue === 1 ? '' : 's'} past the due date` : 'Nothing past its due date'}
+          tone={overdue > 0 ? 'bad' : undefined} />
+        <Stat label="Collected" money={paidTotal} sym={sym} loading={loading} sub="Paid invoices, all time" />
       </div>
 
       {showForm && (
-        <SectionCard title="New invoice" style={{ marginBottom: 20 }}>
+        <SectionCard title="New invoice" style={{ marginBottom: 16 }}>
           <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', marginBottom: 12 }}>
             <div>
-              <label htmlFor="inv-customer" style={lbl}>Customer</label>
-              <input id="inv-customer" style={input} value={customer} onChange={e => setCustomer(e.target.value)} placeholder="e.g. Chanda's Grill" />
+              <label htmlFor="inv-customer" className="field-label">Customer</label>
+              <input id="inv-customer" className="field" value={customer} onChange={e => setCustomer(e.target.value)} placeholder="e.g. Chanda's Grill" />
             </div>
             <div>
-              <label htmlFor="inv-due" style={lbl}>Due date (optional)</label>
-              <input id="inv-due" type="date" style={input} value={dueAt} onChange={e => setDueAt(e.target.value)} />
+              <label htmlFor="inv-due" className="field-label">Due date (optional)</label>
+              <input id="inv-due" type="date" className="field" value={dueAt} onChange={e => setDueAt(e.target.value)} />
             </div>
           </div>
 
-          <p style={{ ...lbl, marginBottom: 8 }}>Line items</p>
+          <p className="field-label" style={{ marginBottom: 8 }}>What you are charging for</p>
           {lines.map((l, idx) => (
-            <div key={idx} style={{ display: 'grid', gap: 8, gridTemplateColumns: '1fr 90px 130px 36px', marginBottom: 8 }}>
-              <input aria-label={`Line ${idx + 1} description`} style={input} value={l.description} placeholder="What was sold / done"
+            <div key={idx} className="line-grid">
+              <input aria-label={`Line ${idx + 1} description`} className="field" value={l.description} placeholder="What was sold / done"
                 onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, description: e.target.value } : x))} />
-              <input aria-label={`Line ${idx + 1} quantity`} type="number" min={0} style={input} value={l.qty}
+              <input aria-label={`Line ${idx + 1} quantity`} type="number" min={0} className="field" value={l.qty}
                 onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, qty: Number(e.target.value) } : x))} />
-              <input aria-label={`Line ${idx + 1} unit price`} type="number" min={0} style={input} value={l.unit_price}
+              <input aria-label={`Line ${idx + 1} unit price`} type="number" min={0} className="field" value={l.unit_price}
                 onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, unit_price: Number(e.target.value) } : x))} />
-              <button type="button" aria-label={`Remove line ${idx + 1}`} style={{ ...btn, padding: 0 }} disabled={lines.length === 1}
-                onClick={() => setLines(ls => ls.filter((_, i) => i !== idx))}>×</button>
+              <button type="button" aria-label={`Remove line ${idx + 1}`} className="icon-pill danger" disabled={lines.length === 1}
+                onClick={() => setLines(ls => ls.filter((_, i) => i !== idx))}><X aria-hidden="true" /></button>
             </div>
           ))}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-            <button type="button" style={btn} onClick={() => setLines(ls => [...ls, { ...EMPTY_LINE }])}>+ Add line</button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', fontVariantNumeric: 'tabular-nums' }}>
-                Total: {fmt(formTotal, false, sym)}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 12 }}>
+            <button type="button" className="pill pill-quiet" onClick={() => setLines(ls => [...ls, { ...EMPTY_LINE }])}><Plus aria-hidden="true" />Add a line</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>
+                Total <span className="money money-md" style={{ marginLeft: 6 }}>{fmt(formTotal, false, sym)}</span>
               </span>
-              <button type="button" style={{ ...btn, background: 'var(--cyan)', color: '#08111a', borderColor: 'var(--cyan)' }}
+              <button type="button" className="pill pill-primary"
                 disabled={saving || !customer.trim() || !lines.some(l => l.description.trim())}
                 onClick={() => void submitDraft()}>
                 {saving ? 'Saving…' : 'Save draft'}
@@ -300,40 +316,42 @@ export default function InvoicesPage() {
       {aging && aging.customers.length > 0 && (
         <SectionCard
           title="Who owes you"
-          subtitle={`Invoices + the credit book, as of ${aging.as_of} · oldest debt first to nudge`}
-          style={{ marginBottom: 20 }}
+          subtitle={`Invoices and the credit book, oldest debt first`}
+          style={{ marginBottom: 16 }}
         >
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 14 }}>
+          <div className="mini-stats" role="list" aria-label="Money owed by how late it is" style={{ marginBottom: 16 }}>
             {(['current', '1-30', '31-60', '60+'] as const).map((b) => (
-              <span key={b} style={{ fontSize: 'var(--fs-label)', color: b === '60+' ? 'var(--crit)' : b === '31-60' ? 'var(--warn)' : 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>
-                {b === 'current' ? 'Not yet due' : `${b} days`}: <strong style={{ color: 'var(--text-1)' }}>{fmt(aging.totals[b] ?? 0, true, sym)}</strong>
-              </span>
+              <div key={b} role="listitem" className="mini-stat">
+                <span style={{ fontSize: 'var(--fs-label)', color: b === '60+' ? 'var(--crit)' : b === '31-60' ? 'var(--warn)' : 'var(--text-3)', fontWeight: b === '60+' || b === '31-60' ? 600 : 400 }}>
+                  {b === 'current' ? 'Not yet due' : b === '60+' ? 'Over 60 days' : `${b.replace('-', ' to ')} days`}
+                </span>
+                <span className="money money-md">{fmt(aging.totals[b] ?? 0, false, sym)}</span>
+              </div>
             ))}
           </div>
-          <div style={{ display: 'grid', gap: 8 }}>
+          <div>
             {aging.customers.slice(0, 8).map((d) => (
-              <div key={d.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                <span style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{d.name}</span>
-                  <span style={{ fontSize: 'var(--fs-label)', color: d.oldest_days > 60 ? 'var(--crit)' : d.oldest_days > 30 ? 'var(--warn)' : 'var(--text-3)', marginLeft: 8 }}>
-                    {d.oldest_days > 0 ? `oldest ${d.oldest_days}d` : 'not yet due'}
-                    {d.credit_total > 0 && ' · incl. credit book'}
+              <div key={d.key} className="row" style={{ flexWrap: 'wrap' }}>
+                <span className={`avatar${d.oldest_days > 30 ? ' avatar-out' : ''}`} aria-hidden="true">{initials(d.name)}</span>
+                <span className="row-main">
+                  <span className="row-title">{d.name}</span>
+                  <span className="row-sub" style={{ color: d.oldest_days > 60 ? 'var(--crit)' : d.oldest_days > 30 ? 'var(--warn)' : undefined, fontWeight: d.oldest_days > 30 ? 600 : undefined }}>
+                    {d.oldest_days > 0 ? `Oldest is ${d.oldest_days} day${d.oldest_days === 1 ? '' : 's'} late` : 'Not yet due'}
+                    {d.credit_total > 0 && ', includes the credit book'}
                   </span>
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                  <span style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', fontVariantNumeric: 'tabular-nums' }}>{fmt(d.total, false, sym)}</span>
-                  <button type="button" style={btn}
-                    onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(d.nudge)}`, '_blank', 'noopener')}>
-                    Nudge on WhatsApp
-                  </button>
-                </span>
+                <span className="row-amount">{fmt(d.total, false, sym)}</span>
+                <button type="button" className="pill"
+                  onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(d.nudge)}`, '_blank', 'noopener')}>
+                  <MessageCircle aria-hidden="true" />Nudge
+                </button>
               </div>
             ))}
           </div>
         </SectionCard>
       )}
 
-      <SectionCard title="All invoices" subtitle="Send an invoice and it counts as money owed to you; mark it paid when the money arrives.">
+      <SectionCard title="All invoices" subtitle="A sent invoice counts as money owed to you. Mark it paid when the money arrives.">
         {loading ? (
           <div className="skeleton" style={{ height: 120 }} />
         ) : (

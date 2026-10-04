@@ -32,21 +32,6 @@ const TYPES: EventType[] = [
   'TaxPayment', 'Loan', 'Refund', 'Transfer',
 ];
 
-const sel: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
-  border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', outline: 'none',
-};
-const primaryBtn: React.CSSProperties = {
-  padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none',
-  background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)',
-  fontWeight: 700, cursor: 'pointer',
-};
-const quietBtn: React.CSSProperties = {
-  padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)',
-  background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)',
-  fontWeight: 600, cursor: 'pointer',
-};
 const noteBox: React.CSSProperties = {
   padding: '12px 14px', borderRadius: 10, border: '1px solid var(--amber)',
   background: 'var(--amber-dim, rgba(251,191,36,0.12))', color: 'var(--text-1)',
@@ -348,12 +333,12 @@ export default function ImportPage() {
                     {on && (
                       <div style={{ display: 'flex', gap: 16, marginTop: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
                         <div>
-                          <label style={label} htmlFor={`type-${t.id}`}>Record these as</label>
+                          <label className="field-label" htmlFor={`type-${t.id}`}>Record these as</label>
                           <select
                             id={`type-${t.id}`}
                             value={types[t.id] ?? t.event_type}
                             onChange={e => setTypes(x => ({ ...x, [t.id]: e.target.value as EventType }))}
-                            style={{ ...sel, maxWidth: 220 }}
+                            className="field" style={{ maxWidth: 220 }}
                           >
                             {TYPES.map(x => <option key={x} value={x}>{x}</option>)}
                           </select>
@@ -364,8 +349,7 @@ export default function ImportPage() {
                           {' '}Who: <strong>{t.mapping.counterparty ?? 'None'}</strong> ·
                           {' '}Details: <strong>{t.mapping.description ?? 'None'}</strong>
                         </p>
-                        <button type="button" className="touch-target"
-                          style={{ ...quietBtn, padding: '6px 12px', minHeight: 44 }}
+                        <button type="button" className="pill pill-quiet" style={{ padding: '6px 12px', minHeight: 44 }}
                           onClick={() => setOpen(o => ({ ...o, [t.id]: !o[t.id] }))}>
                           {open[t.id] ? 'Hide rows' : 'Show rows'}
                         </button>
@@ -404,11 +388,10 @@ export default function ImportPage() {
                 {repeat.savedCount ? `, ${repeat.savedCount.toLocaleString()} rows were recorded` : ''}.
                 {' '}Importing it again records every row a second time and doubles those figures.
                 <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                  <button type="button" onClick={reset} className="touch-target"
-                    style={{ ...primaryBtn, background: 'var(--cyan)', color: 'var(--on-cyan)' }}>
+                  <button type="button" onClick={reset} className="pill pill-primary">
                     Don&apos;t import it again
                   </button>
-                  <button type="button" onClick={() => void commit(true)} className="touch-target" style={quietBtn}>
+                  <button type="button" onClick={() => void commit(true)} className="pill pill-quiet">
                     Import it again anyway
                   </button>
                 </div>
@@ -417,16 +400,16 @@ export default function ImportPage() {
 
             <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
               <button
-                type="button" className="touch-target"
+                type="button"
                 onClick={() => void commit()}
                 disabled={phase === 'importing' || !!repeat || keptTables.length === 0}
-                style={{ ...primaryBtn, opacity: phase === 'importing' || repeat || !keptTables.length ? 0.6 : 1 }}
+                className="pill pill-primary" style={{ opacity: phase === 'importing' || repeat || !keptTables.length ? 0.6 : 1 }}
               >
                 {phase === 'importing'
                   ? 'Importing…'
                   : `Import ${keptRows.toLocaleString()} row${keptRows === 1 ? '' : 's'}`}
               </button>
-              <button type="button" onClick={reset} className="touch-target" style={quietBtn}>
+              <button type="button" onClick={reset} className="pill pill-quiet">
                 Choose another file
               </button>
             </div>
@@ -442,14 +425,14 @@ export default function ImportPage() {
               <div style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, color: 'var(--green)' }}>
                 {result.saved_count.toLocaleString()}
               </div>
-              <div style={label}>imported</div>
+              <div className="field-label">imported</div>
             </div>
             {result.error_count > 0 && (
               <div>
                 <div style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, color: 'var(--amber)' }}>
                   {result.error_count.toLocaleString()}
                 </div>
-                <div style={label}>skipped</div>
+                <div className="field-label">skipped</div>
               </div>
             )}
           </div>
@@ -478,7 +461,7 @@ export default function ImportPage() {
               {result.workers_not_on_register.join(', ')}. Add them under Employees so their
               pay, NAPSA and PAYE are worked out properly from now on.
               <div style={{ marginTop: 10 }}>
-                <a href="/dashboard/payroll" style={{ ...primaryBtn, background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                <a href="/dashboard/payroll" className="pill pill-primary" style={{ background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
                   Add them now →
                 </a>
               </div>
@@ -491,7 +474,7 @@ export default function ImportPage() {
               {result.products_not_on_list.join(', ')}. Add them under Products so stock
               moves when you buy and sell them.
               <div style={{ marginTop: 10 }}>
-                <a href="/dashboard/products" style={{ ...primaryBtn, background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                <a href="/dashboard/products" className="pill pill-primary" style={{ background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
                   Add them now →
                 </a>
               </div>
@@ -520,13 +503,13 @@ export default function ImportPage() {
               : 'Your books have been updated. The charts could not be rebuilt from this file, so they still show what was there before.'}
           </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <a href="/dashboard" style={{ ...primaryBtn, background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+            <a href="/dashboard" className="pill pill-primary" style={{ background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
               See the dashboard →
             </a>
-            <a href="/dashboard/timeline" style={{ ...quietBtn, display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+            <a href="/dashboard/timeline" className="pill pill-quiet" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
               View timeline
             </a>
-            <button type="button" onClick={reset} className="touch-target" style={quietBtn}>
+            <button type="button" onClick={reset} className="pill pill-quiet">
               Import another
             </button>
           </div>

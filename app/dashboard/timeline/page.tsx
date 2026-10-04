@@ -7,7 +7,10 @@
  */
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { RefreshCw, Search, Plus } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
+import BigMoney from '@/components/home/BigMoney';
+import { openRecordSheet } from '@/lib/recordSheet';
 import EventList from '@/components/spine/EventList';
 import StartFresh from '@/components/spine/StartFresh';
 import TidyUp from '@/components/spine/TidyUp';
@@ -17,22 +20,16 @@ import PageHeader from '@/components/ui/PageHeader';
 import PeriodChips from '@/components/ui/PeriodChips';
 import { usePeriod, periodRange, inPeriod } from '@/lib/period';
 import { undoable } from '@/lib/toast';
+import { amountOf, cashSign } from '@/components/spine/eventMeta';
 import {
   listEvents, confirmEvent, voidEvent,
   type BusinessEvent, type EventStatus, type EventType,
 } from '@/lib/api';
 
-const chip = (active: boolean): React.CSSProperties => ({
-  padding: '6px 12px', minHeight: 44, borderRadius: 6, cursor: 'pointer',
-  border: `1px solid ${active ? 'var(--cyan)' : 'var(--border-md)'}`,
-  background: active ? 'rgba(0,212,255,0.08)' : 'transparent',
-  color: active ? 'var(--cyan)' : 'var(--text-3)',
-  fontSize: 'var(--fs-label)', fontWeight: 600,
-});
-
 function TimelineInner() {
   const params = useSearchParams();
   const refreshTwin = useStore(s => s.refreshTwin);
+  const sym = useStore(s => s.currencySymbol) || 'K';
   const [events, setEvents] = useState<BusinessEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,6 +69,17 @@ function TimelineInner() {
       return hay.includes(needle);
     });
   }, [events, q, status, period, onlyIds]);
+
+  // Money in and out across what is on screen, the way a bank sums a statement.
+  const totals = useMemo(() => {
+    let moneyIn = 0, moneyOut = 0;
+    for (const e of shown) {
+      if (e.status === 'void') continue;
+      const sign = cashSign(e);
+      if (sign > 0) moneyIn += amountOf(e); else if (sign < 0) moneyOut += amountOf(e);
+    }
+    return { moneyIn, moneyOut };
+  }, [shown]);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -116,25 +124,40 @@ function TimelineInner() {
       <PageHeader
         title="Activity"
         subtitle="Every record in your books, newest first."
+        actions={
+          <>
+            <button type="button" onClick={load} className="icon-pill" aria-label="Refresh the list" title="Refresh"><RefreshCw aria-hidden="true" /></button>
+            <button type="button" className="pill pill-primary" onClick={openRecordSheet}><Plus aria-hidden="true" />Record</button>
+          </>
+        }
       />
 
       <SectionCard
-        title="Activity"
-        subtitle={loading ? 'Loading…' : q.trim() ? `${shown.length} match “${q.trim()}”` : `${shown.length} record${shown.length === 1 ? '' : 's'}`}
-        action={
-          <button type="button" onClick={load} className="touch-target"
-            style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
-            Refresh
-          </button>
-        }
+        title={loading ? 'Loading…' : q.trim() ? `${shown.length} match “${q.trim()}”` : `${shown.length} record${shown.length === 1 ? '' : 's'}`}
       >
+        {!loading && shown.length > 0 && (
+          <div className="mini-stats" style={{ marginBottom: 16 }}>
+            <div className="mini-stat">
+              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Money in</span>
+              <BigMoney value={totals.moneyIn} sym={sym} size="md" tone="in" />
+            </div>
+            <div className="mini-stat">
+              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Money out</span>
+              <BigMoney value={totals.moneyOut} sym={sym} size="md" tone="out" />
+            </div>
+          </div>
+        )}
+
         {/* Search (audit #38) */}
-        <input
-          type="search" value={q} onChange={(e) => setQ(e.target.value)}
-          placeholder="Search, like fuel, Chanda or 450"
-          aria-label="Search your records"
-          style={{ width: '100%', minHeight: 44, padding: '8px 12px', marginBottom: 10, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
-        />
+        <label style={{ position: 'relative', display: 'block', marginBottom: 12 }}>
+          <span className="sr-only">Search your records</span>
+          <Search aria-hidden="true" style={{ position: 'absolute', left: 14, top: 13, width: 18, height: 18, color: 'var(--text-4)' }} />
+          <input
+            type="search" value={q} onChange={(e) => setQ(e.target.value)}
+            placeholder="Search, like fuel, Chanda or 450"
+            className="field" style={{ paddingLeft: 42, borderRadius: 999 }}
+          />
+        </label>
 
         {onlyIds.size > 0 && (
           <p role="status" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, margin: '0 0 12px', padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'var(--cyan-dim)', fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>
@@ -144,15 +167,15 @@ function TimelineInner() {
         )}
 
         {/* When (C6): one tap for the usual windows, kept in the address. */}
-        <div style={{ marginBottom: 10 }}>
+        <div style={{ marginBottom: 8 }}>
           <PeriodChips value={period} onChange={setPeriod} label="When" />
         </div>
 
         {/* Filters */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+        <div className="chips" role="group" aria-label="Which records" style={{ marginBottom: 12 }}>
           {(['active', 'confirmed', 'pending', 'void', 'all'] as const).map(s => (
-            <button key={s} type="button" aria-pressed={status === s} onClick={() => setStatus(s)} style={chip(status === s)}>
-              {s === 'active' ? 'In your books' : s === 'all' ? 'Everything' : s === 'void' ? 'Removed' : s.charAt(0).toUpperCase() + s.slice(1)}
+            <button key={s} type="button" className="chip" aria-pressed={status === s} onClick={() => setStatus(s)}>
+              {s === 'active' ? 'In your books' : s === 'all' ? 'Everything' : s === 'void' ? 'Removed' : s === 'pending' ? 'Waiting for you' : 'Confirmed'}
             </button>
           ))}
         </div>
@@ -161,14 +184,14 @@ function TimelineInner() {
         <label style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginBottom: 16, fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
           <span>Type</span>
           <select value={type} onChange={(e) => setType(e.target.value as EventType | 'all')}
-            style={{ flex: 1, minWidth: 200, maxWidth: 360, padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
+            className="field" style={{ flex: 1, minWidth: 200, maxWidth: 360, width: 'auto' }}>
             <option value="all">All types</option>
             {ALL_TYPES.map(t => <option key={t} value={t}>{typeLabel(t)}</option>)}
           </select>
         </label>
 
         {error && (
-          <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>
+          <div role="alert" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>
             {error}
           </div>
         )}

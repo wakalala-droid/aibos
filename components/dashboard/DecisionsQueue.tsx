@@ -50,17 +50,6 @@ interface Decision {
 const SEV_COLOR: Record<Severity, string> = { crit: 'var(--crit)', warn: 'var(--warn)' };
 const SEV_WORD: Record<Severity, string> = { crit: 'Critical', warn: 'Attention' };
 
-const actionBtn: React.CSSProperties = {
-  flexShrink: 0, padding: '7px 14px', borderRadius: 'var(--radius-md)', border: 'none',
-  cursor: 'pointer', fontSize: 'var(--fs-data)', fontWeight: 600,
-  background: 'var(--cyan)', color: 'var(--on-cyan)', textDecoration: 'none',
-  display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
-};
-const quietBtn: React.CSSProperties = {
-  ...actionBtn,
-  background: 'var(--bg-badge)', color: 'var(--text-2)',
-  border: '1px solid var(--border-md)',
-};
 
 export default function DecisionsQueue() {
   const { alerts, cashflow, rfm, monthly, tier, currencySymbol } = useStore();
@@ -255,7 +244,7 @@ export default function DecisionsQueue() {
 
                     {/* One-tap response */}
                     {d.kind === 'link' && d.href && (
-                      <Link href={d.href} style={quietBtn}>{d.actionLabel} →</Link>
+                      <Link href={d.href} className="pill pill-quiet">{d.actionLabel} →</Link>
                     )}
                     {d.kind === 'draft' && d.proposal && (
                       canAutomate ? (
@@ -263,29 +252,24 @@ export default function DecisionsQueue() {
                           type="button"
                           onClick={() => void onDraft(d.proposal!)}
                           disabled={st === 'drafting' || st === 'done'}
-                          style={{
-                            ...actionBtn,
-                            background: st === 'done' ? 'var(--green-dim)' : 'var(--cyan)',
-                            color: st === 'done' ? 'var(--good)' : 'var(--on-cyan)',
-                            cursor: st === 'drafting' || st === 'done' ? 'default' : 'pointer',
-                          }}
+                          className="pill" style={{ background: st === 'done' ? 'var(--green-dim)' : 'var(--cyan)', color: st === 'done' ? 'var(--good)' : 'var(--on-cyan)', cursor: st === 'drafting' || st === 'done' ? 'default' : 'pointer' }}
                         >
                           {st === 'drafting' ? 'Drafting…' : st === 'done' ? 'Drafted ✓' : st === 'error' ? 'Try again' : d.actionLabel}
                         </button>
                       ) : (
-                        <Link href={d.href!} style={quietBtn}>{d.actionLabel} →</Link>
+                        <Link href={d.href!} className="pill pill-quiet">{d.actionLabel} →</Link>
                       )
                     )}
                     {d.kind === 'followup' && d.waLink && d.customerId && (
                       <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                        <a href={d.waLink} target="_blank" rel="noreferrer" style={actionBtn}>
+                        <a href={d.waLink} target="_blank" rel="noreferrer" className="pill">
                           {d.actionLabel}
                         </a>
                         <button
                           type="button"
                           onClick={() => onFollowUpDone(d.customerId!)}
                           aria-label={`Mark check-in with ${d.customerId} as done for this week`}
-                          style={quietBtn}
+                          className="pill pill-quiet"
                         >
                           Done
                         </button>

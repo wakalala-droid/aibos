@@ -32,6 +32,17 @@ interface KPICardProps {
   drillLabel?: string;
 }
 
+// Labels read like a sentence, the way Home's cards do (redesign 2026-10).
+// Older callers pass shouted labels ("NET PROFIT"); those are brought down to
+// "Net profit", keeping short initialisms such as VAT and PAYE as they are.
+const KEEP_UPPER = new Set(['VAT', 'PAYE', 'NAPSA', 'NHIMA', 'ZRA', 'AI', 'POS', 'CLV', 'QOQ']);
+export function sentenceCase(label: string): string {
+  if (!/[A-Z]/.test(label) || label !== label.toUpperCase()) return label;
+  const words = label.split(' ').map((w) => (KEEP_UPPER.has(w.replace(/[^A-Z]/g, '')) ? w : w.toLowerCase()));
+  const out = words.join(' ');
+  return out.charAt(0).toUpperCase() + out.slice(1);
+}
+
 // Cursor edge-glow tuning shared by every KPI card (hsl "h s l" per React Bits).
 const CURSOR_GLOW = '190 95 62';
 const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
@@ -70,7 +81,7 @@ export default function KPICard({
         className="kpi-card glow-inner"
         style={bloom.style}
         data-ai-explain={explainId}
-        data-ai-label={explainId ? label : undefined}
+        data-ai-label={explainId ? sentenceCase(label) : undefined}
         data-ai-value={explainId ? value : undefined}
         title={explainId ? 'Hold (long-press) to have AIBOS explain this metric' : undefined}
       >
@@ -80,15 +91,15 @@ export default function KPICard({
         {/* Top row: icon + label + growth badge */}
         {/* Wraps on a narrow card so the change badge drops below the label
             instead of being cut off at the edge (UI/UX audit A17). */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {icon && (
               <div className="kpi-icon" style={{ background: iconBg }}>
                 {icon}
               </div>
             )}
             <div>
-              <p className="kpi-label" style={{ margin: 0 }}>{label}</p>
+              <p className="kpi-label">{sentenceCase(label)}</p>
               {sublabel && (
                 <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
                   {sublabel}
@@ -98,7 +109,7 @@ export default function KPICard({
           </div>
           {dir !== undefined && badgeText && (
             <span className={`kpi-badge ${badgeGood ? 'up' : 'down'}`}>
-              {dir >= 0 ? '▲' : '▼'} {badgeText}
+              <span aria-hidden="true">{dir >= 0 ? '↗' : '↘'}</span><span className="sr-only">{dir >= 0 ? 'Up ' : 'Down '}</span>{badgeText}
             </span>
           )}
         </div>

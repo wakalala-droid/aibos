@@ -6,7 +6,9 @@
  * drive the Advisor's LowStockEngine.
  */
 import { useCallback, useEffect, useState } from 'react';
+import { ClipboardCheck, Package, Pencil, Trash2 } from 'lucide-react';
 import FileDrop from '@/components/ui/FileDrop';
+import Stat from '@/components/ui/Stat';
 import { undoable } from '@/lib/toast';
 import SectionCard from '@/components/ui/SectionCard';
 import { fmt } from '@/lib/utils';
@@ -21,12 +23,6 @@ import {
 
 const EMPTY: ProductInput = { name: '', category: '', unit: 'unit', buy_price: 0, sell_price: 0, opening_stock: 0, reorder_level: 0, supplier: '' };
 
-const input: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
-  border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', outline: 'none',
-};
-const lbl: React.CSSProperties = { fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' };
 
 export default function InventoryPage() {
   const sym = useStore(s => s.currencySymbol) || 'K';
@@ -130,88 +126,112 @@ export default function InventoryPage() {
   }
 
   const isLow = (p: Product) => p.reorder_level > 0 && (p.on_hand ?? p.opening_stock) <= p.reorder_level;
+  const low = items.filter(isLow);
+  const stockValue = items.reduce((a, p) => a + Math.max(0, p.on_hand ?? p.opening_stock ?? 0) * (p.buy_price || 0), 0);
 
   return (
     <>
       <PageHeader
         title="Stock"
         subtitle="Your products: prices, how many you have and when to reorder."
+        actions={
+          <>
+            {items.length > 0 && (
+              <button type="button" className="pill" aria-pressed={takeMode}
+                onClick={() => { setTakeMode(v => !v); setCounts({}); setTakeMsg(null); }}>
+                <ClipboardCheck aria-hidden="true" />{takeMode ? 'Stop counting' : 'Count stock'}
+              </button>
+            )}
+            <FileDrop
+              variant="button" accept=".csv,text/csv" label="Import from Loyverse" className="pill"
+              busy={importing} busyLabel="Importing…"
+              onFile={(f) => void importLoyverse(f)} onError={setError}
+            />
+          </>
+        }
       />
+      {importMsg && <p role="status" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: '0 0 16px' }}>{importMsg}</p>}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
-        <FileDrop
-          variant="button" accept=".csv,text/csv" label="Import from Loyverse"
-          busy={importing} busyLabel="Importing…"
-          onFile={(f) => void importLoyverse(f)} onError={setError}
-          style={{ padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer', opacity: importing ? 0.7 : 1 }}
-        />
-        {items.length > 0 && (
-          <button type="button" className="touch-target"
-            onClick={() => { setTakeMode(v => !v); setCounts({}); setTakeMsg(null); }}
-            style={{ padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: takeMode ? 'var(--bg-badge)' : 'var(--bg-card)', color: 'var(--text-2)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
-            {takeMode ? 'Cancel stock-take' : 'Stock-take'}
-          </button>
-        )}
-        {importMsg && <span role="status" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{importMsg}</span>}
+      <div className="home-trio" style={{ marginBottom: 16 }}>
+        <Stat label="Products" count={items.length} loading={loading}
+          sub={items.length === 0 ? 'Add your first one below' : 'in your catalogue'} />
+        <Stat label="Running low" count={low.length} loading={loading} valueTone={low.length ? 'warn' : undefined}
+          tone={low.length ? 'warn' : undefined}
+          sub={low.length === 0 ? 'Nothing below its reorder level'
+            : `${low.slice(0, 2).map((x) => x.name).join(', ')}${low.length > 2 ? ` and ${low.length - 2} more` : ''}`} />
+        <Stat label="Worth at cost" money={stockValue} sym={sym} loading={loading}
+          sub="What is on the shelf, at the price you paid" />
       </div>
 
       {takeMode && (
         <SectionCard title="Stock-take" subtitle="Count what's physically on the shelf. AIBOS adjusts only where your count differs." style={{ marginBottom: 16 }}>
           {takeMsg && <p role="status" style={{ fontSize: 'var(--fs-body)', color: 'var(--good)', margin: '0 0 12px' }}>{takeMsg}</p>}
-          <div style={{ display: 'grid', gap: 8 }}>
+          <div>
             {items.map(p => {
               const onHand = p.on_hand ?? p.opening_stock;
               return (
-                <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 130px', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 600 }}>{p.name}</span>
-                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'right' }}>system: {onHand}</span>
-                  <input type="number" inputMode="decimal" aria-label={`Counted ${p.name}`} placeholder="count"
+                <div key={p.id} className="row">
+                  <span className="avatar" aria-hidden="true"><Package /></span>
+                  <span className="row-main">
+                    <span className="row-title">{p.name}</span>
+                    <span className="row-sub">AIBOS has {onHand.toLocaleString()} {p.unit}</span>
+                  </span>
+                  <input type="number" inputMode="decimal" aria-label={`Counted ${p.name}`} placeholder="Count"
                     value={counts[p.name] ?? ''} onChange={e => setCounts(c => ({ ...c, [p.name]: e.target.value }))}
-                    style={{ ...input, minHeight: 44 }} />
+                    className="field" style={{ width: 120, flexShrink: 0 }} />
                 </div>
               );
             })}
           </div>
-          <button type="button" className="touch-target" disabled={takeBusy || Object.keys(counts).length === 0}
-            onClick={() => void submitStockTake()}
-            style={{ marginTop: 14, padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer', opacity: takeBusy ? 0.7 : 1 }}>
+          <button type="button" className="pill pill-primary" disabled={takeBusy || Object.keys(counts).length === 0}
+            onClick={() => void submitStockTake()} style={{ marginTop: 16 }}>
             {takeBusy ? 'Saving…' : 'Save count'}
           </button>
         </SectionCard>
       )}
 
       <div className="grid-main">
-        <SectionCard title="Products" subtitle={loading ? 'Loading…' : `${items.length} product${items.length === 1 ? '' : 's'}`}>
-          {error && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
+        <SectionCard title="Products">
+          {error && <div role="alert" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>{error}</div>}
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 48 }} />)}</div>
           ) : items.length === 0 ? (
             <div style={{ padding: '28px 16px', textAlign: 'center' }}>
               <p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)', margin: '0 0 14px' }}>No products yet: add your first one, or start from a template for your {ind.label}.</p>
-              <button type="button" className="touch-target" disabled={seeding}
-                onClick={() => void seedStarters()}
-                style={{ padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--cyan)', background: 'transparent', color: 'var(--cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
+              <button type="button" className="pill" disabled={seeding}
+                onClick={() => void seedStarters()}>
                 {seeding ? 'Adding…' : `Add ${starters.length} starter products`}
               </button>
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table className="data-table">
-                <thead><tr><th>Product</th><th>On hand</th><th>Buy</th><th>Sell</th><th></th></tr></thead>
+                <thead><tr><th>Product</th><th>On hand</th><th style={{ textAlign: 'right' }}>Buy</th><th style={{ textAlign: 'right' }}>Sell</th><th><span className="sr-only">Change</span></th></tr></thead>
                 <tbody>
                   {items.map(p => (
                     <tr key={p.id}>
-                      <td>
-                        <span style={{ color: 'var(--text-1)', fontWeight: 600 }}>{p.name}</span>
-                        {p.category ? <span style={{ color: 'var(--text-4)' }}> · {p.category}</span> : null}
-                        {isLow(p) && <span className="badge" style={{ marginLeft: 8, background: 'rgba(251,191,36,0.12)', color: 'var(--amber)' }}>Low</span>}
+                      <td data-label="Product">
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+                          <span className={`avatar${isLow(p) ? ' avatar-warn' : ''}`} aria-hidden="true"><Package /></span>
+                          <span style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ color: 'var(--text-1)', fontWeight: 600 }}>{p.name}</span>
+                            {p.category ? <span style={{ color: 'var(--text-3)', fontSize: 'var(--fs-label)' }}>{p.category}</span> : null}
+                          </span>
+                        </span>
                       </td>
-                      <td style={{ color: isLow(p) ? 'var(--amber)' : 'var(--text-2)' }}>{(p.on_hand ?? p.opening_stock ?? 0).toLocaleString()} {p.unit}</td>
-                      <td>{fmt(p.buy_price, false, sym)}</td>
-                      <td>{fmt(p.sell_price, false, sym)}</td>
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        <button type="button" onClick={() => edit(p)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', fontSize: 'var(--fs-label)', marginRight: 10 }}>Edit</button>
-                        <button type="button" onClick={() => remove(p.id)} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontSize: 'var(--fs-label)' }}>Delete</button>
+                      <td data-label="On hand">
+                        <span style={{ color: isLow(p) ? 'var(--amber)' : 'var(--text-2)', fontWeight: isLow(p) ? 600 : undefined }}>
+                          {(p.on_hand ?? p.opening_stock ?? 0).toLocaleString()} {p.unit}
+                        </span>
+                        {isLow(p) && <span className="badge" style={{ marginLeft: 8, background: 'var(--amber-dim)', color: 'var(--amber)' }}>Low</span>}
+                      </td>
+                      <td data-label="Buy" style={{ textAlign: 'right' }}>{fmt(p.buy_price, false, sym)}</td>
+                      <td data-label="Sell" style={{ textAlign: 'right', color: 'var(--text-1)', fontWeight: 600 }}>{fmt(p.sell_price, false, sym)}</td>
+                      <td data-label="" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        <span className="row-actions">
+                          <button type="button" className="icon-pill" onClick={() => edit(p)} aria-label={`Change ${p.name}`}><Pencil aria-hidden="true" /></button>
+                          <button type="button" className="icon-pill danger" onClick={() => remove(p.id)} aria-label={`Remove ${p.name}`}><Trash2 aria-hidden="true" /></button>
+                        </span>
                       </td>
                     </tr>
                   ))}
@@ -222,23 +242,22 @@ export default function InventoryPage() {
         </SectionCard>
 
         {/* Add / edit */}
-        <SectionCard title={editId ? 'Edit product' : 'Add a product'} subtitle={editId ? 'Update the details' : 'Build your catalog gradually'}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Name *</label><input value={form.name} onChange={e => set('name', e.target.value)} style={input} /></div>
-            <div><label style={lbl}>Category</label><input value={form.category} onChange={e => set('category', e.target.value)} style={input} /></div>
-            <div><label style={lbl}>Unit</label><input value={form.unit} onChange={e => set('unit', e.target.value)} placeholder="unit / kg / box" style={input} /></div>
-            <div><label style={lbl}>Buy price ({sym})</label><input type="number" value={form.buy_price} onChange={e => set('buy_price', e.target.value)} style={{ ...input }} /></div>
-            <div><label style={lbl}>Sell price ({sym})</label><input type="number" value={form.sell_price} onChange={e => set('sell_price', e.target.value)} style={{ ...input }} /></div>
-            <div><label style={lbl}>Opening stock</label><input type="number" value={form.opening_stock} onChange={e => set('opening_stock', e.target.value)} style={{ ...input }} /></div>
-            <div><label style={lbl}>Reorder level</label><input type="number" value={form.reorder_level} onChange={e => set('reorder_level', e.target.value)} style={{ ...input }} /></div>
-            <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Supplier</label><input value={form.supplier} onChange={e => set('supplier', e.target.value)} style={input} /></div>
+        <SectionCard title={editId ? 'Change a product' : 'Add a product'}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
+            <div style={{ gridColumn: '1 / -1' }}><label htmlFor="p-name" className="field-label">Name</label><input id="p-name" required value={form.name} onChange={e => set('name', e.target.value)} className="field" /></div>
+            <div><label htmlFor="p-cat" className="field-label">Category</label><input id="p-cat" value={form.category} onChange={e => set('category', e.target.value)} className="field" /></div>
+            <div><label htmlFor="p-unit" className="field-label">Unit</label><input id="p-unit" value={form.unit} onChange={e => set('unit', e.target.value)} placeholder="unit, kg, box" className="field" /></div>
+            <div><label htmlFor="p-buy" className="field-label">Buy price ({sym})</label><input id="p-buy" type="number" inputMode="decimal" value={form.buy_price} onChange={e => set('buy_price', e.target.value)} className="field" /></div>
+            <div><label htmlFor="p-sell" className="field-label">Sell price ({sym})</label><input id="p-sell" type="number" inputMode="decimal" value={form.sell_price} onChange={e => set('sell_price', e.target.value)} className="field" /></div>
+            <div><label htmlFor="p-open" className="field-label">Opening stock</label><input id="p-open" type="number" inputMode="decimal" value={form.opening_stock} onChange={e => set('opening_stock', e.target.value)} className="field" /></div>
+            <div><label htmlFor="p-reorder" className="field-label">Reorder at</label><input id="p-reorder" type="number" inputMode="decimal" value={form.reorder_level} onChange={e => set('reorder_level', e.target.value)} className="field" /></div>
+            <div style={{ gridColumn: '1 / -1' }}><label htmlFor="p-supplier" className="field-label">Supplier</label><input id="p-supplier" value={form.supplier} onChange={e => set('supplier', e.target.value)} className="field" /></div>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-            <button type="button" onClick={save} disabled={saving} className="touch-target"
-              style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
-              {saving ? 'Saving…' : editId ? 'Update' : 'Add product'}
+            <button type="button" onClick={save} disabled={saving} className="pill pill-primary">
+              {saving ? 'Saving…' : editId ? 'Save changes' : 'Add product'}
             </button>
-            {editId && <button type="button" onClick={cancel} className="touch-target" style={{ padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>}
+            {editId && <button type="button" onClick={cancel} className="pill pill-quiet">Cancel</button>}
           </div>
         </SectionCard>
       </div>

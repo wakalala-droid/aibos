@@ -12,24 +12,6 @@ import {
   listGuests, createGuest, getGuest, type Guest,
 } from '@/lib/hospitality';
 
-const input: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
-  border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', outline: 'none',
-};
-const lbl: React.CSSProperties = {
-  fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
-  textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
-};
-const primaryBtn: React.CSSProperties = {
-  padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)',
-  color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
-};
-const ghostBtn: React.CSSProperties = {
-  padding: '7px 12px', minHeight: 44, borderRadius: 'var(--radius-md)', background: 'transparent',
-  border: '1px solid var(--border-md)', color: 'var(--text-3)',
-  fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer',
-};
 
 const emptyForm = { full_name: '', phone: '', email: '', nationality: '', id_document_type: '' as '' | 'passport' | 'national_id' | 'other', id_document_number: '', vip_flag: false, notes: '' };
 
@@ -91,40 +73,40 @@ export default function GuestsPage() {
       <SectionCard
         title="Guests"
         subtitle={loading ? 'Loading…' : `${guests.length} on file`}
-        action={<button style={primaryBtn} onClick={() => setShowAdd(v => !v)}>{showAdd ? 'Close' : '+ Add guest'}</button>}
+        action={<button className="pill pill-primary" onClick={() => setShowAdd(v => !v)}>{showAdd ? 'Close' : '+ Add guest'}</button>}
       >
         {/* Search */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-          <input style={{ ...input, flex: 1 }} value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') load(search); }} placeholder="Search name, email or phone…" />
-          <button style={ghostBtn} onClick={() => load(search)}>Search</button>
-          {search && <button style={ghostBtn} onClick={() => { setSearch(''); load(); }}>Clear</button>}
+          <input className="field" style={{ flex: 1 }} value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') load(search); }} placeholder="Search name, email or phone…" />
+          <button className="pill pill-quiet" onClick={() => load(search)}>Search</button>
+          {search && <button className="pill pill-quiet" onClick={() => { setSearch(''); load(); }}>Clear</button>}
         </div>
 
         {/* Add form */}
         {showAdd && (
           <div style={{ padding: 14, borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', marginBottom: 16 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
-              <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Full name</label><input style={input} value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} /></div>
-              <div><label style={lbl}>Phone (WhatsApp)</label><input style={input} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+2609…" /></div>
-              <div><label style={lbl}>Email</label><input style={input} type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
-              <div><label style={lbl}>Nationality</label><input style={input} value={form.nationality} onChange={e => setForm({ ...form, nationality: e.target.value })} /></div>
+              <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Full name</label><input className="field" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} /></div>
+              <div><label className="field-label">Phone (WhatsApp)</label><input className="field" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+2609…" /></div>
+              <div><label className="field-label">Email</label><input className="field" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
+              <div><label className="field-label">Nationality</label><input className="field" value={form.nationality} onChange={e => setForm({ ...form, nationality: e.target.value })} /></div>
               <div>
-                <label style={lbl}>ID type</label>
-                <select style={input} value={form.id_document_type} onChange={e => setForm({ ...form, id_document_type: e.target.value as typeof form.id_document_type })}>
+                <label className="field-label">ID type</label>
+                <select className="field" value={form.id_document_type} onChange={e => setForm({ ...form, id_document_type: e.target.value as typeof form.id_document_type })}>
                   <option value="">Choose…</option>
                   <option value="passport">Passport</option>
                   <option value="national_id">National ID</option>
                   <option value="other">Other</option>
                 </select>
               </div>
-              <div><label style={lbl}>ID number (sealed)</label><input style={input} value={form.id_document_number} onChange={e => setForm({ ...form, id_document_number: e.target.value })} placeholder="Encrypted at rest" /></div>
-              <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Staff notes (private)</label><input style={input} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Preferences, discretion notes…" /></div>
+              <div><label className="field-label">ID number (sealed)</label><input className="field" value={form.id_document_number} onChange={e => setForm({ ...form, id_document_number: e.target.value })} placeholder="Encrypted at rest" /></div>
+              <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Staff notes (private)</label><input className="field" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Preferences, discretion notes…" /></div>
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 'var(--fs-data)', color: 'var(--text-2)', cursor: 'pointer' }}>
               <input type="checkbox" checked={form.vip_flag} onChange={e => setForm({ ...form, vip_flag: e.target.checked })} /> VIP guest
             </label>
             <div style={{ marginTop: 14 }}>
-              <button style={{ ...primaryBtn, opacity: busy ? 0.7 : 1 }} disabled={busy || !form.full_name.trim()} onClick={add}>{busy ? 'Saving…' : 'Save guest'}</button>
+              <button className="pill pill-primary" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy || !form.full_name.trim()} onClick={add}>{busy ? 'Saving…' : 'Save guest'}</button>
             </div>
           </div>
         )}
@@ -148,7 +130,7 @@ export default function GuestsPage() {
                   revealed[g.id]
                     ? <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>{g.id_document_type}: {revealed[g.id]}</span>
                     : canReveal
-                      ? <button style={ghostBtn} onClick={() => reveal(g.id)} title="Reveal sealed ID">{g.id_document_masked || 'ID on file'} · reveal</button>
+                      ? <button className="pill pill-quiet" onClick={() => reveal(g.id)} title="Reveal sealed ID">{g.id_document_masked || 'ID on file'} · reveal</button>
                       : <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }} title="Only the owner can reveal a sealed ID">{g.id_document_masked || 'ID on file'}</span>
                 )}
               </div>

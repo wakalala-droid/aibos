@@ -378,7 +378,7 @@ export default function OnboardingPage() {
                   </p>
 
                   <button type="button" onClick={() => router.push('/dashboard')} className="touch-target"
-                    style={{ marginTop: 4, padding: '12px 20px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer' }}>
+                    style={{ marginTop: 4, padding: '12px 20px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer' }}>
                     {seeded ? 'Go to my dashboard' : 'I&apos;ll do this later: go to dashboard'}
                   </button>
                 </div>
@@ -437,7 +437,7 @@ export default function OnboardingPage() {
             ) : (
               <button
                 type="button" onClick={finish} disabled={saving} className="touch-target"
-                style={{ padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--green)', color: '#04140d', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1 }}
+                style={{ padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1 }}
               >
                 {saving ? 'Setting up…' : 'Start using AIBOS'}
               </button>

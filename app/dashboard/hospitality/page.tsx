@@ -21,6 +21,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { confirmSheet } from '@/lib/confirm';
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
 import KPICard from '@/components/ui/KPICard';
 import LockedPreviewCard from '@/components/ui/LockedPreviewCard';
@@ -125,22 +126,6 @@ const guestEmail = (b: Booking) => (b.guest?.email || b.guest_email || '').trim(
 const sourceLabel = (b: Booking) => (b.source ? SOURCE_LABEL[b.source] : b.channel_id ? SOURCE_LABEL.ota : SOURCE_LABEL.direct);
 const nightsLabel = (b: Booking) => { const n = nights(b); return `${n} night${n === 1 ? '' : 's'}`; };
 
-const input: React.CSSProperties = {
-  width: '100%', padding: '10px 12px', minHeight: 44, background: 'var(--bg-input)',
-  border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', lineHeight: 1.6, outline: 'none',
-};
-const lbl: React.CSSProperties = {
-  fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
-  textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
-};
-const primaryBtn: React.CSSProperties = {
-  padding: '10px 18px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)',
-  color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.6, cursor: 'pointer',
-};
-const quietBtn: React.CSSProperties = {
-  ...primaryBtn, background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)',
-};
 
 interface Draft { unit_id: string; guest: string; check_in: string; check_out: string; guests: string; amount: string; status: BookingStatus; paid: PaymentStatus; }
 const emptyDraft = (unitId = '', checkIn = iso(new Date())): Draft => ({
@@ -452,10 +437,10 @@ export default function HospitalityPage() {
       {noUnits && (
         <SectionCard title="Add your first property" subtitle="One record per unit becomes the single source of truth every channel pulls from.">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, alignItems: 'end' }}>
-            <div><label style={lbl}>Property name</label><input style={input} value={setupName} onChange={e => setSetupName(e.target.value)} placeholder="Dunslim Apartments" /></div>
-            <div><label style={lbl}>First unit</label><input style={input} value={setupUnit} onChange={e => setSetupUnit(e.target.value)} placeholder="Unit A, 2 bedroom" /></div>
-            <div><label style={lbl}>Nightly rate ({sym})</label><input style={input} type="number" min="0" value={setupRate} onChange={e => setSetupRate(e.target.value)} placeholder="850" /></div>
-            <button style={{ ...primaryBtn, opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={runSetup}>{busy ? 'Creating…' : 'Create'}</button>
+            <div><label className="field-label">Property name</label><input className="field" value={setupName} onChange={e => setSetupName(e.target.value)} placeholder="Dunslim Apartments" /></div>
+            <div><label className="field-label">First unit</label><input className="field" value={setupUnit} onChange={e => setSetupUnit(e.target.value)} placeholder="Unit A, 2 bedroom" /></div>
+            <div><label className="field-label">Nightly rate ({sym})</label><input className="field" type="number" min="0" value={setupRate} onChange={e => setSetupRate(e.target.value)} placeholder="850" /></div>
+            <button className="pill pill-primary" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={runSetup}>{busy ? 'Creating…' : 'Create'}</button>
           </div>
         </SectionCard>
       )}
@@ -524,9 +509,9 @@ export default function HospitalityPage() {
             subtitle={loading ? 'Loading…' : `${days[0].toLocaleDateString([], { day: 'numeric', month: 'short' })} to ${days[WINDOW - 1].toLocaleDateString([], { day: 'numeric', month: 'short' })}`}
             action={
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-                <button aria-label="Previous week" onClick={() => setGridStart(addDays(gridStart, -7))} style={navBtn}>‹</button>
-                <button onClick={() => setGridStart(startOfDay(new Date()))} style={{ ...navBtn, width: 'auto', padding: '0 12px', fontSize: 'var(--fs-body)', fontWeight: 700 }}>Today</button>
-                <button aria-label="Next week" onClick={() => setGridStart(addDays(gridStart, 7))} style={navBtn}>›</button>
+                <button aria-label="Previous week" onClick={() => setGridStart(addDays(gridStart, -7))} className="icon-pill"><ChevronLeft aria-hidden="true" /></button>
+                <button onClick={() => setGridStart(startOfDay(new Date()))} className="pill pill-quiet">Today</button>
+                <button aria-label="Next week" onClick={() => setGridStart(addDays(gridStart, 7))} className="icon-pill"><ChevronRight aria-hidden="true" /></button>
                 {/* Any date in one step. A stay months away used to take a press
                     of Next week for every week in between. */}
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-3)' }}>
@@ -539,7 +524,7 @@ export default function HospitalityPage() {
                     style={{ height: 34, padding: '0 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
                   />
                 </label>
-                <button onClick={() => openDraft('')} style={primaryBtn}>+ Booking</button>
+                <button onClick={() => openDraft('')} className="pill pill-primary">+ Booking</button>
               </div>
             }
           >
@@ -620,32 +605,32 @@ export default function HospitalityPage() {
             <SectionCard title="New booking" subtitle="A confirmed booking with an amount records a Sale in your books. It counts as money owed to you until the guest pays.">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12, alignItems: 'end' }}>
                 <div>
-                  <label style={lbl}>Unit</label>
-                  <select style={input} value={draft.unit_id} onChange={e => setDraft({ ...draft, unit_id: e.target.value })}>
+                  <label className="field-label">Unit</label>
+                  <select className="field" value={draft.unit_id} onChange={e => setDraft({ ...draft, unit_id: e.target.value })}>
                     {units.map(u => <option key={u.id} value={u.id}>{u.unit_name}</option>)}
                   </select>
                 </div>
-                <div><label style={lbl}>Guest name</label><input style={input} value={draft.guest} onChange={e => setDraft({ ...draft, guest: e.target.value })} placeholder="Optional. Saves the guest" /></div>
-                <div><label style={lbl}>Check-in</label><input style={input} type="date" value={draft.check_in} onChange={e => setDraft({ ...draft, check_in: e.target.value, check_out: e.target.value >= draft.check_out ? iso(addDays(parseISO(e.target.value), 1)) : draft.check_out })} /></div>
-                <div><label style={lbl}>Check-out</label><input style={input} type="date" value={draft.check_out} min={draft.check_in} onChange={e => setDraft({ ...draft, check_out: e.target.value })} /></div>
-                <div><label style={lbl}>Guests</label><input style={input} type="number" min="1" value={draft.guests} onChange={e => setDraft({ ...draft, guests: e.target.value })} /></div>
-                <div><label style={lbl}>Total ({sym})</label><input style={input} type="number" min="0" value={draft.amount} onChange={e => setDraft({ ...draft, amount: e.target.value })} placeholder="Records revenue" /></div>
+                <div><label className="field-label">Guest name</label><input className="field" value={draft.guest} onChange={e => setDraft({ ...draft, guest: e.target.value })} placeholder="Optional. Saves the guest" /></div>
+                <div><label className="field-label">Check-in</label><input className="field" type="date" value={draft.check_in} onChange={e => setDraft({ ...draft, check_in: e.target.value, check_out: e.target.value >= draft.check_out ? iso(addDays(parseISO(e.target.value), 1)) : draft.check_out })} /></div>
+                <div><label className="field-label">Check-out</label><input className="field" type="date" value={draft.check_out} min={draft.check_in} onChange={e => setDraft({ ...draft, check_out: e.target.value })} /></div>
+                <div><label className="field-label">Guests</label><input className="field" type="number" min="1" value={draft.guests} onChange={e => setDraft({ ...draft, guests: e.target.value })} /></div>
+                <div><label className="field-label">Total ({sym})</label><input className="field" type="number" min="0" value={draft.amount} onChange={e => setDraft({ ...draft, amount: e.target.value })} placeholder="Records revenue" /></div>
                 <div>
-                  <label style={lbl}>Status</label>
-                  <select style={input} value={draft.status} onChange={e => setDraft({ ...draft, status: e.target.value as BookingStatus })}>
+                  <label className="field-label">Status</label>
+                  <select className="field" value={draft.status} onChange={e => setDraft({ ...draft, status: e.target.value as BookingStatus })}>
                     {(['confirmed', 'pending'] as BookingStatus[]).map(s => <option key={s} value={s}>{statusLabel(s)}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={lbl}>Paid?</label>
-                  <select style={input} value={draft.paid} onChange={e => setDraft({ ...draft, paid: e.target.value as PaymentStatus })}>
+                  <label className="field-label">Paid?</label>
+                  <select className="field" value={draft.paid} onChange={e => setDraft({ ...draft, paid: e.target.value as PaymentStatus })}>
                     {(['unpaid', 'paid'] as PaymentStatus[]).map(s => <option key={s} value={s}>{PAYMENT_LABEL[s]}</option>)}
                   </select>
                 </div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
-                <button style={{ ...primaryBtn, opacity: busy ? 0.7 : 1 }} disabled={busy || !draft.unit_id} onClick={submitBooking}>{busy ? 'Saving…' : 'Save booking'}</button>
-                <button style={quietBtn} onClick={() => setDraft(null)}>Discard</button>
+                <button className="pill pill-primary" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy || !draft.unit_id} onClick={submitBooking}>{busy ? 'Saving…' : 'Save booking'}</button>
+                <button className="pill pill-quiet" onClick={() => setDraft(null)}>Discard</button>
               </div>
             </SectionCard>
             </div>
@@ -681,10 +666,6 @@ export default function HospitalityPage() {
   );
 }
 
-const navBtn: React.CSSProperties = {
-  width: 34, height: 34, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
-  color: 'var(--text-2)', cursor: 'pointer', fontSize: 'var(--fs-body)', lineHeight: 1,
-};
 
 // ── The booking panel ────────────────────────────────────────────────────────
 
@@ -758,7 +739,7 @@ function BookingPanel({
     <SectionCard
       title="Booking"
       subtitle={unitName}
-      action={<button aria-label="Close this booking" onClick={onClose} style={{ ...navBtn, width: 34 }}>✕</button>}
+      action={<button aria-label="Close this booking" onClick={onClose} className="icon-pill"><X aria-hidden="true" /></button>}
     >
       {/* WHO */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
@@ -831,12 +812,7 @@ function BookingPanel({
                   aria-pressed={on}
                   disabled={busy}
                   onClick={() => choose(s)}
-                  style={{
-                    ...quietBtn, fontSize: 'var(--fs-body)', padding: '8px 14px', opacity: busy ? 0.7 : 1,
-                    color: on ? 'var(--text-1)' : 'var(--text-2)',
-                    background: on ? `color-mix(in srgb, ${PAYMENT_COLOUR[s]} 16%, transparent)` : 'transparent',
-                    border: `1px solid ${on ? PAYMENT_COLOUR[s] : 'var(--border-md)'}`,
-                  }}
+                  className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', padding: '8px 14px', opacity: busy ? 0.7 : 1, color: on ? 'var(--text-1)' : 'var(--text-2)', background: on ? `color-mix(in srgb, ${PAYMENT_COLOUR[s]} 16%, transparent)` : 'transparent', border: `1px solid ${on ? PAYMENT_COLOUR[s] : 'var(--border-md)'}` }}
                 >
                   {s === 'partial' ? 'Deposit paid' : PAYMENT_LABEL[s]}
                 </button>
@@ -847,10 +823,10 @@ function BookingPanel({
           {takingDeposit && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'end', marginTop: 12, maxWidth: 520 }}>
               <div style={{ flex: '1 1 200px' }}>
-                <label style={lbl} htmlFor="deposit-amount">Deposit received ({symbol})</label>
+                <label className="field-label" htmlFor="deposit-amount">Deposit received ({symbol})</label>
                 <input
                   id="deposit-amount"
-                  style={input}
+                  className="field"
                   type="number"
                   min="0"
                   step="0.01"
@@ -860,10 +836,10 @@ function BookingPanel({
                   placeholder={`Less than ${fmt(total, false, symbol)}`}
                 />
               </div>
-              <button style={{ ...primaryBtn, opacity: busy || !depositOk ? 0.7 : 1 }} disabled={busy || !depositOk} onClick={saveDeposit}>
+              <button className="pill pill-primary" style={{ opacity: busy || !depositOk ? 0.7 : 1 }} disabled={busy || !depositOk} onClick={saveDeposit}>
                 {busy ? 'Saving…' : 'Save deposit'}
               </button>
-              <button style={quietBtn} disabled={busy} onClick={() => setTakingDeposit(false)}>Never mind</button>
+              <button className="pill pill-quiet" disabled={busy} onClick={() => setTakingDeposit(false)}>Never mind</button>
               {deposit.trim() !== '' && !depositOk && (
                 <p style={{ flexBasis: '100%', margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--warn)' }}>
                   A deposit is more than nothing and less than the whole {fmt(total, false, symbol)}. If they paid it all, choose Paid in full.
@@ -951,13 +927,13 @@ function BookingPanel({
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               <button
-                style={{ ...primaryBtn, background: 'var(--good)', color: '#04150f', opacity: busy ? 0.7 : 1 }}
+                className="pill pill-primary"
                 disabled={busy}
                 onClick={onConfirm}
               >
                 {busy ? 'Confirming…' : 'Confirm and put it in the books'}
               </button>
-              <button style={{ ...quietBtn, opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={onStartDecline}>
+              <button className="pill pill-quiet" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={onStartDecline}>
                 Turn it down
               </button>
             </div>
@@ -966,23 +942,23 @@ function BookingPanel({
 
         {waiting && declining && (
           <div style={{ maxWidth: 520 }}>
-            <label style={lbl} htmlFor="decline-reason">Why are you turning it down?</label>
+            <label className="field-label" htmlFor="decline-reason">Why are you turning it down?</label>
             <input
               id="decline-reason"
-              style={input}
+              className="field"
               value={declineReason}
               onChange={e => onDeclineReason(e.target.value)}
               placeholder="Optional. The guest never sees this"
             />
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
               <button
-                style={{ ...primaryBtn, background: 'transparent', color: 'var(--crit)', border: '1px solid var(--crit)', opacity: busy ? 0.7 : 1 }}
+                className="pill pill-quiet" style={{ color: 'var(--crit)', borderColor: 'var(--crit)' }}
                 disabled={busy}
                 onClick={onDecline}
               >
                 {busy ? 'Turning it down…' : 'Turn down this request'}
               </button>
-              <button style={quietBtn} disabled={busy} onClick={onStopDecline}>Keep it waiting</button>
+              <button className="pill pill-quiet" disabled={busy} onClick={onStopDecline}>Keep it waiting</button>
             </div>
           </div>
         )}
@@ -995,14 +971,14 @@ function BookingPanel({
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               <button
-                style={{ ...primaryBtn, background: 'var(--red-dim)', color: 'var(--crit)', border: '1px solid var(--crit)', opacity: busy ? 0.7 : 1 }}
+                className="pill" style={{ background: 'var(--red-dim)', color: 'var(--crit)' }}
                 disabled={busy}
                 onClick={() => onCancel(false)}
               >
                 {busy ? 'Cancelling…' : paidSoFar > 0 ? `Cancel and keep the ${fmt(paidSoFar, false, symbol)}` : 'Cancel this booking'}
               </button>
               {paidSoFar > 0 && (
-                <button style={{ ...quietBtn, opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={() => onCancel(true)}>
+                <button className="pill pill-quiet" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={() => onCancel(true)}>
                   Cancel and refund it
                 </button>
               )}
@@ -1086,7 +1062,7 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
     <div style={{ marginTop: 14 }}>
       {list && list.length > 0 && (
         <div style={{ display: 'grid', gap: 6, marginBottom: 10 }}>
-          <div style={{ ...lbl, marginBottom: 0 }}>Payments received</div>
+          <div className="field-label" style={{ marginBottom: 0 }}>Payments received</div>
           {list.map((p) => (
             <div key={p.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 14px', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
               <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{fmt(p.amount, false, symbol)}</span>
@@ -1100,32 +1076,32 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
         </div>
       )}
       {owed > 0.005 && !adding && (
-        <button style={{ ...quietBtn, fontSize: 'var(--fs-body)', padding: '8px 14px' }} disabled={busy} onClick={() => setAdding(true)}>
+        <button className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', padding: '8px 14px' }} disabled={busy} onClick={() => setAdding(true)}>
           + Add a payment
         </button>
       )}
       {adding && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, alignItems: 'end', maxWidth: 640 }}>
           <div>
-            <label style={lbl} htmlFor="inst-amount">Amount ({symbol})</label>
-            <input id="inst-amount" style={input} type="number" min="0" step="0.01" inputMode="decimal"
+            <label className="field-label" htmlFor="inst-amount">Amount ({symbol})</label>
+            <input id="inst-amount" className="field" type="number" min="0" step="0.01" inputMode="decimal"
               value={amount} onChange={e => setAmount(e.target.value)} placeholder={`Up to ${fmt(owed, false, symbol)}`} />
           </div>
           <div>
-            <label style={lbl} htmlFor="inst-day">Paid on</label>
-            <input id="inst-day" style={input} type="date" max={today} value={day} onChange={e => setDay(e.target.value)} />
+            <label className="field-label" htmlFor="inst-day">Paid on</label>
+            <input id="inst-day" className="field" type="date" max={today} value={day} onChange={e => setDay(e.target.value)} />
           </div>
           <div>
-            <label style={lbl} htmlFor="inst-method">How</label>
-            <select id="inst-method" style={input} value={method} onChange={e => setMethod(e.target.value as StayPaymentMethod)}>
+            <label className="field-label" htmlFor="inst-method">How</label>
+            <select id="inst-method" className="field" value={method} onChange={e => setMethod(e.target.value as StayPaymentMethod)}>
               {(Object.keys(METHOD_LABEL) as StayPaymentMethod[]).map(m => <option key={m} value={m}>{METHOD_LABEL[m]}</option>)}
             </select>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button style={{ ...primaryBtn, opacity: busy || !ok ? 0.7 : 1 }} disabled={busy || !ok} onClick={add}>
+            <button className="pill pill-primary" style={{ opacity: busy || !ok ? 0.7 : 1 }} disabled={busy || !ok} onClick={add}>
               {busy ? 'Saving…' : 'Save'}
             </button>
-            <button style={quietBtn} disabled={busy} onClick={() => { setAdding(false); setError(''); }}>Cancel</button>
+            <button className="pill pill-quiet" disabled={busy} onClick={() => { setAdding(false); setError(''); }}>Cancel</button>
           </div>
         </div>
       )}
@@ -1197,12 +1173,7 @@ function PayLinkBlock({ booking: b, owed, symbol, unitName, phone, name }: {
             key={m}
             aria-pressed={mode === m}
             onClick={() => { setMode(m); setLink(null); }}
-            style={{
-              ...quietBtn, fontSize: 'var(--fs-body)', padding: '8px 14px',
-              color: mode === m ? 'var(--text-1)' : 'var(--text-2)',
-              background: mode === m ? 'color-mix(in srgb, var(--cyan) 16%, transparent)' : 'transparent',
-              border: `1px solid ${mode === m ? 'var(--cyan)' : 'var(--border-md)'}`,
-            }}
+            className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', padding: '8px 14px', color: mode === m ? 'var(--text-1)' : 'var(--text-2)', background: mode === m ? 'color-mix(in srgb, var(--cyan) 16%, transparent)' : 'transparent', border: `1px solid ${mode === m ? 'var(--cyan)' : 'var(--border-md)'}` }}
           >
             {m === 'all' ? `Everything owed (${fmt(owed, false, symbol)})` : 'A deposit'}
           </button>
@@ -1210,14 +1181,14 @@ function PayLinkBlock({ booking: b, owed, symbol, unitName, phone, name }: {
       </div>
       {mode === 'deposit' && (
         <div style={{ maxWidth: 320, marginBottom: 12 }}>
-          <label style={lbl} htmlFor="link-deposit">Deposit to ask for ({symbol})</label>
-          <input id="link-deposit" style={input} type="number" min="0" step="0.01" inputMode="decimal"
+          <label className="field-label" htmlFor="link-deposit">Deposit to ask for ({symbol})</label>
+          <input id="link-deposit" className="field" type="number" min="0" step="0.01" inputMode="decimal"
             value={deposit} onChange={e => { setDeposit(e.target.value); setLink(null); }}
             placeholder={`Less than ${fmt(owed, false, symbol)}`} />
         </div>
       )}
       <button
-        style={{ ...primaryBtn, opacity: busy || (mode === 'deposit' && !depositOk) ? 0.7 : 1 }}
+        className="pill pill-primary" style={{ opacity: busy || (mode === 'deposit' && !depositOk) ? 0.7 : 1 }}
         disabled={busy || (mode === 'deposit' && !depositOk)}
         onClick={make}
       >
@@ -1231,11 +1202,11 @@ function PayLinkBlock({ booking: b, owed, symbol, unitName, phone, name }: {
           </div>
           <div style={{ fontSize: 'var(--fs-body)', lineHeight: 1.5, color: 'var(--text-1)', wordBreak: 'break-all', marginBottom: 10 }}>{link.url}</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            <button style={{ ...quietBtn, fontSize: 'var(--fs-body)', padding: '8px 14px' }} onClick={copy}>{copied ? 'Copied' : 'Copy link'}</button>
+            <button className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', padding: '8px 14px' }} onClick={copy}>{copied ? 'Copied' : 'Copy link'}</button>
             <a
               href={`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`}
               target="_blank" rel="noopener noreferrer"
-              style={{ ...primaryBtn, fontSize: 'var(--fs-body)', padding: '8px 14px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+              className="pill pill-primary" style={{ fontSize: 'var(--fs-body)', padding: '8px 14px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
             >
               {waNumber ? 'Send on WhatsApp' : 'Share on WhatsApp'}
             </a>

@@ -78,24 +78,6 @@ const SORTS: { key: 'check_in' | 'created_at'; label: string }[] = [
   { key: 'created_at', label: 'By when it came in' },
 ];
 
-const inputStyle: React.CSSProperties = {
-  padding: '10px 12px', minHeight: 44, background: 'var(--bg-input)',
-  border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: FS_SMALL, lineHeight: 1.6, outline: 'none',
-};
-const primaryBtn: React.CSSProperties = {
-  padding: '10px 16px', minHeight: 44, borderRadius: 10, border: 'none', background: 'var(--cyan)',
-  color: 'var(--on-cyan)', fontSize: FS_SMALL, fontWeight: 700, cursor: 'pointer',
-};
-const ghostBtn: React.CSSProperties = {
-  padding: '10px 14px', minHeight: 44, borderRadius: 10, background: 'transparent',
-  border: '1px solid var(--border-md)', color: 'var(--text-2)',
-  fontSize: FS_SMALL, fontWeight: 600, cursor: 'pointer',
-};
-const capsLabel: React.CSSProperties = {
-  fontSize: FS_CAPS, fontWeight: 700, color: 'var(--text-4)',
-  textTransform: 'uppercase', letterSpacing: '0.05em',
-};
 
 /** A stay reads "12 Sep", never "2026-09-12". The year appears only when the
  *  date is outside this one, where leaving it off would be a guess. */
@@ -264,7 +246,7 @@ export default function BookingsPage() {
         title="Bookings"
         subtitle={subtitle}
         action={
-          <Link href="/dashboard/hospitality" style={{ ...ghostBtn, display: 'inline-block', textDecoration: 'none' }}>
+          <Link href="/dashboard/hospitality" className="pill pill-quiet" style={{ display: 'inline-block', textDecoration: 'none' }}>
             Open the calendar
           </Link>
         }
@@ -273,16 +255,16 @@ export default function BookingsPage() {
             name, the reference on the message, a phone number or the company. */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
           <input
-            style={{ ...inputStyle, flex: 1, minWidth: 220 }}
+            className="field" style={{ flex: 1, minWidth: 220 }}
             value={typed}
             onChange={e => setTyped(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') setSearch(typed.trim()); }}
             placeholder="Search a name, reference, phone or company"
             aria-label="Search bookings"
           />
-          <button style={ghostBtn} onClick={() => setSearch(typed.trim())}>Search</button>
+          <button className="pill pill-quiet" onClick={() => setSearch(typed.trim())}>Search</button>
           {search && (
-            <button style={ghostBtn} onClick={() => { setTyped(''); setSearch(''); }}>Clear</button>
+            <button className="pill pill-quiet" onClick={() => { setTyped(''); setSearch(''); }}>Clear</button>
           )}
         </div>
 
@@ -310,7 +292,7 @@ export default function BookingsPage() {
 
           <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
             <select
-              style={inputStyle}
+              className="field"
               value={source}
               onChange={e => setSource(e.target.value as BookingSource | '')}
               aria-label="Filter by where the booking came from"
@@ -321,7 +303,7 @@ export default function BookingsPage() {
               ))}
             </select>
             <select
-              style={inputStyle}
+              className="field"
               value={order}
               onChange={e => setOrder(e.target.value as 'check_in' | 'created_at')}
               aria-label="Sort the list"
@@ -335,11 +317,11 @@ export default function BookingsPage() {
         <div style={{ overflowX: 'auto' }}>
           <div style={{ minWidth: 860 }}>
             <div style={{ display: 'grid', gridTemplateColumns: COLUMNS, gap: 12, padding: '0 12px 8px 14px', borderBottom: '1px solid var(--border)' }}>
-              <span style={capsLabel}>Guest</span>
-              <span style={capsLabel}>Unit</span>
-              <span style={capsLabel}>Stay</span>
-              <span style={{ ...capsLabel, textAlign: 'right' }}>Amount</span>
-              <span style={capsLabel}>Status</span>
+              <span className="quiet-label">Guest</span>
+              <span className="quiet-label">Unit</span>
+              <span className="quiet-label">Stay</span>
+              <span className="quiet-label" style={{ textAlign: 'right' }}>Amount</span>
+              <span className="quiet-label">Status</span>
             </div>
 
             {rows.map(b => {
@@ -426,13 +408,13 @@ export default function BookingsPage() {
                       <Link
                         href={`/dashboard/hospitality?booking=${encodeURIComponent(b.id)}`}
                         aria-label={`Open ${guestName(b)}'s booking`}
-                        style={{ ...ghostBtn, padding: '8px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+                        className="pill pill-quiet" style={{ padding: '8px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
                       >
                         Open
                       </Link>
                       {owedOn(b) > 0 && (
                         <button
-                          style={{ ...ghostBtn, padding: '8px 14px', minHeight: 44, color: 'var(--good)', borderColor: 'var(--good)', opacity: busyId === b.id ? 0.6 : 1 }}
+                          className="pill pill-quiet" style={{ padding: '8px 14px', minHeight: 44, color: 'var(--good)', borderColor: 'var(--good)', opacity: busyId === b.id ? 0.6 : 1 }}
                           disabled={busyId === b.id}
                           onClick={() => markPaid(b.id)}
                         >
@@ -442,14 +424,14 @@ export default function BookingsPage() {
                       {b.status === 'pending' && (
                         <>
                           <button
-                            style={{ ...primaryBtn, padding: '8px 14px', minHeight: 44, opacity: busyId === b.id ? 0.6 : 1 }}
+                            className="pill pill-primary" style={{ padding: '8px 14px', minHeight: 44, opacity: busyId === b.id ? 0.6 : 1 }}
                             disabled={busyId === b.id}
                             onClick={() => answer(b.id, true)}
                           >
                             {busyId === b.id ? 'Saving…' : 'Confirm'}
                           </button>
                           <button
-                            style={{ ...ghostBtn, padding: '8px 14px', minHeight: 44 }}
+                            className="pill pill-quiet" style={{ padding: '8px 14px', minHeight: 44 }}
                             disabled={busyId === b.id}
                             onClick={() => { setDecliningId(decliningId === b.id ? '' : b.id); setReason(''); }}
                           >
@@ -465,20 +447,20 @@ export default function BookingsPage() {
                   {decliningId === b.id && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', padding: '0 12px 16px 14px' }}>
                       <input
-                        style={{ ...inputStyle, flex: 1, minWidth: 220 }}
+                        className="field" style={{ flex: 1, minWidth: 220 }}
                         value={reason}
                         onChange={e => setReason(e.target.value)}
                         placeholder="Why you turned it down (optional)"
                         aria-label="Reason for turning down this request"
                       />
                       <button
-                        style={{ ...ghostBtn, color: 'var(--crit)', borderColor: 'var(--crit)', opacity: busyId === b.id ? 0.6 : 1 }}
+                        className="pill pill-quiet" style={{ color: 'var(--crit)', borderColor: 'var(--crit)', opacity: busyId === b.id ? 0.6 : 1 }}
                         disabled={busyId === b.id}
                         onClick={() => answer(b.id, false)}
                       >
                         {busyId === b.id ? 'Saving…' : 'Turn it down'}
                       </button>
-                      <button style={ghostBtn} onClick={() => { setDecliningId(''); setReason(''); }}>Keep it</button>
+                      <button className="pill pill-quiet" onClick={() => { setDecliningId(''); setReason(''); }}>Keep it</button>
                     </div>
                   )}
                 </div>
@@ -494,7 +476,7 @@ export default function BookingsPage() {
                 Nothing here.{' '}
                 <button
                   onClick={() => { setView('all'); setSource(''); setTyped(''); setSearch(''); }}
-                  style={{ ...ghostBtn, minHeight: 0, padding: 0, border: 'none', color: 'var(--cyan)', textDecoration: 'underline' }}
+                  className="pill pill-quiet" style={{ minHeight: 0, padding: 0, border: 'none', color: 'var(--cyan)', textDecoration: 'underline' }}
                 >
                   Show every booking
                 </button>

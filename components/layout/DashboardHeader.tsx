@@ -60,24 +60,17 @@ function IconButton({
       aria-haspopup={label.includes('Search') ? undefined : 'menu'}
       aria-expanded={active}
       onClick={onClick}
-      className="dash-iconbtn"
-      style={{
-        position: 'relative',
-        width: 38, height: 38, borderRadius: 10,
-        border: `1px solid ${active ? 'var(--border-strong)' : 'var(--border-md)'}`,
-        background: active ? 'var(--bg-badge)' : 'var(--bg-card)',
-        color: 'var(--text-3)', cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}
+      className="dash-iconbtn icon-pill"
+      style={{ position: 'relative', background: active ? 'var(--pill-bg-hover)' : undefined }}
     >
       {children}
       {dot && (
         <span
           aria-hidden="true"
           style={{
-            position: 'absolute', top: 8, right: 8, width: 7, height: 7,
+            position: 'absolute', top: 10, right: 10, width: 8, height: 8,
             borderRadius: '50%', background: 'var(--crit)',
-            boxShadow: '0 0 0 2px var(--bg-card)',
+            boxShadow: '0 0 0 2px var(--bg-page)',
           }}
         />
       )}
@@ -316,9 +309,9 @@ export default function DashboardHeader() {
         onClick={() => setOpen(open === 'search' ? null : 'search')}
         className="dash-searchbar"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.7" />
-          <path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+          <path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
         <span className="dash-searchbar-hint">Search or ask AIBOS…</span>
         <kbd className="dash-searchbar-kbd">Ctrl K</kbd>
@@ -338,9 +331,9 @@ export default function DashboardHeader() {
 
       {/* Notifications */}
       <IconButton label={`Notifications, ${unread} alert${unread === 1 ? '' : 's'}`} active={open === 'bell'} dot={hasNewAlerts} onClick={toggleBell}>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M13.7 21a2 2 0 01-3.4 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M13.7 21a2 2 0 01-3.4 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
       </IconButton>
 
@@ -354,12 +347,12 @@ export default function DashboardHeader() {
         className="dash-profile"
         style={{
           display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
-          padding: '5px 8px 5px 12px', borderRadius: 999,
-          border: `1px solid ${open === 'profile' ? 'var(--border-strong)' : 'var(--border-md)'}`,
-          background: 'var(--bg-card)', maxWidth: 260,
+          minHeight: 44, padding: '6px 8px 6px 16px', borderRadius: 999,
+          border: '1px solid transparent',
+          background: open === 'profile' ? 'var(--pill-bg-hover)' : 'var(--pill-bg)', maxWidth: 260,
         }}
       >
-        <span className="dash-profile-name" style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>
+        <span className="dash-profile-name" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>
           {businessName}
         </span>
         {hasLogo ? (

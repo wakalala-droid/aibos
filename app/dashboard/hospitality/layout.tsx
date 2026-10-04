@@ -29,22 +29,14 @@ export default function HospitalityLayout({ children }: { children: React.ReactN
         title="Rooms & Stays"
         subtitle="Every unit&apos;s availability on one calendar. Bookings go straight into your books."
       />
-      <nav aria-label="Hospitality sections" style={{ display: 'flex', gap: 4, marginBottom: 18, borderBottom: '1px solid var(--border)', overflowX: 'auto' }}>
+      {/* The sections as pills, the chosen one filled: the same chips every
+          page uses for its filters (redesign 2026-10). Scrolls sideways on a phone. */}
+      <nav aria-label="Rooms and Stays sections" className="chips" style={{ flexWrap: 'nowrap', overflowX: 'auto', marginBottom: 16, paddingBottom: 2 }}>
         {TABS.map(t => {
           const active = t.href === '/dashboard/hospitality' ? pathname === t.href : pathname.startsWith(t.href);
           return (
-            <Link
-              key={t.href}
-              href={t.href}
-              aria-current={active ? 'page' : undefined}
-              style={{
-                position: 'relative', padding: '10px 14px', textDecoration: 'none', whiteSpace: 'nowrap',
-                fontSize: 'var(--fs-data)', fontWeight: 600,
-                color: active ? 'var(--text-1)' : 'var(--text-3)',
-              }}
-            >
+            <Link key={t.href} href={t.href} className="chip" aria-current={active ? 'page' : undefined}>
               {t.label}
-              {active && <span style={{ position: 'absolute', left: 10, right: 10, bottom: -1, height: 2, borderRadius: 2, background: 'var(--amber)' }} />}
             </Link>
           );
         })}

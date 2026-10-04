@@ -22,24 +22,6 @@ import {
   type Unit, type Channel, type ChannelType, type SyncStatus, type Property, type GuestEmailStatus,
 } from '@/lib/hospitality';
 
-const input: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
-  border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 'var(--fs-data)', outline: 'none',
-};
-const lbl: React.CSSProperties = {
-  fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
-  textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
-};
-const primaryBtn: React.CSSProperties = {
-  padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)',
-  color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
-};
-const ghostBtn: React.CSSProperties = {
-  padding: '7px 12px', minHeight: 44, borderRadius: 'var(--radius-md)', background: 'transparent',
-  border: '1px solid var(--border-md)', color: 'var(--text-3)',
-  fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer',
-};
 
 const TYPE_LABEL: Record<ChannelType, string> = {
   direct: 'Direct', booking_com: 'Booking.com', airbnb: 'Airbnb', ical_generic: 'Other (iCal)',
@@ -140,26 +122,26 @@ function UnitChannels({ unit, channels, onChange, onError }: { unit: Unit; chann
                 <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 'var(--fs-label)', fontWeight: 700, color: meta.colour, background: `color-mix(in srgb, ${meta.colour} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${meta.colour} 40%, transparent)` }}>{meta.label}</span>
                 {c.last_synced_at && <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>last: {new Date(c.last_synced_at).toLocaleString()}</span>}
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-                  <button style={{ ...primaryBtn, opacity: busy === c.id ? 0.6 : 1 }} disabled={busy === c.id} onClick={() => sync(c.id)}>{busy === c.id ? 'Syncing…' : 'Sync now'}</button>
-                  <button style={{ ...ghostBtn, color: 'var(--red)', borderColor: 'color-mix(in srgb, var(--red) 40%, transparent)' }} onClick={() => remove(c.id)}>Remove</button>
+                  <button className="pill pill-primary" style={{ opacity: busy === c.id ? 0.6 : 1 }} disabled={busy === c.id} onClick={() => sync(c.id)}>{busy === c.id ? 'Syncing…' : 'Sync now'}</button>
+                  <button className="pill pill-quiet" style={{ color: 'var(--red)', borderColor: 'color-mix(in srgb, var(--red) 40%, transparent)' }} onClick={() => remove(c.id)}>Remove</button>
                 </div>
               </div>
 
               {c.last_sync_note && <p style={{ fontSize: 'var(--fs-label)', color: c.sync_status === 'error' ? 'var(--red)' : 'var(--text-3)', margin: '0 0 10px' }}>{c.last_sync_note}</p>}
 
               {/* Import URL (pull) */}
-              <label style={lbl}>Import URL: paste the OTA’s iCal export link, then Sync</label>
+              <label className="field-label">Import URL: paste the OTA’s iCal export link, then Sync</label>
               <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                <input style={{ ...input, flex: 1 }} defaultValue={c.ical_import_url || ''} placeholder="https://…/calendar.ics" onBlur={e => { if (e.target.value.trim() !== (c.ical_import_url || '')) saveImport(c, e.target.value); }} />
+                <input className="field" style={{ flex: 1 }} defaultValue={c.ical_import_url || ''} placeholder="https://…/calendar.ics" onBlur={e => { if (e.target.value.trim() !== (c.ical_import_url || '')) saveImport(c, e.target.value); }} />
               </div>
 
               {/* Export feed (publish) */}
               {c.ical_export_token && (
                 <>
-                  <label style={lbl}>Our feed URL: paste this into the OTA’s “import calendar” field</label>
+                  <label className="field-label">Our feed URL: paste this into the OTA’s “import calendar” field</label>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <input style={{ ...input, flex: 1, color: 'var(--text-3)' }} readOnly value={icalFeedUrl(c.ical_export_token)} onFocus={e => e.target.select()} />
-                    <button style={ghostBtn} onClick={() => copyFeed(c.ical_export_token!)}>{copied === c.ical_export_token ? 'Copied ✓' : 'Copy'}</button>
+                    <input className="field" style={{ flex: 1, color: 'var(--text-3)' }} readOnly value={icalFeedUrl(c.ical_export_token)} onFocus={e => e.target.select()} />
+                    <button className="pill pill-quiet" onClick={() => copyFeed(c.ical_export_token!)}>{copied === c.ical_export_token ? 'Copied ✓' : 'Copy'}</button>
                   </div>
                 </>
               )}
@@ -171,16 +153,16 @@ function UnitChannels({ unit, channels, onChange, onError }: { unit: Unit; chann
       {/* Add channel */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'end', flexWrap: 'wrap', paddingTop: 12, borderTop: '1px solid var(--border)' }}>
         <div style={{ minWidth: 140 }}>
-          <label style={lbl}>Add channel</label>
-          <select style={input} value={type} onChange={e => setType(e.target.value as ChannelType)}>
+          <label className="field-label">Add channel</label>
+          <select className="field" value={type} onChange={e => setType(e.target.value as ChannelType)}>
             {(Object.keys(TYPE_LABEL) as ChannelType[]).map(t => <option key={t} value={t}>{TYPE_LABEL[t]}</option>)}
           </select>
         </div>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <label style={lbl}>Import URL (optional)</label>
-          <input style={input} value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://…/calendar.ics" />
+          <label className="field-label">Import URL (optional)</label>
+          <input className="field" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://…/calendar.ics" />
         </div>
-        <button style={{ ...primaryBtn, opacity: busy === 'add' ? 0.7 : 1 }} disabled={busy === 'add'} onClick={add}>{busy === 'add' ? 'Adding…' : 'Add channel'}</button>
+        <button className="pill pill-primary" style={{ opacity: busy === 'add' ? 0.7 : 1 }} disabled={busy === 'add'} onClick={add}>{busy === 'add' ? 'Adding…' : 'Add channel'}</button>
       </div>
     </SectionCard>
   );
@@ -280,7 +262,7 @@ function WebsiteCard({ properties, units, onChange, onError }: {
                   Connect your website and it can show which nights are free and send
                   booking requests straight into this calendar.
                 </p>
-                <button type="button" style={primaryBtn} disabled={busy === p.id} onClick={() => mint(p)}>
+                <button type="button" className="pill pill-primary" disabled={busy === p.id} onClick={() => mint(p)}>
                   {busy === p.id ? 'Connecting…' : 'Connect my website'}
                 </button>
               </>
@@ -341,10 +323,10 @@ function WebsiteCard({ properties, units, onChange, onError }: {
                 </div>
 
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-                  <button type="button" style={ghostBtn} disabled={busy === p.id} onClick={() => rotate(p)}>
+                  <button type="button" className="pill pill-quiet" disabled={busy === p.id} onClick={() => rotate(p)}>
                     New key
                   </button>
-                  <button type="button" style={ghostBtn} disabled={busy === p.id} onClick={() => disconnect(p)}>
+                  <button type="button" className="pill pill-quiet" disabled={busy === p.id} onClick={() => disconnect(p)}>
                     Take offline
                   </button>
                 </div>
@@ -390,7 +372,6 @@ function GuestEmailsCard({ properties, onChange, onError }: {
 }
 
 const BODY: React.CSSProperties = { fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', margin: 0 };
-const FIELD: React.CSSProperties = { ...input, fontSize: 'var(--fs-body)', minHeight: 46 };
 
 function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
   property: Property; last: boolean;
@@ -527,7 +508,7 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
       </p>
 
       <div style={{ marginBottom: 16 }}>
-        <span style={lbl}>Your logo</span>
+        <span className="field-label">Your logo</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
           {logo ? (
             // The email itself is white, so the preview is too: what the guest sees.
@@ -541,10 +522,10 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
             label={logo ? 'Replace logo' : 'Upload logo'} busy={busy === 'logo'} disabled={Boolean(busy) || notReady}
             onFile={(f) => void onLogo(f)}
             onError={(m) => setMessage({ text: m, tone: 'warn' })}
-            style={{ ...ghostBtn, fontSize: 'var(--fs-body)', minHeight: 44, display: 'inline-flex', alignItems: 'center', opacity: busy ? 0.6 : 1 }}
+            className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', minHeight: 44, display: 'inline-flex', alignItems: 'center', opacity: busy ? 0.6 : 1 }}
           />
           {logo && (
-            <button type="button" style={{ ...ghostBtn, fontSize: 'var(--fs-body)', minHeight: 44 }} disabled={Boolean(busy)} onClick={removeLogo}>
+            <button type="button" className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', minHeight: 44 }} disabled={Boolean(busy)} onClick={removeLogo}>
               Remove
             </button>
           )}
@@ -556,27 +537,27 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
 
       <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
         <label>
-          <span style={lbl}>Name your guests see</span>
-          <input style={FIELD} value={form.guest_email_from_name} onChange={set('guest_email_from_name')} placeholder={p.name} />
+          <span className="field-label">Name your guests see</span>
+          <input className="field" value={form.guest_email_from_name} onChange={set('guest_email_from_name')} placeholder={p.name} />
         </label>
         <label>
-          <span style={lbl}>Send from</span>
-          <input style={FIELD} type="email" value={form.guest_email_from} onChange={set('guest_email_from')} placeholder="reservations@yourdomain.com" />
+          <span className="field-label">Send from</span>
+          <input className="field" type="email" value={form.guest_email_from} onChange={set('guest_email_from')} placeholder="reservations@yourdomain.com" />
         </label>
         <label>
-          <span style={lbl}>Replies go to</span>
-          <input style={FIELD} type="email" value={form.guest_email_reply_to} onChange={set('guest_email_reply_to')} placeholder="The inbox you actually read" />
+          <span className="field-label">Replies go to</span>
+          <input className="field" type="email" value={form.guest_email_reply_to} onChange={set('guest_email_reply_to')} placeholder="The inbox you actually read" />
         </label>
         <label>
-          <span style={lbl}>Phone for guests</span>
-          <input style={FIELD} value={form.guest_contact_phone} onChange={set('guest_contact_phone')} placeholder="+260" />
+          <span className="field-label">Phone for guests</span>
+          <input className="field" value={form.guest_contact_phone} onChange={set('guest_contact_phone')} placeholder="+260" />
         </label>
       </div>
 
       <label style={{ display: 'block', marginTop: 14 }}>
-        <span style={lbl}>How to pay</span>
+        <span className="field-label">How to pay</span>
         <textarea
-          style={{ ...FIELD, minHeight: 120, resize: 'vertical', lineHeight: 1.6 }}
+          className="field" style={{ minHeight: 120, resize: 'vertical', lineHeight: 1.6 }}
           value={form.guest_payment_instructions}
           onChange={set('guest_payment_instructions')}
           placeholder="Mobile money and bank details, exactly as a guest should copy them."
@@ -614,15 +595,15 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
       )}
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
-        <button type="button" style={{ ...ghostBtn, fontSize: 'var(--fs-body)', minHeight: 44 }} disabled={Boolean(busy)} onClick={() => save()}>
+        <button type="button" className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', minHeight: 44 }} disabled={Boolean(busy)} onClick={() => save()}>
           {busy === 'save' ? 'Saving…' : 'Save'}
         </button>
-        <button type="button" style={{ ...ghostBtn, fontSize: 'var(--fs-body)', minHeight: 44 }} disabled={Boolean(busy) || notReady || notLive} onClick={samples}>
+        <button type="button" className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', minHeight: 44 }} disabled={Boolean(busy) || notReady || notLive} onClick={samples}>
           {busy === 'samples' ? 'Sending…' : 'Send me the three samples'}
         </button>
         <button
           type="button"
-          style={{ ...primaryBtn, fontSize: 'var(--fs-body)', minHeight: 44, ...(on ? { background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)' } : {}) }}
+          className="pill pill-primary" style={{ fontSize: 'var(--fs-body)', minHeight: 44, ...(on ? { background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)' } : {}) }}
           disabled={Boolean(busy) || notReady}
           onClick={() => save({ guest_emails_enabled: !on }, on ? 'Emails to guests are off.' : 'Emails to guests are on.')}
         >
@@ -656,11 +637,11 @@ function Setting({ name, value, missing, secret, revealed, onReveal, copied, onC
         {missing ? 'Not set on this deployment' : value}
       </code>
       {secret && (
-        <button type="button" style={ghostBtn} onClick={onReveal}>
+        <button type="button" className="pill pill-quiet" onClick={onReveal}>
           {revealed ? 'Hide' : 'Show'}
         </button>
       )}
-      <button type="button" style={ghostBtn} disabled={missing} onClick={onCopy}>
+      <button type="button" className="pill pill-quiet" disabled={missing} onClick={onCopy}>
         {copied ? 'Copied' : 'Copy'}
       </button>
     </div>

@@ -17,24 +17,6 @@ import {
   type Property, type Unit,
 } from '@/lib/hospitality';
 
-const input: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
-  border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', outline: 'none',
-};
-const lbl: React.CSSProperties = {
-  fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
-  textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block',
-};
-const primaryBtn: React.CSSProperties = {
-  padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)',
-  color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer',
-};
-const ghostBtn: React.CSSProperties = {
-  padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', background: 'transparent',
-  border: '1px solid var(--border-md)', color: 'var(--text-3)',
-  fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer',
-};
 
 export default function UnitsPage() {
   const [loading, setLoading] = useState(true);
@@ -79,10 +61,10 @@ export default function UnitsPage() {
       <SectionCard title="Properties" subtitle="Each property holds one or more lettable units.">
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'end' }}>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <label style={lbl}>New property name</label>
-            <input style={input} value={newProp} onChange={e => setNewProp(e.target.value)} placeholder="Dunslim Apartments, Makeni Road" />
+            <label className="field-label">New property name</label>
+            <input className="field" value={newProp} onChange={e => setNewProp(e.target.value)} placeholder="Dunslim Apartments, Makeni Road" />
           </div>
-          <button style={{ ...primaryBtn, opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={addProperty}>Add property</button>
+          <button className="pill pill-primary" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={addProperty}>Add property</button>
         </div>
       </SectionCard>
 
@@ -94,16 +76,16 @@ export default function UnitsPage() {
           <div key={p.id} style={{ marginTop: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <h2 style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>{p.name}</h2>
-              <button style={ghostBtn} onClick={() => { setAddingTo(addingTo === p.id ? null : p.id); setNewUnit(''); }}>{addingTo === p.id ? 'Close' : '+ Add unit'}</button>
+              <button className="pill pill-quiet" onClick={() => { setAddingTo(addingTo === p.id ? null : p.id); setNewUnit(''); }}>{addingTo === p.id ? 'Close' : '+ Add unit'}</button>
             </div>
 
             {addingTo === p.id && (
               <div style={{ display: 'flex', gap: 8, alignItems: 'end', marginBottom: 12 }}>
                 <div style={{ flex: 1 }}>
-                  <label style={lbl}>Unit name</label>
-                  <input style={input} value={newUnit} onChange={e => setNewUnit(e.target.value)} placeholder="Unit A, 2 bedrooms" autoFocus />
+                  <label className="field-label">Unit name</label>
+                  <input className="field" value={newUnit} onChange={e => setNewUnit(e.target.value)} placeholder="Unit A, 2 bedrooms" autoFocus />
                 </div>
-                <button style={{ ...primaryBtn, opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={() => addUnit(p.id)}>Add</button>
+                <button className="pill pill-primary" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={() => addUnit(p.id)}>Add</button>
               </div>
             )}
 
@@ -181,14 +163,14 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
       action={<span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Pushed to every channel</span>}
     >
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12 }}>
-        <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Unit name</label><input style={input} value={f.unit_name} onChange={e => set('unit_name', e.target.value)} /></div>
-        <div><label style={lbl}>Bedrooms</label><input style={input} type="number" min="0" value={f.bedrooms} onChange={e => set('bedrooms', e.target.value)} /></div>
-        <div><label style={lbl}>Bathrooms</label><input style={input} type="number" min="0" step="0.5" value={f.bathrooms} onChange={e => set('bathrooms', e.target.value)} /></div>
-        <div><label style={lbl}>Max guests</label><input style={input} type="number" min="1" value={f.max_guests} onChange={e => set('max_guests', e.target.value)} /></div>
-        <div><label style={lbl}>Rate ({sym})/night</label><input style={input} type="number" min="0" value={f.base_nightly_rate} onChange={e => set('base_nightly_rate', e.target.value)} /></div>
+        <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Unit name</label><input className="field" value={f.unit_name} onChange={e => set('unit_name', e.target.value)} /></div>
+        <div><label className="field-label">Bedrooms</label><input className="field" type="number" min="0" value={f.bedrooms} onChange={e => set('bedrooms', e.target.value)} /></div>
+        <div><label className="field-label">Bathrooms</label><input className="field" type="number" min="0" step="0.5" value={f.bathrooms} onChange={e => set('bathrooms', e.target.value)} /></div>
+        <div><label className="field-label">Max guests</label><input className="field" type="number" min="1" value={f.max_guests} onChange={e => set('max_guests', e.target.value)} /></div>
+        <div><label className="field-label">Rate ({sym})/night</label><input className="field" type="number" min="0" value={f.base_nightly_rate} onChange={e => set('base_nightly_rate', e.target.value)} /></div>
         <div>
-          <label style={lbl}>Currency</label>
-          <select style={input} value={f.currency} onChange={e => set('currency', e.target.value)}>
+          <label className="field-label">Currency</label>
+          <select className="field" value={f.currency} onChange={e => set('currency', e.target.value)}>
             {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
           </select>
         </div>
@@ -199,11 +181,11 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
           have already sent each other, so renaming the unit here must not
           quietly break the site. Blank is fine: the name is used instead. */}
       <div style={{ marginTop: 14 }}>
-        <label style={lbl}>Web address on your own site</label>
+        <label className="field-label">Web address on your own site</label>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>/residences/</span>
           <input
-            style={{ ...input, flex: '1 1 160px' }}
+            className="field" style={{ flex: '1 1 160px' }}
             value={f.public_slug}
             onChange={e => set('public_slug', e.target.value)}
             placeholder={slugFrom(f.unit_name)}
@@ -217,7 +199,7 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
 
       {/* Amenities — canonical list every listing inherits */}
       <div style={{ marginTop: 14 }}>
-        <label style={lbl}>Amenities (the canonical list)</label>
+        <label className="field-label">Amenities (the canonical list)</label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
           {amenities.length === 0 && <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>None yet: add the real ones so no listing can diverge.</span>}
           {amenities.map(a => (
@@ -228,14 +210,14 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
           ))}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <input style={{ ...input, flex: 1 }} value={amenityDraft} onChange={e => setAmenityDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addAmenity(); } }} placeholder="Wi-Fi, pool, backup power…" />
-          <button style={ghostBtn} onClick={addAmenity}>Add</button>
+          <input className="field" style={{ flex: 1 }} value={amenityDraft} onChange={e => setAmenityDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addAmenity(); } }} placeholder="Wi-Fi, pool, backup power…" />
+          <button className="pill pill-quiet" onClick={addAmenity}>Add</button>
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginTop: 16, alignItems: 'center' }}>
-        <button style={{ ...primaryBtn, opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={save}>{busy ? 'Saving…' : 'Save changes'}</button>
-        <button style={{ ...ghostBtn, color: 'var(--red)', borderColor: 'color-mix(in srgb, var(--red) 40%, transparent)' }} onClick={remove}>Delete</button>
+        <button className="pill pill-primary" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={save}>{busy ? 'Saving…' : 'Save changes'}</button>
+        <button className="pill pill-quiet" style={{ color: 'var(--red)', borderColor: 'color-mix(in srgb, var(--red) 40%, transparent)' }} onClick={remove}>Delete</button>
         {saved && <span style={{ fontSize: 'var(--fs-data)', color: 'var(--green)' }}>Saved ✓</span>}
       </div>
     </SectionCard>

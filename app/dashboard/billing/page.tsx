@@ -214,10 +214,10 @@ export default function BillingPage() {
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                   <button type="button" onClick={() => void cardAction('cancel')} disabled={cardBusy !== null}
-                    style={{ ...button, background: 'var(--crit)', cursor: cardBusy ? 'wait' : 'pointer' }}>
+                    className="pill pill-primary" style={{ background: 'var(--crit)', cursor: cardBusy ? 'wait' : 'pointer' }}>
                     {cardBusy === 'cancel' ? 'Cancelling…' : 'Yes, cancel the renewal'}
                   </button>
-                  <button type="button" onClick={() => setConfirmCancel(false)} disabled={cardBusy !== null} style={quiet}>
+                  <button type="button" onClick={() => setConfirmCancel(false)} disabled={cardBusy !== null} className="pill pill-quiet">
                     Keep {data.plan_name}
                   </button>
                 </div>
@@ -228,38 +228,38 @@ export default function BillingPage() {
               {card ? (
                 <>
                   {card.status === 'past_due' && data.card_manageable && (
-                    <button type="button" onClick={() => void cardAction('portal')} disabled={cardBusy !== null} style={button}>
+                    <button type="button" onClick={() => void cardAction('portal')} disabled={cardBusy !== null} className="pill pill-primary">
                       {cardBusy === 'portal' ? 'Opening…' : 'Update your card'}
                     </button>
                   )}
                   {card.cancel_at ? (
-                    <button type="button" onClick={() => void cardAction('keep')} disabled={cardBusy !== null} style={button}>
+                    <button type="button" onClick={() => void cardAction('keep')} disabled={cardBusy !== null} className="pill pill-primary">
                       {cardBusy === 'keep' ? 'Keeping it…' : `Keep ${data.plan_name}`}
                     </button>
                   ) : (
                     <Link href="/pricing" style={card.status === 'past_due' ? quiet : button}>Change plan</Link>
                   )}
                   {data.card_manageable && card.status !== 'past_due' && (
-                    <button type="button" onClick={() => void cardAction('portal')} disabled={cardBusy !== null} style={quiet}>
+                    <button type="button" onClick={() => void cardAction('portal')} disabled={cardBusy !== null} className="pill pill-quiet">
                       {cardBusy === 'portal' ? 'Opening…' : 'Manage card and invoices'}
                     </button>
                   )}
                   {!card.cancel_at && !confirmCancel && (card.status === 'active' || card.status === 'trialing') && (
-                    <button type="button" onClick={() => setConfirmCancel(true)} disabled={cardBusy !== null} style={quiet}>
+                    <button type="button" onClick={() => setConfirmCancel(true)} disabled={cardBusy !== null} className="pill pill-quiet">
                       Cancel renewal
                     </button>
                   )}
                 </>
               ) : data.state === 'free' ? (
-                <Link href="/pricing" style={button}>See the plans</Link>
+                <Link href="/pricing" className="pill pill-primary">See the plans</Link>
               ) : data.state === 'included' ? (
-                <Link href="/pricing" style={quiet}>See the plans</Link>
+                <Link href="/pricing" className="pill pill-quiet">See the plans</Link>
               ) : (
                 <>
-                  <Link href={data.pay_link || '/pricing'} style={button}>
+                  <Link href={data.pay_link || '/pricing'} className="pill pill-primary">
                     Set up card payment
                   </Link>
-                  <Link href="/pricing" style={quiet}>Change plan</Link>
+                  <Link href="/pricing" className="pill pill-quiet">Change plan</Link>
                 </>
               )}
             </div>
@@ -304,12 +304,12 @@ export default function BillingPage() {
                           <td>
                             {p.invoice ? (
                               <button type="button" onClick={() => void invoice(p)} disabled={busy === p.id}
-                                style={{ ...quiet, minHeight: 44, padding: '6px 12px', fontSize: 'var(--fs-label)', cursor: busy === p.id ? 'wait' : 'pointer' }}>
+                                className="pill pill-quiet" style={{ minHeight: 44, padding: '6px 12px', fontSize: 'var(--fs-label)', cursor: busy === p.id ? 'wait' : 'pointer' }}>
                                 {busy === p.id ? 'Opening…' : 'Invoice'}
                               </button>
                             ) : p.receipt ? (
                               <button type="button" onClick={() => void receipt(p)} disabled={busy === p.id}
-                                style={{ ...quiet, minHeight: 44, padding: '6px 12px', fontSize: 'var(--fs-label)', cursor: busy === p.id ? 'wait' : 'pointer' }}>
+                                className="pill pill-quiet" style={{ minHeight: 44, padding: '6px 12px', fontSize: 'var(--fs-label)', cursor: busy === p.id ? 'wait' : 'pointer' }}>
                                 {busy === p.id ? 'Preparing…' : 'Download'}
                               </button>
                             ) : (

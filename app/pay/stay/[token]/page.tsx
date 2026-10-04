@@ -255,7 +255,7 @@ export default function PayStayPage() {
                     <button type="button" onClick={() => void pay()} disabled={phase === 'waiting' || phone.trim().length < 9}
                       style={{
                         width: '100%', minHeight: 52, marginTop: 16, borderRadius: 10, border: 'none',
-                        background: 'var(--cyan)', color: '#08111a', fontSize: 'var(--fs-body)', fontWeight: 700,
+                        background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700,
                         cursor: phase === 'waiting' ? 'default' : 'pointer',
                         opacity: phase === 'waiting' || phone.trim().length < 9 ? 0.6 : 1,
                       }}>

@@ -70,11 +70,6 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 6, color: 'var(--text-1)',
   fontSize: 'var(--fs-body)', outline: 'none',
 };
-const labelStyle: React.CSSProperties = {
-  fontSize: 'var(--fs-caps)', fontWeight: 600,
-  color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em',
-  marginBottom: 6, display: 'block',
-};
 
 /** Today on the owner's own calendar. toISOString() is UTC, so between
  *  midnight and 2am in Lusaka it said yesterday, and anything recorded then
@@ -183,7 +178,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     try {
       const proposal = await ingestReceipt(file, currency);
       if (!proposal.payload?.amount) {
-        setError("Couldn't read a total from that photo: try a clearer shot or enter it manually.");
+        setError("Couldn't read a total from that photo: try a clearer shot or fill it in yourself.");
         setPhase('idle'); return;
       }
       loadProposal(proposal);
@@ -375,19 +370,17 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
   return (
     <div>
       {receiptSpotlight && phase === 'idle' && (
-        <div role="status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '12px 14px', marginBottom: 14, borderRadius: 10, border: '1px solid var(--cyan)', background: 'var(--cyan-dim)' }}>
+        <div role="status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: 16, marginBottom: 16, borderRadius: 'var(--radius-md)', background: 'var(--cyan-dim)' }}>
           <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>
             <strong>Got a receipt nearby?</strong> Photograph it and AIBOS records the purchase for you: your first numbers in under a minute.
           </span>
           <span style={{ display: 'flex', gap: 8 }}>
-            <button type="button" className="touch-target"
-              onClick={() => { setReceiptSpotlight(false); fileRef.current?.click(); }}
-              style={{ padding: '8px 14px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
+            <button type="button" className="pill pill-primary"
+              onClick={() => { setReceiptSpotlight(false); fileRef.current?.click(); }}>
               Scan a receipt
             </button>
-            <button type="button" className="touch-target" aria-label="Dismiss"
-              onClick={() => setReceiptSpotlight(false)}
-              style={{ padding: '8px 12px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
+            <button type="button" className="pill pill-quiet"
+              onClick={() => setReceiptSpotlight(false)}>
               Type instead
             </button>
           </span>
@@ -395,7 +388,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
       )}
 
       {/* ── Conversational input ─────────────────────────────────────────────── */}
-      <label htmlFor="record-input" style={labelStyle}>What happened?</label>
+      <label htmlFor="record-input" className="field-label">What happened?</label>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <input
           id="record-input"
@@ -404,7 +397,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
           onKeyDown={e => { if (e.key === 'Enter' && !busy) handleClassify(); }}
           placeholder={`e.g. I sold 15 drinks for ${currencySymbol}150`}
           disabled={busy}
-          style={{ ...inputStyle, flex: 1, minWidth: 160 }}
+          className="field" style={{ flex: 1, minWidth: 160 }}
         />
         {voiceSupported && (
           <button
@@ -412,14 +405,8 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
             onClick={toggleVoice}
             disabled={busy}
             aria-label={listening ? 'Stop voice input' : 'Speak instead of typing'}
-            className="touch-target"
-            style={{
-              width: 44, minHeight: 44, borderRadius: 10, cursor: busy ? 'default' : 'pointer',
-              border: `1px solid ${listening ? 'var(--red)' : 'var(--border-md)'}`,
-              background: listening ? 'var(--red-dim)' : 'var(--bg-input)',
-              color: listening ? 'var(--red)' : 'var(--text-2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}
+            className="icon-pill"
+            style={listening ? { background: 'var(--red-dim)', color: 'var(--red)' } : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" strokeWidth="1.6" />
@@ -432,12 +419,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
           onClick={() => setScanning(true)}
           disabled={busy}
           aria-label="Scan a receipt QR code"
-          className="touch-target"
-          style={{
-            width: 44, minHeight: 44, borderRadius: 10, cursor: busy ? 'default' : 'pointer',
-            border: '1px solid var(--border-md)', background: 'var(--bg-input)',
-            color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}
+          className="icon-pill"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M4 7V5a1 1 0 011-1h2M17 4h2a1 1 0 011 1v2M20 17v2a1 1 0 01-1 1h-2M7 20H5a1 1 0 01-1-1v-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
@@ -454,23 +436,13 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
               <circle cx="12" cy="12.5" r="3" stroke="currentColor" strokeWidth="1.5"/>
             </svg>
           }
-          style={{
-            width: 44, minHeight: 44, borderRadius: 10, cursor: busy ? 'default' : 'pointer',
-            border: '1px solid var(--border-md)', background: 'var(--bg-input)',
-            color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}
+          className="icon-pill"
         />
         <button
           type="button"
           onClick={() => handleClassify()}
           disabled={busy}
-          className="touch-target"
-          style={{
-            padding: '10px 18px', minHeight: 44, borderRadius: 10, border: 'none',
-            background: 'var(--cyan)', color: 'var(--on-cyan)',
-            fontSize: 'var(--fs-body)', fontWeight: 700, cursor: busy ? 'default' : 'pointer',
-            opacity: busy ? 0.7 : 1, whiteSpace: 'nowrap',
-          }}
+          className="pill pill-primary"
         >
           {phase === 'classifying' ? 'Reading…' : 'Record'}
         </button>
@@ -479,26 +451,23 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
         type="button"
         onClick={startManual}
         disabled={busy}
-        style={{
-          marginTop: 8, background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--text-3)',
-          fontSize: 'var(--fs-label)', textDecoration: 'underline', padding: '4px 0',
-        }}
+        className="pill pill-quiet"
+        style={{ marginTop: 12 }}
       >
-        or enter it manually
+        Or fill it in yourself
       </button>
 
       {/* ── Feedback ─────────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {error && (
           <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ marginTop: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>
+            role="alert" style={{ marginTop: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>
             {error}
           </motion.div>
         )}
         {success && (
           <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ marginTop: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--green-dim)', border: '1px solid var(--green)', color: 'var(--green)', fontSize: 'var(--fs-data)' }}>
+            role="status" style={{ marginTop: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--green-dim)', color: 'var(--green)', fontSize: 'var(--fs-body)' }}>
             {success}
           </motion.div>
         )}
@@ -535,32 +504,32 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
                 {/* Type */}
                 <div>
-                  <label style={labelStyle}>Type</label>
-                  <select value={etype} onChange={e => changeType(e.target.value as EventType)} style={inputStyle}>
+                  <label className="field-label">Type</label>
+                  <select value={etype} onChange={e => changeType(e.target.value as EventType)} className="field">
                     {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
 
                 {/* Amount */}
                 <div>
-                  <label style={labelStyle}>Amount ({currencySymbol})</label>
+                  <label className="field-label">Amount ({currencySymbol})</label>
                   <input
                     type="number" inputMode="decimal" value={amount}
                     onChange={e => setAmount(e.target.value)}
                     placeholder="0.00"
-                    style={{ ...inputStyle }}
+                    className="field"
                   />
                 </div>
 
                 {/* Type-specific fields */}
                 {TYPE_FIELDS[etype].map(fld => (
                   <div key={fld.key}>
-                    <label style={labelStyle}>{fld.label}</label>
+                    <label className="field-label">{fld.label}</label>
                     {fld.kind === 'select' ? (
                       <select
                         value={fields[fld.key] ?? ''}
                         onChange={e => setFields(p => ({ ...p, [fld.key]: e.target.value }))}
-                        style={inputStyle}
+                        className="field"
                       >
                         <option value="">Choose…</option>
                         {fld.options!.map(o => <option key={o} value={o}>{o}</option>)}
@@ -579,58 +548,45 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
 
                 {/* Date */}
                 <div>
-                  <label style={labelStyle}>Date</label>
+                  <label className="field-label">Date</label>
                   <input type="date" value={occurred} max={todayISO()} onChange={e => setOccurred(e.target.value)}
-                    style={{ ...inputStyle }} />
+                    className="field" />
                 </div>
               </div>
 
               {ITEM_TYPES.includes(etype) && (
                 <div style={{ marginTop: 14 }}>
-                  <span style={labelStyle}>
+                  <span className="field-label">
                     {etype === 'InventoryReceipt' ? 'Items received' : 'Items (optional, keeps your stock count right)'}
                   </span>
                   {lines.map((l, i) => (
                     <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 96px 44px', gap: 8, marginBottom: 8 }}>
                       <input aria-label={`Item ${i + 1}`} value={l.name} placeholder="e.g. Coke 500ml"
                         onChange={e => setLines(ls => ls.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
-                        style={inputStyle} />
+                        className="field" />
                       <input aria-label={`Quantity of item ${i + 1}`} type="number" inputMode="decimal" min={0} value={l.qty} placeholder="Qty"
                         onChange={e => setLines(ls => ls.map((x, j) => j === i ? { ...x, qty: e.target.value } : x))}
-                        style={inputStyle} />
-                      <button type="button" aria-label={`Remove item ${i + 1}`} className="touch-target"
-                        onClick={() => setLines(ls => ls.filter((_, j) => j !== i))}
-                        style={{ minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer', fontSize: 'var(--fs-body)' }}>
-                        ×
+                        className="field" />
+                      <button type="button" aria-label={`Remove item ${i + 1}`} className="icon-pill danger"
+                        onClick={() => setLines(ls => ls.filter((_, j) => j !== i))}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
                       </button>
                     </div>
                   ))}
-                  <button type="button" onClick={() => setLines(ls => [...ls, { name: '', qty: '' }])} className="touch-target"
-                    style={{ minHeight: 44, padding: '8px 14px', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border-md)', background: 'transparent', color: 'var(--cyan)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>
-                    + Add item
+                  <button type="button" onClick={() => setLines(ls => [...ls, { name: '', qty: '' }])} className="pill pill-quiet">
+                    Add an item
                   </button>
                 </div>
               )}
 
               <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
                 <button
-                  type="button" onClick={handleSave} disabled={busy} className="touch-target"
-                  style={{
-                    padding: '10px 20px', minHeight: 44, borderRadius: 10, border: 'none',
-                    background: 'var(--green)', color: '#04140d',
-                    fontSize: 'var(--fs-body)', fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1,
-                  }}
+                  type="button" onClick={handleSave} disabled={busy} className="pill pill-primary"
                 >
-                  {phase === 'saving' ? 'Saving…' : 'Confirm & save'}
+                  {phase === 'saving' ? 'Saving…' : 'Save it'}
                 </button>
                 <button
-                  type="button" onClick={() => { setPhase('idle'); setError(null); }} disabled={busy} className="touch-target"
-                  style={{
-                    padding: '10px 20px', minHeight: 44, borderRadius: 10,
-                    border: '1px solid var(--border-md)', background: 'transparent',
-                    color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
+                  type="button" onClick={() => { setPhase('idle'); setError(null); }} disabled={busy} className="pill pill-quiet"
                 >
                   Cancel
                 </button>
