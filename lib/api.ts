@@ -551,6 +551,11 @@ export async function listParties(kind?: 'customer' | 'supplier'): Promise<Party
   return (data.parties as Party[]) ?? [];
 }
 
+/** Take a contact off the list. Its entries stay in the books (UI/UX audit A24). */
+export async function deleteParty(id: string): Promise<void> {
+  await spineFetch(`/parties/${id}`, { method: 'DELETE' });
+}
+
 /** Merge two duplicate parties — keep one, fold the other in (audit #6). */
 export async function mergeParties(keepId: string, removeId: string): Promise<void> {
   await spineFetch(`/parties/${keepId}/merge/${removeId}`, { method: 'POST' });

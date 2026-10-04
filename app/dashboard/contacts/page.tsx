@@ -6,7 +6,9 @@
  * (AIBOS then remembers the alias so it never splits them again).
  */
 import { useCallback, useEffect, useState } from 'react';
-import { listParties, mergeParties, type Party } from '@/lib/api';
+import { deleteParty, listParties, mergeParties, type Party } from '@/lib/api';
+import { confirmSheet } from '@/lib/confirm';
+import { notify } from '@/lib/toast';
 import { useStore } from '@/lib/store';
 import { fmt } from '@/lib/utils';
 import PageHeader from '@/components/ui/PageHeader';
@@ -49,6 +51,23 @@ export default function ContactsPage() {
 
   const keepName = parties.find((p) => p.id === selected[0])?.name;
   const dropName = parties.find((p) => p.id === selected[1])?.name;
+
+  // A name read from a note or a file that is not a person or business
+  // (UI/UX audit A24). Only the contact goes; its entries stay in the books.
+  async function notCustomer(p: Party) {
+    const ok = await confirmSheet({
+      title: `Take ${p.name} off your contacts?`,
+      body: 'Its sales and payments stay in your books. It comes back only if you record it as a customer or supplier again.',
+      confirmLabel: 'Take it off',
+      cancelLabel: 'Keep it',
+    });
+    if (!ok) return;
+    try {
+      await deleteParty(p.id);
+      setParties((xs) => xs.filter((x) => x.id !== p.id));
+      notify(`${p.name} is off your contacts.`);
+    } catch (e) { setError((e as Error).message); }
+  }
 
   return (
     <>
@@ -93,6 +112,13 @@ export default function ContactsPage() {
                     {p.stats && p.stats.revenue > 0 && <span style={{ color: 'var(--good)' }}>in {fmt(p.stats.revenue, true, sym)}</span>}
                     {p.stats && p.stats.spend > 0 && <span style={{ color: 'var(--text-3)' }}>out {fmt(p.stats.spend, true, sym)}</span>}
                     <span style={{ color: 'var(--text-4)' }}>{p.stats?.txn_count ?? 0}×</span>
+                    {!mergeMode && (
+                      <button type="button" onClick={() => void notCustomer(p)}
+                        aria-label={`${p.name} is not a customer or supplier`}
+                        style={{ padding: '0 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-label)' }}>
+                        Not a contact
+                      </button>
+                    )}
                   </span>
                 </div>
               );
