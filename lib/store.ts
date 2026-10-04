@@ -772,9 +772,16 @@ const _store = create<FinancialState & FinancialActions>()(
             typeof data.customer_intel_brief === "string"
               ? data.customer_intel_brief
               : prev.customerIntelBrief,
-          // products/basket_pairs deliberately NOT hydrated yet — the Product
-          // Matrix page expects the upload flow's normalized keys; verify
-          // parity before feeding it live rows.
+          // Products and pairs come from the same engine2.run_engine2 the upload
+          // flow uses (main.py sends its "products" as productsE2 unchanged), so
+          // the rows match. A sale recorded without an item is filed under
+          // "general" by customer_intel.py; that is not a product, so it is
+          // left out. Live rows only replace upload rows when there are some.
+          productsE2: (() => {
+            const live = asArray<ProductRow>(data.products).filter((p) => String(p.product).toLowerCase() !== 'general');
+            return live.length ? live : prev.productsE2;
+          })(),
+          basketPairs: asArray<BasketPairRow>(data.basket_pairs).length ? asArray<BasketPairRow>(data.basket_pairs) : prev.basketPairs,
           hasEngine2Data: true,
           engineFlags: { ...(prev.engineFlags ?? {}), e1: Boolean(prev.engineFlags?.e1), e2: true, e3: Boolean(prev.engineFlags?.e3) },
           customerIntelSource: 'spine' as const,

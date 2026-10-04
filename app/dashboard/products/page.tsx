@@ -1,5 +1,6 @@
 'use client';
 import { useStore } from '@/lib/store';
+import { useLiveCustomerIntel } from '@/hooks/useLiveCustomerIntel';
 import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
@@ -19,6 +20,8 @@ const BCG: Record<string, { name: string; color: string; border: string; bg: str
 
 export default function ProductsPage() {
   const { productsE2, basketPairs, hasEngine2Data, currencySymbol } = useStore();
+  // Read from recorded sales, not only uploaded files (UI/UX audit A12).
+  useLiveCustomerIntel();
   const sym = currencySymbol || 'K';
 
   const stars        = productsE2.filter(p => p.bcg_class === '⭐ Star');

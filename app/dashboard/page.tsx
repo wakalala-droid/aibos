@@ -9,6 +9,7 @@ import AICFOChat from '@/components/chat/AICFOChat';
 import SimpleHome from '@/components/dashboard/SimpleHome';
 import DecisionsQueue from '@/components/dashboard/DecisionsQueue';
 import TodayBrief from '@/components/dashboard/TodayBrief';
+import { useLiveCustomerIntel } from '@/hooks/useLiveCustomerIntel';
 import MilestoneBanner from '@/components/dashboard/MilestoneBanner';
 import ActivationProgress from '@/components/dashboard/ActivationProgress';
 import { RecommendationList } from '@/components/dashboard/AdvisorPanel';
@@ -54,6 +55,9 @@ function OverviewPage() {
   } = useStore();
   const sym    = currencySymbol || 'K';
   const scores = intelligenceScores;
+  // The customer section reads recorded sales too, not only uploaded files
+  // (UI/UX audit A12): it said "coming soon" beside 15 paying customers.
+  useLiveCustomerIntel();
 
   // Chart data
   const safeMonthly = Array.isArray(monthly) ? monthly : [];
