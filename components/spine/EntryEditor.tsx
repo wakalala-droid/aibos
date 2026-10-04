@@ -105,7 +105,7 @@ export default function EntryEditor({ ev, onDone, onCancel }: { ev: BusinessEven
       {error && <p role="alert" style={{ margin: 0, fontSize: 'var(--fs-body)', color: 'var(--red)' }}>{error}</p>}
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         <button type="submit" disabled={busy}
-          style={{ padding: '0 18px', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1 }}>
+          style={{ padding: '0 18px', borderRadius: 999, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1 }}>
           {busy ? 'Saving…' : 'Save the fix'}
         </button>
         <button type="button" onClick={onCancel} disabled={busy}

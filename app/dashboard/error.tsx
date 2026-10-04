@@ -46,7 +46,7 @@ export default function DashboardError({
             onClick={reset}
             style={{
               padding: '9px 18px', borderRadius: 'var(--radius-md)', border: 'none', cursor: 'pointer',
-              background: 'var(--cyan)', color: 'var(--on-cyan)',
+              background: 'var(--brand-fill)', color: 'var(--on-brand)',
               fontSize: 'var(--fs-body)', fontWeight: 600,
             }}
           >

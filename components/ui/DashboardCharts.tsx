@@ -21,7 +21,7 @@ export function ForecastChart({ data, sym = 'K', height = 240 }: { data: Forecas
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart data={data}>
           <defs>
-            <linearGradient id="mHistG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--cyan)" stopOpacity={0.20} /><stop offset="100%" stopColor="var(--cyan)" stopOpacity={0} /></linearGradient>
+            <linearGradient id="mHistG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--brand-fill)" stopOpacity={0.20} /><stop offset="100%" stopColor="var(--brand-fill)" stopOpacity={0} /></linearGradient>
             <linearGradient id="mForeG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--purple)" stopOpacity={0.22} /><stop offset="100%" stopColor="var(--purple)" stopOpacity={0} /></linearGradient>
           </defs>
           <CartesianGrid stroke="var(--border)" vertical={false} />
@@ -30,12 +30,12 @@ export function ForecastChart({ data, sym = 'K', height = 240 }: { data: Forecas
           <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
           <Area type="monotone" dataKey="upper" stroke="none" fill="rgba(167,139,250,0.07)" dot={false} name="Upper" connectNulls />
           <Area type="monotone" dataKey="lower" stroke="none" fill="var(--bg-page)" dot={false} name="Lower" connectNulls />
-          <Area type="monotone" dataKey="hist" stroke="var(--cyan)" strokeWidth={2.2} fill="url(#mHistG)" dot={{ r: 3.5, fill: 'var(--cyan)', strokeWidth: 0 }} connectNulls name="Historical" />
+          <Area type="monotone" dataKey="hist" stroke="var(--chart-line)" strokeWidth={2.2} fill="url(#mHistG)" dot={{ r: 3.5, fill: 'var(--chart-line)', strokeWidth: 0 }} connectNulls name="Historical" />
           <Area type="monotone" dataKey="fcast" stroke="var(--purple)" strokeWidth={2} strokeDasharray="6 4" fill="url(#mForeG)" dot={{ r: 4, fill: 'var(--purple)', strokeWidth: 0 }} connectNulls name="Forecast" />
         </AreaChart>
       </ResponsiveContainer>
       <div style={{ display: 'flex', gap: 20, marginTop: 14 }}>
-        {[{ c: 'var(--cyan)', l: 'Historical', d: false }, { c: 'var(--purple)', l: 'Forecast', d: true }].map((it) => (
+        {[{ c: 'var(--chart-line)', l: 'Historical', d: false }, { c: 'var(--purple)', l: 'Forecast', d: true }].map((it) => (
           <div key={it.l} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <svg width="24" height="4">{it.d ? <line x1="0" y1="2" x2="24" y2="2" stroke={it.c} strokeWidth="2" strokeDasharray="5 3" /> : <line x1="0" y1="2" x2="24" y2="2" stroke={it.c} strokeWidth="2.2" />}</svg>
             <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>{it.l}</span>
@@ -52,12 +52,12 @@ export function CashProjectionChart({ data, sym = 'K', height = 210 }: { data: C
   return (
     <ResponsiveContainer width="100%" height={height}>
       <AreaChart data={data}>
-        <defs><linearGradient id="mCashGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--cyan)" stopOpacity={0.22} /><stop offset="100%" stopColor="var(--cyan)" stopOpacity={0} /></linearGradient></defs>
+        <defs><linearGradient id="mCashGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--brand-fill)" stopOpacity={0.22} /><stop offset="100%" stopColor="var(--brand-fill)" stopOpacity={0} /></linearGradient></defs>
         <CartesianGrid stroke="var(--border)" vertical={false} />
         <XAxis minTickGap={16} dataKey="label" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
         <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
         <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
-        <Area type="monotone" dataKey="cash" stroke="var(--cyan)" strokeWidth={2} fill="url(#mCashGrad)" dot={false} name="Cash Position" />
+        <Area type="monotone" dataKey="cash" stroke="var(--chart-line)" strokeWidth={2} fill="url(#mCashGrad)" dot={false} name="Cash Position" />
         <ReferenceLine y={0} stroke="var(--crit)" strokeDasharray="4 4" strokeWidth={1} />
       </AreaChart>
     </ResponsiveContainer>
@@ -75,7 +75,7 @@ export function RunwayBar({ runway, target = 18 }: { runway: number; target?: nu
           <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>Cash Runway Status</p>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>{runway}mo remaining · {runway < target ? `below your ${target}-month target` : `above your ${target}-mo target`}</p>
         </div>
-        <span style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color }}>{runway}mo <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontWeight: 400 }}>/ {target}mo</span></span>
+        <span style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color }}>{runway}mo <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontWeight: 400 }}>/ {target}mo</span></span>
       </div>
       <div style={{ position: 'relative', height: 8, borderRadius: 'var(--radius-md)', background: 'var(--border)', overflow: 'hidden', marginBottom: 10 }}>
         <motion.div style={{ height: '100%', background: color, borderRadius: 'var(--radius-md)' }} initial={false} animate={{ width: `${pct}%` }} transition={{ duration: 1.2, ease: 'easeOut' }} />
@@ -103,10 +103,10 @@ export function AnomalyZChart({ data, height = 200 }: { data: ZRow[]; height?: n
           <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
           <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: 'Critical (2.0)', fill: 'var(--crit)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
           <ReferenceLine y={1.5} stroke="var(--warn)" strokeDasharray="4 3" strokeWidth={1} label={{ value: 'Warning (1.5)', fill: 'var(--warn)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
-          <Bar dataKey="revZ" name="Revenue Z" radius={[3, 3, 0, 0]}>
-            {data.map((e, i) => <Cell key={i} fill={e.revZ > 2 ? 'var(--crit)' : e.revZ > 1.5 ? 'var(--warn)' : 'var(--cyan)'} fillOpacity={0.8} />)}
+          <Bar dataKey="revZ" name="Revenue Z" radius={[6, 6, 0, 0]}>
+            {data.map((e, i) => <Cell key={i} fill={e.revZ > 2 ? 'var(--crit)' : e.revZ > 1.5 ? 'var(--warn)' : 'var(--chart-line)'} fillOpacity={0.8} />)}
           </Bar>
-          <Bar dataKey="costZ" name="Cost Z" radius={[3, 3, 0, 0]}>
+          <Bar dataKey="costZ" name="Cost Z" radius={[6, 6, 0, 0]}>
             {data.map((e, i) => <Cell key={i} fill={e.costZ > 2 ? 'var(--crit)' : e.costZ > 1.5 ? 'var(--warn)' : 'var(--e2)'} fillOpacity={0.7} />)}
           </Bar>
         </BarChart>

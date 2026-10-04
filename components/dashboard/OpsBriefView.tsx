@@ -48,13 +48,13 @@ export default function OpsBriefView() {
         <div className="grid-engines" style={{ marginBottom: 24 }}>
           {/* Overall hero */}
           <div className="kpi-card" style={{ minWidth: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 24px' }}>
-            <p style={{ fontSize: '3rem', fontWeight: 900, color: scoreColor(scores.overall_score), letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+            <p style={{ fontSize: '3rem', fontWeight: 600, color: scoreColor(scores.overall_score), letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
               {scores.overall_score}
             </p>
-            <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--cyan)', margin: '5px 0 0', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', margin: '5px 0 0' }}>
               {scores.overall_label}
             </p>
-            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '2px 0 0' }}>OVERALL</p>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '2px 0 0' }}>Overall</p>
           </div>
           {/* An engine with no data behind it scored 0 and was printed as a big
               bold zero in the same type as a real score. "Operations 0" is a
@@ -68,7 +68,7 @@ export default function OpsBriefView() {
               <p className="kpi-label" style={{ color: item.c }}>{item.l}</p>
               {item.measured ? (
                 <>
-                  <p style={{ fontSize: 'var(--fs-display)', fontWeight: 800, color: scoreColor(item.s), margin: '8px 0 10px', letterSpacing: '-0.03em' }}>{item.s}</p>
+                  <p style={{ fontSize: 'var(--fs-display)', fontWeight: 600, color: scoreColor(item.s), margin: '8px 0 10px', letterSpacing: '-0.03em' }}>{item.s}</p>
                   <div className="progress-track">
                     <motion.div className="progress-fill" style={{ background: scoreColor(item.s) }} initial={false} animate={{ width: `${item.s}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
                   </div>

@@ -200,10 +200,14 @@ export default function DecisionsQueue() {
             </h2>
             {critCount > 0 && (
               <span style={{
-                fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
-                color: 'var(--crit)', background: 'var(--red-dim)',
+                fontSize: 'var(--fs-label)',
+                fontWeight: 700,
+                color: 'var(--crit)',
+                background: 'var(--red-dim)',
                 border: '1px solid color-mix(in srgb, var(--crit) 30%, transparent)',
-                padding: '3px 9px', borderRadius: 999, whiteSpace: 'nowrap',
+                padding: '3px 9px',
+                borderRadius: 999,
+                whiteSpace: 'nowrap',
               }}>
                 {critCount} critical
               </span>
@@ -233,7 +237,7 @@ export default function DecisionsQueue() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
                         {d.headline}
-                        <span style={{ marginLeft: 8, fontSize: 'var(--fs-caps)', fontWeight: 700, color: sev, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        <span style={{ marginLeft: 8, fontSize: 'var(--fs-label)', fontWeight: 700, color: sev }}>
                           {SEV_WORD[d.severity]}
                         </span>
                       </p>

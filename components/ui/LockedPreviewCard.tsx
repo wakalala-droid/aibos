@@ -90,7 +90,7 @@ export default function LockedPreviewCard({
   if (state === 'error') {
     return (
       <CardFrame colour="var(--crit)" delay={delay}>
-        <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--crit)', margin: '0 0 8px' }}>
+        <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--crit)', margin: '0 0 8px' }}>
           {title}
         </p>
         <div role="alert" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -110,7 +110,7 @@ export default function LockedPreviewCard({
   if (state === 'empty') {
     return (
       <CardFrame colour={colour} delay={delay}>
-        <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: colour, margin: '0 0 8px' }}>
+        <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: colour, margin: '0 0 8px' }}>
           {title}
         </p>
         <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', lineHeight: 1.55, margin: 0 }}>
@@ -127,7 +127,7 @@ export default function LockedPreviewCard({
     <CardFrame colour={colour} delay={delay}>
       {/* Header: capability + plan badge */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
-        <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: colour, margin: 0 }}>
+        <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: colour, margin: 0 }}>
           {title}
         </p>
         <span style={{

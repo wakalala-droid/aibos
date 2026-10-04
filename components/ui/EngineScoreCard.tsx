@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { scoreColor } from '@/lib/utils';
 import BorderGlow from './BorderGlow';
 import { bloomProps } from '@/lib/cometStyle';
+import { sentenceCase } from './KPICard';
 
 const CURSOR_GLOW = '190 95 62';
 const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
@@ -33,7 +34,7 @@ export default function EngineScoreCard({
         <div
           className="kpi-card glow-inner"
           data-ai-explain={explainId}
-          data-ai-label={explainId ? label : undefined}
+          data-ai-label={explainId ? sentenceCase(label) : undefined}
           data-ai-value={explainId && !blank ? String(score) : undefined}
           title={explainId ? 'Hold (long-press) to have AIBOS explain this score' : undefined}
           style={{ ...bloom.style, opacity: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer' }}
@@ -41,11 +42,14 @@ export default function EngineScoreCard({
           {/* Bento dot texture — faint grid that lights up on hover (dashboard only) */}
           <span className="bento-tex" aria-hidden="true" />
 
-          <p className="kpi-label" style={{ color: colour }}>{label}</p>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '2px 0 10px' }}>
+          <p className="kpi-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span aria-hidden="true" style={{ width: 10, height: 10, borderRadius: 999, background: colour, flexShrink: 0 }} />
+            {sentenceCase(label)}
+          </p>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 12px' }}>
             {sub}
           </p>
-          <p style={{ fontSize: 'var(--fs-display)', fontWeight: 800, color: blank ? 'var(--text-4)' : col, letterSpacing: '-0.04em', margin: '0 0 10px' }}>
+          <p className="money money-lg" style={{ color: blank ? 'var(--text-4)' : col, margin: '0 0 12px', display: 'block' }}>
             {blank ? 'Not yet' : score}
           </p>
           <div className="progress-track">

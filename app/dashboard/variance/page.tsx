@@ -151,8 +151,8 @@ export default function VariancePage() {
               <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
-              <Bar dataKey="Revenue" fill="var(--cyan)"  fillOpacity={0.75} radius={[4,4,0,0]} name="Revenue" />
-              <Bar dataKey="Costs"   fill="var(--e2)"    fillOpacity={0.75} radius={[4,4,0,0]} name="Costs"   />
+              <Bar dataKey="Revenue" fill="var(--chart-line)"  fillOpacity={0.75} radius={[6, 6, 0, 0]} name="Revenue" />
+              <Bar dataKey="Costs"   fill="var(--e2)"    fillOpacity={0.75} radius={[6, 6, 0, 0]} name="Costs"   />
             </BarChart>
           </ResponsiveContainer>
         </SectionCard>
@@ -168,12 +168,12 @@ export default function VariancePage() {
               <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={v => `${v.toFixed(0)}%`} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <ReferenceLine y={0} stroke="var(--border-md)" strokeWidth={1} />
-              <Bar dataKey="RevChange"  name="Revenue Δ" radius={[3,3,0,0]}>
+              <Bar dataKey="RevChange"  name="Revenue Δ" radius={[6, 6, 0, 0]}>
                 {chartData.slice(1).map((entry, i) => (
                   <Cell key={i} fill={entry.RevChange >= 0 ? 'var(--good)' : 'var(--crit)'} fillOpacity={0.8} />
                 ))}
               </Bar>
-              <Bar dataKey="CostChange" name="Cost Δ" radius={[3,3,0,0]}>
+              <Bar dataKey="CostChange" name="Cost Δ" radius={[6, 6, 0, 0]}>
                 {chartData.slice(1).map((entry, i) => (
                   <Cell key={i} fill={entry.CostChange <= 5 ? 'var(--blue)' : 'var(--warn)'} fillOpacity={0.7} />
                 ))}

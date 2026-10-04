@@ -167,7 +167,7 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
           display: 'inline-flex', alignItems: 'center', gap: 6,
         }}
       >
-        <span aria-hidden="true" style={{ ...geist, fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)' }}>{sym}</span>
+        <span aria-hidden="true" style={{ ...geist, fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{sym}</span>
         {active && (
           <span aria-hidden="true" style={{ ...geist, fontSize: 'var(--fs-label)', fontWeight: 600, letterSpacing: '0.06em', color: 'var(--text-4)' }}>
             {active.code}
@@ -192,7 +192,7 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
             }}
           >
             <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border)' }}>
-              <p style={{ ...geist, fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 2px' }}>
+              <p style={{ ...geist, fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
                 Currency format
               </p>
               <p style={{ ...geist, fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>

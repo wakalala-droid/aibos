@@ -414,7 +414,7 @@ export default function EmployeesPage() {
                     <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.nhima_employee)}</td>
                     <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.paye)}</td>
                     <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.loan_deduction)}</td>
-                    <td style={{ ...td, fontWeight: 800, color: 'var(--text-1)' }}>{money(preview.totals.net)}</td>
+                    <td style={{ ...td, fontWeight: 600, color: 'var(--text-1)' }}>{money(preview.totals.net)}</td>
                     {periodRun && <td style={td} />}
                   </tr>
                 </tfoot>

@@ -70,7 +70,7 @@ export default function ProductsPage() {
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: cfg.color, opacity: 0.6 }} />
               <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 3px' }}>{cfg.name}</p>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 14px', lineHeight: 1.4 }}>{cfg.desc}</p>
-              <p style={{ fontSize: 'var(--fs-h1)', fontWeight: 800, color: cfg.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{items.length}</p>
+              <p style={{ fontSize: 'var(--fs-h1)', fontWeight: 600, color: cfg.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{items.length}</p>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 12px' }}>products</p>
               {items.slice(0, 3).map(p => (
                 <div key={p.product} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderTop: '1px solid var(--border)' }}>

@@ -27,7 +27,7 @@ export default function DemoPage() {
           <strong>This is a sample business: {DEMO_BUSINESS}.</strong> Not your data. It shows what your dashboard looks like after a few months of recording.
         </span>
         <button type="button" onClick={() => router.push('/dashboard/record')} className="touch-target"
-          style={{ flexShrink: 0, padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
+          style={{ flexShrink: 0, padding: '9px 16px', minHeight: 44, borderRadius: 999, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: 'pointer' }}>
           Replace with my numbers
         </button>
       </div>

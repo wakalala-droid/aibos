@@ -85,7 +85,7 @@ export default function BudgetCard() {
             </div>
           ))}
           <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-            <button type="button" onClick={() => void save()} disabled={busy} style={{ ...btn, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)' }}>{busy ? 'Saving…' : 'Save plan'}</button>
+            <button type="button" onClick={() => void save()} disabled={busy} style={{ ...btn, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)' }}>{busy ? 'Saving…' : 'Save plan'}</button>
             <button type="button" onClick={() => { setEditing(false); void load(); }} style={{ ...btn, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)' }}>Cancel</button>
           </div>
         </div>

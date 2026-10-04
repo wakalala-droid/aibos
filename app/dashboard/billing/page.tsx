@@ -53,15 +53,6 @@ const day = (iso?: string | null) => {
 /** The receipt number, as the API prints it on the receipt (billing.receipt_number). */
 const receiptNumber = (id: string) => `AIBOS-${id.replace(/[^a-z0-9]/gi, '').toUpperCase().slice(0, 9)}`;
 
-const button: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-  padding: '10px 18px', minHeight: 44, borderRadius: 'var(--radius-md)', border: 'none',
-  background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700,
-  textDecoration: 'none', cursor: 'pointer',
-};
-const quiet: React.CSSProperties = {
-  ...button, background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)',
-};
 
 export default function BillingPage() {
   const [data, setData] = useState<MyBilling | null>(null);
@@ -237,7 +228,7 @@ export default function BillingPage() {
                       {cardBusy === 'keep' ? 'Keeping it…' : `Keep ${data.plan_name}`}
                     </button>
                   ) : (
-                    <Link href="/pricing" style={card.status === 'past_due' ? quiet : button}>Change plan</Link>
+                    <Link href="/pricing" className={card.status === 'past_due' ? 'pill pill-quiet' : 'pill pill-primary'}>Change plan</Link>
                   )}
                   {data.card_manageable && card.status !== 'past_due' && (
                     <button type="button" onClick={() => void cardAction('portal')} disabled={cardBusy !== null} className="pill pill-quiet">
@@ -334,7 +325,7 @@ function Fact({ label, value }: { label: string; value: string }) {
   if (!value) return null;
   return (
     <div style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-badge)' }}>
-      <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+      <div style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-4)' }}>{label}</div>
       <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', marginTop: 2 }}>{value}</div>
     </div>
   );

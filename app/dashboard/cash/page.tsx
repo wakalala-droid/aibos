@@ -179,7 +179,7 @@ export default function CashPage() {
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
           label="CASH POSITION" value={fmt(currentCash, false, sym)} sub="current balance"
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="var(--cyan)" strokeWidth="1.5" fill="none"/><path d="M2 10h20" stroke="var(--cyan)" strokeWidth="1.3" strokeLinecap="round"/><circle cx="8" cy="15" r="1.5" fill="var(--cyan)"/></svg>}
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="var(--chart-line)" strokeWidth="1.5" fill="none"/><path d="M2 10h20" stroke="var(--chart-line)" strokeWidth="1.3" strokeLinecap="round"/><circle cx="8" cy="15" r="1.5" fill="var(--chart-line)"/></svg>}
           iconBg="rgba(0,212,255,0.12)"
           sparkData={cashSpark.length > 1 ? cashSpark.slice(-6) : undefined}
           sparkColor="var(--cyan)" delay={0}
@@ -226,7 +226,7 @@ export default function CashPage() {
                 : `${runway}mo remaining · ${runway < runwayTarget ? `below your ${runwayTarget}-month target` : `above your ${runwayTarget}-month target`}`}
             </p>
           </div>
-          <span style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: runwayColor }}>
+          <span style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color: runwayColor }}>
             {notShrinking ? 'Safe' : <>{runway}mo <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', fontWeight: 400 }}>/ {runwayTarget}mo</span></>}
           </span>
         </div>
@@ -255,15 +255,15 @@ export default function CashPage() {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--cyan)" stopOpacity={0.22} />
-                  <stop offset="100%" stopColor="var(--cyan)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="var(--brand-fill)" stopOpacity={0.22} />
+                  <stop offset="100%" stopColor="var(--brand-fill)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis minTickGap={16} dataKey="label" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
-              <Area type="monotone" dataKey="cash" stroke="var(--cyan)" strokeWidth={2} fill="url(#cashGrad)" dot={false} name="Cash Position" />
+              <Area type="monotone" dataKey="cash" stroke="var(--chart-line)" strokeWidth={2} fill="url(#cashGrad)" dot={false} name="Cash Position" />
               <ReferenceLine y={0} stroke="var(--crit)" strokeDasharray="4 4" strokeWidth={1} />
             </AreaChart>
           </ResponsiveContainer>

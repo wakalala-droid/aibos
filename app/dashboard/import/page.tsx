@@ -38,8 +38,11 @@ const noteBox: React.CSSProperties = {
   fontSize: 'var(--fs-body)', lineHeight: 1.5,
 };
 const label: React.CSSProperties = {
-  fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
-  textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block',
+  fontSize: 'var(--fs-label)',
+  fontWeight: 600,
+  color: 'var(--text-3)',
+  marginBottom: 6,
+  display: 'block',
 };
 
 /** "Mary Banda's wages" reads better than "wages: 6". */
@@ -461,7 +464,7 @@ export default function ImportPage() {
               {result.workers_not_on_register.join(', ')}. Add them under Employees so their
               pay, NAPSA and PAYE are worked out properly from now on.
               <div style={{ marginTop: 10 }}>
-                <a href="/dashboard/payroll" className="pill pill-primary" style={{ background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                <a href="/dashboard/payroll" className="pill pill-primary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
                   Add them now →
                 </a>
               </div>
@@ -474,7 +477,7 @@ export default function ImportPage() {
               {result.products_not_on_list.join(', ')}. Add them under Products so stock
               moves when you buy and sell them.
               <div style={{ marginTop: 10 }}>
-                <a href="/dashboard/products" className="pill pill-primary" style={{ background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                <a href="/dashboard/products" className="pill pill-primary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
                   Add them now →
                 </a>
               </div>
@@ -503,7 +506,7 @@ export default function ImportPage() {
               : 'Your books have been updated. The charts could not be rebuilt from this file, so they still show what was there before.'}
           </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <a href="/dashboard" className="pill pill-primary" style={{ background: 'var(--cyan)', color: 'var(--on-cyan)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+            <a href="/dashboard" className="pill pill-primary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
               See the dashboard →
             </a>
             <a href="/dashboard/timeline" className="pill pill-quiet" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>

@@ -90,7 +90,7 @@ export default function QrScanner({ onResult, onClose }: { onResult: (text: stri
               {!cameraOn && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <button type="button" onClick={startCamera} className="touch-target"
-                    style={{ padding: '12px 22px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer' }}>
+                    style={{ padding: '12px 22px', minHeight: 48, borderRadius: 999, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer' }}>
                     Start camera
                   </button>
                 </div>
@@ -109,7 +109,7 @@ export default function QrScanner({ onResult, onClose }: { onResult: (text: stri
               placeholder="Paste the decoded QR text / URL here"
               style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', color: 'var(--text-1)', fontSize: 'var(--fs-data)', outline: 'none', resize: 'vertical' }} />
             <button type="button" onClick={() => paste.trim() && onResult(paste.trim())} disabled={!paste.trim()} className="touch-target"
-              style={{ marginTop: 10, width: '100%', padding: '12px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: paste.trim() ? 'pointer' : 'default', opacity: paste.trim() ? 1 : 0.5 }}>
+              style={{ marginTop: 10, width: '100%', padding: '12px', minHeight: 48, borderRadius: 999, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: paste.trim() ? 'pointer' : 'default', opacity: paste.trim() ? 1 : 0.5 }}>
               Use this code
             </button>
           </div>

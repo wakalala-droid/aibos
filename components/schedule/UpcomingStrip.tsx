@@ -53,7 +53,7 @@ export default function UpcomingStrip() {
         border: `1px solid ${overdue ? 'color-mix(in srgb, var(--amber) 45%, transparent)' : 'var(--border)'}`,
         background: 'var(--bg-badge)',
       }}>
-        <span style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-4)', flexShrink: 0 }}>
+        <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-4)', flexShrink: 0 }}>
           Coming up
         </span>
         {overdue > 0 && (

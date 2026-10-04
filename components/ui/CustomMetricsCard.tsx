@@ -94,11 +94,11 @@ export default function CustomMetricsCard() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
           {results.map((m) => (
             <div key={m.name} style={{ padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border)' }}>
-              <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.4 }}>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px', lineHeight: 1.4 }}>
                 {m.name}
               </p>
               {m.ok ? (
-                <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--cyan)', margin: 0, letterSpacing: '-0.03em' }}>
+                <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color: 'var(--cyan)', margin: 0, letterSpacing: '-0.03em' }}>
                   {typeof m.value === 'number' ? m.value.toLocaleString(undefined, { maximumFractionDigits: 2 }) : 'None'}
                 </p>
               ) : (
@@ -107,7 +107,7 @@ export default function CustomMetricsCard() {
                 </p>
               )}
               {m.status && (
-                <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: m.status === 'stable' ? 'var(--good)' : 'var(--cyan)', margin: '6px 0 0' }}>
+                <p style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: m.status === 'stable' ? 'var(--good)' : 'var(--cyan)', margin: '6px 0 0' }}>
                   {m.status === 'stable' ? 'stable' : 'monitoring'}
                 </p>
               )}

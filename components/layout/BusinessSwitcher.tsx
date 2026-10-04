@@ -116,7 +116,7 @@ export default function BusinessSwitcher() {
             className="dash-pop" style={{ width: 'min(280px, 92vw)', right: 0 }}>
             {showWorkspaces && (
               <>
-                <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Whose books</div>
+                <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Whose books</div>
                 {workspaces.map((w) => (
                   <button key={w.acting_as} type="button" role="menuitem" onClick={() => !w.current && openWorkspace(w)}
                     aria-current={w.current || undefined}
@@ -131,7 +131,7 @@ export default function BusinessSwitcher() {
               </>
             )}
             {showBusinesses && (<>
-            <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', borderTop: showWorkspaces ? '1px solid var(--border)' : undefined, fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Your businesses</div>
+            <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', borderTop: showWorkspaces ? '1px solid var(--border)' : undefined, fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Your businesses</div>
             <div style={{ maxHeight: 260, overflowY: 'auto' }}>
               {businesses.map((b) => (
                 <button key={b.id} type="button" role="menuitem" onClick={() => b.id !== active?.id && switchTo(b.id)}

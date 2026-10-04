@@ -170,7 +170,7 @@ export default function ForecastPage() {
 
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="NEXT MONTH FORECAST" value={fmt(firstFcast, false, sym)} sub="vs prior period" growth={growthPct}
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12l4-4 4 4 4-6 4 4" stroke="var(--cyan)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12l4-4 4 4 4-6 4 4" stroke="var(--chart-line)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
           iconBg="rgba(0,212,255,0.12)" sparkColor="var(--cyan)" delay={0} />
         <KPICard label="3-MONTH TOTAL" value={fmt(threeTotal, true, sym)} sub="combined 3-month forecast"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="var(--blue)" strokeWidth="1.5" fill="none"/><path d="M16 2v4M8 2v4M3 10h18" stroke="var(--blue)" strokeWidth="1.4" strokeLinecap="round"/></svg>}
@@ -222,8 +222,8 @@ export default function ForecastPage() {
             <AreaChart data={chart}>
               <defs>
                 <linearGradient id="histG" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--cyan)"   stopOpacity={0.20} />
-                  <stop offset="100%" stopColor="var(--cyan)" stopOpacity={0}    />
+                  <stop offset="0%" stopColor="var(--brand-fill)"   stopOpacity={0.20} />
+                  <stop offset="100%" stopColor="var(--brand-fill)" stopOpacity={0}    />
                 </linearGradient>
                 <linearGradient id="foreG" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="var(--purple)"   stopOpacity={0.22} />
@@ -237,12 +237,12 @@ export default function ForecastPage() {
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
               <Area type="monotone" dataKey="upper" stroke="none" fill="rgba(167,139,250,0.07)" dot={false} legendType="none" name="Upper" connectNulls />
               <Area type="monotone" dataKey="lower" stroke="none" fill="var(--bg-page)"          dot={false} legendType="none" name="Lower" connectNulls />
-              <Area type="monotone" dataKey="hist"  stroke="var(--cyan)"   strokeWidth={2.2} fill="url(#histG)" dot={{ r: 3.5, fill: 'var(--cyan)',   strokeWidth: 0 }} connectNulls name="Historical" />
+              <Area type="monotone" dataKey="hist"  stroke="var(--chart-line)"   strokeWidth={2.2} fill="url(#histG)" dot={{ r: 3.5, fill: 'var(--chart-line)',   strokeWidth: 0 }} connectNulls name="Historical" />
               <Area type="monotone" dataKey="fcast" stroke="var(--purple)" strokeWidth={2} strokeDasharray="6 4" fill="url(#foreG)" dot={{ r: 4, fill: 'var(--purple)', strokeWidth: 0 }} connectNulls name="Forecast" />
             </AreaChart>
           </ResponsiveContainer>
           <div style={{ display: 'flex', gap: 20, marginTop: 14 }}>
-            {[{ color: 'var(--cyan)', label: 'Historical', dashed: false }, { color: 'var(--purple)', label: 'Forecast', dashed: true }].map(item => (
+            {[{ color: 'var(--chart-line)', label: 'Historical', dashed: false }, { color: 'var(--purple)', label: 'Forecast', dashed: true }].map(item => (
               <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <svg width="24" height="4">
                   {item.dashed

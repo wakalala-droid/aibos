@@ -146,12 +146,12 @@ export default function AnomalyPage() {
                 label={{ value: 'Critical (2.0)', fill: 'var(--crit)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
               <ReferenceLine y={1.5} stroke="var(--warn)" strokeDasharray="4 3" strokeWidth={1}
                 label={{ value: 'Warning (1.5)', fill: 'var(--warn)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
-              <Bar dataKey="revZ" name="Revenue Z" radius={[3,3,0,0]}>
+              <Bar dataKey="revZ" name="Revenue Z" radius={[6, 6, 0, 0]}>
                 {scatterData.map((entry, i) => (
-                  <Cell key={i} fill={entry.revZ > 2 ? 'var(--crit)' : entry.revZ > 1.5 ? 'var(--warn)' : 'var(--cyan)'} fillOpacity={0.8} />
+                  <Cell key={i} fill={entry.revZ > 2 ? 'var(--crit)' : entry.revZ > 1.5 ? 'var(--warn)' : 'var(--chart-line)'} fillOpacity={0.8} />
                 ))}
               </Bar>
-              <Bar dataKey="costZ" name="Cost Z" radius={[3,3,0,0]}>
+              <Bar dataKey="costZ" name="Cost Z" radius={[6, 6, 0, 0]}>
                 {scatterData.map((entry, i) => (
                   <Cell key={i} fill={entry.costZ > 2 ? 'var(--crit)' : entry.costZ > 1.5 ? 'var(--warn)' : 'var(--e2)'} fillOpacity={0.7} />
                 ))}
@@ -159,7 +159,7 @@ export default function AnomalyPage() {
             </BarChart>
           </ResponsiveContainer>
           <div style={{ display: 'flex', gap: 16, marginTop: 10 }}>
-            {[['var(--cyan)', 'Revenue Z-score'], ['var(--e2)', 'Cost Z-score']].map(([c, l]) => (
+            {[['var(--chart-line)', 'Revenue Z-score'], ['var(--e2)', 'Cost Z-score']].map(([c, l]) => (
               <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <div style={{ width: 10, height: 10, borderRadius: 3, background: c as string, opacity: 0.8 }} />
                 <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>{l}</span>

@@ -103,8 +103,10 @@ export default function QuestionFlow({
       {/* The question */}
       <div style={card}>
         <p style={{
-          margin: '0 0 6px', fontSize: 'var(--fs-caps)', fontWeight: 700,
-          color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em',
+          margin: '0 0 6px',
+          fontSize: 'var(--fs-label)',
+          fontWeight: 700,
+          color: 'var(--text-3)',
         }}>
           {TITLES[q.type] ?? 'Needs your answer'}
         </p>

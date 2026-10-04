@@ -26,11 +26,13 @@ export default function GrowthJourney() {
                 opacity: current ? 1 : reached ? 0.7 : 1,
               }} />
               <div style={{
-                marginTop: 6, fontSize: 'var(--fs-caps)',
+                marginTop: 6,
+                fontSize: 'var(--fs-label)',
                 fontWeight: current ? 700 : 500,
                 color: current ? 'var(--cyan)' : reached ? 'var(--text-2)' : 'var(--text-4)',
-                textTransform: 'uppercase', letterSpacing: '0.04em',
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}>
                 {s.title}
               </div>
@@ -56,7 +58,7 @@ export default function GrowthJourney() {
       {p.next && (
         <div style={{ marginTop: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
               Toward {p.next.title}
             </span>
             <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>

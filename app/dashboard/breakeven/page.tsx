@@ -85,7 +85,7 @@ export default function BreakevenPage() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center', padding: '40px 16px' }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M3 12h18M12 3v18" stroke="var(--text-4)" strokeWidth="1.5" strokeLinecap="round" opacity=".4" />
-              <path d="M5 19L19 5" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4" />
+              <path d="M5 19L19 5" stroke="var(--chart-line)" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4" />
             </svg>
             <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>
               {figuresLoading ? 'Loading your figures…' : 'No revenue or cost data yet'}
@@ -102,7 +102,7 @@ export default function BreakevenPage() {
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard label="BREAKEVEN REVENUE" value={fmt(bepRevenue, false, sym)} sub="monthly target"
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M12 3v18" stroke="var(--cyan)" strokeWidth="1.5" strokeLinecap="round" opacity=".4"/><path d="M5 19L19 5" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round"/></svg>}
+          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M12 3v18" stroke="var(--chart-line)" strokeWidth="1.5" strokeLinecap="round" opacity=".4"/><path d="M5 19L19 5" stroke="var(--chart-line)" strokeWidth="2" strokeLinecap="round"/></svg>}
           iconBg="rgba(0,212,255,0.12)" sparkColor="var(--cyan)" delay={0} />
         <KPICard label="CURRENT REVENUE" value={fmt(currentRevenue, false, sym)} sub="monthly average"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
@@ -119,7 +119,7 @@ export default function BreakevenPage() {
       <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         style={{ background: 'var(--bg-card)', border: `1px solid ${statusColor}`, borderRadius: 'var(--radius-md)', padding: '18px 22px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: 'var(--shadow-card)' }}>
         <div>
-          <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Breakeven Status</p>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px' }}>Breakeven Status</p>
           <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: statusColor, margin: 0 }}>
             {status === 'safe' ? `${fmt(gap, false, sym)} above breakeven` : status === 'warning' ? `Only ${fmt(gap, false, sym)} above breakeven (tight margin` : `${fmt(Math.abs(gap), false, sym)} below breakeven) revenue required`}
           </p>
@@ -139,9 +139,9 @@ export default function BreakevenPage() {
               <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="FixedCosts"  stackId="a" fill="var(--warn)"    fillOpacity={0.6} name="Fixed Costs"    radius={[0,0,0,0]} />
-              <Bar dataKey="VarCosts"    stackId="a" fill="var(--purple)"  fillOpacity={0.6} name="Variable Costs" radius={[4,4,0,0]} />
+              <Bar dataKey="VarCosts"    stackId="a" fill="var(--purple)"  fillOpacity={0.6} name="Variable Costs" radius={[6, 6, 0, 0]} />
               <Line type="monotone" dataKey="Revenue"   stroke="var(--good)" strokeWidth={2.2} dot={{ r: 4, fill: 'var(--good)', strokeWidth: 0 }} name="Revenue" />
-              <ReferenceLine y={bepRevenue} stroke="var(--cyan)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: `Break-even: ${fmt(bepRevenue, true, sym)}`, fill: 'var(--cyan)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
+              <ReferenceLine y={bepRevenue} stroke="var(--chart-line)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: `Break-even: ${fmt(bepRevenue, true, sym)}`, fill: 'var(--chart-line)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
             </ComposedChart>
           </ResponsiveContainer>
         </SectionCard>
@@ -155,8 +155,8 @@ export default function BreakevenPage() {
             { label: 'Variable Costs', value: variableCosts, pct: (1 - fixedCostPct) * 100,  color: 'var(--purple)', desc: 'COGS, commissions, packaging: scale with revenue' },
           ].map(item => (
             <div key={item.label} style={{ background: 'var(--bg-badge)', borderRadius: 10, padding: '16px 18px', border: '1px solid var(--border)' }}>
-              <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>{item.label}</p>
-              <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: item.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{fmt(item.value, false, sym)}</p>
+              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px' }}>{item.label}</p>
+              <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color: item.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{fmt(item.value, false, sym)}</p>
               <div className="progress-track" style={{ marginBottom: 6 }}>
                 <motion.div className="progress-fill" style={{ background: item.color }} initial={false} animate={{ width: `${item.pct}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
               </div>

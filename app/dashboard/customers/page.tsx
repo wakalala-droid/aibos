@@ -30,8 +30,8 @@ function RetentionRing({ rate }: { rate: number }) {
           style={{ transform: 'rotate(-90deg)', transformOrigin: '55px 55px' }} />
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 'var(--fs-h3)', fontWeight: 800, color: 'var(--e2)' }}>{rate.toFixed(0)}%</span>
-        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', letterSpacing: '0.08em' }}>RETENTION</span>
+        <span style={{ fontSize: 'var(--fs-h3)', fontWeight: 600, color: 'var(--e2)' }}>{rate.toFixed(0)}%</span>
+        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Coming back</span>
       </div>
     </div>
   );
@@ -163,12 +163,12 @@ export default function CustomersPage() {
             <RetentionRing rate={retRate} />
             <div>
               <div style={{ marginBottom: 12 }}>
-                <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>Returning</p>
-                <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--good)', margin: 0 }}>{retention?.returning_customers ?? 0}</p>
+                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 3px' }}>Returning</p>
+                <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color: 'var(--good)', margin: 0 }}>{retention?.returning_customers ?? 0}</p>
               </div>
               <div>
-                <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>First-time</p>
-                <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--blue)', margin: 0 }}>{total - (retention?.returning_customers ?? 0)}</p>
+                <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 3px' }}>First-time</p>
+                <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color: 'var(--blue)', margin: 0 }}>{total - (retention?.returning_customers ?? 0)}</p>
               </div>
             </div>
           </div>

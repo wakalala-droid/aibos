@@ -204,7 +204,7 @@ export default function InvoicesPage() {
           {STATUS_WORD[i.status]}
         </span>
       ) },
-    { key: 'actions', label: '', sortValue: () => 0,
+    { key: 'actions', label: '',
       render: i => {
         const busy = busyId === i.id;
         return (

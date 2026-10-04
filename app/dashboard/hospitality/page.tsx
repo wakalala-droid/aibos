@@ -537,7 +537,7 @@ export default function HospitalityPage() {
                     const weekend = d.getDay() === 0 || d.getDay() === 6;
                     const isToday = iso(d) === iso(new Date());
                     return (
-                      <div key={i} style={{ textAlign: 'center', fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.05em', color: isToday ? 'var(--cyan)' : weekend ? 'var(--text-3)' : 'var(--text-4)', textTransform: 'uppercase' }}>
+                      <div key={i} style={{ textAlign: 'center', fontSize: 'var(--fs-label)', fontWeight: 700, color: isToday ? 'var(--cyan)' : weekend ? 'var(--text-3)' : 'var(--text-4)' }}>
                         <div>{d.toLocaleDateString([], { weekday: 'narrow' })}</div>
                         <div style={{ fontSize: 'var(--fs-body)', letterSpacing: 0, color: isToday ? 'var(--cyan)' : 'var(--text-2)' }}>{d.getDate()}</div>
                       </div>
@@ -1220,7 +1220,7 @@ function PayLinkBlock({ booking: b, owed, symbol, unitName, phone, name }: {
 function PanelBlock({ title, children, tone = 'var(--border-md)' }: { title: string; children: React.ReactNode; tone?: string }) {
   return (
     <section style={{ marginTop: 24, paddingLeft: 14, borderLeft: `2px solid ${tone}` }}>
-      <h4 style={{ margin: '0 0 12px', fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-4)' }}>
+      <h4 style={{ margin: '0 0 12px', fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-4)' }}>
         {title}
       </h4>
       {children}
@@ -1235,7 +1235,7 @@ function FieldGrid({ children }: { children: React.ReactNode }) {
 function Field({ label, value, colour, hint }: { label: string; value: string; colour?: string; hint?: string }) {
   return (
     <div>
-      <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-4)' }}>{label}</div>
+      <div style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-4)' }}>{label}</div>
       <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.6, color: colour || 'var(--text-1)', marginTop: 2 }}>{value}</div>
       {hint && <div style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>{hint}</div>}
     </div>
@@ -1245,9 +1245,14 @@ function Field({ label, value, colour, hint }: { label: string; value: string; c
 function Badge({ text, colour }: { text: string; colour: string }) {
   return (
     <span style={{
-      fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', whiteSpace: 'nowrap',
-      color: colour, background: `color-mix(in srgb, ${colour} 16%, transparent)`,
-      border: `1px solid color-mix(in srgb, ${colour} 40%, transparent)`, borderRadius: 6, padding: '5px 10px',
+      fontSize: 'var(--fs-label)',
+      fontWeight: 700,
+      whiteSpace: 'nowrap',
+      color: colour,
+      background: `color-mix(in srgb, ${colour} 16%, transparent)`,
+      border: `1px solid color-mix(in srgb, ${colour} 40%, transparent)`,
+      borderRadius: 6,
+      padding: '5px 10px',
     }}>
       {text}
     </span>
@@ -1265,7 +1270,7 @@ function ContactLink({ href, label, value }: { href: string; label: string; valu
         fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-1)', textDecoration: 'none',
       }}
     >
-      <span style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-4)' }}>{label}</span>
+      <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-4)' }}>{label}</span>
       <span style={{ fontWeight: 600 }}>{value}</span>
     </a>
   );

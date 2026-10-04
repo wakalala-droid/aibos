@@ -245,25 +245,19 @@ function OverviewPage() {
           style={{
           ...bloomProps(scores ? scores.overall_score : undefined, 'var(--cyan)').style,
           minWidth: 130, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', padding: '24px 28px',
+          alignItems: 'flex-start', justifyContent: 'space-between',
         }}>
           {/* Bento dot texture — fades in from the bottom on hover */}
           <span className="bento-tex" aria-hidden="true" />
-          <p style={{
-            fontSize: '3.2rem', fontWeight: 900,
+          <p className="kpi-label">Health score</p>
+          <p className="money money-hero" style={{
             color: scores ? scoreColor(scores.overall_score) : 'var(--text-4)',
-            letterSpacing: '-0.05em', margin: 0, lineHeight: 1,
+            margin: '12px 0 4px', display: 'block',
           }}>
             {scores?.overall_score ?? 'Not yet'}
           </p>
-          <p style={{
-            fontSize: 'var(--fs-caps)',
-            color: 'var(--cyan)', margin: '6px 0 0', letterSpacing: '0.1em', textTransform: 'uppercase',
-          }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>
             {scores?.overall_label ?? (safeMonthly.length ? `${MIN_MONTHS} months needed` : 'No records yet')}
-          </p>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '2px 0 0' }}>
-            HEALTH SCORE
           </p>
         </div>
         </BorderGlow>
@@ -376,7 +370,7 @@ function OverviewPage() {
           <div className="grid-2">
             <SectionCard explainId="card.customer" delay={0.15}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--e2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--e2)', margin: 0 }}>
                   Customer Intelligence
                 </p>
                 {hasEngine2Data && (
@@ -393,10 +387,10 @@ function OverviewPage() {
                     { l: 'Retention', v: `${retRate.toFixed(0)}%`, c: 'var(--e2)'  },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px' }}>
                         {item.l}
                       </p>
-                      <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>
+                      <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>
                         {item.v}
                       </p>
                     </div>
@@ -415,7 +409,7 @@ function OverviewPage() {
 
             <SectionCard explainId="card.operations" delay={0.18}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--e3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--e3)', margin: 0 }}>
                   Operations
                 </p>
                 {hasEngine3Data && (
@@ -432,10 +426,10 @@ function OverviewPage() {
                     { l: 'Benchmarks',    v: `${warnB} warn`,                        c: warnB > 0 ? 'var(--warn)' : 'var(--good)' },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px' }}>
                         {item.l}
                       </p>
-                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
+                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
                         {item.v}
                       </p>
                     </div>
@@ -449,10 +443,10 @@ function OverviewPage() {
                     { l: 'Best Margin', v: bestMargin ? `${bestMargin.margin.toFixed(0)}%` : 'None',  c: (bestMargin?.margin ?? 0) >= 0 ? 'var(--good)' : 'var(--crit)' },
                   ].map(item => (
                     <div key={item.l}>
-                      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px' }}>
                         {item.l}
                       </p>
-                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: item.c, margin: 0, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.v}>
+                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: item.c, margin: 0, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.v}>
                         {item.v}
                       </p>
                     </div>
@@ -491,10 +485,10 @@ function OverviewPage() {
                   flex: '1 1 0', minWidth: 92, padding: '10px 12px', borderRadius: 10,
                   border: '1px solid var(--border)', opacity: s.active ? 1 : 0.4,
                 }}>
-                  <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px' }}>
                     {s.label}
                   </p>
-                  <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 800, color: s.active ? s.colour : 'var(--text-4)', margin: 0, letterSpacing: '-0.03em' }}>
+                  <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 600, color: s.active ? s.colour : 'var(--text-4)', margin: 0, letterSpacing: '-0.03em' }}>
                     {s.active && s.score !== undefined ? s.score : 'Not yet'}
                   </p>
                 </div>
@@ -583,7 +577,7 @@ function OverviewPage() {
                 style={{
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   padding: '12px 20px', minHeight: 48, borderRadius: 10, border: 'none',
-                  background: 'var(--cyan)', color: 'var(--on-cyan)',
+                  background: 'var(--brand-fill)', color: 'var(--on-brand)',
                   fontSize: 'var(--fs-body)', fontWeight: 700, textDecoration: 'none',
                 }}
               >

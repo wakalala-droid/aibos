@@ -17,10 +17,10 @@ export default function TimeSeriesUnavailable({
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', margin: '0 0 4px' }}>
           Financial Intelligence
         </p>
-        <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
+        <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>
           {title}
         </h1>
       </div>

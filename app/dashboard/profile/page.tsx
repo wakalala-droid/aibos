@@ -234,7 +234,7 @@ export default function BusinessProfilePage() {
                 <img src={form.logo_url} alt="" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
               </span>
             ) : (
-              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 'var(--radius-md)', flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-body)', fontWeight: 800 }}>
+              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 'var(--radius-md)', flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-body)', fontWeight: 600 }}>
                 {initials}
               </span>
             )}
@@ -305,7 +305,7 @@ export default function BusinessProfilePage() {
             <button
               type="submit"
               disabled={!canSave}
-              style={{ minHeight: 44, padding: '12px 22px', borderRadius: 10, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canSave ? 'pointer' : 'not-allowed', opacity: canSave ? 1 : 0.55 }}
+              style={{ minHeight: 44, padding: '12px 22px', borderRadius: 999, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canSave ? 'pointer' : 'not-allowed', opacity: canSave ? 1 : 0.55 }}
             >
               {save === 'saving' ? 'Saving…' : 'Save changes'}
             </button>
@@ -320,14 +320,14 @@ export default function BusinessProfilePage() {
 
         {/* Read-only account facts */}
         <div className="section-card">
-          <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 14px' }}>
             Account
           </p>
           <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
             <div>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>Plan</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)' }}>{TIERS[tier].name}</span>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{TIERS[tier].name}</span>
                 <Link className="tap-link" href="/pricing" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
                   {tier === 'growth' ? 'Manage' : 'Upgrade'} →
                 </Link>
@@ -557,7 +557,7 @@ function GetPaidCard() {
           )}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
             <button type="submit" disabled={!key.trim() || busy !== null}
-              style={{ ...button, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', opacity: !key.trim() || busy !== null ? 0.55 : 1, cursor: !key.trim() || busy !== null ? 'not-allowed' : 'pointer' }}>
+              style={{ ...button, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', opacity: !key.trim() || busy !== null ? 0.55 : 1, cursor: !key.trim() || busy !== null ? 'not-allowed' : 'pointer' }}>
               {busy === 'connect' ? 'Checking with Lenco…' : connected ? 'Save new key' : 'Connect Lenco'}
             </button>
             {replacing && (
@@ -835,7 +835,7 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
 
   return (
     <div className="section-card">
-      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
+      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px' }}>
         Morning Brief, delivered
       </p>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 16px' }}>
@@ -884,7 +884,7 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
             disabled={saving || (!canEmail && !canWa)}
             style={{
               padding: '10px 18px', borderRadius: 10, border: 'none',
-              cursor: saving ? 'default' : 'pointer', background: 'var(--cyan)', color: 'var(--on-cyan)',
+              cursor: saving ? 'default' : 'pointer', background: 'var(--brand-fill)', color: 'var(--on-brand)',
               fontSize: 'var(--fs-body)', fontWeight: 700,
               opacity: saving ? 0.6 : 1,
             }}
@@ -926,7 +926,7 @@ function InviteCard({ userId }: { userId: string }) {
 
   return (
     <div className="section-card">
-      <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>
+      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px' }}>
         Invite a business owner
       </p>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 14px' }}>

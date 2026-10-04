@@ -290,7 +290,7 @@ function WebsiteCard({ properties, units, onChange, onError }: {
                 />
 
                 <div style={{ marginTop: 12 }}>
-                  <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', fontWeight: 600, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', fontWeight: 600, margin: '0 0 4px' }}>
                     Web address of each unit
                   </p>
                   {mine.length === 0 ? (
