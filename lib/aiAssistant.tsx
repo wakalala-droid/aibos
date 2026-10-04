@@ -283,8 +283,9 @@ function buildLiveMetrics(s: StoreState): LiveMetrics {
     costs: hasFinancial ? money(s.kpi?.totalCosts ?? 0) : undefined,
     profit: hasFinancial ? money(s.kpi?.totalProfit ?? 0) : undefined,
     margin: hasFinancial ? s.kpi?.avgMargin ?? 0 : undefined,
-    healthScore: s.health?.score,
-    healthLabel: s.health?.label,
+    // Held back below three months, as on screen (UI/UX audit 2026-10 A11).
+    healthScore: (s.monthly?.length ?? 0) >= 3 ? s.health?.score : undefined,
+    healthLabel: (s.monthly?.length ?? 0) >= 3 ? s.health?.label : undefined,
     monthsCount: hasFinancial ? s.monthly.length : undefined,
     overallScore: s.intelligenceScores?.overall_score,
     overallLabel: s.intelligenceScores?.overall_label,
@@ -356,8 +357,10 @@ function buildContext(
       total_revenue: s.kpi?.totalRevenue ?? 0, total_costs: s.kpi?.totalCosts ?? 0,
       total_profit: s.kpi?.totalProfit ?? 0, avg_margin: s.kpi?.avgMargin ?? 0,
     };
-    ctx.health_score = s.health?.score ?? 0;
-    ctx.health_label = s.health?.label ?? '';
+    if ((s.monthly?.length ?? 0) >= 3) {
+      ctx.health_score = s.health?.score ?? 0;
+      ctx.health_label = s.health?.label ?? '';
+    }
     ctx.monthly = (Array.isArray(s.monthly) ? s.monthly : []).slice(0, 24);
   }
   if (Array.isArray(s.alerts) && s.alerts.length) ctx.alerts = s.alerts;

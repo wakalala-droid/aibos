@@ -1,5 +1,6 @@
 'use client';
 import { useStore } from '@/lib/store';
+import { monthTick } from '@/lib/change';
 import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
@@ -147,7 +148,7 @@ export default function VariancePage() {
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} barCategoryGap="22%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis minTickGap={16} dataKey="month" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="Revenue" fill="var(--cyan)"  fillOpacity={0.75} radius={[4,4,0,0]} name="Revenue" />
@@ -163,7 +164,7 @@ export default function VariancePage() {
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={chartData.slice(1)} barCategoryGap="28%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis minTickGap={16} dataKey="month" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={v => `${v.toFixed(0)}%`} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <ReferenceLine y={0} stroke="var(--border-md)" strokeWidth={1} />

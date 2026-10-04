@@ -1,5 +1,6 @@
 'use client';
 import { fmt } from '@/lib/utils';
+import { monthName } from '@/lib/change';
 
 interface ChartTooltipProps {
   active?: boolean;
@@ -19,7 +20,7 @@ export default function ChartTooltip({ active, payload, label, sym = 'K', curren
       boxShadow: 'var(--shadow-lg)',
     }}>
       {label && (
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 6px' }}>{label}</p>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 6px' }}>{monthName(label)}</p>
       )}
       {payload.map((p: any, i: number) => (
         <p key={i} style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: p.stroke ?? p.fill ?? p.color, margin: '2px 0' }}>

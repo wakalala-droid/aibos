@@ -81,7 +81,8 @@ export default function WhatChanged() {
               </span>
               <span style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: colour, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
                 {up ? '+' : '−'}{fmt(Math.abs(d.delta), true, sym)}
-                {d.pct_change !== null && ` (${up ? '+' : ''}${d.pct_change.toFixed(0)}%)`}
+                {/* No percentage from a tiny usual amount (UI/UX audit A11). */}
+                {d.pct_change !== null && Math.abs(d.pct_change) < 200 && ` (${up ? '+' : ''}${d.pct_change.toFixed(0)}%)`}
               </span>
             </div>
           );

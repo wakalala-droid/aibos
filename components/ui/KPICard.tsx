@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import BorderGlow from './BorderGlow';
 import { bloomProps } from '@/lib/cometStyle';
+import { fmt } from '@/lib/utils';
+import type { MonthChange } from '@/lib/change';
 
 interface KPICardProps {
   label: string;
@@ -12,6 +14,10 @@ interface KPICardProps {
   value: string;
   sub?: string;
   growth?: number;
+  /** Honest change (lib/change): a percentage only against a sensible base,
+   *  otherwise the difference in money, or in points with `points`. Wins over `growth`. */
+  change?: MonthChange;
+  points?: boolean;
   icon?: React.ReactNode;
   iconBg?: string;
   sparkData?: number[];
@@ -34,14 +40,19 @@ const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
 
 export default function KPICard({
   label, sublabel, value, sub = 'vs prior period',
-  growth, icon, iconBg = 'rgba(96,165,250,0.15)',
+  growth, change, points = false, icon, iconBg = 'rgba(96,165,250,0.15)',
   sparkData, sparkColor = '#60a5fa', delay = 0, score, goodWhenUp = true,
   explainId, drillHref, drillLabel = 'See the records',
 }: KPICardProps) {
   const spark = sparkData?.map((v, i) => ({ v, i }));
   const gradId = `kpiSpark-${useId().replace(/:/g, '')}`;
   // Badge colour reflects good/bad, not just direction: rising costs are red.
-  const badgeGood = growth !== undefined && (goodWhenUp ? growth >= 0 : growth <= 0);
+  const dir = change ? change.diff : growth;
+  const badgeGood = dir !== undefined && (goodWhenUp ? dir >= 0 : dir <= 0);
+  const badgeText = change
+    ? change.pct !== undefined ? `${Math.abs(change.pct).toFixed(1)}%`
+      : points ? `${Math.abs(change.diff).toFixed(1)} pts` : fmt(Math.abs(change.diff))
+    : growth !== undefined ? `${Math.abs(growth).toFixed(1)}%` : '';
   // The card's own inner glow, severity-tinted when the score is in trouble.
   const bloom = bloomProps(score, sparkColor);
 
@@ -90,9 +101,9 @@ export default function KPICard({
               )}
             </div>
           </div>
-          {growth !== undefined && (
+          {dir !== undefined && badgeText && (
             <span className={`kpi-badge ${badgeGood ? 'up' : 'down'}`}>
-              {growth >= 0 ? '▲' : '▼'} {Math.abs(growth).toFixed(1)}%
+              {dir >= 0 ? '▲' : '▼'} {badgeText}
             </span>
           )}
         </div>

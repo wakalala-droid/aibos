@@ -60,8 +60,8 @@ export default function OpsBriefView() {
               bold zero in the same type as a real score. "Operations 0" is a
               verdict; "no data yet" is the truth. */}
           {[
-            { l: 'FINANCIAL',              s: scores.e1_score, c: 'var(--e1)', measured: scores.measured?.e1 ?? true },
-            { l: 'CUSTOMER INTELLIGENCE',  s: scores.e2_score, c: 'var(--e2)', measured: scores.measured?.e2 ?? true },
+            { l: 'MONEY',                  s: scores.e1_score, c: 'var(--e1)', measured: scores.measured?.e1 ?? true },
+            { l: 'CUSTOMERS',              s: scores.e2_score, c: 'var(--e2)', measured: scores.measured?.e2 ?? true },
             { l: 'OPERATIONS',             s: scores.e3_score, c: 'var(--e3)', measured: scores.measured?.e3 ?? true },
           ].map(item => (
             <div key={item.l} className="kpi-card">

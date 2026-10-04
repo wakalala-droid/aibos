@@ -1,6 +1,7 @@
 'use client';
 import { useStore } from '@/lib/store';
 import { fmt, scoreColor, formatAxis, n } from '@/lib/utils';
+import { monthChange, monthName, monthTick, moneyChangeText, MIN_MONTHS } from '@/lib/change';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import InsightCard from '@/components/ui/InsightCard';
@@ -85,8 +86,6 @@ function OverviewPage() {
   const isTimeSeries = dataShape !== 'cross_sectional';
   const lastM = safeMonthly[safeMonthly.length - 1];
   const prevM = isTimeSeries ? safeMonthly[safeMonthly.length - 2] : undefined;
-  const pctGrowth = (cur: number, prev: number | undefined) =>
-    prevM && prev !== undefined && prev !== 0 ? ((cur - prev) / Math.abs(prev)) * 100 : undefined;
 
   const lastRev = n(lastM?.Revenue), prevRev = n(prevM?.Revenue);
   const lastCost = n(lastM?.Costs), prevCost = n(prevM?.Costs);
@@ -94,12 +93,16 @@ function OverviewPage() {
   const lastMargin = lastRev ? (lastProfit / lastRev) * 100 : 0;
   const prevMargin = prevRev ? (prevProfit / prevRev) * 100 : 0;
 
-  const revGrowth    = pctGrowth(lastRev, prevM ? prevRev : undefined);
-  const costGrowth   = pctGrowth(lastCost, prevM ? prevCost : undefined);
-  const profitGrowth = pctGrowth(lastProfit, prevM ? prevProfit : undefined);
-  // Margin moves in percentage points, not %.
-  const marginGrowth = prevM ? lastMargin - prevMargin : undefined;
-  const growthSub = prevM ? 'vs last month' : 'first month';
+  // Honest change (UI/UX audit 2026-10 A11): a percentage only once three
+  // months are recorded and the month before is a sensible base, otherwise the
+  // difference in money. Margin moves in points and waits for the same base.
+  const monthsRecorded = isTimeSeries ? safeMonthly.length : 0;
+  const revChange    = prevM ? monthChange(lastRev, prevRev, monthsRecorded) : undefined;
+  const costChange   = prevM ? monthChange(lastCost, prevCost, monthsRecorded) : undefined;
+  const profitChange = prevM ? monthChange(lastProfit, prevProfit, monthsRecorded) : undefined;
+  const marginChange = prevM && revChange?.pct !== undefined ? { diff: lastMargin - prevMargin } : undefined;
+  const prevName = prevM ? monthName(prevM.Month) : '';
+  const growthSub = prevM ? `vs ${prevName}` : 'first month';
 
   // Customer + Operations quick stats
   const safeRfm     = Array.isArray(rfm) ? rfm : [];
@@ -162,21 +165,23 @@ function OverviewPage() {
       priority: m < 10 ? 'high' : m < 20 ? 'medium' : 'low',
       source_engines: ['E1'],
     });
-    if (revGrowth !== undefined) {
-      const up = revGrowth >= 0;
+    if (revChange !== undefined) {
+      const up = revChange.diff >= 0;
       synthSignals.push({
-        insight: `Revenue ${up ? 'rose' : 'fell'} ${Math.abs(revGrowth).toFixed(1)}% versus last month.`,
-        action: up ? 'Reinvest the momentum into your best-performing lines.' : 'Investigate the drop before it compounds.',
-        priority: !up && Math.abs(revGrowth) > 10 ? 'high' : !up ? 'medium' : 'low',
+        insight: revChange.pct !== undefined
+          ? `Sales ${up ? 'rose' : 'fell'} ${Math.abs(revChange.pct).toFixed(1)}% compared with ${prevName}.`
+          : `Sales were ${moneyChangeText(revChange.diff, sym, String(prevM?.Month ?? ''))}.`,
+        action: up ? 'Put more behind what sold best.' : 'Look into the drop before it grows.',
+        priority: !up && (revChange.pct ?? 0) < -10 ? 'high' : !up ? 'medium' : 'low',
         source_engines: ['E1'],
       });
     }
-    if (marginGrowth !== undefined && Math.abs(marginGrowth) >= 0.5) {
-      const up = marginGrowth >= 0;
+    if (marginChange !== undefined && Math.abs(marginChange.diff) >= 0.5) {
+      const up = marginChange.diff >= 0;
       synthSignals.push({
-        insight: `Net margin ${up ? 'expanded' : 'compressed'} ${Math.abs(marginGrowth).toFixed(1)} pts month-over-month.`,
-        action: up ? 'Lock in whatever drove the gain.' : 'Costs are outpacing revenue: act on the largest line.',
-        priority: !up && Math.abs(marginGrowth) > 3 ? 'high' : !up ? 'medium' : 'low',
+        insight: `Your margin went ${up ? 'up' : 'down'} ${Math.abs(marginChange.diff).toFixed(1)} points compared with ${prevName}.`,
+        action: up ? 'Keep doing what drove the gain.' : 'Costs are growing faster than sales: start with the largest cost.',
+        priority: !up && Math.abs(marginChange.diff) > 3 ? 'high' : !up ? 'medium' : 'low',
         source_engines: ['E1'],
       });
     }
@@ -257,7 +262,7 @@ function OverviewPage() {
             fontSize: 'var(--fs-caps)',
             color: 'var(--cyan)', margin: '6px 0 0', letterSpacing: '0.1em', textTransform: 'uppercase',
           }}>
-            {scores?.overall_label ?? 'No data'}
+            {scores?.overall_label ?? (safeMonthly.length ? `${MIN_MONTHS} months needed` : 'No records yet')}
           </p>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '2px 0 0' }}>
             HEALTH SCORE
@@ -265,13 +270,13 @@ function OverviewPage() {
         </div>
         </BorderGlow>
 
-        <EngineScoreCard explainId="score.e1" label="ENGINE 1 · FINANCIAL"   sub="Cash · Forecast · P&L"
+        <EngineScoreCard explainId="score.e1" label="MONEY"   sub="Cash, forecast and profit"
           score={scores?.e1_score ?? 0} colour="var(--e1)"
-          href="/dashboard/cash"        locked={!engineFlags?.e1} />
-        <EngineScoreCard explainId="score.e2" label="CUSTOMER INTELLIGENCE"  sub="RFM · CLV · Churn"
+          href="/dashboard/cash"        locked={!engineFlags?.e1} notYet={safeMonthly.length < MIN_MONTHS} />
+        <EngineScoreCard explainId="score.e2" label="CUSTOMERS"  sub="Who buys and who has gone quiet"
           score={scores?.e2_score ?? 0} colour="var(--e2)"
           href="/dashboard/customers"  locked={!hasEngine2Data} />
-        <EngineScoreCard explainId="score.e3" label="OPERATIONS"             sub="POS · Benchmarks · Velocity"
+        <EngineScoreCard explainId="score.e3" label="OPERATIONS"             sub="Till sales and what sells"
           score={scores?.e3_score ?? 0} colour="var(--e3)"
           href="/dashboard/pos"         locked={!opsActive} />
       </div>
@@ -281,28 +286,28 @@ function OverviewPage() {
         <KPICard
           explainId="kpi.revenue"
           label="TOTAL REVENUE" value={fmt(kpi?.totalRevenue ?? 0, true, sym)}
-          growth={revGrowth} sub={growthSub} sparkData={revSpark} sparkColor="var(--spark-revenue)"
+          change={revChange} sub={growthSub} sparkData={revSpark} sparkColor="var(--spark-revenue)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--blue)" strokeWidth="1.8" fill="none"/><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H9m0 0h4.5a1.5 1.5 0 010 3H9" stroke="var(--blue)" strokeWidth="1.4" strokeLinecap="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)" delay={0}
         />
         <KPICard
           explainId="kpi.costs"
           label="TOTAL COSTS" value={fmt(kpi?.totalCosts ?? 0, true, sym)}
-          growth={costGrowth} goodWhenUp={false} sub={growthSub} sparkData={costSpark} sparkColor="var(--spark-cost)"
+          change={costChange} goodWhenUp={false} sub={growthSub} sparkData={costSpark} sparkColor="var(--spark-cost)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 8h20v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8z" stroke="var(--orange)" strokeWidth="1.6" fill="none"/><path d="M2 8l2-4h16l2 4" stroke="var(--orange)" strokeWidth="1.5" strokeLinejoin="round"/></svg>}
           iconBg="rgba(249,115,22,0.15)" delay={0.06}
         />
         <KPICard
           explainId="kpi.profit"
           label="NET PROFIT" value={fmt(kpi?.totalProfit ?? 0, true, sym)}
-          growth={profitGrowth} sub={growthSub} sparkData={profSpark} sparkColor="var(--spark-profit)"
+          change={profitChange} sub={growthSub} sparkData={profSpark} sparkColor="var(--spark-profit)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" delay={0.12}
         />
         <KPICard
           explainId="kpi.margin"
           label="AVG NET MARGIN" value={`${(kpi?.avgMargin ?? 0).toFixed(1)}%`}
-          growth={marginGrowth} sub={growthSub} sparkData={marginSpark} sparkColor="var(--spark-margin)"
+          change={marginChange} points sub={growthSub} sparkData={marginSpark} sparkColor="var(--spark-margin)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--purple)" strokeWidth="1.6" fill="none"/><path d="M12 8v4l3 3" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(167,139,250,0.15)" delay={0.18}
         />
@@ -338,7 +343,7 @@ function OverviewPage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="var(--border)" vertical={false}/>
-                  <XAxis minTickGap={16} dataKey="month"
+                  <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick}
                     tick={{ fontSize: 18, fill: 'var(--text-3)' }}
                     axisLine={false} tickLine={false}/>
                   <YAxis width={84}

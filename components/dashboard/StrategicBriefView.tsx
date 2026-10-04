@@ -5,6 +5,7 @@
 // component. Takes raw data as props (no store), derives recommendations the
 // same way the product does — so nothing is fabricated.
 import { fmt, scoreColor } from '@/lib/utils';
+import { monthChange, monthName, enoughHistory, MIN_MONTHS } from '@/lib/change';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import { motion } from 'framer-motion';
@@ -96,20 +97,21 @@ export default function StrategicBriefView({
   }
 
   const briefLines = (unifiedBrief || '').split('\n').filter((l) => l.trim() && /^\d+\./.test(l.trim()));
-  const healthColour = scoreColor(health.score);
+  // A score from one or two months is noise (it read 100 "Excellent" on two
+  // months), so it waits until there are enough months to mean something.
+  const scoreReady = enoughHistory(health.monthsCounted ?? monthly.length);
+  const healthColour = scoreReady ? scoreColor(health.score) : 'var(--text-4)';
 
   // Real month-on-month change, or nothing. These two cards carried the fixed
   // numbers +8.4% and +12.1% from a demo, so every customer was shown growth,
   // including one with a single month of records and nothing to compare.
   const last = monthly[monthly.length - 1];
   const prev = monthly[monthly.length - 2];
-  const change = (cur: number, before: number): number | undefined =>
-    before !== 0 && Number.isFinite(cur) && Number.isFinite(before)
-      ? ((cur - before) / Math.abs(before)) * 100
-      : undefined;
-  const revenueGrowth = last && prev ? change(Number(last.Revenue) || 0, Number(prev.Revenue) || 0) : undefined;
-  const profitGrowth = last && prev
-    ? change((Number(last.Revenue) || 0) - (Number(last.Costs) || 0), (Number(prev.Revenue) || 0) - (Number(prev.Costs) || 0))
+  // Below a sensible base the change is given in money, not a percentage
+  // (lib/change: "1423.5%" from a tiny first month read as broken).
+  const revenueChange = last && prev ? monthChange(Number(last.Revenue) || 0, Number(prev.Revenue) || 0, monthly.length) : undefined;
+  const profitChange = last && prev
+    ? monthChange((Number(last.Revenue) || 0) - (Number(last.Costs) || 0), (Number(prev.Revenue) || 0) - (Number(prev.Costs) || 0), monthly.length)
     : undefined;
   const periodLabel = monthly.length === 1 ? '1 month recorded' : `${monthly.length} months`;
   const months = Math.max(monthly.length, 1);
@@ -145,13 +147,13 @@ export default function StrategicBriefView({
 
       {/* KPI summary cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
-        <KPICard label="HEALTH SCORE" value={String(health.score)} sub={health.label}
+        <KPICard label="HEALTH SCORE" value={scoreReady ? String(health.score) : 'Not yet'} sub={scoreReady ? health.label : `Needs ${MIN_MONTHS} months of records`}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke={healthColour} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           iconBg={`color-mix(in srgb, ${healthColour} 15%, transparent)`} sparkColor={healthColour} delay={0} />
-        <KPICard label="TOTAL REVENUE" value={fmt(kpi.totalRevenue, true, sym)} sub={monthly.length > 1 ? `${periodLabel} · change vs month before` : monthly.length ? periodLabel : 'no months yet'} growth={revenueGrowth}
+        <KPICard label="TOTAL REVENUE" value={fmt(kpi.totalRevenue, true, sym)} sub={monthly.length > 1 && prev ? `${periodLabel}, change vs ${monthName(prev.Month)}` : monthly.length ? periodLabel : 'no months yet'} change={revenueChange}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><polyline points="16 7 22 7 22 13" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkData={monthly.slice(-6).map((m) => Number(m.Revenue) || 0)} sparkColor="var(--good)" delay={0.06} />
-        <KPICard label="NET PROFIT" value={fmt(kpi.totalProfit, true, sym)} sub={`${kpi.avgMargin.toFixed(1)}% avg margin`} growth={profitGrowth}
+        <KPICard label="NET PROFIT" value={fmt(kpi.totalProfit, true, sym)} sub={`${kpi.avgMargin.toFixed(1)}% avg margin`} change={profitChange}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--cyan)" strokeWidth="1.5" fill="none" /><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H9m0 0h4.5a1.5 1.5 0 010 3H9" stroke="var(--cyan)" strokeWidth="1.4" strokeLinecap="round" /></svg>}
           iconBg="rgba(0,212,255,0.12)" sparkData={monthly.slice(-6).map((m) => (Number(m.Revenue) || 0) - (Number(m.Costs) || 0))} sparkColor="var(--cyan)" delay={0.12} />
         <KPICard label="RECOMMENDATIONS" value={String(recs.length)} sub="strategic action items"
@@ -167,13 +169,13 @@ export default function StrategicBriefView({
               <circle cx="65" cy="65" r="52" fill="none" stroke="var(--border)" strokeWidth="10" />
               <motion.circle cx="65" cy="65" r="52" fill="none" stroke={healthColour} strokeWidth="10" strokeLinecap="round"
                 strokeDasharray={`${2 * Math.PI * 52}`} strokeDashoffset={2 * Math.PI * 52}
-                animate={{ strokeDashoffset: 2 * Math.PI * 52 * (1 - health.score / 100) }}
+                animate={{ strokeDashoffset: 2 * Math.PI * 52 * (1 - (scoreReady ? health.score : 0) / 100) }}
                 transition={{ duration: 1.4, ease: 'easeOut', delay: 0.3 }} style={{ transform: 'rotate(-90deg)', transformOrigin: '65px 65px' }} />
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 'var(--fs-h1)', fontWeight: 900, color: healthColour, lineHeight: 1 }}>{health.score}</span>
-              <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3 }}>{health.label}</span>
-              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 1 }}>/100</span>
+              <span style={{ fontSize: scoreReady ? 'var(--fs-h1)' : 'var(--fs-h3)', fontWeight: 900, color: healthColour, lineHeight: 1 }}>{scoreReady ? health.score : 'Not yet'}</span>
+              {scoreReady && <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3 }}>{health.label}</span>}
+              {scoreReady && <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginTop: 1 }}>/100</span>}
             </div>
           </div>
           <div>

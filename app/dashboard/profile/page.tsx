@@ -416,12 +416,19 @@ function GetPaidCard() {
   const [busy, setBusy] = useState<'connect' | 'disconnect' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  // The server answers 503 "being switched on" until migration 0038 is run
+  // (/health names it). That card was a dead end with a "Try again" that could
+  // never work (UI/UX audit 2026-10 A13), so it stays hidden until it is live.
+  const [notLive, setNotLive] = useState(false);
 
   const load = () => {
     setLoadError(null);
     getPaymentAccount()
       .then(setAccount)
-      .catch((e: Error) => setLoadError(e.message || 'This could not be loaded just now.'));
+      .catch((e: Error) => {
+        if (/switched on/i.test(e.message || '')) setNotLive(true);
+        else setLoadError(e.message || 'This could not be loaded just now.');
+      });
   };
   useEffect(() => { load(); }, []);
 
@@ -467,6 +474,7 @@ function GetPaidCard() {
   };
   const connected = Boolean(account?.connected);
   const showForm = account !== null && (!connected || replacing || !account.usable);
+  if (notLive) return null;
 
   return (
     <section className="section-card" aria-labelledby="get-paid-title">

@@ -530,7 +530,9 @@ function deriveIntelligence(s: FinancialState): IntelligenceScoresShape | null {
   const present: number[] = [];
   let e1 = 0, e2 = 0, e3 = 0;
 
-  const hasE1 = s.monthly.length > 0;
+  // One or two months scored 100 "Excellent" (UI/UX audit 2026-10 A11):
+  // the money score waits for three months, like lib/change MIN_MONTHS.
+  const hasE1 = s.monthly.length >= 3;
   const hasE2 = s.hasEngine2Data || s.rfm.length > 0;
   const hasE3 = s.hasEngine3Data || !!s.posGrandTotals;
 

@@ -144,8 +144,9 @@ export default function DecisionsQueue() {
       });
     }
 
-    // 5 · Margin compression month-over-month (≥3 pts).
-    if (safeMonthly.length >= 2) {
+    // 5 · Margin compression month-over-month (≥3 pts), only once three months
+    // are recorded: a first tiny month made this swing by hundreds of points.
+    if (safeMonthly.length >= 3) {
       const marginOf = (m: any) => {
         const rev = Number(m?.Revenue) || 0;
         return rev > 0 ? ((rev - (Number(m?.Costs) || 0)) / rev) * 100 : 0;
@@ -155,8 +156,8 @@ export default function DecisionsQueue() {
         out.push({
           id: 'margin',
           severity: 'warn',
-          headline: `Margin compressed ${Math.abs(delta).toFixed(1)} pts last month`,
-          reason: 'Costs grew faster than revenue: find the line responsible.',
+          headline: `Your margin fell ${Math.abs(delta).toFixed(1)} points last month`,
+          reason: 'Costs grew faster than sales. See which cost did it.',
           kind: 'link', href: '/dashboard/variance', actionLabel: 'See what changed',
         });
       }

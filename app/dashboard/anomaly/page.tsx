@@ -1,5 +1,6 @@
 'use client';
 import { useStore } from '@/lib/store';
+import { monthTick } from '@/lib/change';
 import { fmt } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
@@ -138,7 +139,7 @@ export default function AnomalyPage() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={scatterData} barCategoryGap="22%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis minTickGap={16} dataKey="month" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5}
