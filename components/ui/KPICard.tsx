@@ -49,7 +49,7 @@ const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
 
 export default function KPICard({
   label, sublabel, value, sub = 'vs prior period',
-  growth, change, points = false, icon, iconBg = 'rgba(96,165,250,0.15)',
+  growth, change, points = false,
   sparkData, sparkColor = '#60a5fa', score, goodWhenUp = true,
   explainId, drillHref, drillLabel = 'See the records',
 }: KPICardProps) {
@@ -92,12 +92,10 @@ export default function KPICard({
         {/* Wraps on a narrow card so the change badge drops below the label
             instead of being cut off at the edge (UI/UX audit A17). */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {icon && (
-              <div className="kpi-icon" style={{ background: iconBg }}>
-                {icon}
-              </div>
-            )}
+          {/* The label leads, the way Home's cards do; the old icon badge
+              crowded the label into three lines on a four-up row, so `icon`
+              is accepted and no longer drawn (redesign 2026-10). */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 140px' }}>
             <div>
               <p className="kpi-label">{sentenceCase(label)}</p>
               {sublabel && (

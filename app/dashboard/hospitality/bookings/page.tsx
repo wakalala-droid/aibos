@@ -32,9 +32,9 @@ type RowStatus = BookingStatus | 'declined';
    for anything an owner has to read off a screen at arm's length. This page
    pins its body copy to the 18px step and its supporting lines to 15px. 13px
    is the floor here: letterspaced caps headings only. */
-const FS_BODY = 'var(--fs-h3)';    /* 18px */
-const FS_SMALL = '0.9375rem';      /* 15px */
-const FS_CAPS = 'var(--fs-data)';  /* 13px */
+const FS_BODY = 'var(--fs-body)';  /* 18px */
+const FS_SMALL = 'var(--fs-label)'; /* 18px: nothing in a sentence is smaller */
+const FS_CAPS = 'var(--fs-label)'; /* 18px */
 
 /** Status in the owner's words, with the colour that carries the meaning.
  *  "Pending" and "no_show" are database words: nobody running a guest house
@@ -275,15 +275,10 @@ export default function BookingsPage() {
             return (
               <button
                 key={v.key}
+                type="button"
+                className="chip"
                 onClick={() => setView(v.key)}
                 aria-pressed={on}
-                style={{
-                  padding: '8px 14px', minHeight: 44, borderRadius: 10, cursor: 'pointer',
-                  fontSize: FS_SMALL, fontWeight: on ? 700 : 600,
-                  color: on ? 'var(--text-1)' : 'var(--text-3)',
-                  background: on ? 'var(--bg-badge)' : 'transparent',
-                  border: `1px solid ${on ? 'var(--border-strong)' : 'var(--border)'}`,
-                }}
               >
                 {v.label}
               </button>
@@ -476,7 +471,7 @@ export default function BookingsPage() {
                 Nothing here.{' '}
                 <button
                   onClick={() => { setView('all'); setSource(''); setTyped(''); setSearch(''); }}
-                  className="pill pill-quiet" style={{ minHeight: 0, padding: 0, border: 'none', color: 'var(--cyan)', textDecoration: 'underline' }}
+                  type="button" className="pill pill-quiet" style={{ marginLeft: 8 }}
                 >
                   Show every booking
                 </button>

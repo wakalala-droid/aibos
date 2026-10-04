@@ -33,9 +33,9 @@ type RowStatus = BookingStatus | 'declined';
 /* The shared type scale stops at 14px for body text, which is under the floor
    for anything an owner reads off a screen. Body sits on the 18px step here,
    supporting lines on 15px. 13px is caps headings only. */
-const FS_BODY = 'var(--fs-h3)';    /* 18px */
-const FS_SMALL = '0.9375rem';      /* 15px */
-const FS_CAPS = 'var(--fs-data)';  /* 13px */
+const FS_BODY = 'var(--fs-body)';  /* 18px */
+const FS_SMALL = 'var(--fs-label)'; /* 18px: nothing in a sentence is smaller */
+const FS_CAPS = 'var(--fs-label)'; /* 18px */
 
 const STATUS_META: Record<RowStatus, { label: string; colour: string }> = {
   pending:   { label: 'Waiting on you', colour: 'var(--warn)'   },

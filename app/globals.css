@@ -531,6 +531,11 @@ h1, h2, h3, h4 { line-height: 1.25; }
   background: radial-gradient(130% 90% at 100% 0%, var(--card-glow, transparent), transparent 60%);
 }
 
+/* Light theme is flat (redesign 2026-10): no coloured corner wash on figure
+   cards. Glow and light effects are dark-mode only; a score in trouble still
+   shows in its own colour. */
+[data-theme="light"] .kpi-card.glow-inner::before { display: none; }
+
 /* ── BENTO DOT TEXTURE OVERLAY ──────────────────────────────────
    A fine dot grid laid behind the card's content (z-index:-1, so it
    sits above the card background and below text/charts). It rides at a
@@ -1370,7 +1375,8 @@ button, [role="button"], [role="tab"] { min-width: 44px; }
 /* ── SIMPLE-MODE BOTTOM TAB BAR (audit #26) ─────────────────────
    Thumb-reach navigation on phones. Hidden at lg+ (sidebar rail owns
    navigation there) and rendered only in Simple mode (component-gated).
-   Active tab uses the doctrine 2px line indicator, never a filled pill. */
+   The active tab puts its icon in the same quiet pill as the side menu
+   (redesign 2026-10). */
 .mobile-tabbar { display: none; }
 @media (max-width: 1023px) {
   .mobile-tabbar {

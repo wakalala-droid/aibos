@@ -29,6 +29,9 @@ CODE_DIRS = ("app", "components", "lib", "hooks")
 SKIP = ("node_modules", ".next")
 
 PX = re.compile(r"fontSize:\s*['\"]?(\d+(?:\.\d+)?)(px|rem)?['\"]?\s*[,}]")
+# A size kept in a constant and used as fontSize: FS_SMALL (Bookings had
+# '0.9375rem', 15px, that the inline check above never saw).
+SIZE_CONST = re.compile(r"const\s+FS_\w+\s*=\s*['\"](\d+(?:\.\d+)?)(px|rem)['\"]")
 RADIUS = re.compile(r"borderRadius:\s*['\"]?(4|5|8|12)(?:px)?['\"]?\s*[,}\s]")
 EMOJI = re.compile("[\U0001F000-\U0001FAFF]")
 DASH = "—"
@@ -59,6 +62,10 @@ def check_code(path: pathlib.Path, rel: str, problems: list) -> None:
             if px >= 16 and "uppercase" in near:
                 continue
             problems.append(f"{rel}:{i}: text at {px:g}px; use var(--fs-body) (18px) or var(--fs-caps) for spaced capitals")
+        for m in SIZE_CONST.finditer(line):
+            px = size_px(m.group(1), m.group(2))
+            if px < 18:
+                problems.append(f"{rel}:{i}: text size constant at {px:g}px; use var(--fs-body) or var(--fs-label) (18px)")
         if RADIUS.search(line):
             problems.append(f"{rel}:{i}: corner off the scale; use var(--radius-sm) 6, var(--radius-md) 10 or var(--radius-lg) 16")
         if DASH in line:
