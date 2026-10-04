@@ -104,7 +104,7 @@
   --blue:           #60a5fa;
   --purple:         #a78bfa;
   --amber:          #fbbf24;
-  --red:            #ef4444;
+  --red:            #f87171;
   --red-dim:        rgba(239,68,68,0.12);
 
   /* Engine accents. E1 is a distinct blue, NOT the brand cyan — the Overall
@@ -117,7 +117,7 @@
   /* Status */
   --good:           #34d399;
   --warn:           #fbbf24;
-  --crit:           #ef4444;
+  --crit:           #f87171;
   --info:           #60a5fa;
 
   /* Card sparkline colours (matching E1) */
@@ -441,14 +441,16 @@ h1, h2, h3, h4 { line-height: 1.25; }
 /* Utility: tabular digits wherever numbers align in columns. */
 .tnum { font-variant-numeric: tabular-nums; }
 
+/* Theme colours, not fixed ones: the fixed bright green and red were
+   about 2:1 on a white card in light mode. */
 .kpi-card .kpi-badge.up {
-  background: rgba(52,211,153,0.15);
-  color: #34d399;
+  background: color-mix(in srgb, var(--good) 14%, transparent);
+  color: var(--good);
 }
 
 .kpi-card .kpi-badge.down {
-  background: rgba(239,68,68,0.15);
-  color: #ef4444;
+  background: color-mix(in srgb, var(--crit) 14%, transparent);
+  color: var(--crit);
 }
 
 .kpi-card .kpi-icon {

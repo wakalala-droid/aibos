@@ -39,7 +39,7 @@ export default function MarketingNav() {
         {/* Brand */}
         <Link
           href="/"
-          style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 9, minHeight: 44, textDecoration: 'none' }}
           aria-label="AIBOS home"
         >
           <Image src="/brand/aibos-mark.png" alt="" aria-hidden width={34} height={34} style={{ width: 34, height: 34, objectFit: 'contain' }} priority />

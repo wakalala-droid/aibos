@@ -7,7 +7,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase';
-import { BrandLockup } from '@/components/brand/BootSplash';
 
 // ─── Google Icon ───────────────────────────────────────────────────
 
@@ -185,7 +184,9 @@ export default function LoginPage() {
         background: '#f4f3ef', color: '#15110f',
       }}
     >
-      <Suspense fallback={<BrandLockup markSize={150} />}>
+      {/* A plain card while the form loads: the old fallback drew the white
+          logo on this light page, a blank flash. */}
+      <Suspense fallback={<div aria-busy="true" style={{ width: 'min(440px, calc(100% - 32px))', minHeight: 360, borderRadius: 16, background: '#fff', border: '1px solid #e4e0d8' }} />}>
         <LoginForm />
       </Suspense>
       <p style={{ fontSize: 'var(--fs-caps)', color: '#5d564f', letterSpacing: '0.14em', textTransform: 'uppercase', textAlign: 'center', padding: '0 16px', margin: 0 }}>
