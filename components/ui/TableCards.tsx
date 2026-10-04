@@ -51,16 +51,18 @@ function label(table: HTMLTableElement) {
 
 export default function TableCards() {
   useEffect(() => {
-    let frame = 0;
+    // A short timer, not requestAnimationFrame: animation frames stop in a
+    // background tab, and a table that loaded there stayed unlabelled.
+    let timer = 0;
     const run = () => {
-      frame = 0;
+      timer = 0;
       document.querySelectorAll<HTMLTableElement>(SELECTOR).forEach(label);
     };
-    const schedule = () => { if (!frame) frame = requestAnimationFrame(run); };
+    const schedule = () => { if (!timer) timer = window.setTimeout(run, 60); };
     run();
     const mo = new MutationObserver(schedule);
     mo.observe(document.body, { childList: true, subtree: true });
-    return () => { mo.disconnect(); if (frame) cancelAnimationFrame(frame); };
+    return () => { mo.disconnect(); if (timer) window.clearTimeout(timer); };
   }, []);
   return null;
 }
