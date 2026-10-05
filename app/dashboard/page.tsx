@@ -23,7 +23,7 @@ import BorderGlow from '@/components/ui/BorderGlow';
 import EngineScoreCard from '@/components/ui/EngineScoreCard';
 import { bloomProps } from '@/lib/cometStyle';
 import Link from 'next/link';
-import { Aperture, BarChart3, LayoutGrid, Activity, Layers, ListChecks, Upload, Users } from 'lucide-react';
+import { Aperture, LayoutGrid, Activity, ListChecks, Store, Upload, UserMinus, Users } from 'lucide-react';
 import BentoCard, { bentoSpans } from '@/components/ui/BentoCard';
 import { motion } from 'framer-motion';
 import {
@@ -33,7 +33,7 @@ import {
 
 // Cursor edge-glow tuning for KPI/score cards (hsl "h s l", React Bits).
 const CURSOR_GLOW = '190 95 62';
-const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
+const MESH = ['#22d3ee', '#22d3ee', '#67e8f9']; // one hue (5 Oct 2026)
 
 // Simple mode gets its own front door; the full Overview stays the Pro surface.
 // Two components (not an early return) so each keeps a stable hook order when
@@ -436,7 +436,7 @@ function OverviewPage() {
             )}
           </BentoCard>
 
-          <BentoCard className={gSpan('till')} icon={<BarChart3 />} title="Till" tag="Sales" motion="pulse" explainId="card.operations"
+          <BentoCard className={gSpan('till')} icon={<Store />} title="Till" tag="Sales" motion="pulse" explainId="card.operations"
             href={hasEngine3Data ? '/dashboard/pos' : undefined}
             text={hasEngine3Data || hasItemOps ? undefined : "Upload your till's sales report to see what sells, how fast and at what time of day."}
             foot={hasEngine3Data || hasItemOps ? undefined : <Link href="/dashboard/import" className="pill">Upload a file</Link>}>
@@ -491,8 +491,8 @@ function OverviewPage() {
         <div className="bento-grid">
           {[
             { href: '/dashboard/customers',     title: 'Best customers',  tag: 'People', text: 'Who buys most, how often and how much each is worth to you.', icon: <Users />,      span: 'span-2' },
-            { href: '/dashboard/churn',         title: 'Quiet customers', tag: 'People', text: 'Who has stopped coming, and what to send them.',              icon: <Layers />,     span: 'span-2' },
-            { href: '/dashboard/pos',           title: 'Till sales',      tag: 'Sales',  text: 'What sells, how fast and at what time of day.',              icon: <BarChart3 />,  span: 'span-2' },
+            { href: '/dashboard/churn',         title: 'Quiet customers', tag: 'People', text: 'Who has stopped coming, and what to send them.',              icon: <UserMinus />,  span: 'span-2' },
+            { href: '/dashboard/pos',           title: 'Till sales',      tag: 'Sales',  text: 'What sells, how fast and at what time of day.',              icon: <Store />,      span: 'span-2' },
             { href: '/dashboard/benchmarks',    title: 'How you compare', tag: 'Sales',  text: 'Your numbers against businesses like yours.',               icon: <LayoutGrid />, span: 'span-3' },
             { href: '/dashboard/brief?tab=ops', title: 'Briefs',          tag: 'Plan',   text: 'Everything above in one read, with what to do first.',      icon: <ListChecks />, span: 'span-3' },
           ].map((c) => (

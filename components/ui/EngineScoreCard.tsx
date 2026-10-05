@@ -10,7 +10,7 @@ import { bloomProps } from '@/lib/cometStyle';
 import { sentenceCase } from './KPICard';
 
 const CURSOR_GLOW = '190 95 62';
-const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
+const MESH = ['#22d3ee', '#22d3ee', '#67e8f9']; // one hue (5 Oct 2026)
 
 export default function EngineScoreCard({
   label, sub, score, colour, href, locked, notYet, explainId,

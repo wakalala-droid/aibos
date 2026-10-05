@@ -14,7 +14,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import SectionCard from '@/components/ui/SectionCard';
+import { Sunrise } from 'lucide-react';
+import BentoCard from '@/components/ui/BentoCard';
 import { useProfile } from '@/lib/profile';
 import { useStore } from '@/lib/store';
 import { briefDeliveryConfig } from '@/lib/api';
@@ -57,63 +58,48 @@ export default function BriefSubscribe() {
     }
   };
 
-  const body: React.CSSProperties = { fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: 0, lineHeight: 1.55 };
-  const button: React.CSSProperties = {
-    padding: '11px 16px', borderRadius: 10, border: 'none', fontSize: 'var(--fs-body)', fontWeight: 700,
-    color: 'var(--on-cyan)', background: 'var(--cyan)', cursor: status === 'saving' ? 'default' : 'pointer',
-    opacity: status === 'saving' ? 0.6 : 1, textDecoration: 'none', textAlign: 'center',
-  };
+  const saving = status === 'saving';
+  const where = to || 'your account email';
 
+  // A bento card like the rest of Home (second bento pass, 5 Oct 2026).
   return (
-    <SectionCard title="AI Brief" subtitle="Your numbers, summarised, every morning by email and on your phone">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {!allowed ? (
-          <>
-            <p style={body}>
-              Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today,
-              by email and as a notification on any phone or computer where you turned them on.
-              {ownPlan ? ` It comes with ${needed}.` : ' It comes with a paid plan, which the business owner manages.'}
-            </p>
-            {ownPlan && <Link href={`/checkout?plan=${requiredTier('scheduled_brief')}`} style={button}>See {needed}</Link>}
-          </>
-        ) : on ? (
-          <>
-            <p role="status" style={body}>
-              <strong style={{ color: 'var(--text-1)' }}>On.</strong> Your brief goes to {to || 'your account email'} every morning at 06:30
-              and to every phone or computer where you turned notifications on.
-            </p>
-            {emailLive === false && (
-              <p style={{ ...body, color: 'var(--warn)' }}>
-                Email sending is not switched on at our end yet, so nothing is going out. Your setting is kept for when it is.
-              </p>
-            )}
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-              <button type="button" onClick={() => void setOn(false)} disabled={status === 'saving'}
-                style={{ ...button, background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border-md)' }}>
-                {status === 'saving' ? 'Saving…' : 'Turn it off'}
-              </button>
-              <Link className="tap-link" href="/dashboard/profile" style={{ fontSize: 'var(--fs-data)', color: 'var(--cyan)' }}>
-                Change where it goes
-              </Link>
-            </div>
-          </>
-        ) : (
-          <>
-            <p style={body}>
-              Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today,
-              sent to {to || 'your account email'} and to your phone if notifications are on there.
-            </p>
-            <button type="button" onClick={() => void setOn(true)} disabled={status === 'saving'} style={button}>
-              {status === 'saving' ? 'Saving…' : 'Email me the brief'}
-            </button>
-          </>
-        )}
-        {status === 'error' && (
-          <p role="alert" style={{ fontSize: 'var(--fs-data)', color: 'var(--crit)', margin: 0 }}>
-            That did not save. Please try again.
-          </p>
-        )}
-      </div>
-    </SectionCard>
+    <BentoCard icon={<Sunrise />} title="Morning brief" tag={!allowed ? needed : on ? 'On' : 'Off'}
+      text={!allowed ? (
+        <>Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today,
+          by email and as a notification on any phone or computer where you turned them on.
+          {ownPlan ? ` It comes with ${needed}.` : ' It comes with a paid plan, which the business owner manages.'}</>
+      ) : on ? (
+        <span role="status"><strong style={{ color: 'var(--text-1)' }}>On.</strong> Your brief goes to {where} every morning at 06:30
+          and to every phone or computer where you turned notifications on.</span>
+      ) : (
+        <>Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today,
+          sent to {where} and to your phone if notifications are on there.</>
+      )}
+      foot={!allowed ? (
+        ownPlan ? <Link className="pill pill-primary" href={`/checkout?plan=${requiredTier('scheduled_brief')}`}>See {needed}</Link> : null
+      ) : on ? (
+        <>
+          <button type="button" className="pill pill-quiet" onClick={() => void setOn(false)} disabled={saving}>
+            {saving ? 'Saving…' : 'Turn it off'}
+          </button>
+          <Link className="pill pill-quiet" href="/dashboard/profile">Change where it goes</Link>
+        </>
+      ) : (
+        <button type="button" className="pill pill-primary" onClick={() => void setOn(true)} disabled={saving}>
+          {saving ? 'Saving…' : 'Email me the brief'}
+        </button>
+      )}
+    >
+      {allowed && on && emailLive === false && (
+        <p className="bento-note" style={{ marginTop: 8 }}>
+          Email sending is not switched on at our end yet, so nothing is going out. Your setting is kept for when it is.
+        </p>
+      )}
+      {status === 'error' && (
+        <p role="alert" className="bento-note" style={{ marginTop: 8, color: 'var(--red)' }}>
+          That did not save. Please try again.
+        </p>
+      )}
+    </BentoCard>
   );
 }

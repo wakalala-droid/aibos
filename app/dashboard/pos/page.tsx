@@ -7,12 +7,14 @@ import LockOverlay from '@/components/ui/LockOverlay';
 import DataTable, { type DataTableColumn } from '@/components/ui/DataTable';
 import SimpleSummary from '@/components/dashboard/SimpleSummary';
 import ChartTooltip from '@/components/ui/ChartTooltip';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { CHART_RAMP } from '@/lib/tone';
 import PageHeader from '@/components/ui/PageHeader';
 
-const CAT_COLORS = ['var(--e3)','var(--blue)','var(--warn)','var(--purple)','var(--e2)','var(--crit)','var(--text-3)'];
+// One palette (5 Oct 2026): the biggest category in the brand line, the rest
+// in greys, so the donut reads in the same colours as the page.
+const CAT_COLORS = CHART_RAMP;
 // The API ranks speed with emoji; the owner reads words.
-const VEL_COLOR: Record<string, string> = { '\u{1F525}': 'var(--good)', '\u2705': 'var(--text-2)', '\u26A0': 'var(--warn)' };
 const VEL_WORD: Record<string, string> = { '\u{1F525}': 'Fast', '\u2705': 'Steady', '\u26A0': 'Slow' };
 
 // Top-items columns. Rank (#) follows the current sort — it's the row's place
@@ -20,16 +22,16 @@ const VEL_WORD: Record<string, string> = { '\u{1F525}': 'Fast', '\u2705': 'Stead
 const itemColumns = (sym: string): DataTableColumn<TopItemRow>[] => [
   { key: 'rank', label: '#', render: (_item, i) => <span style={{ color: 'var(--text-4)' }}>#{i + 1}</span> },
   { key: 'sku', label: 'Code', sortValue: r => r.sku,
-    render: r => <span style={{ color: 'var(--blue)', fontWeight: 600 }}>{r.sku}</span> },
+    render: r => <span style={{ color: 'var(--text-3)' }}>{r.sku}</span> },
   { key: 'name', label: 'Name', sortValue: r => r.name,
     render: r => <span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{r.name}</span> },
   { key: 'category', label: 'Category', sortValue: r => r.category,
     render: r => <span className="badge" style={{ color: 'var(--text-3)', background: 'var(--bg-badge)', borderColor: 'var(--border)' }}>{r.category}</span> },
   { key: 'units_sold', label: 'Units', sortValue: r => r.units_sold, render: r => r.units_sold.toLocaleString() },
   { key: 'revenue', label: 'Sales', sortValue: r => r.revenue,
-    render: r => <span style={{ fontWeight: 700, color: 'var(--e3)' }}>{fmt(r.revenue, false, sym)}</span> },
+    render: r => <span className="tnum" style={{ fontWeight: 600, color: 'var(--text-1)' }}>{fmt(r.revenue, false, sym)}</span> },
   { key: 'velocity_rank', label: 'How fast it sells', sortValue: r => r.velocity_rank,
-    render: r => <span style={{ fontSize: 'var(--fs-body)', color: VEL_COLOR[r.velocity_rank] ?? 'var(--text-3)' }}>{VEL_WORD[r.velocity_rank] ?? r.velocity_rank}</span> },
+    render: r => <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>{VEL_WORD[r.velocity_rank] ?? r.velocity_rank}</span> },
 ];
 
 export default function POSPage() {
@@ -38,13 +40,13 @@ export default function POSPage() {
   const gt = posGrandTotals;
   const discRate = gt ? (gt.discount_value ?? 0) / Math.max(gt.gross_revenue ?? 0, 1) * 100 : 0;
   const pieData = categories.slice(0, 6).map((c, i) => ({ name: c.category, value: Math.round(c.revenue), colour: CAT_COLORS[i % CAT_COLORS.length] }));
-  const barData = categories.slice(0, 7).map(c => ({ name: c.category.slice(0, 9), units: c.units }));
+  const unitRows = [...categories].sort((a, b) => (b.units ?? 0) - (a.units ?? 0)).slice(0, 8);
+  const unitMax = Math.max(...unitRows.map((c) => c.units ?? 0), 1);
 
   return (
     <>
       <PageHeader
         eyebrow="Reports"
-        eyebrowColour="var(--e3)"
         title="Till sales"
         subtitle={<>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</>}
       />
@@ -53,61 +55,51 @@ export default function POSPage() {
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
-        <KPICard label="Sales before discounts" value={fmt(gt?.gross_revenue ?? 0, false, sym)} sub="before discounts"
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="var(--e3)" strokeWidth="1.5" fill="none"/><path d="M2 9h20" stroke="var(--e3)" strokeWidth="1.3" strokeLinecap="round"/></svg>}
-          iconBg="rgba(16,185,129,0.15)" sparkColor="var(--e3)" delay={0} />
-        <KPICard label="Sales after discounts" value={fmt(gt?.net_revenue ?? 0, false, sym)} sub="after discounts"
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(52,211,153,0.15)" sparkColor="var(--good)" delay={0.06} />
-        <KPICard label="Items sold" value={(gt?.units_sold ?? 0).toLocaleString()} sub="across all categories"
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke="var(--blue)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(96,165,250,0.15)" sparkColor="var(--blue)" delay={0.12} />
-        <KPICard label="Discounts given" value={fmt(gt?.discount_value ?? 0, false, sym)} sub={`${discRate.toFixed(2)}% of gross revenue`}
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 14.5L14.5 9M9 9h.01M14.5 14.5h.01" stroke="var(--warn)" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="10" stroke="var(--warn)" strokeWidth="1.4" fill="none"/></svg>}
-          iconBg="rgba(251,191,36,0.15)" sparkColor="var(--warn)" delay={0.18} />
+        <KPICard label="Sales before discounts" value={fmt(gt?.gross_revenue ?? 0, false, sym)} sub="what the till rang up" />
+        <KPICard label="Sales after discounts" value={fmt(gt?.net_revenue ?? 0, false, sym)} sub="what you were paid" />
+        <KPICard label="Items sold" value={(gt?.units_sold ?? 0).toLocaleString()} sub="across all categories" />
+        <KPICard label="Discounts given" value={fmt(gt?.discount_value ?? 0, false, sym)} sub={`${discRate.toFixed(2)}% of sales before discounts`} />
       </div>
 
-      {/* Charts */}
+      {/* Charts: the donut in the one palette, and every category named on
+          its own bar (the old chart skipped every other name). */}
       <div className="grid-2" style={{ marginBottom: 20 }}>
-        <SectionCard title="Sales by category" delay={0.1}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div role="img" aria-label={`Donut chart of revenue mix across ${pieData.length} categories`}>
-            <ResponsiveContainer width={130} height={130}>
-              <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={34} outerRadius={56} dataKey="value" stroke="none">
-                  {pieData.map((e, i) => <Cell key={i} fill={e.colour} fillOpacity={0.85} />)}
-                </Pie>
-                <Tooltip content={<ChartTooltip sym={sym} />} />
-              </PieChart>
-            </ResponsiveContainer>
+        <SectionCard title="Sales by category" subtitle="Share of the money each category brought in" delay={0.1}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+            <div role="img" aria-label={`Donut chart of sales across ${pieData.length} categories`} style={{ flexShrink: 0 }}>
+              <ResponsiveContainer width={150} height={150}>
+                <PieChart>
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={44} outerRadius={70} dataKey="value" stroke="var(--bg-card)" strokeWidth={2} paddingAngle={1}>
+                    {pieData.map((e, i) => <Cell key={i} fill={e.colour} />)}
+                  </Pie>
+                  <Tooltip content={<ChartTooltip sym={sym} />} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-            <div style={{ flex: 1 }}>
+            <ul style={{ flex: '1 1 200px', minWidth: 0, margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
               {categories.slice(0, 6).map((c, i) => (
-                <div key={c.category} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: CAT_COLORS[i % CAT_COLORS.length], flexShrink: 0 }} />
-                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.category}</span>
-                  </div>
-                  <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: CAT_COLORS[i % CAT_COLORS.length] }}>{c.pct_of_total.toFixed(1)}%</span>
-                </div>
+                <li key={c.category} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                    <span aria-hidden="true" style={{ width: 12, height: 12, borderRadius: 'var(--radius-sm)', background: CAT_COLORS[i % CAT_COLORS.length], flexShrink: 0, boxShadow: 'inset 0 0 0 1px var(--border-md)' }} />
+                    <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.category}</span>
+                  </span>
+                  <span className="tnum" style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{c.pct_of_total.toFixed(1)}%</span>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </SectionCard>
 
-        <SectionCard title="Items sold by category" delay={0.14}>
-          <div role="img" aria-label={`Bar chart of units sold across ${barData.length} categories`}>
-          <ResponsiveContainer width="100%" height={170}>
-            <BarChart data={barData} layout="vertical" barCategoryGap="22%">
-              <XAxis minTickGap={16} type="number" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-              <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
-              <Bar dataKey="units" radius={[0, 5, 5, 0]}>
-                {barData.map((_, i) => <Cell key={i} fill={CAT_COLORS[i % CAT_COLORS.length]} fillOpacity={0.75} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          </div>
+        <SectionCard title="Items sold by category" subtitle="How many items went out of each category" delay={0.14}>
+          <ul className="bar-list" aria-label={`Items sold across ${unitRows.length} categories`}>
+            {unitRows.map((c) => (
+              <li key={c.category}>
+                <span className="bar-name">{c.category}</span>
+                <span className="bar-figure">{(c.units ?? 0).toLocaleString()}</span>
+                <span className="bar-track" aria-hidden="true"><span className="bar-fill" style={{ display: 'block', width: `${((c.units ?? 0) / unitMax) * 100}%` }} /></span>
+              </li>
+            ))}
+          </ul>
         </SectionCard>
       </div>
 

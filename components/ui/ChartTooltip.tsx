@@ -24,7 +24,7 @@ export default function ChartTooltip({ active, payload, label, sym = 'K', curren
       {label && (
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 6px' }}>{monthName(label)}</p>
       )}
-      {payload.filter((p: any) => p.value !== null && p.value !== undefined).map((p: any, i: number) => (
+      {payload.filter((p: any) => p.value !== null && p.value !== undefined && !Array.isArray(p.value)).map((p: any, i: number) => (
         <p key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--fs-body)', margin: '2px 0', color: 'var(--text-2)' }}>
           <span aria-hidden="true" style={{ width: 10, height: 10, borderRadius: 999, flexShrink: 0, background: p.stroke && p.stroke !== 'none' ? p.stroke : (p.fill?.startsWith?.('url(') ? 'var(--chart-line)' : p.fill ?? p.color) }} />
           <span style={{ flex: 1 }}>{p.name}</span>

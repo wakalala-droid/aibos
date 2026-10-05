@@ -12,10 +12,10 @@ import PageHeader from '@/components/ui/PageHeader';
 
 // Keys are the API's class values; `name` is what the owner reads (no emoji, no BCG jargon).
 const BCG: Record<string, { name: string; color: string; border: string; bg: string; desc: string }> = {
-  '⭐ Star':          { name: 'Best sellers',        color: 'var(--warn)',   border: 'rgba(251,191,36,0.25)',  bg: 'rgba(251,191,36,0.06)',  desc: 'Earn a lot and sell often'  },
-  '\u{1F404} Cash Cow':      { name: 'Big earners',         color: 'var(--good)',   border: 'rgba(52,211,153,0.25)',  bg: 'rgba(52,211,153,0.06)',  desc: 'Earn a lot from fewer sales'   },
-  '❓ Question Mark': { name: 'Popular, low value',  color: 'var(--blue)',   border: 'rgba(96,165,250,0.25)',  bg: 'rgba(96,165,250,0.06)',  desc: 'Sell often but earn little'   },
-  '\u{1F415} Dog':           { name: 'Slow sellers',        color: 'var(--text-3)', border: 'rgba(71,85,105,0.25)',   bg: 'rgba(71,85,105,0.06)',   desc: 'Earn little and sell rarely'    },
+  '⭐ Star':          { name: 'Best sellers',        color: 'var(--warn)',   border: 'var(--border-md)',  bg: 'var(--pill-bg)',  desc: 'Earn a lot and sell often'  },
+  '\u{1F404} Cash Cow':      { name: 'Big earners',         color: 'var(--good)',   border: 'var(--border-md)',  bg: 'var(--pill-bg)',  desc: 'Earn a lot from fewer sales'   },
+  '❓ Question Mark': { name: 'Popular, low value',  color: 'var(--blue)',   border: 'var(--border-md)',  bg: 'var(--pill-bg)',  desc: 'Sell often but earn little'   },
+  '\u{1F415} Dog':           { name: 'Slow sellers',        color: 'var(--text-3)', border: 'var(--border-md)',   bg: 'var(--pill-bg)',   desc: 'Earn little and sell rarely'    },
 };
 
 export default function ProductsPage() {
@@ -117,7 +117,7 @@ export default function ProductsPage() {
                   <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>+</span>
                   <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-1)', fontWeight: 600 }}>{pair.product_b}</span>
                 </div>
-                <span className="badge" style={{ color: 'var(--e2)', background: 'rgba(249,115,22,0.10)', borderColor: 'rgba(249,115,22,0.22)', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                <span className="badge" style={{ color: 'var(--e2)', background: 'transparent', borderColor: 'var(--border-md)', fontWeight: 700, whiteSpace: 'nowrap' }}>
                   {pair.times_together}×
                 </span>
               </motion.div>

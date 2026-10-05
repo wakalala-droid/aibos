@@ -37,7 +37,7 @@ import { tourFor } from '@/lib/tourStops';
 export const WELCOME_CLOSED_EVENT = 'aibos:welcome-closed';
 
 const CURSOR_GLOW = '190 95 62';
-const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
+const MESH = ['#22d3ee', '#22d3ee', '#67e8f9']; // one hue (5 Oct 2026)
 
 const primary: React.CSSProperties = {
   padding: '12px 24px', minHeight: 48, borderRadius: 10, border: 'none',

@@ -221,8 +221,8 @@ export default function ForecastPage() {
                   <stop offset="100%" stopColor="var(--brand-fill)" stopOpacity={0}    />
                 </linearGradient>
                 <linearGradient id="foreG" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--purple)"   stopOpacity={0.22} />
-                  <stop offset="100%" stopColor="var(--purple)" stopOpacity={0}    />
+                  <stop offset="0%" stopColor="var(--chart-line)"   stopOpacity={0.10} />
+                  <stop offset="100%" stopColor="var(--chart-line)" stopOpacity={0}    />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false} />
@@ -230,14 +230,13 @@ export default function ForecastPage() {
               <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false}
                 tickFormatter={(v) => formatAxis(n(v))} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
-              <Area type="monotone" dataKey="upper" stroke="none" fill="rgba(167,139,250,0.07)" dot={false} legendType="none" name="Upper" connectNulls />
-              <Area type="monotone" dataKey="lower" stroke="none" fill="var(--bg-page)"          dot={false} legendType="none" name="Lower" connectNulls />
+              <Area type="monotone" dataKey={(d: Row) => (d.lower != null && d.upper != null ? [d.lower, d.upper] : null)} stroke="none" fill="var(--chart-line)" fillOpacity={0.12} dot={false} legendType="none" name="Likely range" connectNulls isAnimationActive={false} />
               <Area type="monotone" dataKey="hist"  stroke="var(--chart-line)"   strokeWidth={2.2} fill="url(#histG)" dot={{ r: 3.5, fill: 'var(--chart-line)',   strokeWidth: 0 }} connectNulls name="Historical" />
-              <Area type="monotone" dataKey="fcast" stroke="var(--purple)" strokeWidth={2} strokeDasharray="6 4" fill="url(#foreG)" dot={{ r: 4, fill: 'var(--purple)', strokeWidth: 0 }} connectNulls name="Forecast" />
+              <Area type="monotone" dataKey="fcast" stroke="var(--chart-line)" strokeWidth={2} strokeDasharray="6 4" fill="url(#foreG)" dot={{ r: 4, fill: 'var(--bg-card)', stroke: 'var(--chart-line)', strokeWidth: 2 }} connectNulls name="Forecast" />
             </AreaChart>
           </ResponsiveContainer>
           <div style={{ display: 'flex', gap: 20, marginTop: 14 }}>
-            {[{ color: 'var(--chart-line)', label: 'So far', dashed: false }, { color: 'var(--purple)', label: 'Forecast', dashed: true }].map(item => (
+            {[{ color: 'var(--chart-line)', label: 'So far', dashed: false }, { color: 'var(--chart-line)', label: 'Forecast', dashed: true }].map(item => (
               <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <svg width="24" height="4">
                   {item.dashed

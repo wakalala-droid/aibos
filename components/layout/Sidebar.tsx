@@ -51,10 +51,9 @@ export default function Sidebar() {
   const isLocked = (eng?: 'ci' | 'ops') =>
     eng === 'ci' ? !hasEngine2Data : eng === 'ops' ? !hasEngine3Data : false;
 
-  // Non-engine items highlight in the brand cyan; engine items in their engine
-  // hue. (--e1 is the Financial blue now, no longer an alias of --cyan.)
-  const getAccent = (eng?: 'ci' | 'ops') =>
-    eng === 'ci' ? 'var(--e2)' : eng === 'ops' ? 'var(--e3)' : 'var(--cyan)';
+  // Every door lights the same way when it is open: the brand colour on the
+  // icon over a soft pill, as on the phone bar (one palette, 5 Oct 2026).
+  const getAccent = (_eng?: 'ci' | 'ops') => 'var(--cyan)';
 
   // Escape closes the mobile drawer (accessibility_system.md KEYBOARD RULE).
   useEffect(() => {
@@ -300,11 +299,8 @@ export default function Sidebar() {
       )}
 
       {/* Footer */}
-      <div style={{
-        padding: col ? '10px 14px' : '10px 16px 12px',
-        flexShrink: 0,
-        display: 'flex', alignItems: 'center', gap: 10,
-      }}>
+      {/* Collapsed, the rail is one button wide, so the controls stack. */}
+      <div className="sidebar-foot">
         <button
           type="button"
           onClick={toggle}

@@ -6,6 +6,7 @@ import DashboardHeader from '@/components/layout/DashboardHeader';
 import PlanNotice from '@/components/ui/PlanNotice';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
 import UpdatePrompt from '@/components/pwa/UpdatePrompt';
+import WhatsNew from '@/components/pwa/WhatsNew';
 import WelcomeTour from '@/components/onboarding/WelcomeTour';
 import DashboardTour from '@/components/onboarding/DashboardTour';
 import { logUsage, type UsageEngine } from '@/lib/usage';
@@ -55,6 +56,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Says when a newer AIBOS is ready, for a tab or an installed app that
           has been open since before it shipped. */}
       <UpdatePrompt />
+      {/* Once per release: what shipped, with the logo and its art. */}
+      <WhatsNew />
       {children}
       <DashboardTour />
       {/* Shown once after an upgrade, and stays until it is closed. */}

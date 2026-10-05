@@ -7,22 +7,22 @@
 
 import { useStore } from '@/lib/store';
 import type { DataManifest, ItemBreakdownRow } from '@/lib/store';
-import SectionCard from './SectionCard';
+import { Info, ScanSearch } from 'lucide-react';
+import BentoCard from './BentoCard';
+import { BAD, INK, signTone } from '@/lib/tone';
 
-const ROLE_COLOUR: Record<string, string> = {
-  revenue: 'var(--good)', cost: 'var(--crit)', profit: 'var(--good)',
-  margin: 'var(--e1)', units: 'var(--e3)', price: 'var(--e3)', unit_cost: 'var(--warn)',
-  item: 'var(--e2)', category: 'var(--e2)', period: 'var(--cyan)',
-  customer: 'var(--e2)', multiplier: 'var(--purple)', demand: 'var(--purple)',
-  unknown: 'var(--text-4)',
+// What each column was read as, in the owner's words. Every figure is ink;
+// only a low "how sure" is red (one palette, 5 Oct 2026).
+const ROLE_WORD: Record<string, string> = {
+  revenue: 'Sales', cost: 'Costs', profit: 'Profit', margin: 'Kept from sales',
+  units: 'How many', price: 'Price', unit_cost: 'Cost of each',
+  item: 'Item', category: 'Category', period: 'Month or date',
+  customer: 'Customer', multiplier: 'Multiplier', demand: 'Demand',
+  unknown: 'Not used',
 };
 
-function confTone(c: number) {
-  return c >= 0.8 ? 'var(--good)' : c >= 0.6 ? 'var(--warn)' : 'var(--crit)';
-}
-
 function money(n: number, sym: string) {
-  return `${sym}${Math.round(n).toLocaleString()}`;
+  return `${n < 0 ? '-' : ''}${sym}${Math.abs(Math.round(n)).toLocaleString()}`;
 }
 
 export default function DataManifestCard({
@@ -40,70 +40,43 @@ export default function DataManifestCard({
   const isCross = manifest.data_shape === 'cross_sectional';
 
   return (
-    <SectionCard
+    <BentoCard
+      icon={<ScanSearch />}
       title="How AIBOS read your file"
-      subtitle="Transparency-first: every column, how it was mapped and how confident we are"
-      delay={0.12}
+      tag={isCross ? 'By item' : 'Over time'}
+      style={{ marginBottom: 20 }}
+      motion="tilt"
+      text={<>Every column in your file, what AIBOS took it to be and how sure it is.
+        {manifest.grouping_column ? <> Grouped by &ldquo;{manifest.grouping_column}&rdquo;.</> : null}</>}
     >
-      {/* Shape badge */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
-        <span style={{
-          fontSize: 'var(--fs-label)',
-          fontWeight: 700,
-          padding: '4px 10px',
-          borderRadius: 6,
-          color: isCross ? 'var(--warn)' : 'var(--cyan)',
-          background: isCross ? 'color-mix(in srgb, var(--warn) 14%, transparent)' : 'var(--cyan-dim)',
-          border: `1px solid color-mix(in srgb, ${isCross ? 'var(--warn)' : 'var(--cyan)'} 30%, transparent)`,
-        }}>
-          {isCross ? 'Item-level data (no time axis)' : 'Time-series data'}
-        </span>
-        {manifest.grouping_column && (
-          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-            grouped by “{manifest.grouping_column}”
-          </span>
-        )}
-      </div>
-
       {/* Honesty flags */}
       {manifest.flags.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '16px 0 0' }}>
           {manifest.flags.map((f, i) => (
-            <div key={i} role="note" style={{
-              display: 'flex', gap: 8, alignItems: 'flex-start', padding: '8px 10px',
-              borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', border: '1px solid var(--border)',
-            }}>
-              <span aria-hidden="true" style={{ color: 'var(--warn)', fontWeight: 700, lineHeight: 1.4 }}>!</span>
-              <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', margin: 0, lineHeight: 1.5 }}>{f}</p>
+            <div key={i} role="note" className="mini-stat" style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+              <Info size={20} strokeWidth={1.75} aria-hidden="true" style={{ flexShrink: 0, marginTop: 4, color: 'var(--text-3)' }} />
+              <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', margin: 0, lineHeight: 1.6 }}>{f}</p>
             </div>
           ))}
         </div>
       )}
 
-      {/* Column → role table */}
-      <div style={{ overflowX: 'auto' }}>
-        <table className="data-table" style={{ width: '100%', fontSize: 'var(--fs-data)' }}>
+      {/* Column and what it was read as */}
+      <div style={{ overflowX: 'auto', marginTop: 16 }}>
+        <table className="data-table" style={{ width: '100%' }}>
           <thead>
             <tr>
               <th style={{ textAlign: 'left' }}>Column</th>
               <th style={{ textAlign: 'left' }}>Read as</th>
-              <th style={{ textAlign: 'right' }}>Confidence</th>
+              <th style={{ textAlign: 'right' }}>How sure</th>
             </tr>
           </thead>
           <tbody>
             {manifest.columns.map((c) => (
               <tr key={c.name}>
                 <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{c.name}</td>
-                <td>
-                  <span style={{
-                    fontSize: 'var(--fs-label)',
-                    fontWeight: 700,
-                    color: ROLE_COLOUR[c.role] ?? 'var(--text-3)',
-                  }}>
-                    {c.role}
-                  </span>
-                </td>
-                <td style={{ textAlign: 'right', color: confTone(c.confidence) }}>
+                <td style={{ color: 'var(--text-2)' }}>{ROLE_WORD[c.role] ?? c.role}</td>
+                <td className="tnum" style={{ textAlign: 'right', color: c.confidence < 0.6 ? BAD : INK }}>
                   {Math.round(c.confidence * 100)}%
                 </td>
               </tr>
@@ -112,46 +85,36 @@ export default function DataManifestCard({
         </table>
       </div>
 
-      {/* Per-item economics (Operations view) */}
+      {/* Each item's money (item-level files) */}
       {breakdown.length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <p style={{
-            fontSize: 'var(--fs-label)',
-            fontWeight: 700,
-            color: 'var(--e3)',
-            margin: '0 0 10px',
-          }}>
-            Per-item economics
-          </p>
+        <div style={{ marginTop: 24 }}>
+          <p className="eyebrow">Each item</p>
           <div style={{ overflowX: 'auto' }}>
-            <table className="data-table" style={{ width: '100%', fontSize: 'var(--fs-data)' }}>
+            <table className="data-table" style={{ width: '100%' }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left' }}>Item</th>
-                  <th style={{ textAlign: 'right' }}>Revenue</th>
+                  <th style={{ textAlign: 'right' }}>Sales</th>
                   <th style={{ textAlign: 'right' }}>Cost</th>
                   <th style={{ textAlign: 'right' }}>Profit</th>
-                  <th style={{ textAlign: 'right' }}>Margin</th>
+                  <th style={{ textAlign: 'right' }}>Kept</th>
                 </tr>
               </thead>
               <tbody>
-                {breakdown.map((b) => {
-                  const tone = b.profit >= 0 ? 'var(--good)' : 'var(--crit)';
-                  return (
-                    <tr key={b.item}>
-                      <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{b.item}</td>
-                      <td style={{ textAlign: 'right', color: 'var(--text-2)' }}>{money(b.revenue, sym)}</td>
-                      <td style={{ textAlign: 'right', color: 'var(--text-2)' }}>{money(b.costs, sym)}</td>
-                      <td style={{ textAlign: 'right', color: tone, fontWeight: 700 }}>{money(b.profit, sym)}</td>
-                      <td style={{ textAlign: 'right', color: tone }}>{b.margin.toFixed(1)}%</td>
-                    </tr>
-                  );
-                })}
+                {breakdown.map((b) => (
+                  <tr key={b.item}>
+                    <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{b.item}</td>
+                    <td className="tnum" style={{ textAlign: 'right' }}>{money(b.revenue, sym)}</td>
+                    <td className="tnum" style={{ textAlign: 'right' }}>{money(b.costs, sym)}</td>
+                    <td className="tnum" style={{ textAlign: 'right', color: signTone(b.profit), fontWeight: 600 }}>{money(b.profit, sym)}</td>
+                    <td className="tnum" style={{ textAlign: 'right', color: signTone(b.margin) }}>{b.margin.toFixed(1)}%</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </div>
       )}
-    </SectionCard>
+    </BentoCard>
   );
 }

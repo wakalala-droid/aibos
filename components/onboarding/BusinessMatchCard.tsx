@@ -43,7 +43,7 @@ interface Props {
 }
 
 const CURSOR_GLOW = '190 95 62';
-const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
+const MESH = ['#22d3ee', '#22d3ee', '#67e8f9']; // one hue (5 Oct 2026)
 
 const metaText: React.CSSProperties = {
   fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0,

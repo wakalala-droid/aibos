@@ -234,7 +234,7 @@ export default function BusinessProfilePage() {
                 <img src={form.logo_url} alt="" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
               </span>
             ) : (
-              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 'var(--radius-md)', flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-body)', fontWeight: 600 }}>
+              <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 'var(--radius-md)', flexShrink: 0, background: 'var(--pill-bg)', border: '1px solid var(--border-strong)', color: 'var(--text-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-body)', fontWeight: 600 }}>
                 {initials}
               </span>
             )}

@@ -11,7 +11,9 @@ import Link from 'next/link';
 import { authHeaders } from '@/lib/api';
 import { useStore } from '@/lib/store';
 import { fmt } from '@/lib/utils';
-import SectionCard from '@/components/ui/SectionCard';
+import { FileSearch } from 'lucide-react';
+import BentoCard from '@/components/ui/BentoCard';
+import { BAD, INK } from '@/lib/tone';
 
 interface Driver {
   label: string;
@@ -52,43 +54,49 @@ export default function WhatChanged() {
 
   if (!inv?.ok || !inv.drivers?.length) return null;
 
+  // A bento card (second bento pass, 5 Oct 2026): ink figures, red only for
+  // a change that went the wrong way (more spent, or less coming in).
   return (
-    <SectionCard
+    <div className="bento-grid" style={{ marginBottom: 20 }}>
+    <BentoCard
+      className="span-6"
+      icon={<FileSearch />}
       title="What changed"
-      subtitle={`${monthName(inv.month)} vs your ${inv.baseline_months?.length ?? 0}-month baseline, from your own entries`}
-      style={{ marginBottom: 20 }}
+      tag={monthName(inv.month)}
+      motion="tilt"
+      text={`Against your usual ${inv.baseline_months?.length ?? 0} months, from your own entries.`}
     >
-      <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 600, margin: '0 0 12px' }}>
-        {inv.summary}
-      </p>
-      <div style={{ display: 'grid', gap: 8 }}>
+      {inv.summary && (
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', fontWeight: 600, margin: '16px 0 4px', lineHeight: 1.6 }}>
+          {inv.summary}
+        </p>
+      )}
+      <div>
         {inv.drivers.slice(0, 4).map((d) => {
           const up = d.delta > 0;
           const bad = (d.direction === 'out') === up; // more spend / less income = bad
-          const colour = bad ? 'var(--crit)' : 'var(--good)';
           return (
-            <div key={`${d.direction}-${d.label}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '9px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-              <span style={{ minWidth: 0 }}>
-                {/* Drill-through (audit #31): the events behind this driver. */}
-                <Link href={`/dashboard/timeline?type=${encodeURIComponent(d.event_type)}`}
-                  style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', textDecoration: 'none' }}>
-                  {d.label} <span aria-hidden style={{ color: 'var(--text-4)' }}>›</span>
-                </Link>
-                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginLeft: 8 }}>
-                  {d.count} event{d.count === 1 ? '' : 's'}
-                  {d.baseline_avg > 0 && ` · usually ${fmt(d.baseline_avg, true, sym)}`}
-                  {d.baseline_avg === 0 && ' · new this month'}
+            // Drill-through (audit #31): the events behind this driver.
+            <Link key={`${d.direction}-${d.label}`} className="row-link"
+              href={`/dashboard/timeline?type=${encodeURIComponent(d.event_type)}`}>
+              <span className="row-main">
+                <span className="row-title">{d.label}</span>
+                <span className="row-sub">
+                  {d.count} entr{d.count === 1 ? 'y' : 'ies'}
+                  {d.baseline_avg > 0 && `, usually ${fmt(d.baseline_avg, true, sym)}`}
+                  {d.baseline_avg === 0 && ', new this month'}
                 </span>
               </span>
-              <span style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: colour, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
-                {up ? '+' : '−'}{fmt(Math.abs(d.delta), true, sym)}
+              <span className="row-amount" style={{ color: bad ? BAD : INK }}>
+                {up ? '+' : '\u2212'}{fmt(Math.abs(d.delta), true, sym)}
                 {/* No percentage from a tiny usual amount (UI/UX audit A11). */}
                 {d.pct_change !== null && Math.abs(d.pct_change) < 200 && ` (${up ? '+' : ''}${d.pct_change.toFixed(0)}%)`}
               </span>
-            </div>
+            </Link>
           );
         })}
       </div>
-    </SectionCard>
+    </BentoCard>
+    </div>
   );
 }

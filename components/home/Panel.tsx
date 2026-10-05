@@ -8,7 +8,7 @@
 import BorderGlow from '@/components/ui/BorderGlow';
 
 const CURSOR_GLOW = '190 95 62';
-const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
+const MESH = ['#22d3ee', '#22d3ee', '#67e8f9']; // one hue (5 Oct 2026)
 
 export default function Panel({ title, action, children, style, innerStyle, explainId, labelledBy }: {
   title?: React.ReactNode;

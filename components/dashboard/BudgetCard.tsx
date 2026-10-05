@@ -9,10 +9,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { getBudgets, setBudget, type BudgetReport, type BudgetMetric } from '@/lib/api';
 import { useStore } from '@/lib/store';
 import { fmt } from '@/lib/utils';
-import SectionCard from '@/components/ui/SectionCard';
+import { Target } from 'lucide-react';
+import BentoCard from '@/components/ui/BentoCard';
+import { BAD, INK } from '@/lib/tone';
 
 const METRICS: { key: BudgetMetric; label: string }[] = [
-  { key: 'revenue', label: 'Revenue' },
+  { key: 'revenue', label: 'Sales' },
   { key: 'costs', label: 'Costs' },
   { key: 'profit', label: 'Profit' },
 ];
@@ -57,65 +59,68 @@ export default function BudgetCard() {
   const monthLabel = new Date(month + '-01').toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   const hasBudget = (report?.lines.length ?? 0) > 0;
 
-  const input: React.CSSProperties = { width: '100%', minHeight: 44, padding: '7px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' };
-  const btn: React.CSSProperties = { minHeight: 44, padding: '7px 14px', borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' };
-
+  // A bento card (second bento pass, 5 Oct 2026): figures in ink, the bar in
+  // the brand line, and red only for a line that is off its plan.
   return (
-    <SectionCard
-      title="Budget vs actual"
-      subtitle={`Your plan for ${monthLabel}, measured against what you've recorded`}
-      style={{ marginBottom: 20 }}
-      action={
-        !editing ? (
-          <button type="button" onClick={() => setEditing(true)} style={{ ...btn, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)' }}>
-            {hasBudget ? 'Edit targets' : 'Set targets'}
-          </button>
-        ) : undefined
-      }
+    <div className="bento-grid" style={{ marginBottom: 20 }}>
+    <BentoCard
+      className="span-6"
+      icon={<Target />}
+      title="Plan against actual"
+      tag={monthLabel}
+      motion="pulse"
+      text={`Your plan for ${monthLabel}, measured against what you have recorded.`}
+      foot={!editing ? (
+        <button type="button" className="pill pill-quiet" onClick={() => setEditing(true)}>
+          {hasBudget ? 'Change the plan' : 'Set a plan'}
+        </button>
+      ) : undefined}
     >
-      {err && <p role="alert" style={{ color: 'var(--crit)', fontSize: 'var(--fs-label)', margin: '0 0 12px' }}>{err}</p>}
+      {err && <p role="alert" className="bento-note" style={{ color: 'var(--red)', marginTop: 12 }}>{err}</p>}
 
       {editing ? (
-        <div style={{ display: 'grid', gap: 12 }}>
+        <div style={{ display: 'grid', gap: 16, marginTop: 16, maxWidth: 520 }}>
           {METRICS.map((m) => (
-            <div key={m.key} style={{ display: 'grid', gridTemplateColumns: '110px 1fr', alignItems: 'center', gap: 10 }}>
-              <label htmlFor={`b-${m.key}`} style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', fontWeight: 600 }}>{m.label} target</label>
-              <input id={`b-${m.key}`} type="number" min={0} inputMode="decimal" style={input}
+            <div key={m.key}>
+              <label htmlFor={`b-${m.key}`} className="field-label">{m.label} this month</label>
+              <input id={`b-${m.key}`} className="field" type="number" min={0} inputMode="decimal"
                 value={draft[m.key]} onChange={(e) => setDraft((d) => ({ ...d, [m.key]: e.target.value }))} placeholder="0" />
             </div>
           ))}
-          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-            <button type="button" onClick={() => void save()} disabled={busy} style={{ ...btn, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)' }}>{busy ? 'Saving…' : 'Save plan'}</button>
-            <button type="button" onClick={() => { setEditing(false); void load(); }} style={{ ...btn, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)' }}>Cancel</button>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" className="pill pill-primary" onClick={() => void save()} disabled={busy}>{busy ? 'Saving…' : 'Save plan'}</button>
+            <button type="button" className="pill pill-quiet" onClick={() => { setEditing(false); void load(); }}>Cancel</button>
           </div>
         </div>
       ) : !hasBudget ? (
-        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
-          Set a target for this month and AIBOS will track you against it: not just against last month.
+        <p className="bento-note" style={{ marginTop: 12 }}>
+          Set what you plan to sell, spend and keep this month, and AIBOS tracks you against it, not just against last month.
         </p>
       ) : (
-        <div style={{ display: 'grid', gap: 10 }}>
+        <div style={{ display: 'grid', gap: 20, marginTop: 20 }}>
           {report!.lines.map((l) => {
             const pct = l.pct_of_target ?? 0;
             const barPct = Math.max(0, Math.min(pct, 100));
-            const colour = l.on_track ? 'var(--good)' : 'var(--crit)';
+            const off = !l.on_track;
+            const word = METRICS.find((m) => m.key === l.metric)?.label ?? l.metric;
             return (
               <div key={l.metric}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-                  <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', textTransform: 'capitalize' }}>{l.metric}</span>
-                  <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>
-                    {fmt(l.actual, false, sym)} <span style={{ color: 'var(--text-4)' }}>/ {fmt(l.target, false, sym)}</span>
-                    {l.pct_of_target !== null && <span style={{ color: colour, fontWeight: 600, marginLeft: 8 }}>{l.pct_of_target.toFixed(0)}%</span>}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
+                  <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{word}</span>
+                  <span className="tnum" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>
+                    {fmt(l.actual, false, sym)} <span style={{ color: 'var(--text-3)' }}>of {fmt(l.target, false, sym)}</span>
+                    {l.pct_of_target !== null && <strong style={{ color: off ? BAD : INK, fontWeight: 600, marginLeft: 10 }}>{l.pct_of_target.toFixed(0)}%</strong>}
                   </span>
                 </div>
-                <div style={{ height: 8, borderRadius: 'var(--radius-sm)', background: 'var(--bg-badge)', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${barPct}%`, borderRadius: 'var(--radius-sm)', background: colour, transition: 'width .4s ease' }} />
+                <div className="meter" style={{ height: 8 }}>
+                  <div className={`meter-fill${off ? ' bad' : ''}`} style={{ width: `${barPct}%` }} />
                 </div>
               </div>
             );
           })}
         </div>
       )}
-    </SectionCard>
+    </BentoCard>
+    </div>
   );
 }

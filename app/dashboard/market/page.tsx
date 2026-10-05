@@ -124,7 +124,7 @@ export default function MarketPage() {
           briefLines.map((line, i) => (
             <motion.div key={i} initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.08 }}
               style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-              <span style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--e2)' }}>{i + 1}</span>
+              <span style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'var(--pill-bg)', border: '1px solid var(--border-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--e2)' }}>{i + 1}</span>
               <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>{line.replace(/^\d+\.\s*/, '')}</p>
             </motion.div>
           ))

@@ -373,7 +373,7 @@ export default function DashboardHeader() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatarUrl} alt="" width={28} height={28} style={{ borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
         ) : (
-          <span style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg, var(--e1), var(--cyan))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-label)', fontWeight: 800 }}>
+          <span style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'var(--pill-bg)', border: '1px solid var(--border-strong)', color: 'var(--text-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-label)', fontWeight: 800 }}>
             {initials}
           </span>
         )}

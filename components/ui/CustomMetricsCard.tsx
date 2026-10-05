@@ -9,7 +9,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import { authHeaders } from '@/lib/api';
-import SectionCard from './SectionCard';
+import { Sigma } from 'lucide-react';
+import BentoCard from './BentoCard';
 
 interface ComputeResult {
   name: string;
@@ -83,38 +84,39 @@ export default function CustomMetricsCard() {
   if (!isAdmin || (!loading && results.length === 0)) return null;
 
   return (
-    <SectionCard
-      title="Custom Metrics"
-      subtitle="Owner-approved functions, computed live on this file · re-checked each run"
-      delay={0.16}
+    <BentoCard
+      icon={<Sigma />}
+      title="Your own figures"
+      tag={`${results.length} live`}
+      style={{ marginBottom: 20 }}
+      motion="pulse"
+      text="Figures you approved, worked out on this file and checked again every time."
     >
       {loading ? (
-        <p style={{ color: 'var(--text-3)', fontSize: 'var(--fs-body)', margin: 0 }}>Computing…</p>
+        <p className="bento-note" style={{ marginTop: 16 }}>Working them out…</p>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+        <div className="mini-stats" style={{ marginTop: 16 }}>
           {results.map((m) => (
-            <div key={m.name} style={{ padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border)' }}>
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px', lineHeight: 1.4 }}>
-                {m.name}
-              </p>
+            <div key={m.name} className="mini-stat">
+              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.4 }}>{m.name}</span>
               {m.ok ? (
-                <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color: 'var(--cyan)', margin: 0, letterSpacing: '-0.03em' }}>
+                <span className="tnum" style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.02em' }}>
                   {typeof m.value === 'number' ? m.value.toLocaleString(undefined, { maximumFractionDigits: 2 }) : 'None'}
-                </p>
+                </span>
               ) : (
-                <p title={m.error} style={{ fontSize: 'var(--fs-label)', color: 'var(--warn)', margin: 0, lineHeight: 1.4 }}>
-                  Flagged: failed re-check
-                </p>
+                <span title={m.error} style={{ fontSize: 'var(--fs-body)', color: 'var(--red)', lineHeight: 1.4 }}>
+                  Failed its check
+                </span>
               )}
               {m.status && (
-                <p style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: m.status === 'stable' ? 'var(--good)' : 'var(--cyan)', margin: '6px 0 0' }}>
-                  {m.status === 'stable' ? 'stable' : 'monitoring'}
-                </p>
+                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                  {m.status === 'stable' ? 'Proven' : 'Still being watched'}
+                </span>
               )}
             </div>
           ))}
         </div>
       )}
-    </SectionCard>
+    </BentoCard>
   );
 }

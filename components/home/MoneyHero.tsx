@@ -102,17 +102,20 @@ export default function MoneyHero({ title = 'Money right now', initialDays = 30 
                 onMouseLeave={() => setScrub(null)}>
                 <defs>
                   <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#00d4ff" stopOpacity={0.32} />
-                    <stop offset="60%" stopColor="#00d4ff" stopOpacity={0.08} />
-                    <stop offset="100%" stopColor="#00d4ff" stopOpacity={0} />
+                    <stop offset="0%" stopColor="var(--chart-line)" stopOpacity={0.30} />
+                    <stop offset="60%" stopColor="var(--chart-line)" stopOpacity={0.08} />
+                    <stop offset="100%" stopColor="var(--chart-line)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="day" ticks={ticks} interval={0} tickFormatter={(d: string) => dayWords(d, false)}
                   tick={{ fontSize: 18, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
                 <YAxis hide domain={[lo - pad, hi + pad]} />
                 <Tooltip content={() => null} cursor={{ stroke: 'var(--border-strong)', strokeWidth: 1 }} />
+                {/* The fill always hangs under the line. Recharts fills to zero by
+                    default, so while the balance sat below zero the shading
+                    floated above the line (owner's screenshot, 5 Oct 2026). */}
                 <Area type="monotone" dataKey="balance" stroke="var(--chart-line)" strokeWidth={2}
-                  fill={`url(#${gradId})`} isAnimationActive={animate} animationDuration={320}
+                  baseValue="dataMin" fill={`url(#${gradId})`} isAnimationActive={animate} animationDuration={320}
                   activeDot={{ r: 5, fill: 'var(--chart-line)', stroke: 'var(--bg-card)', strokeWidth: 2 }} dot={false} />
               </AreaChart>
             </ResponsiveContainer>

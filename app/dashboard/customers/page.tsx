@@ -12,10 +12,13 @@ import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 
+// One palette (5 Oct 2026): brand line for the best group, greys for the
+// rest, red only for customers who are lost.
 const SEG_COLORS: Record<string, string> = {
-  Champion: '#34d399', Loyal: '#60a5fa', Promising: '#a78bfa',
-  'At Risk': '#fbbf24', Lost: '#ef4444',
+  Champion: 'var(--chart-1)', Loyal: 'var(--chart-2)', Promising: 'var(--chart-3)',
+  'At Risk': 'var(--chart-4)', Lost: 'var(--red)',
 };
+const segText = (seg: string) => (seg === 'Lost' ? 'var(--red)' : 'var(--text-2)');
 
 function RetentionRing({ rate }: { rate: number }) {
   const r = 44, circ = 2 * Math.PI * r, dash = (rate / 100) * circ;
@@ -23,7 +26,7 @@ function RetentionRing({ rate }: { rate: number }) {
     <div style={{ position: 'relative', width: 110, height: 110, flexShrink: 0 }}>
       <svg width="110" height="110" viewBox="0 0 110 110">
         <circle cx="55" cy="55" r={r} fill="none" stroke="var(--border)" strokeWidth="8" />
-        <motion.circle cx="55" cy="55" r={r} fill="none" stroke="var(--e2)" strokeWidth="8"
+        <motion.circle cx="55" cy="55" r={r} fill="none" stroke="var(--chart-line)" strokeWidth="8"
           strokeLinecap="round" strokeDasharray={`${circ}`} strokeDashoffset={circ}
           animate={{ strokeDashoffset: circ - dash }}
           transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
@@ -55,7 +58,7 @@ export default function CustomersPage() {
       render: r => <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>{r.customer_id}</span> },
     { key: 'segment', label: 'Group', sortValue: r => r.segment,
       render: r => (
-        <span className="badge" style={{ color: SEG_COLORS[r.segment] ?? 'var(--text-3)', background: `color-mix(in srgb, ${SEG_COLORS[r.segment] ?? '#fff'} 12%, transparent)`, borderColor: `color-mix(in srgb, ${SEG_COLORS[r.segment] ?? '#fff'} 30%, transparent)` }}>
+        <span className="badge" style={{ color: segText(r.segment), background: 'transparent', borderColor: r.segment === 'Lost' ? 'color-mix(in srgb, var(--red) 35%, transparent)' : 'var(--border-md)' }}>
           {r.segment}
         </span>
       ) },
@@ -150,7 +153,7 @@ export default function CustomersPage() {
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: SEG_COLORS[s.segment] ?? 'var(--text-4)' }} />
                     <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>{s.segment}</span>
                   </div>
-                  <span style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: SEG_COLORS[s.segment] ?? 'var(--text-4)' }}>{s.count}</span>
+                  <span className="tnum" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: s.segment === 'Lost' && s.count > 0 ? 'var(--red)' : 'var(--text-1)' }}>{s.count}</span>
                 </div>
               ))}
             </div>

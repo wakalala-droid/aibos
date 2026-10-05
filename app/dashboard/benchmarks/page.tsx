@@ -1,103 +1,121 @@
 'use client';
-import { useStore } from '@/lib/store';
+import { useStore, type BenchmarkRow } from '@/lib/store';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import LockOverlay from '@/components/ui/LockOverlay';
-import { motion } from 'framer-motion';
+import BentoCard, { bentoSpans } from '@/components/ui/BentoCard';
 import PageHeader from '@/components/ui/PageHeader';
+import { ArrowRight, CircleSlash, CupSoda, Gauge, Layers, Lightbulb, Megaphone, Percent, Sandwich, Star, TrendingUp } from 'lucide-react';
+import { benchLine, benchStatus, benchWords, menuGapWords, type GapKind } from '@/lib/opsWords';
+import { BAD, INK } from '@/lib/tone';
 
-const STATUS = {
-  good:  { color: 'var(--good)', label: 'On Target',    bg: 'rgba(52,211,153,0.10)',  border: 'rgba(52,211,153,0.25)' },
-  warn:  { color: 'var(--warn)', label: 'Below Target', bg: 'rgba(251,191,36,0.10)',  border: 'rgba(251,191,36,0.25)' },
-  alert: { color: 'var(--crit)', label: 'Far below',     bg: 'rgba(239,68,68,0.10)',   border: 'rgba(239,68,68,0.25)'  },
+// How you compare (second bento pass, 5 Oct 2026): every measure is a bento
+// card with its plain name, the figure in ink (red only when it is off
+// target), a meter with a tick at the mark similar businesses reach, and one
+// sentence on where it sits. Menu advice is in plain words, one card each.
+
+const BENCH_ICON: Record<string, JSX.Element> = {
+  drink_attach_pct: <CupSoda />,
+  side_attach_pct: <Sandwich />,
+  top3_sku_concentration: <Star />,
+  discount_rate_pct: <Percent />,
+  category_mix_primary: <Layers />,
+  avg_order_value: <Gauge />,
 };
 
-function BenchmarkCard({ b, delay }: { b: any; delay: number }) {
-  const cfg = STATUS[b.status as keyof typeof STATUS] ?? STATUS.good;
-  const pct = Math.min(Math.abs(b.actual / Math.max(b.benchmark, 1)) * 100, 110);
+const GAP_LOOK: Record<GapKind, { icon: JSX.Element; tag: string }> = {
+  promote: { icon: <Megaphone />, tag: 'Promote' },
+  price: { icon: <TrendingUp />, tag: 'Price' },
+  remove: { icon: <CircleSlash />, tag: 'Rethink' },
+  other: { icon: <Lightbulb />, tag: 'Idea' },
+};
+
+function BenchmarkCard({ b, className }: { b: BenchmarkRow; className: string }) {
+  const w = benchWords(b.metric, b.label);
+  const st = benchStatus(b.status);
+  const unit = b.unit === 'K' ? '' : b.unit;
+  // The meter runs to a little past whichever is larger, the figure or the mark.
+  const top = Math.max(b.actual, b.benchmark, 1) * 1.2;
+  const fill = Math.min((Math.max(b.actual, 0) / top) * 100, 100);
+  const mark = Math.min((b.benchmark / top) * 100, 100);
   return (
-    <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}
-      style={{ background: 'var(--bg-card)', border: `1px solid ${cfg.border}`, borderRadius: 'var(--radius-md)', padding: '20px', boxShadow: 'var(--shadow-card)', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-        <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0, maxWidth: 130 }}>{b.label}</p>
-        <span className="badge" style={{ color: cfg.color, background: cfg.bg, borderColor: cfg.border }}>{cfg.label}</span>
+    <BentoCard className={className} icon={BENCH_ICON[b.metric] ?? <Gauge />} title={w.name} motion="pulse"
+      tag={<span style={st.bad ? { color: BAD } : undefined}>{st.word}</span>}
+    >
+      <p className="bento-figure" style={{ color: st.bad ? BAD : INK }}>{b.actual}{unit}</p>
+      <div className="meter" style={{ marginTop: 16 }} role="img"
+        aria-label={`${b.actual}${unit} against a mark of ${b.benchmark}${unit}`}>
+        <div className={`meter-fill${st.bad ? ' bad' : ''}`} style={{ width: `${fill}%` }} />
+        <div className="meter-mark" style={{ left: `${mark}%` }} />
       </div>
-      <p style={{ fontSize: 'var(--fs-display)', fontWeight: 600, color: cfg.color, letterSpacing: '-0.03em', margin: '0 0 12px' }}>
-        {b.actual}{b.unit !== 'K' ? b.unit : ''}
-      </p>
-      <div className="progress-track" style={{ marginBottom: 8 }}>
-        <motion.div className="progress-fill" style={{ background: cfg.color }}
-          initial={false} animate={{ width: `${Math.min(pct, 100)}%` }}
-          transition={{ duration: 1, ease: 'easeOut', delay: delay + 0.2 }} />
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Benchmark: {b.benchmark}{b.unit !== 'K' ? b.unit : ''}</span>
-        <span style={{ fontSize: 'var(--fs-label)', color: cfg.color, fontWeight: 700 }}>
-          {b.gap > 0 ? '+' : ''}{b.gap.toFixed(1)}{b.unit !== 'K' ? b.unit : ''}
-        </span>
-      </div>
-    </motion.div>
+      <p className="bento-note" style={{ marginTop: 12 }}>{benchLine(b.actual, b.benchmark, b.unit, w.higherBetter)}</p>
+      {w.why && <p className="bento-note" style={{ marginTop: 4 }}>{w.why}</p>}
+    </BentoCard>
   );
 }
 
-function AttachMeter({ label, value, benchmark, color }: { label: string; value: number; benchmark: number; color: string }) {
-  const good = value >= benchmark;
-  const barCol = good ? 'var(--good)' : 'var(--warn)';
+function AttachMeter({ label, value, benchmark }: { label: string; value: number; benchmark: number }) {
+  const short = value < benchmark;
+  const top = Math.max(value, benchmark, 1) * 1.15;
   return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>{label}</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: barCol }}>{value.toFixed(1)}%</span>
-          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>/ {benchmark}%</span>
-        </div>
+    <div style={{ marginBottom: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginBottom: 10 }}>
+        <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>{label}</span>
+        <span className="tnum" style={{ fontSize: 'var(--fs-body)' }}>
+          <strong style={{ color: short ? BAD : INK, fontWeight: 600 }}>{value.toFixed(1)}%</strong>
+          <span style={{ color: 'var(--text-3)' }}> of meals, against {benchmark}%</span>
+        </span>
       </div>
-      <div className="progress-track" style={{ height: 6 }}>
-        <motion.div className="progress-fill" style={{ background: barCol, height: '100%' }}
-          initial={false} animate={{ width: `${Math.min(value / benchmark * 100, 100)}%` }}
-          transition={{ duration: 1.1, ease: 'easeOut', delay: 0.2 }} />
+      <div className="meter" role="img" aria-label={`${value.toFixed(1)}% against ${benchmark}%`}>
+        <div className={`meter-fill${short ? ' bad' : ''}`} style={{ width: `${Math.min((value / top) * 100, 100)}%` }} />
+        <div className="meter-mark" style={{ left: `${(benchmark / top) * 100}%` }} />
       </div>
-      <p style={{ fontSize: 'var(--fs-label)', color: barCol, textAlign: 'right', margin: '4px 0 0' }}>
-        {good ? `+${(value - benchmark).toFixed(1)}% above target` : `${(value - benchmark).toFixed(1)}% below target`}
+      <p className="bento-note" style={{ marginTop: 8 }}>
+        {short ? `${(benchmark - value).toFixed(1)} points short of similar food businesses.` : `${(value - benchmark).toFixed(1)} points ahead of similar food businesses.`}
       </p>
     </div>
   );
 }
 
 export default function BenchmarksPage() {
-  const { benchmarks, attachRates, menuGaps, hasEngine3Data, posBusinessName, posPeriod } = useStore();
+  const { benchmarks, attachRates, menuGaps, posBusinessName, posPeriod } = useStore();
   const goodCount  = benchmarks.filter(b => b.status === 'good').length;
   const warnCount  = benchmarks.filter(b => b.status === 'warn').length;
   const alertCount = benchmarks.filter(b => b.status === 'alert').length;
   const drinkAttach = attachRates?.drink_attach_pct ?? 0;
   const sideAttach  = attachRates?.side_attach_pct  ?? 0;
+  const spans = bentoSpans(benchmarks.length);
+  const gaps = menuGaps.map((g) => ({ ...g, words: menuGapWords(g.issue, g.opportunity) }));
+  const gapSpans = gaps.map((_, i) => (gaps.length % 2 === 1 && i === gaps.length - 1 ? 'span-6' : 'span-3'));
 
   return (
     <>
       <PageHeader
         eyebrow="Reports"
-        eyebrowColour="var(--e3)"
         title="How you compare"
-        subtitle={<>{[posBusinessName, posPeriod].filter(Boolean).join(' · ')}</>}
+        subtitle={<>{[posBusinessName, posPeriod].filter(Boolean).join(' · ') || 'Your till figures against similar businesses'}</>}
       />
 
       {/* KPI summary strip */}
       <div className="grid-3" style={{ marginBottom: 24 }}>
-        <KPICard label="On target" value={String(goodCount)} sub="measures where you are fine"
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="var(--good)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(52,211,153,0.15)" sparkColor="var(--good)" delay={0} />
-        <KPICard label="Below target" value={String(warnCount)} sub="measures to look at"
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--warn)" strokeWidth="1.5" strokeLinejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="var(--warn)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
-          iconBg="rgba(251,191,36,0.15)" sparkColor="var(--warn)" delay={0.06} />
-        <KPICard label="Far below" value={String(alertCount)} sub="measures to fix first"
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--crit)" strokeWidth="1.5" fill="none"/><path d="M12 8v5M12 16v.5" stroke="var(--crit)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
-          iconBg="rgba(239,68,68,0.15)" sparkColor="var(--crit)" delay={0.12} />
+        <KPICard label="On target" value={String(goodCount)} sub="measures where you are fine" />
+        <KPICard label="Off target" value={String(warnCount)} sub="measures to look at" />
+        <KPICard label="Far off" value={String(alertCount)} sub="measures to fix first" />
       </div>
 
-      {/* Benchmark cards */}
+      {/* The measures */}
       {benchmarks.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 20 }}>
-          {benchmarks.map((b, i) => <BenchmarkCard key={b.metric} b={b} delay={0.1 + i * 0.06} />)}
+        <div className="bento-section" style={{ marginTop: 0 }}>
+          <header className="bento-section-head">
+            <div>
+              <p className="eyebrow">Against similar businesses</p>
+              <h2 className="bento-section-title">Your measures</h2>
+            </div>
+            <p className="bento-section-sub">The tick on each bar is the mark similar businesses reach.</p>
+          </header>
+          <div className="bento-grid">
+            {benchmarks.map((b, i) => <BenchmarkCard key={b.metric} b={b} className={spans[i] ?? 'span-3'} />)}
+          </div>
         </div>
       ) : (
         <SectionCard delay={0.1} style={{ position: 'relative', minHeight: 160, textAlign: 'center' }}>
@@ -105,36 +123,50 @@ export default function BenchmarksPage() {
         </SectionCard>
       )}
 
-      {/* Attach rates */}
-      <SectionCard title="Sold together" subtitle="How often a meal sells with a drink or a side, against similar food businesses" delay={0.22} style={{ marginBottom: 20 }}>
-        <AttachMeter label="Sold with a drink" value={drinkAttach} benchmark={80} color="var(--e3)" />
-        <AttachMeter label="Sold with a side"  value={sideAttach}  benchmark={30} color="var(--blue)" />
-        {drinkAttach < 80 && (
-          <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.18)', marginTop: 4 }}>
-            <p style={{ fontSize: 'var(--fs-data)', color: 'var(--warn)', margin: 0, lineHeight: 1.5 }}>
-              Drink attach {drinkAttach.toFixed(1)}% is {(80 - drinkAttach).toFixed(1)}% below the 80% QSR benchmark. Train staff on proactive drink recommendations at every order.
-            </p>
-          </div>
-        )}
-      </SectionCard>
-
-      {/* Menu gaps */}
-      {menuGaps.length > 0 && (
-        <SectionCard title="Ways to improve your menu" subtitle="What sells fast and what to price differently" delay={0.28}>
-          {menuGaps.map((g, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, padding: '12px 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{g.name}</span>
-                  <span className="badge" style={{ color: 'var(--text-3)', background: 'var(--bg-badge)', borderColor: 'var(--border)', fontSize: 'var(--fs-label)' }}>{g.category}</span>
-                </div>
-                <p style={{ fontSize: 'var(--fs-data)', color: 'var(--warn)', margin: '0 0 3px' }}>{g.issue}</p>
-                <p style={{ fontSize: 'var(--fs-data)', color: 'var(--good)', margin: 0 }}>→ {g.opportunity}</p>
-              </div>
-              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', whiteSpace: 'nowrap', paddingTop: 2 }}>SKU: {g.sku}</span>
+      {/* Sold together */}
+      <div style={{ marginTop: 40 }}>
+        <SectionCard title="Sold together" subtitle="How often a meal goes out with a drink or a side, against similar food businesses" delay={0.22} style={{ marginBottom: 20 }}>
+          <AttachMeter label="Sold with a drink" value={drinkAttach} benchmark={80} />
+          <AttachMeter label="Sold with a side" value={sideAttach} benchmark={30} />
+          {drinkAttach < 80 && (
+            <div className="row" style={{ alignItems: 'flex-start', background: 'var(--pill-bg)', margin: 0 }}>
+              <span className="bento-icon" aria-hidden="true"><Lightbulb /></span>
+              <p className="bento-note" style={{ flex: 1 }}>
+                <strong>{drinkAttach.toFixed(0)} in every 100 meals</strong> go out with a drink. Similar food businesses manage 80. Ask &ldquo;Anything to drink?&rdquo; with every order.
+              </p>
             </div>
-          ))}
+          )}
         </SectionCard>
+      </div>
+
+      {/* Menu advice */}
+      {gaps.length > 0 && (
+        <div className="bento-section">
+          <header className="bento-section-head">
+            <div>
+              <p className="eyebrow">Menu</p>
+              <h2 className="bento-section-title">Ways to improve your menu</h2>
+            </div>
+            <p className="bento-section-sub">What to put in front of customers, and what to price differently.</p>
+          </header>
+          <div className="bento-grid">
+            {gaps.map((g, i) => {
+              const look = GAP_LOOK[g.words.kind];
+              return (
+                <BentoCard key={`${g.sku}-${i}`} className={gapSpans[i]} icon={look.icon} title={g.name} tag={look.tag}
+                  motion={g.words.kind === 'price' ? 'pulse' : 'float'}
+                  text={<>{g.words.issue}{g.category ? <span style={{ color: 'var(--text-4)' }}> {g.category}{g.sku ? `, code ${g.sku}` : ''}.</span> : null}</>}
+                  foot={
+                    <span style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 8, fontSize: 'var(--fs-body)', color: 'var(--text-1)', lineHeight: 1.6 }}>
+                      <ArrowRight size={20} strokeWidth={1.75} style={{ flexShrink: 0, marginTop: 4 }} aria-hidden="true" />
+                      {g.words.action}
+                    </span>
+                  }
+                />
+              );
+            })}
+          </div>
+        </div>
       )}
     </>
   );
