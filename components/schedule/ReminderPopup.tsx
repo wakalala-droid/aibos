@@ -11,7 +11,8 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { BellRing, X } from 'lucide-react';
+import { BellRing, CalendarClock, HandCoins, Package, Phone, Truck, type LucideIcon } from 'lucide-react';
+import Notice from '@/components/ui/Notice';
 import { timeAgo, type Notification } from '@/lib/notifications';
 import { playReminderSound } from '@/lib/sound';
 
@@ -33,6 +34,17 @@ function split(title: string): { label: string; name: string } {
   return at > 0 && at < 20
     ? { label: title.slice(0, at), name: title.slice(at + 2) }
     : { label: 'Reminder', name: title };
+}
+
+/** The round icon for a reminder, from the label the server writes. */
+function iconFor(label: string): LucideIcon {
+  const l = label.toLowerCase();
+  if (/meet|call back|appointment/.test(l)) return CalendarClock;
+  if (/pay|rent|salar|wage|tax|zra|napsa|nhima|bill|invoice|loan/.test(l)) return HandCoins;
+  if (/pick|collect/.test(l)) return Package;
+  if (/deliver/.test(l)) return Truck;
+  if (/call|phone/.test(l)) return Phone;
+  return BellRing;
 }
 
 export default function ReminderPopup({ items, onSettle }: {
@@ -79,30 +91,35 @@ export default function ReminderPopup({ items, onSettle }: {
       {visible.map((n) => {
         const { label, name } = split(n.title);
         const age = Date.now() - (Date.parse(n.happenedAt ?? '') || Date.now());
+        // The splash's pieces (the owner, 5 Oct 2026): a round icon for the
+        // kind of reminder, its kind in spaced capitals, the words, pills.
         return (
-          <div key={n.id} className="reminder-card">
-            <div className="reminder-head">
-              <span className="reminder-label">
-                <BellRing size={18} strokeWidth={2} aria-hidden="true" />
-                {label}
-              </span>
-              <button type="button" className="reminder-close" aria-label={`Dismiss the reminder for ${name}`}
-                onClick={() => settle(n.serverId!)}>
-                <X size={20} strokeWidth={2} aria-hidden="true" />
-              </button>
-            </div>
-            <p className="reminder-name">{name}</p>
-            {n.description && <p className="reminder-body">{n.description}</p>}
-            {age > 2 * 60 * 1000 && <p className="reminder-age">Sent {timeAgo(n.happenedAt).toLowerCase()}</p>}
-            <div className="reminder-actions">
-              <Link href={n.href || '/dashboard/schedule'} className="reminder-open" onClick={() => settle(n.serverId!)}>
-                Open schedule
-              </Link>
-              <button type="button" className="reminder-dismiss" onClick={() => settle(n.serverId!)}>
-                Dismiss
-              </button>
-            </div>
-          </div>
+          <Notice
+            key={n.id}
+            floating
+            role="region"
+            ariaLabel={`${label}: ${name}`}
+            icon={iconFor(label)}
+            title={label}
+            tag={age > 2 * 60 * 1000 ? undefined : 'Now'}
+            onClose={() => settle(n.serverId!)}
+            closeLabel={`Dismiss the reminder for ${name}`}
+            actions={
+              <>
+                <Link href={n.href || '/dashboard/schedule'} className="pill pill-primary" style={{ textDecoration: 'none' }}
+                  onClick={() => settle(n.serverId!)}>
+                  Open schedule
+                </Link>
+                <button type="button" className="pill pill-quiet" onClick={() => settle(n.serverId!)}>
+                  Dismiss
+                </button>
+              </>
+            }
+          >
+            <strong>{name}</strong>
+            {n.description && <><br />{n.description}</>}
+            {age > 2 * 60 * 1000 && <><br />Sent {timeAgo(n.happenedAt).toLowerCase()}</>}
+          </Notice>
         );
       })}
     </div>

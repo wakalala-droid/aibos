@@ -22,7 +22,7 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useTheme } from '@/lib/theme';
+import Notice from '@/components/ui/Notice';
 
 const DISMISSED_KEY = 'aibos-install-dismissed-at';
 const INSTALLED_KEY = 'aibos-installed';
@@ -90,7 +90,6 @@ export default function InstallPrompt() {
   const pathname = usePathname() || '';
   const [mode, setMode] = useState<Mode>(null);
   const [busy, setBusy] = useState(false);
-  const { isDark } = useTheme();
   const phone = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|Mobile/.test(navigator.userAgent);
 
   useEffect(() => {
@@ -147,75 +146,45 @@ export default function InstallPrompt() {
     ? 'Install AIBOS on this computer'
     : mode === 'mac-safari' ? 'Add AIBOS to your Dock' : 'Put AIBOS on your home screen';
 
+  // The splash's pieces (the owner, 5 Oct 2026): the AIBOS mark in its
+  // round, a spaced-capital title and tag, the hairline art, the brand pill.
   return (
-    <section
-      aria-label="Install AIBOS as an app"
-      style={{
-        display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
-        padding: '14px 16px', margin: '0 0 16px', borderRadius: 'var(--radius-md)',
-        border: '1px solid color-mix(in srgb, var(--cyan) 40%, transparent)',
-        background: 'color-mix(in srgb, var(--cyan) 9%, transparent)',
-      }}
-    >
-      {/* The logo itself, no tile: white on the dark theme, navy on the light one,
-          where a white logo would vanish. */}
-      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed 48px logo, nothing to optimise */}
-      <img
-        src={isDark ? '/brand/aibos-mark-white-glyph.png' : '/brand/aibos-mark.png'}
-        alt=""
-        width={48}
-        height={48}
-        style={{ flexShrink: 0, objectFit: 'contain' }}
-      />
-      <div style={{ flex: '1 1 280px', minWidth: 0 }}>
-        <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.5, fontWeight: 700, color: 'var(--text-1)' }}>{title}</p>
-        {mode === 'native' && (
-          <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)' }}>
-            Open it with one {phone ? 'tap' : 'click'}, like any other app. It opens straight to your business, full screen and without the browser around it.
-          </p>
-        )}
-        {mode === 'ios' && (
-          <ol style={{ margin: '6px 0 0', paddingLeft: 22, fontSize: 'var(--fs-body)', lineHeight: 1.7, color: 'var(--text-2)' }}>
-            <li>
-              Tap the Share button <ShareIcon /> {/iPad/.test(navigator.userAgent) ? 'at the top of the screen' : 'at the bottom of the screen'}.
-            </li>
-            <li>Scroll down and tap <strong style={{ color: 'var(--text-1)' }}>Add to Home Screen</strong>, then <strong style={{ color: 'var(--text-1)' }}>Add</strong>.</li>
-          </ol>
-        )}
-        {mode === 'mac-safari' && (
-          <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)' }}>
-            In the menu bar choose <strong style={{ color: 'var(--text-1)' }}>File</strong>, then <strong style={{ color: 'var(--text-1)' }}>Add to Dock</strong>. AIBOS then opens from your Dock like any other app.
-          </p>
-        )}
-      </div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {mode === 'native' && (
-          <button
-            type="button"
-            onClick={() => void install()}
-            disabled={busy}
-            style={{
-              minHeight: 44, padding: '10px 18px', borderRadius: 'var(--radius-md)', border: 'none',
-              background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700,
-              cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1,
-            }}
-          >
-            {phone ? 'Add to home screen' : 'Install app'}
+    <Notice
+      brand art
+      role="region"
+      ariaLabel="Install AIBOS as an app"
+      title={title}
+      tag="App"
+      style={{ margin: '0 0 16px' }}
+      actions={
+        <>
+          {mode === 'native' && (
+            <button type="button" className="pill pill-primary" onClick={() => void install()} disabled={busy}
+              style={{ opacity: busy ? 0.7 : 1 }}>
+              {phone ? 'Add to home screen' : 'Install app'}
+            </button>
+          )}
+          <button type="button" className="pill pill-quiet" onClick={dismiss}>
+            {mode === 'native' ? 'Not now' : 'Got it'}
           </button>
-        )}
-        <button
-          type="button"
-          onClick={dismiss}
-          style={{
-            minHeight: 44, padding: '10px 16px', borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border-md)', background: 'transparent',
-            color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer',
-          }}
-        >
-          {mode === 'native' ? 'Not now' : 'Got it'}
-        </button>
-      </div>
-    </section>
+        </>
+      }
+    >
+      {mode === 'native' && (
+        <>Open it with one {phone ? 'tap' : 'click'}, like any other app. It opens straight to your business, full screen and without the browser around it.</>
+      )}
+      {mode === 'ios' && (
+        <ol style={{ margin: 0, paddingLeft: 22, lineHeight: 1.7 }}>
+          <li>
+            Tap the Share button <ShareIcon /> {/iPad/.test(navigator.userAgent) ? 'at the top of the screen' : 'at the bottom of the screen'}.
+          </li>
+          <li>Scroll down and tap <strong>Add to Home Screen</strong>, then <strong>Add</strong>.</li>
+        </ol>
+      )}
+      {mode === 'mac-safari' && (
+        <>In the menu bar choose <strong>File</strong>, then <strong>Add to Dock</strong>. AIBOS then opens from your Dock like any other app.</>
+      )}
+    </Notice>
   );
 }
 

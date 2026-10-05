@@ -26,6 +26,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import Notice from '@/components/ui/Notice';
 
 const CHECK_MS = 5 * 60 * 1000;
 const RUNNING = process.env.NEXT_PUBLIC_BUILD_SHA || 'dev';
@@ -117,15 +118,30 @@ export default function UpdatePrompt() {
       .catch(() => { /* offline */ });
   };
 
+  // The splash's pieces (the owner, 5 Oct 2026): the AIBOS mark in its
+  // round, a spaced-capital title and tag, the hairline art and the money
+  // line, the brand pill. Updating opens the What's new screen once.
   return (
-    <div className="update-bar" role="status">
-      <span className="update-words">A new version of AIBOS is ready.</span>
-      <button type="button" className="update-button" onClick={() => window.location.reload()}>
-        Get it now
-      </button>
-      <button type="button" className="update-later" onClick={later}>
-        Later
-      </button>
+    <div className="update-dock">
+      <Notice
+        brand art floating
+        title="New version ready"
+        tag="Update"
+        onClose={later}
+        closeLabel="Later"
+        actions={
+          <>
+            <button type="button" className="pill pill-primary" onClick={() => window.location.reload()}>
+              Update now
+            </button>
+            <button type="button" className="pill pill-quiet" onClick={later}>
+              Later
+            </button>
+          </>
+        }
+      >
+        Fixes and new things are waiting. It takes a second, and you stay on this page.
+      </Notice>
     </div>
   );
 }

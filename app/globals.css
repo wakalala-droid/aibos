@@ -921,21 +921,33 @@ select optgroup {
    Sonner in unstyled mode; this is all of its look. Enter 200ms, exit 150ms
    (motion_governance.md); Sonner's own reduced-motion rule turns both off. */
 [data-sonner-toaster] { font-family: inherit !important; }
+/* The splash's pieces (5 Oct 2026): a round icon, the corner light, a pill. */
 .aibos-toast {
-  display: flex; align-items: center; gap: 12px; width: min(440px, calc(100vw - 32px));
-  padding: 12px 12px 12px 16px; border-radius: var(--radius-md);
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; align-items: center; gap: 14px; width: min(460px, calc(100vw - 32px));
+  padding: 12px; border-radius: var(--radius-card);
   background: var(--bg-card); border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-lg); color: var(--text-1);
   font-size: var(--fs-body); line-height: 1.5;
 }
+.aibos-toast::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 60% 140% at 8% 0%, var(--card-wash), transparent 72%);
+  opacity: var(--card-wash-opacity);
+}
+.aibos-toast [data-icon] { display: flex; flex-shrink: 0; }
+.toast-icon { width: 40px; height: 40px; }
+.toast-icon svg { width: 20px; height: 20px; }
+.aibos-toast-error .toast-icon { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, transparent); }
 .aibos-toast-title { font-size: var(--fs-body); font-weight: 600; color: var(--text-1); flex: 1; }
 .aibos-toast-desc { font-size: var(--fs-body); color: var(--text-2); }
 .aibos-toast-action {
-  margin-left: auto; min-height: 44px; min-width: 72px; padding: 0 16px;
-  border-radius: var(--radius-md); border: 1px solid var(--cyan); background: transparent;
-  color: var(--cyan); font-size: var(--fs-body); font-weight: 700; cursor: pointer; font-family: inherit;
+  margin-left: auto; min-height: 44px; min-width: 72px; padding: 0 18px;
+  border-radius: 999px; border: none; background: var(--brand-fill);
+  color: var(--on-brand); font-size: var(--fs-body); font-weight: 600; cursor: pointer; font-family: inherit;
 }
-.aibos-toast-error { border-color: var(--red); }
+.aibos-toast-action:hover { background: var(--brand-fill-hover); }
+.aibos-toast-error { border-color: color-mix(in srgb, var(--red) 45%, transparent); }
 .aibos-toast-error .aibos-toast-title { color: var(--text-1); }
 [data-sonner-toast] { transition-duration: 200ms !important; }
 [data-sonner-toast][data-removed="true"] { transition-duration: 150ms !important; }
@@ -1602,88 +1614,12 @@ html, body {
 }
 @media (max-width: 1023px) {
   .reminder-stack { top: calc(env(safe-area-inset-top, 0px) + 124px); right: 16px; }
-  /* One at a time on a phone; the next shows once this one is dealt with. */
-  .reminder-stack .reminder-card:nth-child(n+2) { display: none; }
 }
-.reminder-card {
-  pointer-events: auto;
-  background: var(--bg-card);
-  border: 1px solid var(--border-md);
-  border-left: 2px solid var(--amber);
-  border-radius: 10px;
-  box-shadow: var(--shadow-lg);
-  padding: 16px;
-  animation: reminder-in 200ms ease-out both;
-}
-.reminder-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.reminder-label {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: var(--fs-caps); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--amber);
-}
-/* Light amber on white reads at about 3:1; deepened toward the ink it clears 6.5:1. */
-[data-theme="light"] .reminder-label { color: color-mix(in srgb, var(--amber) 55%, var(--text-1)); }
-.reminder-close {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; margin: -8px -8px -8px 0;
-  border: none; border-radius: 10px; background: transparent;
-  color: var(--text-3); cursor: pointer;
-}
-.reminder-close:hover { background: var(--bg-badge); color: var(--text-1); }
-.reminder-name { margin: 8px 0 0; font-size: 18px; line-height: 1.4; font-weight: 700; color: var(--text-1); overflow-wrap: anywhere; }
-.reminder-body { margin: 4px 0 0; font-size: 18px; line-height: 1.6; color: var(--text-2); }
-.reminder-age { margin: 4px 0 0; font-size: var(--fs-body); line-height: 1.5; color: var(--text-3); }
-.reminder-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.reminder-open, .reminder-dismiss {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-height: 44px; padding: 0 16px; border-radius: 10px;
-  font-size: var(--fs-body); font-weight: 700; text-decoration: none; cursor: pointer;
-}
-.reminder-open { background: var(--text-1); color: var(--bg-card); border: 1px solid var(--text-1); }
-.reminder-open:hover { opacity: 0.9; }
-.reminder-dismiss { background: transparent; color: var(--text-2); border: 1px solid var(--border-md); }
-.reminder-dismiss:hover { background: var(--bg-badge); color: var(--text-1); }
-.reminder-open:focus-visible, .reminder-dismiss:focus-visible, .reminder-close:focus-visible {
-  outline: 2px solid var(--cyan); outline-offset: 2px;
-}
-/* ── A new version is ready (components/pwa/UpdatePrompt.tsx) ──────────────
-   A quiet bar at the foot of the screen, above the phone's tab bar, in the
-   same sizes as the reminder card. It rises in once and waits. */
-.update-bar {
-  position: fixed; z-index: 69;
-  left: 50%; transform: translateX(-50%);
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
-  width: min(560px, calc(100vw - 32px));
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  padding: 12px 16px; border-radius: 10px;
-  background: var(--bg-card); border: 1px solid var(--border-md);
-  border-left: 2px solid var(--cyan); box-shadow: var(--shadow-lg);
-  animation: update-in 200ms ease-out both;
-}
-@media (max-width: 1023px) {
-  .update-bar { bottom: calc(env(safe-area-inset-bottom, 0px) + 76px); }
-}
-.update-words { flex: 1 1 200px; font-size: 18px; line-height: 1.6; color: var(--text-1); }
-.update-button, .update-later {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-height: 44px; padding: 0 16px; border-radius: 10px;
-  font-size: var(--fs-body); font-weight: 700; cursor: pointer;
-}
-.update-button { background: var(--text-1); color: var(--bg-card); border: 1px solid var(--text-1); }
-.update-button:hover { opacity: 0.9; }
-.update-later { background: transparent; color: var(--text-3); border: 1px solid var(--border-md); }
-.update-later:hover { background: var(--bg-badge); color: var(--text-1); }
-.update-button:focus-visible, .update-later:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+/* The update notice's entrance (components/pwa/UpdatePrompt.tsx, .update-dock). */
 @keyframes update-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translateX(-50%); } }
-@media (prefers-reduced-motion: reduce) {
-  .update-bar { animation-name: reminder-fade; }
-}
 
 @keyframes reminder-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 @keyframes reminder-fade { from { opacity: 0; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) {
-  .reminder-card { animation-name: reminder-fade; }
-}
 
 /* ── ONE PALETTE FOR NUMBERS AND CHARTS (second bento pass, 5 Oct 2026) ──
    Numbers are ink. Red marks only a number that has gone the wrong way: a
@@ -1842,3 +1778,76 @@ html, body {
 }
 :has(> .lock-overlay) { min-height: 460px !important; }
 @media (max-width: 639px) { :has(> .lock-overlay) { min-height: 580px !important; } }
+
+/* ── NOTICE (components/ui/Notice.tsx) ─────────────────────────────────────
+   Every message that interrupts the owner, built from the What's new
+   screen's pieces (the owner, 5 Oct 2026): round icon or the AIBOS mark,
+   spaced-capital title and tag, plain 18px words, pills, the corner light,
+   and on news from AIBOS the hairline tiles and the money line. */
+.notice {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 20px; border-radius: var(--radius-card);
+  border: 1px solid var(--border-md); background: var(--bg-card);
+  box-shadow: var(--shadow-card); color: var(--text-1); text-align: left;
+}
+.notice::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 60% 120% at 12% 0%, var(--card-wash), transparent 72%);
+  opacity: var(--card-wash-opacity);
+}
+.notice-floating { box-shadow: var(--shadow-lg); border-color: var(--border-strong); }
+.notice-head { display: flex; align-items: flex-start; gap: 16px; }
+.notice-icon { width: 44px; height: 44px; }
+.notice-icon svg { width: 22px; height: 22px; }
+.notice-main { flex: 1; min-width: 0; padding-top: 8px; }
+.notice-titlerow { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
+.notice-tag { margin-left: 0; }
+.notice-text { margin-top: 6px; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); overflow-wrap: anywhere; }
+.notice-text strong { color: var(--text-1); font-weight: 600; }
+.notice-close { margin: -2px -6px 0 0; background: transparent; }
+.notice-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-left: 60px; }
+@media (max-width: 480px) { .notice-actions { padding-left: 0; } }
+.notice-bad .notice-icon { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, transparent); }
+.notice-bad .notice-tag { color: var(--red); border-color: color-mix(in srgb, var(--red) 35%, transparent); }
+.notice-art {
+  position: absolute; top: 0; right: 0; height: 100%; width: 58%; z-index: -1; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to left, #000 35%, transparent);
+  mask-image: linear-gradient(to left, #000 35%, transparent);
+}
+.notice-art .art-tile { fill: transparent; stroke: var(--border-strong); stroke-width: 1; }
+.notice-art .art-ring { fill: none; stroke: var(--border-strong); stroke-width: 1; }
+.notice-art .art-dot { fill: var(--text-3); }
+.notice-art .art-dot.brand { fill: var(--chart-line); }
+.notice-art-line { fill: none; stroke: var(--chart-line); stroke-width: 2; stroke-linecap: round; }
+.notice-art-under { fill: var(--chart-line); opacity: 0.10; }
+/* A row of notices in a list (the bell): the same pieces, no card around each. */
+.notice-row { display: flex; gap: 14px; align-items: flex-start; padding: 16px; text-align: left; }
+.notice-row + .notice-row { border-top: 1px solid var(--border); }
+.notice-row .bento-icon { width: 40px; height: 40px; }
+.notice-row .bento-icon svg { width: 20px; height: 20px; }
+.notice-row.bad .bento-icon { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, transparent); }
+.notice-row-title { margin: 0; font-size: var(--fs-body); line-height: 1.5; font-weight: 600; color: var(--text-1); }
+.notice-row-text { margin: 2px 0 0; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); }
+.notice-row .bento-tag { margin-left: 0; }
+.notice-row.bad .bento-tag { color: var(--red); border-color: color-mix(in srgb, var(--red) 35%, transparent); }
+
+/* Where the update notice and reminders sit. */
+.update-dock {
+  position: fixed; z-index: 69;
+  left: 50%; transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+  width: min(560px, calc(100vw - 32px));
+  animation: update-in 200ms ease-out both;
+}
+@media (max-width: 1023px) {
+  .update-dock { bottom: calc(env(safe-area-inset-bottom, 0px) + 76px); }
+}
+.reminder-stack .notice { pointer-events: auto; animation: reminder-in 200ms ease-out both; }
+@media (max-width: 1023px) {
+  .reminder-stack .notice:nth-child(n+2) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .update-dock { animation-name: reminder-fade; }
+  .reminder-stack .notice { animation-name: reminder-fade; }
+}

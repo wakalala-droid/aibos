@@ -11,6 +11,7 @@
 // offline — will sync when signal returns". Disappears at zero. aria-live so
 // screen readers hear the state change (accessibility_system.md).
 
+import { CloudOff } from 'lucide-react';
 import { useEffect, useSyncExternalStore } from 'react';
 import { useStore } from '@/lib/store';
 import { subscribeOutbox, outboxCount, flushOutbox } from '@/lib/outbox';
@@ -57,15 +58,19 @@ export function OutboxChip({ style }: { style?: React.CSSProperties }) {
     <span
       role="status"
       aria-live="polite"
+      // A pill in the splash's pieces (5 Oct 2026): a round icon, ink words.
       style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        fontSize: 'var(--fs-label)', fontWeight: 600,
-        color: 'var(--amber)', background: 'rgba(251,191,36,0.12)',
-        border: '1px solid rgba(251,191,36,0.3)', padding: '4px 10px', borderRadius: 999,
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-1)',
+        background: 'var(--pill-bg)', border: '1px solid var(--border-md)',
+        padding: '4px 14px 4px 4px', borderRadius: 999,
         ...style,
       }}
     >
-      {count} saved offline: will sync when signal returns
+      <span aria-hidden="true" className="bento-icon" style={{ width: 32, height: 32 }}>
+        <CloudOff style={{ width: 16, height: 16 }} />
+      </span>
+      {count} saved offline. They sync when the signal is back.
     </span>
   );
 }

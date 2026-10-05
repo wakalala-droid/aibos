@@ -10,11 +10,18 @@
 // confirmSheet() (lib/confirm.ts), because a delayed send could look done on a
 // slow connection while a guest or customer is still waiting on it.
 
+import { createElement } from 'react';
 import { toast } from 'sonner';
+import { CircleCheck, RotateCcw, Trash2, TriangleAlert, type LucideIcon } from 'lucide-react';
+
+/** The splash's round icon (the owner, 5 Oct 2026), for the front of a toast. */
+function round(Icon: LucideIcon) {
+  return createElement('span', { className: 'bento-icon toast-icon', 'aria-hidden': true }, createElement(Icon));
+}
 
 export function notify(message: string, kind: 'ok' | 'error' = 'ok'): void {
-  if (kind === 'error') toast.error(message, { duration: 6000 });
-  else toast(message, { duration: 3500 });
+  if (kind === 'error') toast.error(message, { duration: 6000, icon: round(TriangleAlert) });
+  else toast(message, { duration: 3500, icon: round(CircleCheck) });
 }
 
 export interface UndoableOptions {
@@ -36,12 +43,13 @@ export function undoable(opts: UndoableOptions): void {
   let undone = false;
   toast(opts.message, {
     duration: delay,
+    icon: round(Trash2),
     action: {
       label: 'Undo',
       onClick: () => {
         undone = true;
         opts.onUndo?.();
-        toast('Put back', { duration: 2500 });
+        toast('Put back', { duration: 2500, icon: round(RotateCcw) });
       },
     },
   });
@@ -53,7 +61,7 @@ export function undoable(opts: UndoableOptions): void {
     } catch (e) {
       const err = e as Error;
       opts.onError?.(err);
-      toast.error(err.message || 'That could not be saved. Nothing was changed.', { duration: 6000 });
+      toast.error(err.message || 'That could not be saved. Nothing was changed.', { duration: 6000, icon: round(TriangleAlert) });
     }
   }, delay);
 }

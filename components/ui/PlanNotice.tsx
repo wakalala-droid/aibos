@@ -25,6 +25,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { CreditCard } from 'lucide-react';
+import Notice from '@/components/ui/Notice';
 import { useProfile } from '@/lib/profile';
 import { TIERS } from '@/lib/tiers';
 
@@ -48,13 +50,15 @@ export default function PlanNotice() {
     return (
       <Strip
         title="We could not check your plan"
+        tag="Check"
         body={planNote}
         action={
           <button
             type="button"
             onClick={async () => { setRetrying(true); await refresh(); setRetrying(false); }}
             disabled={retrying}
-            style={{ ...actionStyle, cursor: retrying ? 'default' : 'pointer', opacity: retrying ? 0.6 : 1 }}
+            className="pill pill-quiet"
+            style={{ cursor: retrying ? 'default' : 'pointer', opacity: retrying ? 0.6 : 1 }}
           >
             {retrying ? 'Checking…' : 'Check again'}
           </button>
@@ -67,12 +71,14 @@ export default function PlanNotice() {
     const name = TIERS[paidTier].name;
     return ownPlan ? (
       <Strip
+        ended
         title={`Your ${name} plan has ended`}
         body={`${paidUntil ? `It ran until ${longDate(paidUntil)}. ` : ''}Your records are all still here. Set up card payment to switch ${name} back on. It then renews automatically.`}
-        action={<Link href={`/checkout?plan=${paidTier}`} style={actionStyle}>Set up card payment</Link>}
+        action={<Link href={`/checkout?plan=${paidTier}`} className="pill pill-primary" style={actionStyle}>Set up card payment</Link>}
       />
     ) : (
       <Strip
+        ended
         title={`This business's ${name} plan has ended`}
         body="Some screens are locked until the owner renews it. Nothing you recorded is lost."
       />
@@ -88,11 +94,12 @@ export default function PlanNotice() {
       const off = longDate(new Date(end + GRACE_DAYS * DAY).toISOString());
       return (
         <Strip
+          ended={ended}
           title={ended ? `Your ${name} plan ended on ${longDate(paidUntil)}` : `Your ${name} plan is paid up to ${longDate(paidUntil)}`}
           body={ended
             ? `Everything stays on until ${off}. Set up card payment before then to keep ${name} without a break. It then renews automatically.`
             : `To keep ${name} on after that, set up card payment on or just before that day. It then renews automatically until you cancel.`}
-          action={<Link href={`/checkout?plan=${serverTier}`} style={actionStyle}>Set up card payment</Link>}
+          action={<Link href={`/checkout?plan=${serverTier}`} className="pill pill-primary" style={actionStyle}>Set up card payment</Link>}
         />
       );
     }
@@ -101,43 +108,15 @@ export default function PlanNotice() {
   return null;
 }
 
-function Strip({ title, body, action }: { title: string; body: string; action?: React.ReactNode }) {
+function Strip({ title, body, action, ended, tag }: { title: string; body: string; action?: React.ReactNode; ended?: boolean; tag?: string }) {
+  // The splash's pieces (the owner, 5 Oct 2026): a round card icon, the
+  // subject in spaced capitals, the sentence in bold, then the words.
   return (
-    <div
-      role="status"
-      style={{
-        display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap',
-        padding: '14px 16px', margin: '0 0 16px', borderRadius: 10,
-        border: '1px solid color-mix(in srgb, var(--amber) 40%, transparent)',
-        background: 'color-mix(in srgb, var(--amber) 10%, transparent)',
-      }}
-    >
-      <span
-        aria-hidden
-        style={{ fontSize: 'var(--fs-body)', lineHeight: '24px', color: 'var(--amber)' }}
-      >
-        !
-      </span>
-      <div style={{ flex: '1 1 320px', minWidth: 0 }}>
-        <p style={{
-          margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.5, fontWeight: 600, color: 'var(--text-1)',
-        }}>
-          {title}
-        </p>
-        <p style={{
-          margin: '4px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 400, color: 'var(--text-2)',
-        }}>
-          {body}
-        </p>
-      </div>
-      {action}
-    </div>
+    <Notice icon={CreditCard} title="Your plan" tag={tag ?? (ended ? 'Ended' : 'Renewal')} bad={ended}
+      actions={action} style={{ margin: '0 0 16px' }}>
+      <strong>{title}.</strong> {body}
+    </Notice>
   );
 }
 
-const actionStyle: React.CSSProperties = {
-  display: 'inline-block', padding: '9px 16px', minHeight: 44, borderRadius: 'var(--radius-md)',
-  border: '1px solid var(--border-md)', background: 'var(--bg-input)',
-  color: 'var(--text-1)', fontSize: 'var(--fs-body)', fontWeight: 600, textDecoration: 'none',
-  cursor: 'pointer', lineHeight: '20px',
-};
+const actionStyle: React.CSSProperties = { textDecoration: 'none' };

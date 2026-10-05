@@ -5,6 +5,7 @@
 // chip holding the business identity. Mirrors the promoted design. Works in
 // both themes; all controls are keyboard-operable and labelled.
 
+import { Activity, BedDouble, Bell, CalendarClock, CircleCheck, HandCoins, Info, Package, ReceiptText, TriangleAlert, Wallet, type LucideIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { openRecordSheet } from '@/lib/recordSheet';
@@ -43,8 +44,24 @@ const FEED_MIN_GAP_MS = 10_000;
 // phone bar use, so search can never drift from the menu again (UI/UX audit
 // 2026-10 A7: a hand-typed copy here had lost Record, Stock, Staff and Rooms).
 
-const sevColor = (s?: string) =>
-  s === 'critical' ? 'var(--crit)' : s === 'warning' ? 'var(--warn)' : s === 'success' ? 'var(--good)' : 'var(--info)';
+// A row in the bell is built from the splash's pieces (the owner, 5 Oct
+// 2026): a round icon for what the alert is about, the alert in bold, a
+// spaced-capital tag for how much it matters, plain words. Red only for the
+// ones that cannot wait.
+const SEV_WORD: Record<string, string> = { critical: 'Act now', warning: 'Worth a look', success: 'Good news' };
+function alertIcon(title: string, sev: string): LucideIcon {
+  const t = title.toLowerCase();
+  if (/runway|cash|money|balance|low on/.test(t)) return Wallet;
+  if (/overdue|owe|invoice|unpaid|debt/.test(t)) return ReceiptText;
+  if (/stock|reorder|running low/.test(t)) return Package;
+  if (/booking|guest|stay|check-in|check in/.test(t)) return BedDouble;
+  if (/meeting|reminder|due today|schedule/.test(t)) return CalendarClock;
+  if (/paid|payment received|received/.test(t)) return HandCoins;
+  if (sev === 'critical') return TriangleAlert;
+  if (sev === 'success') return CircleCheck;
+  if (sev === 'warning') return Activity;
+  return Info;
+}
 
 function IconButton({
   label, onClick, active, dot, children, refEl,
@@ -464,9 +481,10 @@ export default function DashboardHeader() {
             transition={{ duration: 0.16, ease: 'easeOut' }}
             className="dash-pop" style={{ width: 'min(420px, 92vw)' }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderBottom: '1px solid var(--border)' }}>
-              <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 800, color: 'var(--text-1)' }}>Alerts</span>
-              <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)', background: 'var(--bg-badge)', border: '1px solid var(--border)', padding: '2px 12px', borderRadius: 999 }}>{unread} total</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px', borderBottom: '1px solid var(--border)' }}>
+              <span className="bento-icon" aria-hidden="true" style={{ width: 40, height: 40 }}><Bell style={{ width: 20, height: 20 }} /></span>
+              <span className="bento-title" style={{ flex: 1 }}>Alerts</span>
+              <span className="bento-tag">{unread} in all</span>
             </div>
             <div style={{ maxHeight: 360, overflowY: 'auto' }}>
               {unread === 0 ? (
@@ -479,26 +497,24 @@ export default function DashboardHeader() {
                 // Severity is encoded in colour AND text (audit #34 — never
                 // colour alone), so it survives colour-blindness and grayscale.
                 const sev = String(a.severity ?? '').toLowerCase();
-                const sevWord = sev === 'critical' ? 'Critical' : sev === 'warning' ? 'Warning' : sev === 'success' ? 'Good' : 'Info';
-                const sc = sevColor(sev);
+                const sevWord = SEV_WORD[sev] ?? 'For you';
+                const Icon = alertIcon(title, sev);
                 // Feed rows carry a serverId and a moment; derived alerts carry
                 // neither, which is exactly what tells the two apart here.
                 const extra = a as { href?: string; serverId?: string; happenedAt?: string };
                 const href = extra.href;
                 const when = timeAgo(extra.happenedAt);
                 const body = (
-                  <div style={{ display: 'flex', gap: 12, padding: '16px', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-                    <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: sc, flexShrink: 0, marginTop: 10 }} />
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)', margin: '0 0 4px' }}>
-                        {title}
-                        <span style={{ marginLeft: 8, fontSize: 'var(--fs-caps)', fontWeight: 700, color: sc, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                          {sevWord}
-                        </span>
-                      </p>
-                      {desc && <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.6 }}>{desc}</p>}
-                      {/* Only a thing that happened has a moment worth printing. */}
-                      {when && <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)', margin: '4px 0 0' }}>{when}</p>}
+                  <div className={`notice-row${sev === 'critical' ? ' bad' : ''}`} style={{ borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                    <span className="bento-icon" aria-hidden="true"><Icon /></span>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <p className="notice-row-title">{title}</p>
+                      {desc && <p className="notice-row-text">{desc}</p>}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
+                        <span className="bento-tag">{sevWord}</span>
+                        {/* Only a thing that happened has a moment worth printing. */}
+                        {when && <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-4)' }}>{when}</span>}
+                      </div>
                     </div>
                   </div>
                 );
@@ -526,7 +542,7 @@ export default function DashboardHeader() {
             {/* Alerts on the phone, with AIBOS closed (upgrade 10). */}
             <PhoneAlerts />
             <Link href="/dashboard/anomaly" onClick={() => setOpen(null)} style={{ display: 'block', textAlign: 'center', padding: '16px', borderTop: '1px solid var(--border)', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
-              View anomaly intelligence →
+              See unusual spending
             </Link>
           </motion.div>
         )}
