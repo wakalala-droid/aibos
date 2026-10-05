@@ -63,6 +63,7 @@ export default function POSPage() {
 
       {/* Charts: the donut in the one palette, and every category named on
           its own bar (the old chart skipped every other name). */}
+      {categories.length > 0 && (
       <div className="grid-2" style={{ marginBottom: 20 }}>
         <SectionCard title="Sales by category" subtitle="Share of the money each category brought in" delay={0.1}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
@@ -102,6 +103,7 @@ export default function POSPage() {
           </ul>
         </SectionCard>
       </div>
+      )}
 
       {/* Top Items Table */}
       <SectionCard title="Best sellers" subtitle="Highest sales first, with how fast each sells" delay={0.2} style={{ position: 'relative' }}>

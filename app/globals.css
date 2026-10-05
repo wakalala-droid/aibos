@@ -1831,3 +1831,14 @@ html, body {
   --spark-cost: var(--chart-muted);
   --spark-profit: var(--text-1);
 }
+
+/* The lock card over a report that has no data yet (components/ui/LockOverlay).
+   The report under it is given room for the whole card, and the card never
+   centres past the top edge, so nothing is cut off. */
+.lock-overlay {
+  position: absolute; inset: 0; z-index: 20;
+  display: flex; align-items: safe center; justify-content: center; padding: 24px;
+  overflow-y: auto; background: var(--overlay-bg); border-radius: var(--radius-card);
+}
+:has(> .lock-overlay) { min-height: 460px !important; }
+@media (max-width: 639px) { :has(> .lock-overlay) { min-height: 580px !important; } }

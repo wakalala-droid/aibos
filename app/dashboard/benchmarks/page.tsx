@@ -78,7 +78,8 @@ function AttachMeter({ label, value, benchmark }: { label: string; value: number
 }
 
 export default function BenchmarksPage() {
-  const { benchmarks, attachRates, menuGaps, posBusinessName, posPeriod } = useStore();
+  const { benchmarks, attachRates, menuGaps, posBusinessName, posPeriod, hasEngine3Data } = useStore();
+  const hasAttach = hasEngine3Data && attachRates != null;
   const goodCount  = benchmarks.filter(b => b.status === 'good').length;
   const warnCount  = benchmarks.filter(b => b.status === 'warn').length;
   const alertCount = benchmarks.filter(b => b.status === 'alert').length;
@@ -118,12 +119,13 @@ export default function BenchmarksPage() {
           </div>
         </div>
       ) : (
-        <SectionCard delay={0.1} style={{ position: 'relative', minHeight: 160, textAlign: 'center' }}>
+        <SectionCard delay={0.1} style={{ position: 'relative', textAlign: 'center' }}>
           <LockOverlay colour="var(--e3)" title="Needs your till data" description="Upload the sales report from your till (POS) to compare yourself with similar businesses." />
         </SectionCard>
       )}
 
-      {/* Sold together */}
+      {/* Sold together: only once there is till data to measure. */}
+      {hasAttach && (
       <div style={{ marginTop: 40 }}>
         <SectionCard title="Sold together" subtitle="How often a meal goes out with a drink or a side, against similar food businesses" delay={0.22} style={{ marginBottom: 20 }}>
           <AttachMeter label="Sold with a drink" value={drinkAttach} benchmark={80} />
@@ -138,6 +140,7 @@ export default function BenchmarksPage() {
           )}
         </SectionCard>
       </div>
+      )}
 
       {/* Menu advice */}
       {gaps.length > 0 && (

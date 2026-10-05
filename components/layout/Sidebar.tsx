@@ -316,7 +316,7 @@ export default function Sidebar() {
           <button
             type="button"
             onClick={() => setUiMode(simple ? 'technical' : 'simple')}
-            aria-label={simple ? 'Switch to Pro mode: show all intelligence tabs' : 'Switch to Simple mode'}
+            aria-label={simple ? 'Switch to Pro mode: every report' : 'Switch to Simple mode'}
             title={simple ? 'Switch to Pro mode' : 'Switch to Simple mode'}
             className="icon-pill"
             style={{ color: simple ? 'var(--text-3)' : 'var(--cyan)' }}

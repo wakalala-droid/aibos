@@ -252,7 +252,7 @@ export default function BreakevenPage() {
             <BarChart data={monthBars} barCategoryGap="30%">
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-              <YAxis width={84} domain={[0, (max: number) => Math.max(max, bepRevenue * 1.2)]} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
+              <YAxis width={84} domain={[0, (max: number) => niceCeil(Math.max(max, bepRevenue * 1.2))]} tickCount={5} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="Sales" name="Sales" radius={[6, 6, 0, 0]} maxBarSize={72}>
                 {monthBars.map((m) => <Cell key={m.month} fill={m.Sales < bepRevenue ? 'var(--red)' : 'var(--chart-line)'} />)}

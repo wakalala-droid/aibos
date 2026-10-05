@@ -17,12 +17,7 @@ interface LockOverlayProps {
 
 export default function LockOverlay({ title, description, bullets }: LockOverlayProps) {
   return (
-    <div style={{
-      position: 'absolute', inset: 0, zIndex: 20,
-      background: 'var(--overlay-bg)',
-      borderRadius: 'var(--radius-card)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
-    }}>
+    <div className="lock-overlay">
       <div className="bento" style={{ maxWidth: 440, width: '100%' }}>
         <div className="bento-head">
           <span className="bento-icon" aria-hidden="true"><Lock /></span>

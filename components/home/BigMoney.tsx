@@ -48,7 +48,9 @@ export default function BigMoney({ value, sym, size = 'hero', roll = false, tone
   const whole = Math.floor(totalCents / 100);
   const cents = totalCents % 100;
   // One ink for every figure (5 Oct 2026); the sign says which way it moved.
-  const color = undefined;
+  // A balance below zero is the one red figure: it went the wrong way. Money
+  // in and out (a tone) stays ink, since spending is not a loss.
+  const color = neg && !tone ? 'var(--red)' : undefined;
   const sign = neg ? '−' : tone === 'in' ? '+' : tone === 'out' ? '−' : '';
   const said = `${target < 0 || tone === 'out' ? 'minus ' : tone === 'in' ? 'plus ' : ''}${fmt(Math.abs(target), false, sym)}`;
 
