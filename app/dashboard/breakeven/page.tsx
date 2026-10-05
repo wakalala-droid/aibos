@@ -106,6 +106,10 @@ export default function BreakevenPage() {
   // ── Each month against the line.
   const monthBars = monthly.map((m) => ({ month: String(m.Month), Sales: Math.round(Number(m.Revenue) || 0) }));
   const shortMonths = monthBars.filter((m) => m.Sales < bepRevenue).length;
+  // Four even steps of a round size, so the money axis reads 0, 15,000,
+  // 30,000, 45,000, 60,000 and never jumps to an odd top figure.
+  const yStep = niceCeil(Math.max(...monthBars.map((m) => m.Sales), bepRevenue * 1.2, 1) / 4);
+  const yTicks = [0, 1, 2, 3, 4].map((i) => i * yStep);
 
   // ── Where you stand: a meter from nothing to a little past the larger figure.
   const meterMax = Math.max(currentRevenue, bepRevenue, 1) * 1.15;
@@ -226,10 +230,10 @@ export default function BreakevenPage() {
                 <Line dataKey="take" stroke="var(--chart-line)" strokeWidth={2.5} dot={false} isAnimationActive={false} name="What you take" />
                 {currentRevenue > 0 && currentRevenue < xMax && (
                   <ReferenceLine x={currentRevenue} stroke="var(--border-strong)" strokeDasharray="4 4"
-                    label={{ value: 'You', position: 'top', fill: 'var(--text-1)', fontSize: 18, fontWeight: 600 }} />
+                    label={{ value: 'You', position: 'top', fill: 'var(--text-1)', fontSize: 18, fontWeight: 600, stroke: 'var(--bg-card)', strokeWidth: 6, paintOrder: 'stroke' }} />
                 )}
                 <ReferenceDot x={bepRevenue} y={bepRevenue} r={7} fill="var(--bg-card)" stroke="var(--text-1)" strokeWidth={2.5}
-                  label={{ value: 'Breakeven', position: bepRevenue / xMax > 0.6 ? 'left' : 'right', fill: 'var(--text-1)', fontSize: 18, fontWeight: 600, offset: 12 }} />
+                  label={{ value: 'Breakeven', position: bepRevenue / xMax > 0.6 ? 'left' : 'right', fill: 'var(--text-1)', fontSize: 18, fontWeight: 600, offset: 12, stroke: 'var(--bg-card)', strokeWidth: 6, paintOrder: 'stroke' }} />
                 {currentRevenue > 0 && currentRevenue < xMax && (
                   <ReferenceDot x={currentRevenue} y={currentRevenue} r={6} fill="var(--chart-line)" stroke="var(--bg-card)" strokeWidth={2} />
                 )}
@@ -252,7 +256,7 @@ export default function BreakevenPage() {
             <BarChart data={monthBars} barCategoryGap="30%">
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-              <YAxis width={84} domain={[0, (max: number) => niceCeil(Math.max(max, bepRevenue * 1.2))]} tickCount={5} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
+              <YAxis width={84} domain={[0, yStep * 4]} ticks={yTicks} interval={0} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="Sales" name="Sales" radius={[6, 6, 0, 0]} maxBarSize={72}>
                 {monthBars.map((m) => <Cell key={m.month} fill={m.Sales < bepRevenue ? 'var(--red)' : 'var(--chart-line)'} />)}
