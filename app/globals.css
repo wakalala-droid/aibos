@@ -936,8 +936,8 @@ select optgroup {
   opacity: var(--card-wash-opacity);
 }
 .aibos-toast [data-icon] { display: flex; flex-shrink: 0; }
-.toast-icon { width: 40px; height: 40px; }
-.toast-icon svg { width: 20px; height: 20px; }
+.aibos-toast .toast-icon { width: 40px; height: 40px; }
+.aibos-toast .toast-icon svg { width: 20px; height: 20px; }
 .aibos-toast-error .toast-icon { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, transparent); }
 .aibos-toast-title { font-size: var(--fs-body); font-weight: 600; color: var(--text-1); flex: 1; }
 .aibos-toast-desc { font-size: var(--fs-body); color: var(--text-2); }
@@ -1810,15 +1810,18 @@ html, body {
 @media (max-width: 480px) { .notice-actions { padding-left: 0; } }
 .notice-bad .notice-icon { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, transparent); }
 .notice-bad .notice-tag { color: var(--red); border-color: color-mix(in srgb, var(--red) 35%, transparent); }
-.notice-art {
-  position: absolute; top: 0; right: 0; height: 100%; width: 58%; z-index: -1; pointer-events: none;
-  -webkit-mask-image: linear-gradient(to left, #000 35%, transparent);
-  mask-image: linear-gradient(to left, #000 35%, transparent);
+/* The art strip across the top, like the splash's art panel above its words. */
+.notice-art-strip {
+  position: relative; height: 80px; margin: -20px -20px 0; overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  background: radial-gradient(ellipse 70% 140% at 14% 0%, var(--card-wash), transparent 70%), var(--bg-page);
 }
-.notice-art .art-tile { fill: transparent; stroke: var(--border-strong); stroke-width: 1; }
-.notice-art .art-ring { fill: none; stroke: var(--border-strong); stroke-width: 1; }
-.notice-art .art-dot { fill: var(--text-3); }
-.notice-art .art-dot.brand { fill: var(--chart-line); }
+.notice-art-strip svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.notice-art-strip .art-tile { fill: var(--bg-card); stroke: var(--border-strong); stroke-width: 1; }
+.notice-art-strip .art-ring { fill: none; stroke: var(--border-strong); stroke-width: 1; }
+.notice-art-strip .art-ring.dashed { stroke-dasharray: 2 6; }
+.notice-art-strip .art-dot { fill: var(--text-3); }
+.notice-art-strip .art-dot.brand { fill: var(--chart-line); }
 .notice-art-line { fill: none; stroke: var(--chart-line); stroke-width: 2; stroke-linecap: round; }
 .notice-art-under { fill: var(--chart-line); opacity: 0.10; }
 /* A row of notices in a list (the bell): the same pieces, no card around each. */

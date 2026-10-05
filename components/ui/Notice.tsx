@@ -53,20 +53,28 @@ export function BrandMark({ size = 26 }: { size?: number }) {
   );
 }
 
-/** The splash art, small: hairline tiles and the brand line with its shading under it. */
+/** The splash art as a strip across the top of the card, the way the What's
+ *  new screen opens with its art panel: hairline tiles, the money line rising
+ *  with its shading under it, a ring with the brand point on it. */
 function NoticeArt() {
-  const line = 'M0 92 C 40 90, 60 84, 90 86 S 140 72, 170 74 S 220 52, 250 56 S 300 28, 340 22';
+  const line = 'M0 66 C 50 64, 80 58, 120 60 S 190 50, 230 52 S 300 40, 340 42 S 420 22, 470 24 S 530 10, 560 8';
   return (
-    <svg className="notice-art" viewBox="0 0 340 110" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
-      <rect className="art-tile" x="150" y="10" width="78" height="40" rx="10" />
-      <rect className="art-tile" x="238" y="10" width="92" height="40" rx="10" />
-      <rect className="art-tile" x="196" y="58" width="134" height="40" rx="10" />
-      <circle className="art-ring" cx="256" cy="30" r="8" />
-      <rect className="art-dot" x="270" y="26" width="44" height="5" rx="2.5" opacity="0.5" />
-      <path d={`${line} L340 110 L0 110 Z`} className="notice-art-under" />
-      <path className="notice-art-line" d={line} />
-      <circle className="art-dot brand" cx="340" cy="22" r="4" />
-    </svg>
+    <div className="notice-art-strip" aria-hidden="true">
+      <svg viewBox="0 0 560 80" preserveAspectRatio="xMidYMid slice">
+        <rect className="art-tile" x="16" y="12" width="104" height="30" rx="9" />
+        <rect className="art-tile" x="128" y="12" width="64" height="30" rx="9" />
+        <rect className="art-tile" x="16" y="48" width="64" height="24" rx="8" />
+        <circle className="art-ring" cx="32" cy="27" r="7" />
+        <rect className="art-dot" x="46" y="24" width="52" height="5" rx="2.5" opacity="0.5" />
+        <circle className="art-ring" cx="300" cy="40" r="26" />
+        <circle className="art-ring dashed" cx="300" cy="40" r="38" />
+        <rect className="art-tile" x="392" y="12" width="70" height="30" rx="9" />
+        <rect className="art-tile" x="470" y="12" width="74" height="30" rx="9" />
+        <path d={`${line} L560 80 L0 80 Z`} className="notice-art-under" />
+        <path className="notice-art-line" d={line} />
+        <circle className="art-dot brand" cx={300 + 38 * Math.cos(-0.9)} cy={40 + 38 * Math.sin(-0.9)} r="4" />
+      </svg>
+    </div>
   );
 }
 
