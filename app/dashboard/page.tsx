@@ -209,7 +209,11 @@ function OverviewPage() {
   const unifiedInsights = (orderedInsights.length > 0 ? orderedInsights : synthSignals).slice(0, 6);
   // The at-a-glance cards in order; the grid layout follows how many there are.
   const glanceKeys = [briefLines.length > 0 ? 'brief' : '', 'customers', 'till', 'upload', safeAlerts.length > 0 ? 'alerts' : ''].filter(Boolean);
-  const gSpan = (k: string) => bentoSpans(glanceKeys.length)[glanceKeys.indexOf(k)] ?? 'span-3';
+  // The big tall slot is only for the brief's next steps; without them the
+  // three cards share the row evenly and the alerts take a row of their own.
+  const gSpan = (k: string) => glanceKeys.includes('brief')
+    ? bentoSpans(glanceKeys.length)[glanceKeys.indexOf(k)] ?? 'span-3'
+    : k === 'alerts' ? 'span-6' : 'span-2';
   const activeEngineCount = [hasEngine1, hasEngine2Data, opsActive].filter(Boolean).length;
 
   return (
