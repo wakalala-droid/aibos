@@ -1836,7 +1836,11 @@ export async function getTwinFinancials(): Promise<Record<string, unknown>> {
 }
 
 /** One business's latest analysis of a kind of file (GET /analysis/latest). */
-export interface SavedAnalysis { at?: string; cabinet_id?: string; filename?: string; payload?: Record<string, unknown> }
+export interface SavedAnalysis {
+  at?: string; cabinet_id?: string | null; filename?: string; payload?: Record<string, unknown>;
+  /** Start fresh wiped these books: nothing comes back, not even a device's own copy. */
+  cleared?: boolean;
+}
 
 /** The latest till (engine3) and customer (engine2) analysis for the business
  *  on screen, so those reports open with the owner's figures on every visit
@@ -1847,5 +1851,15 @@ export async function getLatestAnalysis(): Promise<{ engine3: SavedAnalysis | nu
     engine3: (data.engine3 as SavedAnalysis | null) ?? null,
     engine2: (data.engine2 as SavedAnalysis | null) ?? null,
   };
+}
+
+/** Hand the server an analysis only this device still has, so every device
+ *  gets it. The server keeps it only when it has nothing newer. */
+export async function saveLatestAnalysis(engine: 'engine3' | 'engine2', filename: string, payload: Record<string, unknown>): Promise<void> {
+  await spineFetch('/analysis/latest', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ engine, filename, payload }),
+  });
 }
 

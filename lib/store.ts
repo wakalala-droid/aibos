@@ -9,7 +9,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { setCurrencyGlobal, symbolForToken } from "./currency";
 import type { Tier } from "./tiers";
-import { getTwin, getTwinFinancials, getLatestAnalysis, authHeaders, ACTIVE_BUSINESS_KEY, ACTING_AS_KEY, type Twin, type BusinessEvent } from "./api";
+import { getTwin, getTwinFinancials, getLatestAnalysis, saveLatestAnalysis, authHeaders, type SavedAnalysis, ACTIVE_BUSINESS_KEY, ACTING_AS_KEY, type Twin, type BusinessEvent } from "./api";
 
 /** Which business and whose books this browser last opened. They sit outside
  *  the persisted store, so a wipe of the store alone left them behind: the next
@@ -627,6 +627,17 @@ function e2Slices(result: Record<string, unknown>, prev: FinancialState): Partia
   };
 }
 
+/** Only the keys a saved analysis needs, from a full upload reply. */
+const SLICE_KEYS: Record<"engine3" | "engine2", string[]> = {
+  engine3: ["hasEngine3Data", "posGrandTotals", "categories", "topItems", "benchmarks", "menuGaps",
+            "attachRates", "posBusinessName", "posPeriod", "opsIntelBrief"],
+  engine2: ["hasEngine2Data", "rfm", "segments", "clvTiers", "productsE2", "basketPairs",
+            "retention", "customerIntelBrief"],
+};
+function pickSlices(result: Record<string, unknown>, engine: "engine3" | "engine2"): Record<string, unknown> {
+  return Object.fromEntries(SLICE_KEYS[engine].filter((k) => k in result).map((k) => [k, result[k]]));
+}
+
 function e3Slices(result: Record<string, unknown>, prev: FinancialState): Partial<FinancialState> {
   return {
     posGrandTotals: asObjOrNull<PosGrandTotalsShape>(result.posGrandTotals),
@@ -954,25 +965,27 @@ const _store = create<FinancialState & FinancialActions>()(
         const missing = (engine: "engine3" | "engine2") =>
           engine === "engine3" ? !get().hasEngine3Data : !get().hasEngine2Data;
         if (!missing("engine3") && !missing("engine2")) return;
+        let latest: { engine3: SavedAnalysis | null; engine2: SavedAnalysis | null } | null = null;
         try {
-          const latest = await getLatestAnalysis();
-          for (const engine of ["engine3", "engine2"] as const) {
-            const payload = latest[engine]?.payload;
-            if (payload && missing(engine)) get().applySavedAnalysis({ ...payload, engine });
-          }
-          // The server answered, so its word stands, "nothing" included:
-          // after Start fresh it says nothing, and this device's old copy must
-          // not bring the wiped figures back.
-          return;
+          latest = await getLatestAnalysis();
         } catch {
           /* offline, or the server not reached: this device's own copy below */
         }
         const biz = activeBusiness();
         for (const engine of ["engine3", "engine2"] as const) {
           if (!missing(engine)) continue;
+          const saved = latest?.[engine];
+          if (saved?.payload) { get().applySavedAnalysis({ ...saved.payload, engine }); continue; }
+          // Start fresh wiped these books: this device's old copy stays put.
+          if (saved?.cleared) continue;
+          // A file this device analysed before the server kept analyses.
           const s = get();
           const entry = s.cabinet.find((c) => c.engine === engine && (c.business ?? "") === biz && s.cabinetData[c.id]);
-          if (entry) get().applySavedAnalysis({ ...s.cabinetData[entry.id], engine });
+          if (!entry) continue;
+          const copy = s.cabinetData[entry.id];
+          get().applySavedAnalysis({ ...copy, engine });
+          // Hand it to the server, so the phone and every other device get it too.
+          if (latest) void saveLatestAnalysis(engine, entry.name, pickSlices(copy, engine)).catch(() => {});
         }
       },
 
