@@ -9,7 +9,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { setCurrencyGlobal, symbolForToken } from "./currency";
 import type { Tier } from "./tiers";
-import { getTwin, getTwinFinancials, authHeaders, ACTIVE_BUSINESS_KEY, ACTING_AS_KEY, type Twin, type BusinessEvent } from "./api";
+import { getTwin, getTwinFinancials, getLatestAnalysis, authHeaders, ACTIVE_BUSINESS_KEY, ACTING_AS_KEY, type Twin, type BusinessEvent } from "./api";
 
 /** Which business and whose books this browser last opened. They sit outside
  *  the persisted store, so a wipe of the store alone left them behind: the next
@@ -242,6 +242,14 @@ export interface CabinetEntry {
   sheets: string[];
   activeSheet: string | null;
   uploadedAt: number;
+  /** The business it was uploaded into ('' = the default books). Older
+   *  entries have none and count as the default books. */
+  business?: string;
+}
+
+/** The active business id, '' for the default books. */
+function activeBusiness(): string {
+  try { return window.localStorage.getItem(ACTIVE_BUSINESS_KEY) ?? ''; } catch { return ''; }
 }
 
 // ── Full state shape — matches real page destructuring exactly ────────────────
@@ -328,6 +336,9 @@ export interface FinancialState {
   /** The books have been asked at least once this visit (whatever the answer).
    *  Until then an empty chart means "not loaded yet", not "no data". */
   twinChecked: boolean;
+  /** The money figures (monthly) came from an uploaded file, so the books
+   *  must not replace them. A till or customer file never sets this. */
+  e1FromFile: boolean;
 }
 
 interface FinancialActions {
@@ -353,6 +364,12 @@ interface FinancialActions {
   loadFromCabinet: (id: string) => Promise<void>;
   removeFromCabinet: (id: string) => void;
   refreshTwin: () => Promise<void>;
+  /** Put a saved till or customer analysis back (its report slices only; the
+   *  file name, money figures and everything else are left as they are). */
+  applySavedAnalysis: (result: Record<string, unknown>) => void;
+  /** Bring back this business's latest till and customer analysis on a new
+   *  visit, from the server, else from this device's own copy. */
+  restoreLatestAnalysis: () => Promise<void>;
   setRecentEvents: (events: BusinessEvent[]) => void;
   reset: () => void;
   /** Start-fresh (timeline wipe): clear business data but KEEP identity, tier,
@@ -443,6 +460,7 @@ const INITIAL: FinancialState = {
   recentEvents: [],
   twinLoading: false,
   twinChecked: false,
+  e1FromFile: false,
 };
 
 // ── Helpers: derive kpi/health from monthly[] when backend doesn't supply them ─
@@ -593,6 +611,36 @@ function asObjOrNull<T>(v: unknown): T | null {
   return v && typeof v === "object" ? (v as T) : null;
 }
 
+// ── Engine slices: what a customer (E2) or till (E3) analysis puts in the store.
+// Shared by a fresh upload and a saved analysis brought back on a new visit.
+
+function e2Slices(result: Record<string, unknown>, prev: FinancialState): Partial<FinancialState> {
+  return {
+    rfm: asArray<RfmRow>(result.rfm),
+    segments: asArray<SegmentRow>(result.segments),
+    clvTiers: asArray<ClvTierRow>(result.clvTiers),
+    productsE2: asArray<ProductRow>(result.productsE2),
+    basketPairs: asArray<BasketPairRow>(result.basketPairs),
+    retention: asObjOrNull<RetentionShape>(result.retention),
+    customerIntelBrief:
+      typeof result.customerIntelBrief === "string" ? result.customerIntelBrief : prev.customerIntelBrief,
+  };
+}
+
+function e3Slices(result: Record<string, unknown>, prev: FinancialState): Partial<FinancialState> {
+  return {
+    posGrandTotals: asObjOrNull<PosGrandTotalsShape>(result.posGrandTotals),
+    categories: asArray<CategoryRow>(result.categories),
+    topItems: asArray<TopItemRow>(result.topItems),
+    benchmarks: asArray<BenchmarkRow>(result.benchmarks),
+    menuGaps: asArray<MenuGapRow>(result.menuGaps),
+    attachRates: asObjOrNull<AttachRatesShape>(result.attachRates),
+    posBusinessName: typeof result.posBusinessName === "string" ? result.posBusinessName : "",
+    posPeriod: typeof result.posPeriod === "string" ? result.posPeriod : "",
+    opsIntelBrief: typeof result.opsIntelBrief === "string" ? result.opsIntelBrief : prev.opsIntelBrief,
+  };
+}
+
 // ── Store ─────────────────────────────────────────────────────────────────────
 
 const _store = create<FinancialState & FinancialActions>()(
@@ -635,6 +683,7 @@ const _store = create<FinancialState & FinancialActions>()(
             activeSheet:
               typeof result.active_sheet === "string" ? result.active_sheet : null,
             uploadedAt: Date.now(),
+            business: activeBusiness(),
           };
           set((s) => ({ cabinet: [entry, ...s.cabinet].slice(0, 20) }));
         }
@@ -664,12 +713,17 @@ const _store = create<FinancialState & FinancialActions>()(
         const isE2 = engine === "engine2" || hasRfm || Boolean(result.hasEngine2Data);
         const isE3 = engine === "engine3" || hasPos || Boolean(result.hasEngine3Data);
 
+        // The books' own figures (refreshTwin) carry no file: they must not
+        // wipe the name and cabinet id of a till file uploaded this session.
+        const isFile = Boolean(cabId || fname);
         const patch: Partial<FinancialState> = {
-          filename: fname,
-          uploadedFile: fname,
-          cabinetId: cabId,
-          sheets: sheetsArr,
-          activeSheet: typeof result.active_sheet === "string" ? result.active_sheet : null,
+          ...(isFile ? {
+            filename: fname,
+            uploadedFile: fname,
+            cabinetId: cabId,
+            sheets: sheetsArr,
+            activeSheet: typeof result.active_sheet === "string" ? result.active_sheet : null,
+          } : {}),
           currencySymbol: sym,
           detectedCurrencySymbol: detected ?? prev.detectedCurrencySymbol,
           uploadError: null,
@@ -677,6 +731,7 @@ const _store = create<FinancialState & FinancialActions>()(
 
         // ── Engine 1 · Financial ─────────────────────────────────────────────
         if (isE1) {
+          patch.e1FromFile = Boolean(cabId);
           const monthly = toMonthlyRows(result.monthly);
           patch.monthly = monthly;
           patch.kpi = deriveKpi(monthly, result.kpi as Record<string, unknown>);
@@ -688,33 +743,10 @@ const _store = create<FinancialState & FinancialActions>()(
         }
 
         // ── Engine 2 · Customer Intelligence ─────────────────────────────────
-        if (isE2) {
-          patch.rfm = asArray<RfmRow>(result.rfm);
-          patch.segments = asArray<SegmentRow>(result.segments);
-          patch.clvTiers = asArray<ClvTierRow>(result.clvTiers);
-          patch.productsE2 = asArray<ProductRow>(result.productsE2);
-          patch.basketPairs = asArray<BasketPairRow>(result.basketPairs);
-          patch.retention = asObjOrNull<RetentionShape>(result.retention);
-          patch.customerIntelBrief =
-            typeof result.customerIntelBrief === "string"
-              ? result.customerIntelBrief
-              : prev.customerIntelBrief;
-        }
+        if (isE2) Object.assign(patch, e2Slices(result, prev));
 
         // ── Engine 3 · Operations / POS ──────────────────────────────────────
-        if (isE3) {
-          patch.posGrandTotals = asObjOrNull<PosGrandTotalsShape>(result.posGrandTotals);
-          patch.categories = asArray<CategoryRow>(result.categories);
-          patch.topItems = asArray<TopItemRow>(result.topItems);
-          patch.benchmarks = asArray<BenchmarkRow>(result.benchmarks);
-          patch.menuGaps = asArray<MenuGapRow>(result.menuGaps);
-          patch.attachRates = asObjOrNull<AttachRatesShape>(result.attachRates);
-          patch.posBusinessName =
-            typeof result.posBusinessName === "string" ? result.posBusinessName : "";
-          patch.posPeriod = typeof result.posPeriod === "string" ? result.posPeriod : "";
-          patch.opsIntelBrief =
-            typeof result.opsIntelBrief === "string" ? result.opsIntelBrief : prev.opsIntelBrief;
-        }
+        if (isE3) Object.assign(patch, e3Slices(result, prev));
 
         // ── Accumulate engine flags across uploads ───────────────────────────
         const pf = prev.engineFlags ?? {};
@@ -869,6 +901,7 @@ const _store = create<FinancialState & FinancialActions>()(
       // Guarded by `uploadedFile` so a real upload is never clobbered.
       refreshTwin: async () => {
         set({ twinLoading: true });
+        void get().restoreLatestAnalysis();
         try {
           const [twin, fin] = await Promise.all([
             getTwin().catch(() => null),
@@ -877,13 +910,69 @@ const _store = create<FinancialState & FinancialActions>()(
           if (twin) set({ twin });
           const hasEvents = !!twin && Number(twin.event_count) > 0;
           const monthly = fin && Array.isArray(fin.monthly) ? (fin.monthly as unknown[]) : [];
-          if (hasEvents && monthly.length && !get().uploadedFile) {
+          // Only a money file uploaded this session outranks the books. A till
+          // or customer file used to block this too, so after importing a till
+          // file the money reports kept their old figures until a reload.
+          if (hasEvents && monthly.length && !get().e1FromFile) {
             get().setUploadResult({ ...(fin as Record<string, unknown>), engine: "engine1" });
           }
         } catch {
           // Spine may be unconfigured (503) or the user signed out — stay silent.
         } finally {
           set({ twinLoading: false, twinChecked: true });
+        }
+      },
+
+      applySavedAnalysis: (result) => {
+        const prev = get();
+        const engine = typeof result.engine === "string" ? result.engine : "";
+        const isE2 = engine === "engine2" || Boolean(result.hasEngine2Data);
+        const isE3 = engine === "engine3" || Boolean(result.hasEngine3Data) || !!result.posGrandTotals;
+        if (!isE2 && !isE3) return;
+        const patch: Partial<FinancialState> = {};
+        if (isE2) Object.assign(patch, e2Slices(result, prev));
+        if (isE3) Object.assign(patch, e3Slices(result, prev));
+        const pf = prev.engineFlags ?? {};
+        const flags: EngineFlagsShape = {
+          e1: Boolean(pf.e1),
+          e2: Boolean(pf.e2) || isE2,
+          e3: Boolean(pf.e3) || isE3,
+        };
+        patch.engineFlags = flags;
+        patch.hasEngine2Data = flags.e2;
+        patch.hasEngine3Data = flags.e3;
+        patch.intelligenceScores = deriveIntelligence({ ...prev, ...patch } as FinancialState);
+        set(patch);
+      },
+
+      // The till and customer reports read from the last file of their kind.
+      // That analysis used to live only in the tab that uploaded it, so a
+      // reload showed "Needs your till data" an hour after the owner uploaded
+      // their till file (5 Oct 2026). The server now keeps each business's
+      // latest; this device's own copy covers a file it analysed before that.
+      restoreLatestAnalysis: async () => {
+        const missing = (engine: "engine3" | "engine2") =>
+          engine === "engine3" ? !get().hasEngine3Data : !get().hasEngine2Data;
+        if (!missing("engine3") && !missing("engine2")) return;
+        try {
+          const latest = await getLatestAnalysis();
+          for (const engine of ["engine3", "engine2"] as const) {
+            const payload = latest[engine]?.payload;
+            if (payload && missing(engine)) get().applySavedAnalysis({ ...payload, engine });
+          }
+          // The server answered, so its word stands, "nothing" included:
+          // after Start fresh it says nothing, and this device's old copy must
+          // not bring the wiped figures back.
+          return;
+        } catch {
+          /* offline, or the server not reached: this device's own copy below */
+        }
+        const biz = activeBusiness();
+        for (const engine of ["engine3", "engine2"] as const) {
+          if (!missing(engine)) continue;
+          const s = get();
+          const entry = s.cabinet.find((c) => c.engine === engine && (c.business ?? "") === biz && s.cabinetData[c.id]);
+          if (entry) get().applySavedAnalysis({ ...s.cabinetData[entry.id], engine });
         }
       },
 

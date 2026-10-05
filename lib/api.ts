@@ -1835,3 +1835,17 @@ export async function getTwinFinancials(): Promise<Record<string, unknown>> {
   return spineFetch('/twin/financials');
 }
 
+/** One business's latest analysis of a kind of file (GET /analysis/latest). */
+export interface SavedAnalysis { at?: string; cabinet_id?: string; filename?: string; payload?: Record<string, unknown> }
+
+/** The latest till (engine3) and customer (engine2) analysis for the business
+ *  on screen, so those reports open with the owner's figures on every visit
+ *  and every device, not only in the tab that uploaded the file. */
+export async function getLatestAnalysis(): Promise<{ engine3: SavedAnalysis | null; engine2: SavedAnalysis | null }> {
+  const data = await spineFetch('/analysis/latest');
+  return {
+    engine3: (data.engine3 as SavedAnalysis | null) ?? null,
+    engine2: (data.engine2 as SavedAnalysis | null) ?? null,
+  };
+}
+

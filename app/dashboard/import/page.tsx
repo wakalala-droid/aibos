@@ -13,6 +13,7 @@
  * somebody not on the worker list — it ASKS, once, instead of guessing.
  */
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import FileDrop from '@/components/ui/FileDrop';
 import { takePendingFile } from '@/lib/pendingFile';
 import SectionCard from '@/components/ui/SectionCard';
@@ -33,9 +34,9 @@ const TYPES: EventType[] = [
 ];
 
 const noteBox: React.CSSProperties = {
-  padding: '12px 14px', borderRadius: 10, border: '1px solid var(--amber)',
-  background: 'var(--amber-dim, rgba(251,191,36,0.12))', color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', lineHeight: 1.5,
+  padding: '16px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)',
+  background: 'var(--pill-bg)', color: 'var(--text-1)',
+  fontSize: 'var(--fs-body)', lineHeight: 1.6,
 };
 const label: React.CSSProperties = {
   fontSize: 'var(--fs-label)',
@@ -71,6 +72,8 @@ export default function ImportPage() {
   const [error, setError] = useState<string | null>(null);
   const [scan, setScan] = useState<DocScan | null>(null);
   const [repeat, setRepeat] = useState<AlreadyImportedError | null>(null);
+  // A file already in the books still feeds the reports: what that read found.
+  const [reports, setReports] = useState<{ state: 'reading' | 'done' | 'failed'; engine: string | null } | null>(null);
   const [result, setResult] = useState<DocImportResult | null>(null);
 
   // The owner's choices: which tables to bring in, what each one is, and the
@@ -111,9 +114,26 @@ export default function ImportPage() {
     return () => window.removeEventListener('aibos:pending-file', pick);
   }, [onPick]);
 
+  // Read the file for the reports (money, customers, till). A till file only
+  // unlocks the till reports through this read, so it runs even when the rows
+  // are already in the books. The result is kept on the server too, so the
+  // reports stay filled on the next visit and on other devices.
+  async function readForReports(f: File): Promise<string | null> {
+    try {
+      const analysis = await uploadFile(f);
+      const result = analysis as unknown as Record<string, unknown>;
+      setUploadResult({ ...result, filename: f.name });
+      setAnalysed(true);
+      return typeof result.engine === 'string' ? result.engine : 'engine1';
+    } catch {
+      setAnalysed(false);       // the books are in; the charts can wait
+      return null;
+    }
+  }
+
   async function commit(force = false) {
     if (!scan || !file) return;
-    setError(null); setRepeat(null); setPhase('importing');
+    setError(null); setRepeat(null); setReports(null); setPhase('importing');
     try {
       const chosen = scan.tables
         .filter(t => keep[t.id])
@@ -122,25 +142,31 @@ export default function ImportPage() {
       setResult(res);
       // One upload, everything done. The same file also feeds the analysis, so
       // the owner never has to find a second screen and upload it again.
-      try {
-        const analysis = await uploadFile(file);
-        setUploadResult({ ...(analysis as unknown as Record<string, unknown>), filename: file.name });
-        setAnalysed(true);
-      } catch {
-        setAnalysed(false);       // the books are in; the charts can wait
-      }
+      const engine = await readForReports(file);
+      setReports({ state: engine ? 'done' : 'failed', engine });
       refreshTwin();
       setPhase('done');
     } catch (e) {
-      if (e instanceof AlreadyImportedError) setRepeat(e);
-      else setError((e as Error).message || 'Import failed.');
+      if (e instanceof AlreadyImportedError) {
+        // Not an error: the rows are in already. Say so, and still bring the
+        // reports up to date from the file (owner, 5 Oct 2026: the till
+        // reports stayed locked after a till file was uploaded twice).
+        setRepeat(e);
+        setPhase('review');
+        setReports({ state: 'reading', engine: null });
+        const engine = await readForReports(file);
+        setReports({ state: engine ? 'done' : 'failed', engine });
+        refreshTwin();
+        return;
+      }
+      setError((e as Error).message || 'Import failed.');
       setPhase('review');
     }
   }
 
   function reset() {
     setScan(null); setResult(null); setPhase('idle'); setError(null);
-    setFile(null); setRepeat(null); setKeep({}); setTypes({}); setAnswers({}); setOpen({}); setAnalysed(false);
+    setFile(null); setRepeat(null); setReports(null); setKeep({}); setTypes({}); setAnswers({}); setOpen({}); setAnalysed(false);
   }
 
   const keptTables = scan?.tables.filter(t => keep[t.id]) ?? [];
@@ -383,21 +409,33 @@ export default function ImportPage() {
             </div>
 
             {repeat && (
-              <div role="alert" style={{ ...noteBox, marginTop: 16 }}>
-                <strong>You have imported this file before.</strong>{' '}
+              <div role="status" style={{ ...noteBox, marginTop: 16 }}>
+                <strong>This file is already in your books.</strong>{' '}
                 {repeat.importedAt
-                  ? `On ${new Date(repeat.importedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}`
-                  : 'Earlier'}
-                {repeat.savedCount ? `, ${repeat.savedCount.toLocaleString()} rows were recorded` : ''}.
-                {' '}Importing it again records every row a second time and doubles those figures.
-                <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                  <button type="button" onClick={reset} className="pill pill-primary">
-                    Don&apos;t import it again
-                  </button>
-                  <button type="button" onClick={() => void commit(true)} className="pill pill-quiet">
-                    Import it again anyway
+                  ? `It was imported on ${new Date(repeat.importedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}`
+                  : 'It was imported earlier'}
+                {repeat.savedCount ? `, ${repeat.savedCount.toLocaleString()} rows in all` : ''}, so nothing new was added.
+                {' '}{reports?.state === 'reading' ? 'Bringing your reports up to date from it…'
+                  : reports?.state === 'done' ? (reports.engine === 'engine3' ? 'Your till reports are up to date with it.' : 'Your reports are up to date with it.')
+                  : reports?.state === 'failed' ? 'Your reports could not be read from it just now. Try again in a minute.'
+                  : ''}
+                <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+                  <Link href={reports?.engine === 'engine3' ? '/dashboard/pos' : reports?.engine === 'engine2' ? '/dashboard/customers' : '/dashboard'}
+                    className="pill pill-primary" style={{ textDecoration: 'none' }}>
+                    {reports?.engine === 'engine3' ? 'See your till sales' : reports?.engine === 'engine2' ? 'See your customers' : 'See the dashboard'}
+                  </Link>
+                  <button type="button" onClick={reset} className="pill pill-quiet">
+                    Choose another file
                   </button>
                 </div>
+                <p style={{ margin: '12px 0 0', fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>
+                  Only if the rows are really missing from your books:{' '}
+                  <button type="button" onClick={() => void commit(true)} className="btn-inline"
+                    style={{ background: 'none', border: 'none', padding: 0, color: 'var(--cyan)', font: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>
+                    import it again
+                  </button>
+                  . That records every row a second time.
+                </p>
               </div>
             )}
 
@@ -425,7 +463,7 @@ export default function ImportPage() {
         <SectionCard title="Import complete" subtitle="Your dashboards have been updated">
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 16 }}>
             <div>
-              <div style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, color: 'var(--green)' }}>
+              <div style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, color: 'var(--text-1)' }}>
                 {result.saved_count.toLocaleString()}
               </div>
               <div className="field-label">imported</div>
@@ -501,14 +539,21 @@ export default function ImportPage() {
           )}
 
           <p style={{ margin: '0 0 16px', fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.6 }}>
-            {analysed
-              ? 'Your books and your dashboards have both been updated from this one file.'
-              : 'Your books have been updated. The charts could not be rebuilt from this file, so they still show what was there before.'}
+            {!analysed
+              ? 'Your books have been updated. The charts could not be rebuilt from this file, so they still show what was there before.'
+              : reports?.engine === 'engine3'
+                ? 'Your books and your till reports have both been updated from this one file. They stay that way on every visit.'
+                : 'Your books and your dashboards have both been updated from this one file.'}
           </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <a href="/dashboard" className="pill pill-primary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
-              See the dashboard →
-            </a>
+            {reports?.engine === 'engine3' && (
+              <Link href="/dashboard/pos" className="pill pill-primary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                See your till sales
+              </Link>
+            )}
+            <Link href="/dashboard" className={`pill ${reports?.engine === 'engine3' ? 'pill-quiet' : 'pill-primary'}`} style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+              See the dashboard
+            </Link>
             <a href="/dashboard/timeline" className="pill pill-quiet" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
               View timeline
             </a>
