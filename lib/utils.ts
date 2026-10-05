@@ -12,11 +12,11 @@ export {
  * scoreColor — used by ops-brief, brief
  * Returns a CSS variable color string based on a 0–100 score.
  */
-export function scoreColor(score: number | null | undefined): string {
-  const s = score ?? 0;
-  if (s >= 75) return "var(--good)";
-  if (s >= 50) return "var(--warn)";
-  return "var(--crit)";
+/** Every number is the same ink (owner, 5 Oct 2026: "the multiple colours
+ *  are breaking the theme"). A score's band is said in words beside it, not
+ *  by painting the figure. The argument is kept so callers need not change. */
+export function scoreColor(_score: number | null | undefined): string {
+  return "var(--text-1)";
 }
 
 export function n(v: unknown): number {

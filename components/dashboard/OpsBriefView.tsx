@@ -16,7 +16,7 @@ function BriefPoint({ text, index }: { text: string; index: number }) {
   return (
     <motion.div initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + index * 0.07 }}
       style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: index > 0 ? '1px solid var(--border)' : 'none' }}>
-      <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: 'var(--cyan-dim)', border: '1px solid rgba(0,212,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--cyan)' }}>{index + 1}</span>
+      <span className="avatar" aria-hidden="true" style={{ width: 32, height: 32 }}>{index + 1}</span>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>{content}</p>
     </motion.div>
   );
@@ -47,28 +47,28 @@ export default function OpsBriefView() {
       {scores && (
         <div className="grid-engines" style={{ marginBottom: 24 }}>
           {/* Overall hero */}
-          <div className="kpi-card" style={{ minWidth: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 24px' }}>
-            <p style={{ fontSize: '3rem', fontWeight: 600, color: scoreColor(scores.overall_score), letterSpacing: '-0.05em', margin: 0, lineHeight: 1 }}>
+          <div className="kpi-card" style={{ minWidth: 120 }}>
+            <p className="kpi-label">Overall</p>
+            <p className="money money-hero" style={{ display: 'block', margin: '12px 0 4px' }}>
               {scores.overall_score}
             </p>
-            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', margin: '5px 0 0' }}>
+            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>
               {scores.overall_label}
             </p>
-            <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '2px 0 0' }}>Overall</p>
           </div>
           {/* An engine with no data behind it scored 0 and was printed as a big
               bold zero in the same type as a real score. "Operations 0" is a
               verdict; "no data yet" is the truth. */}
           {[
-            { l: 'MONEY',                  s: scores.e1_score, c: 'var(--e1)', measured: scores.measured?.e1 ?? true },
-            { l: 'CUSTOMERS',              s: scores.e2_score, c: 'var(--e2)', measured: scores.measured?.e2 ?? true },
-            { l: 'OPERATIONS',             s: scores.e3_score, c: 'var(--e3)', measured: scores.measured?.e3 ?? true },
+            { l: 'Money',      s: scores.e1_score, c: 'var(--e1)', measured: scores.measured?.e1 ?? true },
+            { l: 'Customers',  s: scores.e2_score, c: 'var(--e2)', measured: scores.measured?.e2 ?? true },
+            { l: 'Operations', s: scores.e3_score, c: 'var(--e3)', measured: scores.measured?.e3 ?? true },
           ].map(item => (
             <div key={item.l} className="kpi-card">
-              <p className="kpi-label" style={{ color: item.c }}>{item.l}</p>
+              <p className="kpi-label">{item.l}</p>
               {item.measured ? (
                 <>
-                  <p style={{ fontSize: 'var(--fs-display)', fontWeight: 600, color: scoreColor(item.s), margin: '8px 0 10px', letterSpacing: '-0.03em' }}>{item.s}</p>
+                  <p className="money money-lg" style={{ display: 'block', margin: '12px 0 12px' }}>{item.s}</p>
                   <div className="progress-track">
                     <motion.div className="progress-fill" style={{ background: scoreColor(item.s) }} initial={false} animate={{ width: `${item.s}%` }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }} />
                   </div>
@@ -85,27 +85,35 @@ export default function OpsBriefView() {
       )}
 
       {/* Operations AI Brief */}
-      <SectionCard title="AI Operations Brief" subtitle="Operations · POS analysis · AI-generated" delay={0.1} style={{ marginBottom: 20 }}>
+      <SectionCard title="The till, read by AIBOS" subtitle="What your till's sales say, in plain words." style={{ marginBottom: 16 }}>
         {opsBriefLines.length > 0
           ? opsBriefLines.map((l, i) => <BriefPoint key={i} text={l} index={i} />)
-          : <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Upload POS data to generate operations intelligence</p>
+          : <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>Upload your till&apos;s sales report and AIBOS reads it here.</p>
         }
       </SectionCard>
 
       {/* Cross-engine insights */}
       {orderedInsights.length > 0 && (
-        <SectionCard title="Cross-Engine Intelligence" subtitle="Compound insights from Financial · Customer Intelligence · Operations data" delay={0.16} style={{ marginBottom: 20 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <section className="bento-section" style={{ marginTop: 24, marginBottom: 24 }} aria-label="What AIBOS found">
+          <header className="bento-section-head">
+            <div>
+              <p className="eyebrow">Across your business</p>
+              <h2 className="bento-section-title">What AIBOS found</h2>
+            </div>
+            <p className="bento-section-sub">Money, customers and the till read together, the most pressing first.</p>
+          </header>
+          <div className="bento-grid">
             {orderedInsights.map((ins, i) => (
-              <InsightCard key={i} index={i} insight={ins.insight} action={ins.action} priority={ins.priority as any} sourceEngines={ins.source_engines} />
+              <InsightCard key={i} index={i} insight={ins.insight} action={ins.action} priority={ins.priority as any} sourceEngines={ins.source_engines}
+                className={['span-4 rows-2', 'span-2', 'span-2', 'span-3', 'span-3'][i % 5]} />
             ))}
           </div>
-        </SectionCard>
+        </section>
       )}
 
       {/* Unified executive brief */}
       {unifiedLines.length > 0 && (
-        <SectionCard title="Unified Executive Action Plan" subtitle="AIBOS Intelligence · Financial + Customer Intelligence + Operations synthesis" delay={0.22}>
+        <SectionCard title="What to do next" subtitle="From everything AIBOS has read: money, customers and the till.">
           {unifiedLines.map((l, i) => <BriefPoint key={i} text={l} index={i} />)}
         </SectionCard>
       )}

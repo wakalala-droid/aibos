@@ -71,26 +71,26 @@
      bar that clashes with every dark surface in the app. */
   color-scheme: dark;
 
-  /* Page */
-  --bg-page:        #0a0e1a;
-  --bg-card:        #0d1117;
-  --bg-card-hover:  #111827;
-  --bg-sidebar:     #080b14;
-  --bg-input:       #111827;
-  --bg-badge:       #1a2035;
+  /* Page: monochrome black (the owner's bento reference, 5 Oct 2026). The
+     navy of the first dark theme is gone; colour comes only from the brand
+     cyan and the faint blue light in each card's corner. */
+  --bg-page:        #040404;
+  --bg-card:        #111112;
+  --bg-card-hover:  #161617;
+  --bg-sidebar:     #080808;
+  --bg-input:       #141415;
+  --bg-badge:       #1b1b1d;
 
   /* Borders */
-  --border:         rgba(255,255,255,0.06);
+  --border:         rgba(255,255,255,0.07);
   --border-md:      rgba(255,255,255,0.10);
   --border-strong:  rgba(255,255,255,0.18);
 
-  /* Text */
+  /* Text: neutral greys, no slate tint. */
   --text-1:         #ffffff;
-  --text-2:         #e2e8f0;
-  --text-3:         #9fabbd;
-  /* was #475569 — too dark on the near-black card bg, tiny labels were barely
-     legible. Lifted to a readable muted slate while staying clearly tertiary. */
-  --text-4:         #94a0b2; /* 7.2:1 on cards (audit A3); was #707d8e at 4.5 */
+  --text-2:         #e5e5e5;
+  --text-3:         #a8a8a8; /* 8.3:1 on cards */
+  --text-4:         #9a9a9a; /* 6.9:1 on cards (audit A3 floor is 4.5) */
 
   /* Accent colours — identical to E1 */
   --cyan:           #00d4ff;
@@ -140,11 +140,11 @@
   --sidebar-collapsed: 56px;
 
   /* Shadows */
-  --shadow-card:    0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-lg:      0 4px 24px rgba(0,0,0,0.6);
+  --shadow-card:    0 18px 40px rgba(0,0,0,0.35);
+  --shadow-lg:      0 28px 70px rgba(0,0,0,0.55);
 
   /* Tooltip */
-  --tooltip-bg:     #1e293b;
+  --tooltip-bg:     #161617;
   --tooltip-border: rgba(255,255,255,0.10);
 
   /* Table */
@@ -157,12 +157,17 @@
   --upload-bg:      rgba(255,255,255,0.02);
 
   /* Lock overlay */
-  --overlay-bg:     rgba(10,14,26,0.85);
+  --overlay-bg:     rgba(4,4,4,0.85);
 
   /* Premium card depth — accent bloom (top-right), top sheen, top edge.
      --card-glow is overridden per-card by KPICard to match its accent. */
-  --card-glow:      rgba(96,165,250,0.16);
-  --card-sheen:     rgba(255,255,255,0.035);
+  --card-glow:      transparent;
+  --card-sheen:     transparent;
+  /* The one light a card carries: a faint wash from its top-left corner. */
+  --card-wash:      rgba(59,130,246,0.24);
+  --card-wash-opacity: 0.6;
+  /* The page's own light, high on the left (the aurora). */
+  --aurora:         rgba(59,130,246,0.15);
   --card-top:       rgba(255,255,255,0.06);
 
   /* ── BENTO DOT TEXTURE ─────────────────────────────────────────
@@ -236,8 +241,8 @@
   --spark-profit:   #059669;
   --spark-margin:   #7c3aed;
 
-  --shadow-card:    0 1px 2px rgba(28,25,23,0.04);
-  --shadow-lg:      0 12px 32px rgba(28,25,23,0.10);
+  --shadow-card:    0 10px 40px rgba(0,0,0,0.04);
+  --shadow-lg:      0 20px 60px rgba(0,0,0,0.08);
 
   --tooltip-bg:     #ffffff;
   --tooltip-border: rgba(15,23,42,0.10);
@@ -251,8 +256,11 @@
 
   --overlay-bg:     rgba(244,243,239,0.90);
 
-  --card-glow:      rgba(2,132,199,0.08);
+  --card-glow:      transparent;
   --card-sheen:     transparent;
+  --card-wash:      rgba(148,163,184,0.32);
+  --card-wash-opacity: 0.7;
+  --aurora:         rgba(148,163,184,0.15);
   --card-top:       rgba(255,255,255,0.8);
 
   /* Bento dots — warm ink on the off-white surface. Cranked up a touch
@@ -391,10 +399,7 @@ h1, h2, h3, h4 { line-height: 1.25; }
    tile glows in its own colour. */
 .kpi-card {
   container-type: inline-size;   /* lets .kpi-value size itself to the card */
-  background:
-    radial-gradient(115% 75% at 100% 0%, var(--card-glow), transparent 60%),
-    linear-gradient(180deg, var(--card-sheen), transparent 38%),
-    var(--bg-card);
+  background: var(--bg-card);
   border: 1px solid var(--border-md);
   border-radius: 14px;
   padding: 24px;
@@ -460,14 +465,12 @@ h1, h2, h3, h4 { line-height: 1.25; }
 
 /* Theme colours, not fixed ones: the fixed bright green and red were
    about 2:1 on a white card in light mode. */
-.kpi-card .kpi-badge.up {
-  background: color-mix(in srgb, var(--good) 14%, transparent);
-  color: var(--good);
-}
-
+/* Change badges are monochrome (5 Oct 2026): the arrow says which way. */
+.kpi-card .kpi-badge.up,
 .kpi-card .kpi-badge.down {
-  background: color-mix(in srgb, var(--crit) 14%, transparent);
-  color: var(--crit);
+  background: transparent;
+  border: 1px solid var(--border-md);
+  color: var(--text-2);
 }
 
 .kpi-card .kpi-icon {
@@ -486,9 +489,7 @@ h1, h2, h3, h4 { line-height: 1.25; }
 
 /* ── SECTION CARD ───────────────────────────────────────────── */
 .section-card {
-  background:
-    linear-gradient(180deg, var(--card-sheen), transparent 30%),
-    var(--bg-card);
+  background: var(--bg-card);
   border: 1px solid var(--border-md);
   border-radius: 14px;
   padding: 24px;
@@ -520,65 +521,15 @@ h1, h2, h3, h4 { line-height: 1.25; }
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: linear-gradient(180deg, var(--card-sheen), transparent 42%), transparent;
-}
-.kpi-card.glow-inner::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: radial-gradient(130% 90% at 100% 0%, var(--card-glow, transparent), transparent 60%);
+  background: transparent;
 }
 
-/* Light theme is flat (redesign 2026-10): no coloured corner wash on figure
-   cards. Glow and light effects are dark-mode only; a score in trouble still
-   shows in its own colour. */
-[data-theme="light"] .kpi-card.glow-inner::before { display: none; }
 
-/* ── BENTO DOT TEXTURE OVERLAY ──────────────────────────────────
-   A fine dot grid laid behind the card's content (z-index:-1, so it
-   sits above the card background and below text/charts). It rides at a
-   faint rest opacity and lights up to full on hover. The element is
-   always rendered by the card components, but only paints under a
-   [data-bento] scope (the dashboard) — landing-site cards stay clean
-   until we extend the scope there. */
-.bento-tex {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0;            /* inert outside a [data-bento] scope */
-}
+/* The bento dot texture was removed on 5 Oct 2026 (owner): cards are
+   plain surfaces now. Any leftover .bento-tex element draws nothing. */
+.bento-tex { display: none !important; }
 [data-bento] .kpi-card,
-[data-bento] .section-card {
-  position: relative;   /* contain the overlay; kpi-card is already relative */
-  isolation: isolate;   /* keep z-index:-1 behind content, not the page */
-}
-[data-bento] .bento-tex {
-  opacity: var(--bento-rest);
-  background-image: radial-gradient(circle at center, var(--bento-dot) 1px, transparent 1px);
-  background-size: var(--bento-cell) var(--bento-cell);
-  /* The grid is anchored to the bottom and fades out uniformly toward the
-     top, so the dots read as rising from the base of every card. */
-  -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,0.55) 42%, transparent 78%);
-  mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,0.55) 42%, transparent 78%);
-  transition: opacity 0.3s ease;
-}
-[data-bento] .kpi-card:hover .bento-tex,
-[data-bento] .section-card:hover .bento-tex {
-  opacity: 1;
-}
-/* Light theme: the dot texture stays (warm paper grain) but never lights up —
-   glow/light effects are dark-mode-only (owner decision, 2026-07-11). */
-[data-theme="light"] [data-bento] .kpi-card:hover .bento-tex,
-[data-theme="light"] [data-bento] .section-card:hover .bento-tex {
-  opacity: var(--bento-rest);
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-bento] .bento-tex { transition: none; }
-}
+[data-bento] .section-card { position: relative; isolation: isolate; }
 
 .section-title {
   font-family: 'Geist', sans-serif;
@@ -883,6 +834,7 @@ h1, h2, h3, h4 { line-height: 1.25; }
 .progress-fill {
   height: 100%;
   border-radius: 99px;
+  background: var(--chart-line) !important; /* one colour for every bar */
   transition: width 1s ease;
 }
 
@@ -1110,13 +1062,13 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
 .avatar {
   width: 40px; height: 40px; border-radius: 999px; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  font-size: var(--fs-label); font-weight: 700; background: var(--pill-bg); color: var(--text-2);
+  font-size: var(--fs-label); font-weight: 600;
+  background: var(--bg-card); border: 1px solid var(--border-md); color: var(--text-1);
 }
 .avatar svg { width: 20px; height: 20px; }
-.avatar-in { background: var(--green-dim); color: var(--green); }
-.avatar-out { background: var(--red-dim); color: var(--red); }
-.avatar-brand { background: var(--cyan-dim); color: var(--cyan); }
-.avatar-warn { background: var(--amber-dim); color: var(--amber); }
+/* Monochrome since 5 Oct 2026: every round mark is ink in a hairline circle. */
+.avatar-in, .avatar-out, .avatar-brand, .avatar-warn { background: var(--bg-card) !important; color: var(--text-1) !important; }
+[data-theme="dark"] .avatar { background: rgba(255,255,255,0.08) !important; border-color: rgba(255,255,255,0.15); }
 .row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .row-title { font-size: var(--fs-body); font-weight: 600; color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row-sub { font-size: var(--fs-label); color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1187,8 +1139,7 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
 
 /* A row's amount on the right of a statement list. */
 .row-amount { flex-shrink: 0; font-size: var(--fs-body); font-weight: 600; color: var(--text-1); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.row-amount.in { color: var(--green); }
-.row-amount.out { color: var(--red); }
+.row-amount.in, .row-amount.out { color: var(--text-1); }
 .row-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 /* A static row (no link): same rhythm as .row-link. */
 .row {
@@ -1200,6 +1151,104 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
 
 /* Small round button for remove/close inside a row. */
 .icon-pill.danger:hover { color: var(--red); }
+
+/* ── MONOCHROME BENTO (5 Oct 2026, the owner's reference) ──────────
+   For the parts of AIBOS that were still stiff: findings, recommendations,
+   decisions, briefs, locked previews and the assistant. A hairline card with
+   a soft shadow and one faint wash of light from its top-left corner, a
+   round outlined icon, a spaced-capitals title, a small tag on the right
+   and plain words under it. Hover lifts it a little and wakes the icon. */
+.bento-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 768px) {
+  .bento-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: minmax(120px, auto); }
+  .bento-grid > .span-6 { grid-column: span 6; }
+  .bento-grid > .span-4 { grid-column: span 4; }
+  .bento-grid > .span-3 { grid-column: span 3; }
+  .bento-grid > .span-2 { grid-column: span 2; }
+  .bento-grid > .rows-2 { grid-row: span 2; }
+}
+.bento {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; flex-direction: column; gap: 16px; justify-content: space-between;
+  padding: 24px; border-radius: var(--radius-card);
+  border: 1px solid var(--border-md); background: var(--bg-card);
+  box-shadow: var(--shadow-card); color: var(--text-1); text-decoration: none;
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out, border-color 0.3s ease;
+}
+.bento::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 60% 120% at 12% 0%, var(--card-wash), transparent 72%);
+  opacity: var(--card-wash-opacity);
+}
+.bento:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--border-strong); }
+a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.bento-head { display: flex; align-items: flex-start; gap: 16px; }
+.bento-icon {
+  width: 48px; height: 48px; flex-shrink: 0; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border-strong); background: var(--bg-card); color: var(--text-1);
+}
+[data-theme="dark"] .bento-icon { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.15); }
+.bento-icon svg { width: 26px; height: 26px; stroke-width: 1.5; }
+.bento-main { flex: 1; min-width: 0; }
+.bento-titlerow { display: flex; align-items: flex-start; gap: 12px; }
+.bento-title {
+  margin: 0; font-size: var(--fs-body); font-weight: 600; line-height: 1.4;
+  text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-1);
+}
+.bento-tag {
+  margin-left: auto; flex-shrink: 0; padding: 2px 12px; border-radius: 999px;
+  border: 1px solid var(--border-md); color: var(--text-3);
+  font-size: var(--fs-caps); font-weight: 500; text-transform: uppercase; letter-spacing: 0.2em; white-space: nowrap;
+}
+.bento-text { margin: 8px 0 0; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); }
+.bento-foot { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+/* The icon wakes on hover only: alive when touched, still at rest. */
+@keyframes bento-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6%); } }
+@keyframes bento-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes bento-tilt { 0% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } 100% { transform: rotate(-2deg); } }
+.bento:hover .bento-icon svg { animation: bento-float 2.4s ease-in-out infinite; }
+.bento.motion-pulse:hover .bento-icon svg { animation-name: bento-pulse; }
+.bento.motion-tilt:hover .bento-icon svg { animation-name: bento-tilt; }
+/* Spaced-capital eyebrow over a section (the reference's "GRID STUDIES"). */
+.eyebrow { margin: 0 0 8px; font-size: var(--fs-caps); font-weight: 500; text-transform: uppercase; letter-spacing: 0.3em; color: var(--text-3); }
+@media (prefers-reduced-motion: reduce) {
+  .bento, .bento:hover { transform: none; transition: none; }
+  .bento:hover .bento-icon svg { animation: none; }
+}
+
+/* A bento section: spaced-capital eyebrow, a strong title, an optional line
+   on the right, a hairline under it, then the grid. */
+.bento-section { margin: 40px 0 0; }
+.bento-section-head {
+  display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+@media (min-width: 768px) { .bento-section-head { flex-direction: row; align-items: flex-end; justify-content: space-between; } }
+.bento-section-title { margin: 0; font-size: var(--fs-display); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; color: var(--text-1); }
+.bento-section-sub { margin: 0; max-width: 420px; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); }
+
+/* The Ask AIBOS panel: a bento surface, solid, with the same corner light. */
+.ai-panel {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; flex-direction: column;
+  background: var(--bg-card); border: 1px solid var(--border-md); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+.ai-panel::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 60% 50% at 12% 0%, var(--card-wash), transparent 72%);
+  opacity: var(--card-wash-opacity);
+}
+
+/* The page's own light: a faint aurora high on the left, under everything. */
+.app-shell {
+  background:
+    radial-gradient(ellipse 55% 60% at 12% 0%, var(--aurora), transparent 65%),
+    radial-gradient(ellipse 40% 50% at 88% 0%, rgba(148,163,184,0.10), transparent 70%),
+    var(--bg-page);
+
+}
 
 /* ── FILE DROP (UI/UX audit 2026-10 A29, B6, C4) ──────────────────
    One control for every file: components/ui/FileDrop.tsx. The zone is a real

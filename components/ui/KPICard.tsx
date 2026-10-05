@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import Sparkline from './Sparkline';
 import BorderGlow from './BorderGlow';
-import { bloomProps } from '@/lib/cometStyle';
 import { fmt } from '@/lib/utils';
 import type { MonthChange } from '@/lib/change';
 
@@ -50,7 +49,9 @@ const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
 export default function KPICard({
   label, sublabel, value, sub = 'vs prior period',
   growth, change, points = false,
-  sparkData, sparkColor = '#60a5fa', score, goodWhenUp = true,
+  // sparkColor and score are accepted from older callers; since 5 Oct 2026
+  // every card has one line colour and no corner light.
+  sparkData, goodWhenUp = true,
   explainId, drillHref, drillLabel = 'See the records',
 }: KPICardProps) {
   // Badge colour reflects good/bad, not just direction: rising costs are red.
@@ -60,8 +61,6 @@ export default function KPICard({
     ? change.pct !== undefined ? `${Math.abs(change.pct).toFixed(1)}%`
       : points ? `${Math.abs(change.diff).toFixed(1)} pts` : fmt(Math.abs(change.diff))
     : growth !== undefined ? `${Math.abs(growth).toFixed(1)}%` : '';
-  // The card's own inner glow, severity-tinted when the score is in trouble.
-  const bloom = bloomProps(score, sparkColor);
 
   return (
     // No entrance animation (UI/UX audit 2026-10 A16): the figures are there
@@ -79,14 +78,11 @@ export default function KPICard({
     >
       <div
         className="kpi-card glow-inner"
-        style={bloom.style}
         data-ai-explain={explainId}
         data-ai-label={explainId ? sentenceCase(label) : undefined}
         data-ai-value={explainId ? value : undefined}
         title={explainId ? 'Hold (long-press) to have AIBOS explain this metric' : undefined}
       >
-        {/* Bento dot texture — faint grid that lights up on hover (dashboard only) */}
-        <span className="bento-tex" aria-hidden="true" />
 
         {/* Top row: icon + label + growth badge */}
         {/* Wraps on a narrow card so the change badge drops below the label
@@ -121,7 +117,7 @@ export default function KPICard({
           {sparkData && sparkData.length > 1 && (
             // Decorative trend hint: the value and the change badge carry the data.
             <div style={{ marginBottom: -4, flexShrink: 0 }}>
-              <Sparkline data={sparkData} color={sparkColor} />
+              <Sparkline data={sparkData} color="var(--chart-line)" />
             </div>
           )}
         </div>

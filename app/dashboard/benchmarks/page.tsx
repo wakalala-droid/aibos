@@ -9,7 +9,7 @@ import PageHeader from '@/components/ui/PageHeader';
 const STATUS = {
   good:  { color: 'var(--good)', label: 'On Target',    bg: 'rgba(52,211,153,0.10)',  border: 'rgba(52,211,153,0.25)' },
   warn:  { color: 'var(--warn)', label: 'Below Target', bg: 'rgba(251,191,36,0.10)',  border: 'rgba(251,191,36,0.25)' },
-  alert: { color: 'var(--crit)', label: 'Critical',     bg: 'rgba(239,68,68,0.10)',   border: 'rgba(239,68,68,0.25)'  },
+  alert: { color: 'var(--crit)', label: 'Far below',     bg: 'rgba(239,68,68,0.10)',   border: 'rgba(239,68,68,0.25)'  },
 };
 
 function BenchmarkCard({ b, delay }: { b: any; delay: number }) {
@@ -83,13 +83,13 @@ export default function BenchmarksPage() {
 
       {/* KPI summary strip */}
       <div className="grid-3" style={{ marginBottom: 24 }}>
-        <KPICard label="ON TARGET" value={String(goodCount)} sub="metrics within benchmark"
+        <KPICard label="On target" value={String(goodCount)} sub="measures where you are fine"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="var(--good)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkColor="var(--good)" delay={0} />
-        <KPICard label="BELOW TARGET" value={String(warnCount)} sub="metrics needing attention"
+        <KPICard label="Below target" value={String(warnCount)} sub="measures to look at"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--warn)" strokeWidth="1.5" strokeLinejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="var(--warn)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(251,191,36,0.15)" sparkColor="var(--warn)" delay={0.06} />
-        <KPICard label="CRITICAL" value={String(alertCount)} sub="metrics requiring urgent action"
+        <KPICard label="Far below" value={String(alertCount)} sub="measures to fix first"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--crit)" strokeWidth="1.5" fill="none"/><path d="M12 8v5M12 16v.5" stroke="var(--crit)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(239,68,68,0.15)" sparkColor="var(--crit)" delay={0.12} />
       </div>
@@ -106,9 +106,9 @@ export default function BenchmarksPage() {
       )}
 
       {/* Attach rates */}
-      <SectionCard title="Attach Rates" subtitle="Drink & side attach vs QSR benchmarks" delay={0.22} style={{ marginBottom: 20 }}>
-        <AttachMeter label="Drink Attach Rate" value={drinkAttach} benchmark={80} color="var(--e3)" />
-        <AttachMeter label="Side Attach Rate"  value={sideAttach}  benchmark={30} color="var(--blue)" />
+      <SectionCard title="Sold together" subtitle="How often a meal sells with a drink or a side, against similar food businesses" delay={0.22} style={{ marginBottom: 20 }}>
+        <AttachMeter label="Sold with a drink" value={drinkAttach} benchmark={80} color="var(--e3)" />
+        <AttachMeter label="Sold with a side"  value={sideAttach}  benchmark={30} color="var(--blue)" />
         {drinkAttach < 80 && (
           <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.18)', marginTop: 4 }}>
             <p style={{ fontSize: 'var(--fs-data)', color: 'var(--warn)', margin: 0, lineHeight: 1.5 }}>
@@ -120,7 +120,7 @@ export default function BenchmarksPage() {
 
       {/* Menu gaps */}
       {menuGaps.length > 0 && (
-        <SectionCard title="Menu Optimisation Opportunities" subtitle="Velocity and pricing analysis" delay={0.28}>
+        <SectionCard title="Ways to improve your menu" subtitle="What sells fast and what to price differently" delay={0.28}>
           {menuGaps.map((g, i) => (
             <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, padding: '12px 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
               <div>

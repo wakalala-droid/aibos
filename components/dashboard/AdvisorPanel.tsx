@@ -9,7 +9,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { AlertTriangle, Lightbulb, Sparkles, RefreshCw } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
+import BentoCard from '@/components/ui/BentoCard';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import {
@@ -17,10 +19,11 @@ import {
   type Recommendation, type SimResult, type AdviceTrackRecord,
 } from '@/lib/api';
 
+// The same words and marks as AIBOS's findings (InsightCard), no colour.
 const PRIORITY = {
-  high: { fg: 'var(--red)', bg: 'var(--red-dim)', label: 'High' },
-  medium: { fg: 'var(--amber)', bg: 'rgba(251,191,36,0.12)', label: 'Medium' },
-  low: { fg: 'var(--text-3)', bg: 'var(--bg-badge)', label: 'Low' },
+  high:   { label: 'Act now',      icon: <AlertTriangle />, motion: 'pulse' as const },
+  medium: { label: 'Worth a look', icon: <Lightbulb />,     motion: 'float' as const },
+  low:    { label: 'Good to know', icon: <Sparkles />,      motion: 'tilt' as const },
 };
 
 const SCENARIOS = [
@@ -31,81 +34,62 @@ const SCENARIOS = [
 ];
 
 
-function RecCard({ r, onFeedback, busy }: {
+function RecCard({ r, onFeedback, busy, className }: {
   r: Recommendation;
   onFeedback?: (r: Recommendation, status: 'accepted' | 'dismissed') => void;
   busy?: boolean;
+  className?: string;
 }) {
   const p = PRIORITY[r.priority] ?? PRIORITY.medium;
   return (
-    <div style={{ padding: '16px 18px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{r.title}</span>
-        <span style={{ display: 'flex', gap: 6 }}>
-          <span className="badge" style={{ background: p.bg, color: p.fg }}>{p.label}</span>
-          <span className="badge" style={{ background: 'var(--bg-badge)', color: 'var(--text-3)' }}>{Math.round(r.confidence * 100)}%</span>
-        </span>
-      </div>
-      <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.5, margin: '0 0 10px' }}>{r.rationale}</p>
+    <BentoCard className={className} icon={p.icon} title={p.label} tag={`${Math.round(r.confidence * 100)}% sure`} motion={p.motion}
+      foot={r.rec_id ? (
+        r.status === 'accepted' ? <span className="badge" style={{ border: '1px solid var(--border-md)', color: 'var(--text-2)' }}>You did this</span>
+        : r.status === 'dismissed' ? <span className="badge" style={{ border: '1px solid var(--border-md)', color: 'var(--text-3)' }}>Not relevant</span>
+        : (
+          <>
+            <button type="button" className="pill pill-primary" disabled={busy} onClick={() => onFeedback?.(r, 'accepted')}>Did this</button>
+            <button type="button" className="pill pill-quiet" disabled={busy} onClick={() => onFeedback?.(r, 'dismissed')}>Not relevant</button>
+            {(r.times_shown ?? 0) > 1 && r.status === 'open' && (
+              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Shown {r.times_shown} times</span>
+            )}
+          </>
+        )
+      ) : undefined}>
+      <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.5, color: 'var(--text-1)' }}>{r.title}</p>
+      <p className="bento-text" style={{ marginTop: 4 }}>{r.rationale}</p>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        {r.evidence.map((e, i) => (
-          <span key={i} style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', background: 'var(--bg-badge)', padding: '4px 8px', borderRadius: 6 }}>
-            {e.label}: <span style={{ color: 'var(--text-1)' }}>{e.value}</span>
-          </span>
-        ))}
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: r.alternatives.length ? 10 : 0 }}>
-        <div>
-          <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginBottom: 3 }}>Expected</div>
-          <div style={{ fontSize: 'var(--fs-data)', color: 'var(--green)' }}>{r.expected_outcome}</div>
+      {r.evidence.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+          {r.evidence.map((e, i) => (
+            <span key={i} style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', border: '1px solid var(--border-md)', padding: '4px 12px', borderRadius: 999 }}>
+              {e.label}: <span style={{ color: 'var(--text-1)', fontWeight: 600 }}>{e.value}</span>
+            </span>
+          ))}
         </div>
-        <div>
-          <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', marginBottom: 3 }}>Downside</div>
-          <div style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>{r.downside}</div>
+      )}
+
+      <div className="mini-stats" style={{ marginTop: 12 }}>
+        <div className="mini-stat">
+          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>If it works</span>
+          <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>{r.expected_outcome}</span>
+        </div>
+        <div className="mini-stat">
+          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>The risk</span>
+          <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>{r.downside}</span>
         </div>
       </div>
 
       {r.alternatives.length > 0 && (
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 8 }}>
-          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Alternatives: </span>
-          <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>{r.alternatives.join(' · ')}</span>
-        </div>
+        <p style={{ margin: '12px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+          Or instead: <span style={{ color: 'var(--text-2)' }}>{r.alternatives.join(', ')}</span>
+        </p>
       )}
-
-      {/* Feedback loop (audit #20) — the missing learning signal. Buttons only
-          exist once the ledger row does (migration 0021). */}
-      {r.rec_id && (
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10, marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-          {r.status === 'accepted' ? (
-            <span className="badge" style={{ color: 'var(--good)', background: 'rgba(52,211,153,0.12)' }}>✓ You did this</span>
-          ) : r.status === 'dismissed' ? (
-            <span className="badge" style={{ color: 'var(--text-4)', background: 'var(--bg-badge)' }}>Not relevant</span>
-          ) : (
-            <>
-              <button type="button" className="touch-target" disabled={busy}
-                onClick={() => onFeedback?.(r, 'accepted')}
-                style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: '1px solid var(--good)', background: 'transparent', color: 'var(--good)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
-                Did this
-              </button>
-              <button type="button" className="touch-target" disabled={busy}
-                onClick={() => onFeedback?.(r, 'dismissed')}
-                style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>
-                Not relevant
-              </button>
-            </>
-          )}
-          {(r.times_shown ?? 0) > 1 && r.status === 'open' && (
-            <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>shown {r.times_shown}×</span>
-          )}
-        </div>
-      )}
-    </div>
+    </BentoCard>
   );
 }
 
-export function RecommendationList({ limit, seeAllHref, title = 'Recommendations', subtitle }: {
+export function RecommendationList({ limit, seeAllHref, title = 'What to try', subtitle }: {
   limit?: number;
   seeAllHref?: string;
   title?: string;
@@ -143,39 +127,44 @@ export function RecommendationList({ limit, seeAllHref, title = 'Recommendations
 
   const shown = limit ? visible.slice(0, limit) : visible;
 
+  const spanFor = (i: number, n: number) =>
+    n === 1 ? 'span-6' : n === 2 ? 'span-3' : n === 3 ? 'span-2' : i % 3 === 0 ? 'span-6' : 'span-3';
+
   return (
-    <SectionCard
-      title={title}
-      subtitle={subtitle ?? (loading ? 'Analysing…' : `${recs.length} from your Digital Twin`)}
-      style={limit ? { marginBottom: 20 } : undefined}
-      action={
-        seeAllHref && recs.length > (limit ?? 0)
-          ? <Link className="tap-link" href={seeAllHref} style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>See all →</Link>
-          : <button type="button" onClick={load} className="touch-target" style={{ padding: '6px 12px', minHeight: 44, borderRadius: 6, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', fontSize: 'var(--fs-label)', fontWeight: 600, cursor: 'pointer' }}>Refresh</button>
-      }
-    >
-      {err && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{err}</div>}
-      {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[0, 1].map(i => <div key={i} className="skeleton" style={{ height: 120 }} />)}</div>
-      ) : recs.length === 0 ? (
-        <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>
-          No recommendations right now: your numbers look healthy, or there isn&apos;t enough activity yet.
+    <section className="bento-section" aria-labelledby="recs-title" style={limit ? { marginTop: 0, marginBottom: 24 } : { marginTop: 0 }}>
+      <header className="bento-section-head">
+        <div>
+          <p className="eyebrow">AIBOS suggests</p>
+          <h2 id="recs-title" className="bento-section-title">{title}</h2>
         </div>
+        <div className="bento-section-sub" style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' }}>
+          <span>{subtitle ?? (loading ? 'Reading your numbers…' : `${recs.length} suggestion${recs.length === 1 ? '' : 's'} from your records, each with its evidence.`)}</span>
+          {seeAllHref && recs.length > (limit ?? 0)
+            ? <Link className="pill pill-quiet" href={seeAllHref}>See all</Link>
+            : <button type="button" onClick={load} className="pill pill-quiet"><RefreshCw aria-hidden="true" />Refresh</button>}
+        </div>
+      </header>
+      {err && <div role="alert" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>{err}</div>}
+      {loading ? (
+        <div className="bento-grid">{[0, 1].map(i => <div key={i} className="skeleton span-3" style={{ height: 220, borderRadius: 'var(--radius-card)' }} />)}</div>
+      ) : recs.length === 0 ? (
+        <BentoCard icon={<Lightbulb />} title="Nothing to suggest" tag="All good"
+          text="Your numbers look healthy, or there is not enough activity yet for AIBOS to suggest anything." />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className="bento-grid">
           {shown.map((r, i) => (
-            <RecCard key={r.rec_id ?? i} r={r} onFeedback={onFeedback} busy={busyId === r.rec_id} />
+            <RecCard key={r.rec_id ?? i} r={r} onFeedback={onFeedback} busy={busyId === r.rec_id} className={spanFor(i, shown.length)} />
           ))}
         </div>
       )}
       {!limit && track?.available && track.total && track.total.shown > 0 && (
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '14px 0 0' }}>
-          AIBOS&apos;s advice record: {track.total.shown} recommendation{track.total.shown === 1 ? '' : 's'} made
-          {' · '}{track.total.accepted} taken · {track.total.dismissed} not relevant
-          {typeof track.acceptance_rate === 'number' && <> · <strong style={{ color: 'var(--text-1)' }}>{track.acceptance_rate}% taken</strong> of those you decided on</>}
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '16px 0 0' }}>
+          AIBOS&apos;s advice record: {track.total.shown} suggestion{track.total.shown === 1 ? '' : 's'} made,
+          {' '}{track.total.accepted} taken and {track.total.dismissed} not relevant
+          {typeof track.acceptance_rate === 'number' && <>. <strong style={{ color: 'var(--text-1)' }}>{track.acceptance_rate}% taken</strong> of those you decided on</>}
         </p>
       )}
-    </SectionCard>
+    </section>
   );
 }
 
@@ -201,15 +190,11 @@ export function WhatIfPanel() {
   }
 
   const isHire = scenario === 'hire';
-  // Green = good for the business: up for profit/revenue/margin, DOWN for costs.
-  const deltaColor = (metric: string, n: number) => {
-    if (n === 0) return 'var(--text-2)';
-    const good = metric === 'costs' ? n < 0 : n > 0;
-    return good ? 'var(--green)' : 'var(--red)';
-  };
+  // Every figure is ink (5 Oct 2026); the sign says which way it moves.
+  const METRIC_WORD: Record<string, string> = { profit: 'Profit', revenue: 'Sales', costs: 'Costs', margin: 'Margin' };
 
   return (
-    <SectionCard title="What if…" subtitle="Runs against a copy: your data is untouched">
+    <SectionCard title="What if" subtitle="Tried on a copy of your books, so nothing real changes.">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <select value={scenario} onChange={e => { setScenario(e.target.value); setSim(null); }} className="field">
           {SCENARIOS.map(s => <option key={s.type} value={s.type}>{s.label}</option>)}
@@ -229,9 +214,8 @@ export function WhatIfPanel() {
           </>
         )}
 
-        <button type="button" onClick={runSim} disabled={simBusy} className="touch-target"
-          style={{ padding: '10px 18px', minHeight: 44, borderRadius: 999, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', opacity: simBusy ? 0.7 : 1 }}>
-          {simBusy ? 'Running…' : 'Simulate'}
+        <button type="button" onClick={runSim} disabled={simBusy} className="pill pill-primary" style={{ alignSelf: 'flex-start' }}>
+          {simBusy ? 'Working it out…' : 'Show me'}
         </button>
 
         {err && <div style={{ color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{err}</div>}
@@ -241,13 +225,13 @@ export function WhatIfPanel() {
             <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', margin: '0 0 12px' }}>{sim.explanation}</p>
             {(['profit', 'revenue', 'costs', 'margin'] as const).map(k => (
               <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{k}</span>
+                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{METRIC_WORD[k]}</span>
                 <span style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
                   <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>
                     {k === 'margin' ? `${sim.projected[k]}%` : `${sym}${fmt(sim.projected[k])}`}
                   </span>
-                  <span style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: deltaColor(k, sim.deltas[k]) }}>
-                    {sim.deltas[k] > 0 ? '+' : ''}{k === 'margin' ? `${sim.deltas[k]}pp` : `${sym}${fmt(sim.deltas[k])}`}
+                  <span style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-1)' }}>
+                    {sim.deltas[k] > 0 ? '+' : ''}{k === 'margin' ? `${sim.deltas[k]} points` : `${sym}${fmt(sim.deltas[k])}`}
                   </span>
                 </span>
               </div>

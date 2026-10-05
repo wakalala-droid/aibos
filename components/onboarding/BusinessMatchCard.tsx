@@ -61,7 +61,6 @@ function Shell({ children }: { children: React.ReactNode }) {
       glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH}
     >
       <div className="section-card glow-inner" style={{ padding: 16 }}>
-        <span className="bento-tex" aria-hidden="true" />
         {children}
       </div>
     </BorderGlow>

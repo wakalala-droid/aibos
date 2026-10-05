@@ -220,7 +220,7 @@ export default function HomeTop() {
           action={<Link href="/dashboard/inventory" className="icon-pill" aria-label={`Open ${ind.stockWord}`}><Package aria-hidden="true" /></Link>}>
           {extras === null ? <div className="skeleton" style={{ height: 64 }} /> : (
             <>
-              <span className="money money-lg" style={{ color: lowStock.length ? 'var(--amber)' : 'var(--text-1)' }}>
+              <span className="money money-lg">
                 {extras.products.length === 0 ? 'None yet' : lowStock.length ? `${lowStock.length} low` : 'All good'}
               </span>
               <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>

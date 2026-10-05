@@ -21,7 +21,7 @@ export default function Stat({ label, money, count, text, sym = 'K', sub, tone, 
   sub?: React.ReactNode;
   /** Colour the line under the figure: 'bad' red, 'good' green, 'warn' amber. */
   tone?: 'good' | 'bad' | 'warn';
-  /** Colour the figure itself. */
+  /** Accepted from older callers; every figure is ink since 5 Oct 2026. */
   valueTone?: 'good' | 'bad' | 'warn';
   /** One round icon link or button for the title row (className="icon-pill"). */
   action?: React.ReactNode;
@@ -36,7 +36,7 @@ export default function Stat({ label, money, count, text, sym = 'K', sub, tone, 
         <>
           {money !== undefined ? <BigMoney value={money} sym={sym} size="lg" roll />
             : (
-              <span className="money money-lg" style={valueTone ? { color: colour(valueTone) } : undefined}>
+              <span className="money money-lg">
                 {count !== undefined ? count.toLocaleString('en-ZM') : text}
               </span>
             )}

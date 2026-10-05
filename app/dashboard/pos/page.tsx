@@ -19,14 +19,14 @@ const VEL_WORD: Record<string, string> = { '\u{1F525}': 'Fast', '\u2705': 'Stead
 // in whatever ordering the user chose, not a frozen revenue rank.
 const itemColumns = (sym: string): DataTableColumn<TopItemRow>[] => [
   { key: 'rank', label: '#', render: (_item, i) => <span style={{ color: 'var(--text-4)' }}>#{i + 1}</span> },
-  { key: 'sku', label: 'SKU', sortValue: r => r.sku,
+  { key: 'sku', label: 'Code', sortValue: r => r.sku,
     render: r => <span style={{ color: 'var(--blue)', fontWeight: 600 }}>{r.sku}</span> },
   { key: 'name', label: 'Name', sortValue: r => r.name,
     render: r => <span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{r.name}</span> },
   { key: 'category', label: 'Category', sortValue: r => r.category,
     render: r => <span className="badge" style={{ color: 'var(--text-3)', background: 'var(--bg-badge)', borderColor: 'var(--border)' }}>{r.category}</span> },
   { key: 'units_sold', label: 'Units', sortValue: r => r.units_sold, render: r => r.units_sold.toLocaleString() },
-  { key: 'revenue', label: 'Revenue', sortValue: r => r.revenue,
+  { key: 'revenue', label: 'Sales', sortValue: r => r.revenue,
     render: r => <span style={{ fontWeight: 700, color: 'var(--e3)' }}>{fmt(r.revenue, false, sym)}</span> },
   { key: 'velocity_rank', label: 'How fast it sells', sortValue: r => r.velocity_rank,
     render: r => <span style={{ fontSize: 'var(--fs-body)', color: VEL_COLOR[r.velocity_rank] ?? 'var(--text-3)' }}>{VEL_WORD[r.velocity_rank] ?? r.velocity_rank}</span> },
@@ -53,23 +53,23 @@ export default function POSPage() {
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
-        <KPICard label="GROSS REVENUE" value={fmt(gt?.gross_revenue ?? 0, false, sym)} sub="total sales incl. discount"
+        <KPICard label="Sales before discounts" value={fmt(gt?.gross_revenue ?? 0, false, sym)} sub="before discounts"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="var(--e3)" strokeWidth="1.5" fill="none"/><path d="M2 9h20" stroke="var(--e3)" strokeWidth="1.3" strokeLinecap="round"/></svg>}
           iconBg="rgba(16,185,129,0.15)" sparkColor="var(--e3)" delay={0} />
-        <KPICard label="NET REVENUE" value={fmt(gt?.net_revenue ?? 0, false, sym)} sub="after discounts"
+        <KPICard label="Sales after discounts" value={fmt(gt?.net_revenue ?? 0, false, sym)} sub="after discounts"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkColor="var(--good)" delay={0.06} />
-        <KPICard label="TOTAL UNITS SOLD" value={(gt?.units_sold ?? 0).toLocaleString()} sub="across all categories"
+        <KPICard label="Items sold" value={(gt?.units_sold ?? 0).toLocaleString()} sub="across all categories"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke="var(--blue)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)" sparkColor="var(--blue)" delay={0.12} />
-        <KPICard label="DISCOUNT VALUE" value={fmt(gt?.discount_value ?? 0, false, sym)} sub={`${discRate.toFixed(2)}% of gross revenue`}
+        <KPICard label="Discounts given" value={fmt(gt?.discount_value ?? 0, false, sym)} sub={`${discRate.toFixed(2)}% of gross revenue`}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 14.5L14.5 9M9 9h.01M14.5 14.5h.01" stroke="var(--warn)" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="10" stroke="var(--warn)" strokeWidth="1.4" fill="none"/></svg>}
           iconBg="rgba(251,191,36,0.15)" sparkColor="var(--warn)" delay={0.18} />
       </div>
 
       {/* Charts */}
       <div className="grid-2" style={{ marginBottom: 20 }}>
-        <SectionCard title="Revenue Mix by Category" delay={0.1}>
+        <SectionCard title="Sales by category" delay={0.1}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <div role="img" aria-label={`Donut chart of revenue mix across ${pieData.length} categories`}>
             <ResponsiveContainer width={130} height={130}>
@@ -95,7 +95,7 @@ export default function POSPage() {
           </div>
         </SectionCard>
 
-        <SectionCard title="Units Sold by Category" delay={0.14}>
+        <SectionCard title="Items sold by category" delay={0.14}>
           <div role="img" aria-label={`Bar chart of units sold across ${barData.length} categories`}>
           <ResponsiveContainer width="100%" height={170}>
             <BarChart data={barData} layout="vertical" barCategoryGap="22%">
@@ -112,14 +112,14 @@ export default function POSPage() {
       </div>
 
       {/* Top Items Table */}
-      <SectionCard title="Top Items by Revenue" subtitle="Ranked by revenue · velocity indicator" delay={0.2} style={{ position: 'relative' }}>
+      <SectionCard title="Best sellers" subtitle="Highest sales first, with how fast each sells" delay={0.2} style={{ position: 'relative' }}>
         <DataTable
           ariaLabel="Top items by revenue"
           columns={itemColumns(sym)}
           rows={topItems}
           rowKey={(item, i) => item.sku || String(i)}
           defaultSort={{ key: 'revenue', dir: 'desc' }}
-          emptyMessage="Upload a POS export to rank your items."
+          emptyMessage="Upload your till's sales report to rank your items."
         />
         {!hasEngine3Data && <LockOverlay colour="var(--e3)" title="Needs your till data" description="Upload the sales report from your till (POS) to see what sells, how fast and when." bullets={['Sales by category and item','What sells fastest','Best sellers and slow sellers']} />}
       </SectionCard>

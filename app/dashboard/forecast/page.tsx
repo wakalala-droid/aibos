@@ -8,7 +8,6 @@ import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
-import { motion } from 'framer-motion';
 import PageHeader from '@/components/ui/PageHeader';
 import CashForecastFan from '@/components/dashboard/CashForecastFan';
 import {
@@ -133,8 +132,8 @@ export default function ForecastPage() {
   });
   const hasBand = band != null;
   const bandLabel = hasBand
-    ? 'shaded band = 95% prediction interval from your history'
-    : 'no confidence band yet: needs 3+ months of history';
+    ? 'The shaded band is where sales should land, judging by your history.'
+    : 'The likely range appears once you have 3 months recorded.';
 
   const chart: Row[] = [...historical, ...projections];
   const hasData = safeMonthly.length > 0;
@@ -149,19 +148,19 @@ export default function ForecastPage() {
   return (
     <FeatureGate
       feature="forecast"
-      title="12-month Forecast"
+      title="The year ahead"
       colour="var(--cyan)"
       headline={hasData
         ? `Your revenue trend points to ${fmt(firstFcast, true, sym)} next month (${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%).`
         : 'Upload data to project your next quarter.'}
-      detail="See the full 3-month projection with confidence bands, trend strength and the monthly drivers: plus exportable forecast tables."
+      detail="See the next 3 months with how sure AIBOS is, how strong the trend is and what drives each month, with tables you can download."
     >
     <>
       <PageHeader
         eyebrow="Reports"
         eyebrowColour="var(--cyan)"
         title="Forecast"
-        subtitle={<>AI-powered revenue prediction · {hasBand ? '95% prediction interval' : 'trend estimate'}</>}
+        subtitle={<>What your sales are likely to be next, {hasBand ? 'with the range they should fall in' : 'from the trend so far'}.</>}
       />
 
       {/* P10/P50/P90 cash bands from recorded events (audit #19) — silent
@@ -169,35 +168,31 @@ export default function ForecastPage() {
       <CashForecastFan />
 
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
-        <KPICard label="NEXT MONTH FORECAST" value={fmt(firstFcast, false, sym)} sub="vs prior period" growth={growthPct}
+        <KPICard label="Next month" value={fmt(firstFcast, false, sym)} sub="vs prior period" growth={growthPct}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12l4-4 4 4 4-6 4 4" stroke="var(--chart-line)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
           iconBg="rgba(0,212,255,0.12)" sparkColor="var(--cyan)" delay={0} />
-        <KPICard label="3-MONTH TOTAL" value={fmt(threeTotal, true, sym)} sub="combined 3-month forecast"
+        <KPICard label="Next 3 months" value={fmt(threeTotal, true, sym)} sub="expected sales, added up"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="var(--blue)" strokeWidth="1.5" fill="none"/><path d="M16 2v4M8 2v4M3 10h18" stroke="var(--blue)" strokeWidth="1.4" strokeLinecap="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)" sparkData={projections.map(p => p.fcast ?? 0)} sparkColor="var(--blue)" delay={0.06} />
-        <KPICard label="QOQ GROWTH EST." value={`${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%`} sub="vs prior period" growth={growthPct}
+        <KPICard label="Against the last 3 months" value={`${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%`} sub="vs prior period" growth={growthPct}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkData={revSpark} sparkColor="var(--good)" delay={0.12} />
-        <KPICard label="FORECAST CONFIDENCE" value={`${confidence}%`} sublabel="Model accuracy" sub="R² of trend fit on your data"
+        <KPICard label="How sure" value={`${confidence}%`} sub="how well the trend fits your months"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--purple)" strokeWidth="1.5" fill="none"/><path d="M9 12l2 2 4-4" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(167,139,250,0.15)" sparkColor="var(--purple)" delay={0.18} />
       </div>
 
-      {/* Live model pill */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 20, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)' }}>
-          <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.8, repeat: Infinity }}
-            style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--good)' }} />
-          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--good)', fontWeight: 600 }}>Live model</span>
-        </div>
-        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
-          Historical + {projections.length}-month AI prediction · {bandLabel}
+      {/* Live: the forecast redraws as you record. A dot and words, no pulse. */}
+      <p style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '0 0 16px', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+        <span className="badge" style={{ border: '1px solid var(--border-md)', color: 'var(--text-1)' }}>
+          <span className="live-dot" aria-hidden="true" style={{ marginRight: 4 }} />Updates as you record
         </span>
-      </div>
+        <span>Your sales so far and the next {projections.length} months. {bandLabel}</span>
+      </p>
 
       {/* Chart */}
       {!hasData ? (
-        <SectionCard title="AI Revenue Forecast" subtitle={`Historical revenue + AI prediction · ${bandLabel}`} delay={0.1} style={{ marginBottom: 20 }}>
+        <SectionCard title="Sales ahead" subtitle={`Your sales so far, then what AIBOS expects. ${bandLabel}`} delay={0.1} style={{ marginBottom: 20 }}>
           <div style={{
             height: 260, display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center',
@@ -217,7 +212,7 @@ export default function ForecastPage() {
           </div>
         </SectionCard>
       ) : (
-        <SectionCard title="AI Revenue Forecast" subtitle={`Historical revenue + AI prediction · ${bandLabel}`} delay={0.1} style={{ marginBottom: 20 }}>
+        <SectionCard title="Sales ahead" subtitle={`Your sales so far, then what AIBOS expects. ${bandLabel}`} delay={0.1} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={chart}>
               <defs>
@@ -242,7 +237,7 @@ export default function ForecastPage() {
             </AreaChart>
           </ResponsiveContainer>
           <div style={{ display: 'flex', gap: 20, marginTop: 14 }}>
-            {[{ color: 'var(--chart-line)', label: 'Historical', dashed: false }, { color: 'var(--purple)', label: 'Forecast', dashed: true }].map(item => (
+            {[{ color: 'var(--chart-line)', label: 'So far', dashed: false }, { color: 'var(--purple)', label: 'Forecast', dashed: true }].map(item => (
               <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <svg width="24" height="4">
                   {item.dashed
@@ -259,7 +254,7 @@ export default function ForecastPage() {
 
       {/* Table */}
       {hasData && (
-      <SectionCard title="Forecast Detail" subtitle="Month-by-month predictions with confidence range" delay={0.18}>
+      <SectionCard title="Month by month" subtitle="Month-by-month predictions with confidence range" delay={0.18}>
         <table className="data-table">
           <thead>
             <tr><th>Period</th><th>Forecast Revenue</th><th>Lower (95% PI)</th><th>Upper (95% PI)</th><th>vs Last Month</th></tr>
@@ -271,10 +266,10 @@ export default function ForecastPage() {
               return (
                 <tr key={`p${i}`}>
                   <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{monthName(row.month)}</td>
-                  <td style={{ color: 'var(--purple)', fontWeight: 700 }}>{fmt(fv, false, sym)}</td>
+                  <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{fmt(fv, false, sym)}</td>
                   <td style={{ color: 'var(--text-3)' }}>{row.lower != null ? fmt(row.lower, false, sym) : 'None'}</td>
                   <td style={{ color: 'var(--text-3)' }}>{row.upper != null ? fmt(row.upper, false, sym) : 'None'}</td>
-                  <td style={{ color: vs >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 600 }}>
+                  <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>
                     {vs >= 0 ? '+' : ''}{vs.toFixed(1)}%
                   </td>
                 </tr>

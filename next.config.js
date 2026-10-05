@@ -37,6 +37,12 @@ const nextConfig = {
     ignoreDuringBuilds: false,
   },
 
+  // Data Studio was removed on 5 Oct 2026 (owner: "useless"). Old links and
+  // bookmarks land on Home rather than a missing page.
+  async redirects() {
+    return [{ source: '/data-studio/:path*', destination: '/dashboard', permanent: false }];
+  },
+
   // App Router is enabled by default in Next.js 14
   experimental: {
     // Server Actions are stable in Next.js 14

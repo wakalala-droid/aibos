@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Sparkles, X } from 'lucide-react';
 import { useStore } from '@/lib/store';
 
 interface Trigger {
@@ -32,7 +33,7 @@ export default function UpgradeTrigger() {
     triggers.push({
       id: 'anomaly',
       headline: 'We spotted something in your numbers',
-      detail: 'An anomaly was flagged in your data. See exactly what’s driving it with the full Financial engine.',
+      detail: 'AIBOS spotted a month that broke your pattern. See exactly what is driving it.',
       cta: 'Investigate with Pro',
       href: '/checkout?plan=pro',
       colour: 'var(--warn)',
@@ -44,7 +45,7 @@ export default function UpgradeTrigger() {
     triggers.push({
       id: 'forecast3mo',
       headline: `You've uploaded ${monthly.length} months of data`,
-      detail: 'That’s enough history to project forward. Unlock 12-month forecasting and anomaly detection.',
+      detail: 'That is enough history to look ahead. Unlock the year-ahead forecast and unusual-month alerts.',
       cta: 'Unlock forecasting',
       href: '/checkout?plan=pro',
       colour: 'var(--cyan)',
@@ -66,49 +67,26 @@ export default function UpgradeTrigger() {
   const active = triggers.find((t) => !dismissed.includes(t.id));
   if (!active) return null;
 
+  // A bento card (5 Oct 2026), monochrome: round mark, spaced-capital title,
+  // the plan as its tag, one plain sentence and one button.
   return (
-    <div
-      role="region"
-      aria-label="Upgrade suggestion"
-      style={{
-        display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
-        padding: '14px 16px', borderRadius: 'var(--radius-md)', marginBottom: 20,
-        background: `color-mix(in srgb, ${active.colour} 8%, var(--bg-card))`,
-        border: `1px solid color-mix(in srgb, ${active.colour} 30%, var(--border))`,
-      }}
-    >
-      <div style={{ flex: 1, minWidth: 200 }}>
-        <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>
-          {active.headline}
-        </p>
-        <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>
-          {active.detail}
-        </p>
+    <section role="region" aria-label="Upgrade suggestion" className="bento" style={{ marginBottom: 24 }}>
+      <div className="bento-head">
+        <span className="bento-icon" aria-hidden="true"><Sparkles /></span>
+        <div className="bento-main">
+          <div className="bento-titlerow">
+            <p className="bento-title">{active.headline}</p>
+            <button type="button" className="icon-pill" aria-label="Dismiss upgrade suggestion"
+              onClick={() => setDismissed((d) => [...d, active.id])} style={{ marginLeft: 'auto', background: 'transparent' }}>
+              <X aria-hidden="true" />
+            </button>
+          </div>
+          <p className="bento-text">{active.detail}</p>
+        </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Link
-          href={active.href}
-          style={{
-            fontSize: 'var(--fs-data)', fontWeight: 700,
-            color: '#fff', background: active.colour, padding: '9px 16px',
-            borderRadius: 10, textDecoration: 'none', whiteSpace: 'nowrap',
-          }}
-        >
-          {active.cta}
-        </Link>
-        <button
-          type="button"
-          aria-label="Dismiss upgrade suggestion"
-          onClick={() => setDismissed((d) => [...d, active.id])}
-          style={{
-            width: 32, height: 32, borderRadius: 'var(--radius-md)', cursor: 'pointer',
-            border: '1px solid var(--border-md)', background: 'transparent',
-            color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          <span aria-hidden="true">×</span>
-        </button>
+      <div className="bento-foot">
+        <Link href={active.href} className="pill pill-primary">{active.cta}</Link>
       </div>
-    </div>
+    </section>
   );
 }

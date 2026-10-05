@@ -5,7 +5,7 @@
 // it never nags. Silent when there's nothing real to celebrate.
 
 import { useEffect, useMemo, useState } from 'react';
-import { Trophy, Flame, TrendingUp } from 'lucide-react';
+import { Trophy, Flame, TrendingUp, X } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { listEvents, type BusinessEvent } from '@/lib/api';
 import { topMilestone } from '@/lib/milestones';
@@ -34,23 +34,24 @@ export default function MilestoneBanner() {
     setDismissedId(milestone.id);
   };
 
+  // A bento card (5 Oct 2026): round outlined mark, the milestone as the
+  // spaced-capital title, one line under it. Monochrome.
   return (
-    <div role="status" style={{
-      display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', marginBottom: 20,
-      borderRadius: 'var(--radius-md)', border: '1px solid color-mix(in srgb, var(--cyan) 35%, transparent)',
-      background: 'linear-gradient(120deg, color-mix(in srgb, var(--cyan) 10%, transparent), transparent)',
-    }}>
-      <span aria-hidden style={{ display: 'inline-flex', flexShrink: 0, color: 'var(--cyan)' }}>
-        {milestone.icon === 'trophy' ? <Trophy size={26} strokeWidth={2} /> : milestone.icon === 'streak' ? <Flame size={26} strokeWidth={2} /> : <TrendingUp size={26} strokeWidth={2} />}
-      </span>
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 2px' }}>{milestone.title}</p>
-        <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>{milestone.detail}</p>
+    <div role="status" className="bento" style={{ marginBottom: 16 }}>
+      <div className="bento-head">
+        <span className="bento-icon" aria-hidden="true">
+          {milestone.icon === 'trophy' ? <Trophy /> : milestone.icon === 'streak' ? <Flame /> : <TrendingUp />}
+        </span>
+        <div className="bento-main">
+          <div className="bento-titlerow">
+            <p className="bento-title">{milestone.title}</p>
+            <button type="button" aria-label="Dismiss" onClick={dismiss} className="icon-pill" style={{ marginLeft: 'auto', background: 'transparent' }}>
+              <X aria-hidden="true" />
+            </button>
+          </div>
+          <p className="bento-text">{milestone.detail}</p>
+        </div>
       </div>
-      <button type="button" aria-label="Dismiss" onClick={dismiss} className="touch-target"
-        style={{ flexShrink: 0, width: 32, minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer', fontSize: 'var(--fs-body)' }}>
-        ×
-      </button>
     </div>
   );
 }

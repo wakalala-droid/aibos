@@ -47,7 +47,8 @@ export default function BigMoney({ value, sym, size = 'hero', roll = false, tone
   const totalCents = Math.round(abs * 100);
   const whole = Math.floor(totalCents / 100);
   const cents = totalCents % 100;
-  const color = tone === 'in' ? 'var(--green)' : tone === 'out' ? 'var(--red)' : undefined;
+  // One ink for every figure (5 Oct 2026); the sign says which way it moved.
+  const color = undefined;
   const sign = neg ? '−' : tone === 'in' ? '+' : tone === 'out' ? '−' : '';
   const said = `${target < 0 || tone === 'out' ? 'minus ' : tone === 'in' ? 'plus ' : ''}${fmt(Math.abs(target), false, sym)}`;
 

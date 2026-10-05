@@ -70,7 +70,7 @@ export default function BreakevenPage() {
       headline={currentRevenue > 0
         ? `You're ${fmt(Math.abs(gap), true, sym)} ${gap >= 0 ? 'above' : 'below'} a breakeven of ${fmt(bepRevenue, true, sym)}/month.`
         : 'Upload revenue and cost data to find your breakeven point.'}
-      detail="See your fixed vs variable cost split, contribution margin, margin of safety and the exact revenue you need each month to break even."
+      detail="See which costs stay fixed and which grow with sales, what each sale leaves you, how far above the line you are and the exact sales you need each month to cover your costs."
     >
     <>
       <PageHeader
@@ -81,7 +81,7 @@ export default function BreakevenPage() {
       />
 
       {!hasData ? (
-        <SectionCard title="Breakeven" subtitle="Fixed vs variable costs · contribution margin · breakeven point" delay={0.1}>
+        <SectionCard title="Breakeven" subtitle="What you must cover each month and how close you are" delay={0.1}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center', padding: '40px 16px' }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M3 12h18M12 3v18" stroke="var(--text-4)" strokeWidth="1.5" strokeLinecap="round" opacity=".4" />
@@ -101,16 +101,16 @@ export default function BreakevenPage() {
       <>
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
-        <KPICard label="BREAKEVEN REVENUE" value={fmt(bepRevenue, false, sym)} sub="monthly target"
+        <KPICard label="Sales to cover costs" value={fmt(bepRevenue, false, sym)} sub="monthly target"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M12 3v18" stroke="var(--chart-line)" strokeWidth="1.5" strokeLinecap="round" opacity=".4"/><path d="M5 19L19 5" stroke="var(--chart-line)" strokeWidth="2" strokeLinecap="round"/></svg>}
           iconBg="rgba(0,212,255,0.12)" sparkColor="var(--cyan)" delay={0} />
-        <KPICard label="CURRENT REVENUE" value={fmt(currentRevenue, false, sym)} sub="monthly average"
+        <KPICard label="Your sales" value={fmt(currentRevenue, false, sym)} sub="monthly average"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkData={monthly.slice(-6).map(m => Number(m.Revenue) || 0)} sparkColor="var(--good)" delay={0.06} />
-        <KPICard label="FIXED COSTS" value={fmt(fixedCosts, false, sym)} sub={`${(fixedCostPct*100).toFixed(0)}% of total costs`}
+        <KPICard label="Fixed costs" value={fmt(fixedCosts, false, sym)} sub={`${(fixedCostPct*100).toFixed(0)}% of total costs`}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="var(--warn)" strokeWidth="1.5" fill="none"/><path d="M3 9h18M9 21V9" stroke="var(--warn)" strokeWidth="1.3" strokeLinecap="round"/></svg>}
           iconBg="rgba(251,191,36,0.15)" sparkColor="var(--warn)" delay={0.12} />
-        <KPICard label="CONTRIBUTION MARGIN" value={`${(contribMargin * 100).toFixed(1)}%`} sub="after variable costs"
+        <KPICard label="Left from each sale" value={`${(contribMargin * 100).toFixed(1)}%`} sub="after the cost of making each sale"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(167,139,250,0.15)" sparkColor="var(--purple)" delay={0.18} />
       </div>
@@ -131,7 +131,7 @@ export default function BreakevenPage() {
 
       {/* Chart */}
       {chartData.length > 0 && (
-        <SectionCard title="Revenue vs Cost Structure" subtitle="Monthly · fixed costs · variable costs · breakeven threshold" delay={0.14} style={{ marginBottom: 20 }}>
+        <SectionCard title="Sales against costs" subtitle="Each month's sales against the line you need to clear" delay={0.14} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={260}>
             <ComposedChart data={chartData}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
@@ -148,11 +148,11 @@ export default function BreakevenPage() {
       )}
 
       {/* Cost breakdown */}
-      <SectionCard title="Cost Structure Breakdown" subtitle="Fixed vs variable cost analysis" delay={0.2}>
+      <SectionCard title="Where your costs sit" subtitle="Fixed costs and costs that grow with sales" delay={0.2}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {[
-            { label: 'Fixed Costs', value: fixedCosts,    pct: fixedCostPct * 100,           color: 'var(--warn)',   desc: 'Rent, salaries, insurance: constant regardless of sales' },
-            { label: 'Variable Costs', value: variableCosts, pct: (1 - fixedCostPct) * 100,  color: 'var(--purple)', desc: 'COGS, commissions, packaging: scale with revenue' },
+            { label: 'Fixed costs', value: fixedCosts,    pct: fixedCostPct * 100,           color: 'var(--warn)',   desc: 'Rent, salaries, insurance: constant regardless of sales' },
+            { label: 'Costs that grow with sales', value: variableCosts, pct: (1 - fixedCostPct) * 100,  color: 'var(--purple)', desc: 'Stock you sell, commissions, packaging: scale with revenue' },
           ].map(item => (
             <div key={item.label} style={{ background: 'var(--bg-badge)', borderRadius: 10, padding: '16px 18px', border: '1px solid var(--border)' }}>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px' }}>{item.label}</p>

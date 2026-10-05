@@ -30,9 +30,9 @@ function RiskBar({ risk }: { risk: number }) {
 const churnColumns = (sym: string): DataTableColumn<RfmRow>[] => [
   { key: 'customer_id', label: 'Customer', sortValue: r => r.customer_id,
     render: r => <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>{r.customer_id}</span> },
-  { key: 'segment', label: 'Segment', sortValue: r => r.segment, render: r => r.segment },
-  { key: 'recency_days', label: 'Recency', sortValue: r => r.recency_days, render: r => `${r.recency_days}d` },
-  { key: 'churn_risk', label: 'Churn Score', sortValue: r => r.churn_risk,
+  { key: 'segment', label: 'Group', sortValue: r => r.segment, render: r => r.segment },
+  { key: 'recency_days', label: 'Last visit', sortValue: r => r.recency_days, render: r => `${r.recency_days}d` },
+  { key: 'churn_risk', label: 'Chance they stop', sortValue: r => r.churn_risk,
     render: r => {
       const col = r.churn_risk >= 70 ? 'var(--crit)' : r.churn_risk >= 40 ? 'var(--warn)' : 'var(--good)';
       return (
@@ -44,8 +44,8 @@ const churnColumns = (sym: string): DataTableColumn<RfmRow>[] => [
         </div>
       );
     } },
-  { key: 'clv', label: 'CLV', sortValue: r => r.clv,
-    render: r => <span style={{ color: 'var(--good)', fontWeight: 600 }}>{fmt(r.clv, false, sym)}</span> },
+  { key: 'clv', label: 'Worth to you', sortValue: r => r.clv,
+    render: r => <span style={{ color: 'var(--text-1)', fontWeight: 600 }}>{fmt(r.clv, false, sym)}</span> },
   { key: 'intervention', label: 'Action',
     render: r => <span style={{ maxWidth: 220, display: 'inline-block', fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>{r.intervention}</span> },
 ];
@@ -72,16 +72,16 @@ export default function ChurnPage() {
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
-        <KPICard label="HIGH CHURN RISK" value={String(high.length)} sub="immediate action required"
+        <KPICard label="Likely to stop" value={String(high.length)} sub="worth a message today"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--crit)" strokeWidth="1.5" strokeLinejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="var(--crit)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(239,68,68,0.15)" sparkColor="var(--crit)" delay={0} />
-        <KPICard label="REVENUE AT RISK" value={fmt(totalAtRisk, false, sym)} sub="from high-risk customers"
+        <KPICard label="Sales at risk" value={fmt(totalAtRisk, false, sym)} sub="from high-risk customers"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--warn)" strokeWidth="1.5" fill="none"/><path d="M12 8v4l3 3" stroke="var(--warn)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(251,191,36,0.15)" sparkColor="var(--warn)" delay={0.06} />
-        <KPICard label="AVG CHURN SCORE" value={`${avgChurn.toFixed(0)}%`} sub="across all customers"
+        <KPICard label="Average chance of stopping" value={`${avgChurn.toFixed(0)}%`} sub="across all customers"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 11-6.219-8.56" stroke="var(--e2)" strokeWidth="1.5" fill="none" strokeLinecap="round"/><path d="M21 3v5h-5" stroke="var(--e2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(249,115,22,0.15)" sparkColor="var(--e2)" delay={0.12} />
-        <KPICard label="LOW RISK" value={String(low.length)} sub="healthy customers"
+        <KPICard label="Coming back" value={String(low.length)} sub="healthy customers"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="var(--good)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkColor="var(--good)" delay={0.18} />
       </div>
@@ -110,8 +110,8 @@ export default function ChurnPage() {
                   </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 2px' }}>CLV at risk</p>
-                  <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--crit)', margin: 0 }}>{fmt(r.monetary, false, sym)}</p>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 2px' }}>Worth to you, at risk</p>
+                  <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{fmt(r.monetary, false, sym)}</p>
                 </div>
               </div>
               <div style={{ marginBottom: 12 }}><RiskBar risk={r.churn_risk} /></div>
@@ -143,7 +143,7 @@ export default function ChurnPage() {
                   </div>
                   <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>{r.recency_days}d ago · {r.frequency}× purchases</p>
                 </div>
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--warn)' }}>{fmt(r.monetary, false, sym)}</span>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{fmt(r.monetary, false, sym)}</span>
               </div>
               <div style={{ marginBottom: 10 }}><RiskBar risk={r.churn_risk} /></div>
               <p style={{ fontSize: 'var(--fs-data)', color: 'var(--warn)', margin: 0 }}>→ {r.intervention}</p>
@@ -153,9 +153,9 @@ export default function ChurnPage() {
       )}
 
       {/* Full table */}
-      <SectionCard title="All Customers: Churn Ranking" subtitle="Sorted by churn probability (highest risk first)" delay={0.3} style={{ position: 'relative' }}>
+      <SectionCard title="Everyone, most likely to stop first" subtitle="Most likely to stop first" delay={0.3} style={{ position: 'relative' }}>
         <DataTable
-          ariaLabel="All customers ranked by churn risk"
+          ariaLabel="All customers, most likely to stop first"
           columns={churnColumns(sym)}
           rows={rfm}
           rowKey={r => r.customer_id}
@@ -165,7 +165,7 @@ export default function ChurnPage() {
             { label: 'Medium risk', predicate: (r: RfmRow) => r.churn_risk >= 40 && r.churn_risk < 70 },
             { label: 'Low risk',    predicate: (r: RfmRow) => r.churn_risk < 40 },
           ]}
-          emptyMessage="Upload customer transaction data to rank churn risk."
+          emptyMessage="Add customers' names to your sales and AIBOS ranks who is likely to stop coming."
         />
         {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Needs your customer sales" description="Record sales with the customer's name, or upload a sales file, to see who has stopped coming." />}
       </SectionCard>

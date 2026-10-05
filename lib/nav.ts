@@ -14,7 +14,7 @@ export type NavIcon =
   | 'overview' | 'record' | 'cash' | 'invoice' | 'customers' | 'rooms' | 'inventory'
   | 'people' | 'schedule' | 'timeline' | 'import' | 'brief' | 'variance' | 'forecast'
   | 'anomaly' | 'breakeven' | 'simulate' | 'churn' | 'products' | 'market' | 'pos'
-  | 'benchmarks' | 'studio';
+  | 'benchmarks';
 
 export interface NavDoor {
   href: string;
@@ -57,7 +57,6 @@ export const DOORS: NavDoor[] = [
   { href: '/dashboard/pos',         label: 'Till sales',          icon: 'pos',        group: 'reports', engine: 'ops', keywords: ['pos', 'till', 'point of sale', 'pos intelligence'] },
   { href: '/dashboard/benchmarks',  label: 'How you compare',     icon: 'benchmarks', group: 'reports', engine: 'ops', keywords: ['benchmarks', 'industry', 'compare'] },
   { href: '/dashboard/import',      label: 'Upload a file',       icon: 'import',     group: 'reports', keywords: ['import', 'excel', 'csv', 'spreadsheet', 'upload'] },
-  { href: '/data-studio',           label: 'Data Studio',         icon: 'studio',     group: 'reports', keywords: ['data', 'grid', 'table'] },
 ];
 
 /** Account pages: searchable, reached from the account menu, not the side menu. */

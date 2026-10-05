@@ -101,18 +101,18 @@ export function AnomalyZChart({ data, height = 200 }: { data: ZRow[]; height?: n
           <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
           <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
           <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
-          <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: 'Critical (2.0)', fill: 'var(--crit)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
-          <ReferenceLine y={1.5} stroke="var(--warn)" strokeDasharray="4 3" strokeWidth={1} label={{ value: 'Warning (1.5)', fill: 'var(--warn)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
-          <Bar dataKey="revZ" name="Revenue Z" radius={[6, 6, 0, 0]}>
+          <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: 'Far (2)', fill: 'var(--crit)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
+          <ReferenceLine y={1.5} stroke="var(--warn)" strokeDasharray="4 3" strokeWidth={1} label={{ value: 'Worth a look (1.5)', fill: 'var(--warn)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
+          <Bar dataKey="revZ" name="Sales" radius={[6, 6, 0, 0]}>
             {data.map((e, i) => <Cell key={i} fill={e.revZ > 2 ? 'var(--crit)' : e.revZ > 1.5 ? 'var(--warn)' : 'var(--chart-line)'} fillOpacity={0.8} />)}
           </Bar>
-          <Bar dataKey="costZ" name="Cost Z" radius={[6, 6, 0, 0]}>
+          <Bar dataKey="costZ" name="Costs" radius={[6, 6, 0, 0]}>
             {data.map((e, i) => <Cell key={i} fill={e.costZ > 2 ? 'var(--crit)' : e.costZ > 1.5 ? 'var(--warn)' : 'var(--e2)'} fillOpacity={0.7} />)}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
       <div style={{ display: 'flex', gap: 16, marginTop: 10 }}>
-        {[['var(--cyan)', 'Revenue Z-score'], ['var(--e2)', 'Cost Z-score']].map(([c, l]) => (
+        {[['var(--chart-line)', 'Sales'], ['var(--e2)', 'Costs']].map(([c, l]) => (
           <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <div style={{ width: 10, height: 10, borderRadius: 3, background: c as string, opacity: 0.8 }} />
             <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>{l}</span>

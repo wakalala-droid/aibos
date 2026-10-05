@@ -43,16 +43,16 @@ export default function ProductsPage() {
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
-        <KPICard label="TOTAL PRODUCTS" value={String(productsE2.length)} sub="tracked in system"
+        <KPICard label="Products" value={String(productsE2.length)} sub="in your records"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke="var(--e2)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(249,115,22,0.15)" sparkColor="var(--e2)" delay={0} />
-        <KPICard label="STAR PRODUCTS" value={String(stars.length)} sub="high revenue + high orders"
+        <KPICard label="Stars" value={String(stars.length)} sub="sell a lot, and often"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="var(--warn)" strokeWidth="1.5" fill="none" strokeLinejoin="round"/></svg>}
           iconBg="rgba(251,191,36,0.15)" sparkColor="var(--warn)" delay={0.06} />
-        <KPICard label="TOTAL REVENUE" value={fmt(totalRevenue, true, sym)} sub="across all products"
+        <KPICard label="Sales" value={fmt(totalRevenue, true, sym)} sub="across all products"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkColor="var(--good)" delay={0.12} />
-        <KPICard label="BASKET PAIRS" value={String(basketPairs.length)} sub="products bought together"
+        <KPICard label="Bought together" value={String(basketPairs.length)} sub="products bought together"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="var(--blue)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/><line x1="3" y1="6" x2="21" y2="6" stroke="var(--blue)" strokeWidth="1.5" strokeLinecap="round"/><path d="M16 10a4 4 0 01-8 0" stroke="var(--blue)" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)" sparkColor="var(--blue)" delay={0.18} />
       </div>
@@ -85,7 +85,7 @@ export default function ProductsPage() {
 
       {/* Revenue bar chart */}
       {barData.length > 0 && (
-        <SectionCard title="Top Products by Revenue" subtitle={`${sym} ZMW · BCG-coloured`} delay={0.2} style={{ marginBottom: 20 }}>
+        <SectionCard title="Best sellers" subtitle="Highest sales first" delay={0.2} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={barData} barCategoryGap="28%">
               <XAxis minTickGap={16} dataKey="name" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
@@ -102,7 +102,7 @@ export default function ProductsPage() {
       )}
 
       {/* Basket pairs */}
-      <SectionCard title="Market Basket Analysis" subtitle="Products frequently purchased together" delay={0.26} style={{ position: 'relative' }}>
+      <SectionCard title="Bought together" subtitle="Products frequently purchased together" delay={0.26} style={{ position: 'relative' }}>
         {basketPairs.length === 0 ? (
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>No basket pairs detected</p>
         ) : (

@@ -71,8 +71,8 @@ export default function MoneyHero({ title = 'Money right now', initialDays = 30 
             {twin ? <BigMoney value={shown} sym={sym} size="hero" roll /> : <span className="money money-hero" style={{ color: 'var(--text-4)' }}>…</span>}
           </div>
           <p style={{ margin: '10px 0 0', display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-            <span style={{ color: 'var(--green)', fontWeight: 600 }}><span aria-hidden="true">↗ </span>{fmt(moneyIn, false, sym)} in</span>
-            <span style={{ color: 'var(--red)', fontWeight: 600 }}><span aria-hidden="true">↘ </span>{fmt(moneyOut, false, sym)} out</span>
+            <span style={{ color: 'var(--text-1)', fontWeight: 600 }}><span aria-hidden="true">↗ </span>{fmt(moneyIn, false, sym)} in</span>
+            <span style={{ color: 'var(--text-1)', fontWeight: 600 }}><span aria-hidden="true">↘ </span>{fmt(moneyOut, false, sym)} out</span>
             <span>{point ? 'that day' : `last ${periodLabel.toLowerCase() === 'year' ? 'year' : periodLabel}`}</span>
           </p>
         </div>

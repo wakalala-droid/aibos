@@ -79,8 +79,8 @@ export default function VariancePage() {
       colour="var(--cyan)"
       headline={variances.length > 1
         ? `Your biggest swing was ${monthName(maxSpike.month)}, when costs moved ${maxSpike.costChange >= 0 ? '+' : ''}${maxSpike.costChange}% on the month before.`
-        : 'Upload at least two months to see month-over-month variance.'}
-      detail="See month-by-month revenue and cost variance, the months that broke pattern and which line items drove every swing."
+        : 'Record at least two months to see how each month changed.'}
+      detail="See how sales and costs moved each month, the months that broke your pattern and which costs drove each swing."
     >
     <>
       <PageHeader
@@ -97,8 +97,8 @@ export default function VariancePage() {
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
-          label="AVG REVENUE CHANGE" value={`${avgRevChange >= 0 ? '+' : ''}${avgRevChange.toFixed(1)}%`}
-          sub="month-over-month avg"
+          label="Sales, average change" value={`${avgRevChange >= 0 ? '+' : ''}${avgRevChange.toFixed(1)}%`}
+          sub="month to month"
           growth={avgRevChange}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 18l5-5 4 3 5-7 4 3" stroke="var(--good)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)"
@@ -106,8 +106,8 @@ export default function VariancePage() {
           sparkColor="var(--good)" delay={0}
         />
         <KPICard
-          label="AVG COST CHANGE" value={`${avgCostChange >= 0 ? '+' : ''}${avgCostChange.toFixed(1)}%`}
-          sub="month-over-month avg"
+          label="Costs, average change" value={`${avgCostChange >= 0 ? '+' : ''}${avgCostChange.toFixed(1)}%`}
+          sub="month to month"
           growth={-avgCostChange}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 8h20v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8z" stroke="var(--e2)" strokeWidth="1.5" fill="none"/><path d="M2 8l2-4h16l2 4" stroke="var(--e2)" strokeWidth="1.4" strokeLinejoin="round"/></svg>}
           iconBg="rgba(249,115,22,0.15)"
@@ -115,14 +115,14 @@ export default function VariancePage() {
           sparkColor="var(--e2)" delay={0.06}
         />
         <KPICard
-          label="ACTIVE ALERTS" value={String(criticalAlerts.length)}
-          sub="variance & anomaly flags"
+          label="Worth checking" value={String(criticalAlerts.length)}
+          sub="costs or months out of line"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--warn)" strokeWidth="1.5" strokeLinejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="var(--warn)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(251,191,36,0.15)"
           sparkColor="var(--warn)" delay={0.12}
         />
         <KPICard
-          label="LARGEST COST SPIKE" value={`${maxSpike?.costChange >= 0 ? '+' : ''}${(maxSpike?.costChange ?? 0).toFixed(1)}%`}
+          label="Biggest cost jump" value={`${maxSpike?.costChange >= 0 ? '+' : ''}${(maxSpike?.costChange ?? 0).toFixed(1)}%`}
           sub={`in ${maxSpike?.month ?? 'None'}`}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--crit)" strokeWidth="1.5" fill="none"/><path d="M12 8v5M12 16v.5" stroke="var(--crit)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(239,68,68,0.15)"
@@ -133,7 +133,7 @@ export default function VariancePage() {
 
       {/* Revenue vs Costs chart */}
       {chartData.length > 0 && (
-        <SectionCard title="Revenue vs Costs" subtitle="Monthly performance · FY" delay={0.1} style={{ marginBottom: 20 }}
+        <SectionCard title="Sales against costs" subtitle="Each month this year" delay={0.1} style={{ marginBottom: 20 }}
           action={
             <div style={{ display: 'flex', gap: 14 }}>
               {[['var(--cyan)', 'Revenue'], ['var(--e2)', 'Costs']].map(([c, l]) => (
@@ -160,7 +160,7 @@ export default function VariancePage() {
 
       {/* Month-over-month change chart */}
       {chartData.length > 1 && (
-        <SectionCard title="Month-over-Month Change %" subtitle="Revenue and cost variance · positive = growth" delay={0.16} style={{ marginBottom: 20 }}>
+        <SectionCard title="Change from the month before" subtitle="Up means growth" delay={0.16} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={chartData.slice(1)} barCategoryGap="28%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
@@ -168,12 +168,12 @@ export default function VariancePage() {
               <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={v => `${v.toFixed(0)}%`} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <ReferenceLine y={0} stroke="var(--border-md)" strokeWidth={1} />
-              <Bar dataKey="RevChange"  name="Revenue Δ" radius={[6, 6, 0, 0]}>
+              <Bar dataKey="RevChange"  name="Sales change" radius={[6, 6, 0, 0]}>
                 {chartData.slice(1).map((entry, i) => (
                   <Cell key={i} fill={entry.RevChange >= 0 ? 'var(--good)' : 'var(--crit)'} fillOpacity={0.8} />
                 ))}
               </Bar>
-              <Bar dataKey="CostChange" name="Cost Δ" radius={[6, 6, 0, 0]}>
+              <Bar dataKey="CostChange" name="Cost change" radius={[6, 6, 0, 0]}>
                 {chartData.slice(1).map((entry, i) => (
                   <Cell key={i} fill={entry.CostChange <= 5 ? 'var(--blue)' : 'var(--warn)'} fillOpacity={0.7} />
                 ))}
@@ -184,7 +184,7 @@ export default function VariancePage() {
       )}
 
       {/* Variance table */}
-      <SectionCard title="Variance Detail" subtitle="Month-by-month revenue, cost and profit changes" delay={0.22} style={{ marginBottom: 20 }}>
+      <SectionCard title="Month by month" subtitle="How sales, costs and profit moved each month" delay={0.22} style={{ marginBottom: 20 }}>
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table">
             <thead>
@@ -219,7 +219,7 @@ export default function VariancePage() {
 
       {/* Active alerts */}
       {alerts.length > 0 && (
-        <SectionCard title="Active Alerts" subtitle="Variance & anomaly flags" delay={0.28}>
+        <SectionCard title="Worth checking" subtitle="Costs or months out of line" delay={0.28}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {alerts.slice(0, 8).map((alert: any, i: number) => {
               const sevColor = alert.severity === 'critical' ? 'var(--crit)' : alert.severity === 'warning' ? 'var(--warn)' : 'var(--info)';

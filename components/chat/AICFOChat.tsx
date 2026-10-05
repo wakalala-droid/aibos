@@ -71,66 +71,35 @@ export default function AICFOChat() {
   const hasUserMsg = messages.some((m) => m.role === 'user');
 
   return (
-    <section
-      aria-label="Ask AIBOS"
-      style={{
-        display: 'flex', flexDirection: 'column', height: '100%',
-        background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', overflow: 'hidden',
-        border: '1px solid var(--border)',
-      }}
-    >
-      {/* Header */}
-      <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <h2 style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
-            Ask AIBOS
-          </h2>
-          {messages.length > 0 && (
-            <button type="button" onClick={clearConversation} disabled={loading}
-              title="Start a new conversation. The AI forgets this one."
-              style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-2)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', padding: '5px 10px', background: 'transparent', cursor: loading ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: loading ? 0.5 : 1 }}>
-              New chat
-            </button>
-          )}
+    <section aria-label="Ask AIBOS" className="ai-panel" style={{ height: '100%', boxShadow: 'var(--shadow-card)' }}>
+      {/* Header: the bento head, round mark, spaced-capital title, one tag. */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '20px 24px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+        <span className="bento-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" /></svg>
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h2 className="bento-title">Ask AIBOS</h2>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>Answers from your own recorded figures</p>
         </div>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
-          Ask anything about your financial data
-        </p>
+        {messages.length > 0 && (
+          <button type="button" onClick={clearConversation} disabled={loading} className="pill pill-quiet"
+            title="Start a new conversation. AIBOS forgets this one.">
+            New chat
+          </button>
+        )}
       </div>
 
       {/* Body */}
       <div ref={scrollRef} onScroll={onBodyScroll} role="log" aria-live="polite" aria-atomic="false" aria-label="Conversation with AIBOS"
         style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
 
-        {/* Identity card */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #0097b2, #00d4ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="white" strokeWidth="1.5" fill="none" />
-              <path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H9m0 0h4.5a1.5 1.5 0 010 3H9" stroke="white" strokeWidth="1.4" strokeLinecap="round" />
-            </svg>
-          </div>
-          <div>
-            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>AIBOS</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-              <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2, repeat: Infinity }}
-                style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--good)' }} />
-              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-                Answers from your recorded figures
-              </span>
-            </div>
-          </div>
-        </div>
-
         {/* Quick prompts — shown only when no user messages yet */}
         {!hasUserMsg && (
           <div style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <p className="eyebrow">Try asking</p>
+            <div className="chips">
               {QUICK_PROMPTS.map((prompt) => (
-                <button key={prompt} type="button" onClick={() => submit(prompt)} disabled={loading}
-                  style={{ padding: '6px 12px', borderRadius: 20, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', cursor: loading ? 'not-allowed' : 'pointer', fontSize: 'var(--fs-label)', color: 'var(--text-2)', opacity: loading ? 0.5 : 1, transition: 'all 0.15s ease', whiteSpace: 'nowrap' }}
-                  onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.borderColor = 'var(--cyan)'; e.currentTarget.style.color = 'var(--cyan)'; } }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-md)'; e.currentTarget.style.color = 'var(--text-2)'; }}>
+                <button key={prompt} type="button" className="chip" onClick={() => submit(prompt)} disabled={loading}>
                   {prompt}
                 </button>
               ))}
@@ -145,17 +114,17 @@ export default function AICFOChat() {
               style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 12 }}>
               <div style={{
                 maxWidth: '85%',
-                background: msg.role === 'user' ? 'linear-gradient(135deg, #0097b2, #00d4ff)' : 'var(--bg-badge)',
-                border: msg.role === 'user' ? 'none' : '1px solid var(--border)',
-                borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                background: msg.role === 'user' ? 'var(--text-1)' : 'var(--bg-card)',
+                border: msg.role === 'user' ? 'none' : '1px solid var(--border-md)',
+                borderRadius: msg.role === 'user' ? '16px 16px 6px 16px' : '16px 16px 16px 6px',
                 padding: '12px 16px',
               }}>
                 <div style={{ fontSize: 'var(--fs-body)', margin: '0 0 6px' }}>
                   {msg.role === 'assistant'
                     ? <RichText text={msg.content} />
-                    : <p style={{ margin: 0, color: '#04121a', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{msg.content}</p>}
+                    : <p style={{ margin: 0, color: 'var(--bg-card)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{msg.content}</p>}
                 </div>
-                <p style={{ fontSize: 'var(--fs-label)', color: msg.role === 'user' ? 'rgba(4,18,26,0.75)' : 'var(--text-4)', margin: 0, textAlign: msg.role === 'user' ? 'right' : 'left' }}>
+                <p style={{ fontSize: 'var(--fs-label)', color: msg.role === 'user' ? 'color-mix(in srgb, var(--bg-card) 75%, transparent)' : 'var(--text-4)', margin: 0, textAlign: msg.role === 'user' ? 'right' : 'left' }}>
                   {msg.timestamp}
                 </p>
               </div>
@@ -175,7 +144,7 @@ export default function AICFOChat() {
           {status && (
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.2 }}
               style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 8 }}>
-              <div role="status" style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: '16px 16px 16px 4px', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div role="status" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: '16px 16px 16px 6px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ display: 'flex', gap: 5 }} aria-hidden="true">
                   {[0, 1, 2].map((i) => (
                     <motion.span key={i} animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
@@ -193,7 +162,7 @@ export default function AICFOChat() {
 
       {/* Input bar */}
       <div style={{ padding: '12px 16px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', padding: '10px 12px 10px 16px', transition: 'border-color 0.15s ease' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-lg)', padding: '8px 8px 8px 16px', boxShadow: 'var(--shadow-card)' }}>
           <label htmlFor="cfo-chat-input" className="sr-only">Message to AIBOS</label>
           <textarea
             id="cfo-chat-input" ref={inputRef} value={input}
@@ -203,12 +172,13 @@ export default function AICFOChat() {
             onInput={(e) => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 120)}px`; }}
           />
           <button type="button" onClick={() => submit(input)} disabled={!input.trim() || loading} aria-label="Send message"
-            style={{ width: 34, height: 34, borderRadius: 'var(--radius-md)', border: 'none', background: input.trim() && !loading ? 'linear-gradient(135deg, #0097b2, #00d4ff)' : 'var(--border)', cursor: input.trim() && !loading ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', color: input.trim() && !loading ? '#fff' : 'var(--text-4)', flexShrink: 0, transition: 'all 0.15s ease' }}>
-            <SendIcon size={14} />
+            className="icon-pill"
+            style={input.trim() && !loading ? { background: 'var(--brand-fill)', color: 'var(--on-brand)' } : { cursor: 'not-allowed', color: 'var(--text-4)' }}>
+            <SendIcon size={18} />
           </button>
         </div>
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', margin: '8px 0 0' }}>
-          Press Enter to send · Shift+Enter for new line
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '8px 0 0' }}>
+          Enter sends. Shift and Enter starts a new line.
         </p>
       </div>
     </section>

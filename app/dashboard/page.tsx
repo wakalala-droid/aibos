@@ -21,9 +21,10 @@ import DataManifestCard from '@/components/ui/DataManifestCard';
 import CustomMetricsCard from '@/components/ui/CustomMetricsCard';
 import BorderGlow from '@/components/ui/BorderGlow';
 import EngineScoreCard from '@/components/ui/EngineScoreCard';
-import EmptyState from '@/components/ui/EmptyState';
 import { bloomProps } from '@/lib/cometStyle';
 import Link from 'next/link';
+import { Aperture, BarChart3, LayoutGrid, Activity, Layers, ListChecks, Upload, Users } from 'lucide-react';
+import BentoCard from '@/components/ui/BentoCard';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -207,12 +208,6 @@ function OverviewPage() {
 
   const unifiedInsights = (orderedInsights.length > 0 ? orderedInsights : synthSignals).slice(0, 6);
   const activeEngineCount = [hasEngine1, hasEngine2Data, opsActive].filter(Boolean).length;
-  const engineStrip = [
-    { label: 'Overall',    score: scores?.overall_score, colour: 'var(--cyan)', active: !!scores },
-    { label: 'Financial',  score: scores?.e1_score,      colour: 'var(--e1)',   active: hasEngine1 },
-    { label: 'Customer',   score: scores?.e2_score,      colour: 'var(--e2)',   active: hasEngine2Data },
-    { label: 'Operations', score: scores?.e3_score,      colour: 'var(--e3)',   active: opsActive },
-  ];
 
   return (
     <>
@@ -223,7 +218,7 @@ function OverviewPage() {
       <HomeTop />
       <DecisionsQueue />
       <div id="decide">
-        <RecommendationList limit={3} title="Decide next" subtitle="From your Digital Twin: evidence attached" seeAllHref="/dashboard/brief?tab=advisor" />
+        <RecommendationList limit={3} title="Decide next" subtitle="From your own records, each with the evidence behind it." seeAllHref="/dashboard/brief?tab=advisor" />
       </div>
 
       {/* ── Contextual upgrade trigger (only at moments of demonstrated value) ── */}
@@ -247,8 +242,6 @@ function OverviewPage() {
           minWidth: 130, display: 'flex', flexDirection: 'column',
           alignItems: 'flex-start', justifyContent: 'space-between',
         }}>
-          {/* Bento dot texture — fades in from the bottom on hover */}
-          <span className="bento-tex" aria-hidden="true" />
           <p className="kpi-label">Health score</p>
           <p className="money money-hero" style={{
             color: scores ? scoreColor(scores.overall_score) : 'var(--text-4)',
@@ -305,348 +298,213 @@ function OverviewPage() {
         />
       </div>
 
-      {/* ── Main two-column layout ───────────────────────────────────────── */}
-      <div className="grid-main" style={{ marginBottom: 24 }}>
+      {/* How AIBOS read your file, and any figures the owner asked for. */}
+      <DataManifestCard />
+      <CustomMetricsCard />
 
-        {/* LEFT */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-          {/* How AIBOS read your file (self-hides when there's no manifest) */}
-          <DataManifestCard />
-
-          {/* Owner-approved custom metrics, computed live (self-hides otherwise) */}
-          <CustomMetricsCard />
-
-          {/* Revenue chart — hidden for cross-sectional files, where a time line
-              over non-time rows would be misleading (SAFEGUARD: no fabrication). */}
-          {chartData.length > 0 && dataShape !== 'cross_sectional' && (
-            <SectionCard explainId="chart.revenue" title="Revenue Intelligence" subtitle={`Monthly revenue & profit · ${sym} ZMW`} delay={0.1}>
-              <div role="img" aria-label={`Area chart of monthly revenue and profit for the last ${chartData.length} months`}>
-              <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%"   stopColor="var(--spark-revenue)" stopOpacity={0.25}/>
-                      <stop offset="100%" stopColor="var(--spark-revenue)" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="gP" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%"   stopColor="var(--spark-profit)" stopOpacity={0.2}/>
-                      <stop offset="100%" stopColor="var(--spark-profit)" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="var(--border)" vertical={false}/>
-                  <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick}
-                    tick={{ fontSize: 18, fill: 'var(--text-3)' }}
-                    axisLine={false} tickLine={false}/>
-                  <YAxis width={84}
-                    tick={{ fontSize: 18, fill: 'var(--text-3)' }}
-                    axisLine={false} tickLine={false}
-                    tickFormatter={(v) => formatAxis(Number(v))}/>
-                  <Tooltip content={<ChartTooltip sym={sym}/>}
-                    cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }}/>
-                  <Area type="monotone" dataKey="Revenue"
-                    stroke="var(--spark-revenue)" strokeWidth={2}
-                    fill="url(#gR)" dot={false} name="Revenue"/>
-                  <Area type="monotone" dataKey="Profit"
-                    stroke="var(--spark-profit)" strokeWidth={1.8}
-                    fill="url(#gP)" dot={false} name="Profit"/>
-                </AreaChart>
-              </ResponsiveContainer>
-              </div>
-              <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
-                {[['var(--spark-revenue)', 'Revenue'], ['var(--spark-profit)', 'Profit']].map(([c, l]) => (
-                  <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <div style={{ width: 12, height: 2, borderRadius: 2, background: c }}/>
-                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{l}</span>
-                  </div>
-                ))}
-              </div>
-            </SectionCard>
-          )}
-
-          {/* E2 + E3 quick stats — render real numbers when the engine has data,
-              otherwise a clearly-labeled "coming soon" state (never zero-filled
-              cards that look broken). */}
-          <div className="grid-2">
-            <SectionCard explainId="card.customer" delay={0.15}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--e2)', margin: 0 }}>
-                  Customer Intelligence
-                </p>
-                {hasEngine2Data && (
-                  <Link className="tap-link" href="/dashboard/customers" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
-                    View →
-                  </Link>
-                )}
-              </div>
-              {hasEngine2Data ? (
-                <div className="grid-3" style={{ gap: 10 }}>
-                  {[
-                    { l: 'Champions', v: String(champions),       c: 'var(--good)' },
-                    { l: 'High Churn', v: String(highChurn),      c: 'var(--crit)' },
-                    { l: 'Retention', v: `${retRate.toFixed(0)}%`, c: 'var(--e2)'  },
-                  ].map(item => (
-                    <div key={item.l}>
-                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px' }}>
-                        {item.l}
-                      </p>
-                      <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color: item.c, margin: 0, letterSpacing: '-0.03em' }}>
-                        {item.v}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  colour="var(--e2)"
-                  chip="Needs named sales"
-                  text="Add the customer's name when you record a sale. After about 10 named sales, AIBOS shows who your best customers are and who has gone quiet."
-                  action={{ label: 'Record a sale', href: '/dashboard/record' }}
-                  secondary={{ label: 'Or upload a file', href: '/dashboard/import' }}
-                />
-              )}
-            </SectionCard>
-
-            <SectionCard explainId="card.operations" delay={0.18}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <p style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--e3)', margin: 0 }}>
-                  Operations
-                </p>
-                {hasEngine3Data && (
-                  <Link className="tap-link" href="/dashboard/pos" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
-                    View →
-                  </Link>
-                )}
-              </div>
-              {hasEngine3Data ? (
-                <div className="grid-3" style={{ gap: 10 }}>
-                  {[
-                    { l: 'Net Revenue',   v: fmt(gt?.net_revenue ?? 0, true, sym),  c: 'var(--e3)'   },
-                    { l: 'Drink Attach',  v: `${drinkAttach.toFixed(0)}%`,           c: drinkAttach >= 80 ? 'var(--good)' : 'var(--warn)' },
-                    { l: 'Benchmarks',    v: `${warnB} warn`,                        c: warnB > 0 ? 'var(--warn)' : 'var(--good)' },
-                  ].map(item => (
-                    <div key={item.l}>
-                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px' }}>
-                        {item.l}
-                      </p>
-                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: item.c, margin: 0, letterSpacing: '-0.02em' }}>
-                        {item.v}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : hasItemOps ? (
-                <div className="grid-3" style={{ gap: 10 }}>
-                  {[
-                    { l: 'Products',    v: String(safeBreakdown.length),                           c: 'var(--e3)' },
-                    { l: 'Top Seller',  v: topSeller?.item ?? 'None',                                 c: 'var(--good)' },
-                    { l: 'Best Margin', v: bestMargin ? `${bestMargin.margin.toFixed(0)}%` : 'None',  c: (bestMargin?.margin ?? 0) >= 0 ? 'var(--good)' : 'var(--crit)' },
-                  ].map(item => (
-                    <div key={item.l}>
-                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px' }}>
-                        {item.l}
-                      </p>
-                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: item.c, margin: 0, letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.v}>
-                        {item.v}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  colour="var(--e3)"
-                  chip="Needs your till data"
-                  text="Upload the sales report from your till (POS) to see what sells, how fast and at what time of day."
-                  action={{ label: 'Upload a file', href: '/dashboard/import' }}
-                />
-              )}
-            </SectionCard>
+      {/* Sales and profit by month. Hidden for files that are not a time line
+          (SAFEGUARD: no fabrication). */}
+      {chartData.length > 0 && dataShape !== 'cross_sectional' && (
+        <SectionCard explainId="chart.revenue" title="Sales and profit by month" style={{ marginBottom: 24 }}>
+          <div role="img" aria-label={`Area chart of monthly sales and profit for the last ${chartData.length} months`}>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stopColor="var(--brand-fill)" stopOpacity={0.28}/>
+                  <stop offset="100%" stopColor="var(--brand-fill)" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="var(--border)" vertical={false}/>
+              <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick}
+                tick={{ fontSize: 18, fill: 'var(--text-3)' }}
+                axisLine={false} tickLine={false}/>
+              <YAxis width={84}
+                tick={{ fontSize: 18, fill: 'var(--text-3)' }}
+                axisLine={false} tickLine={false}
+                tickFormatter={(v) => formatAxis(Number(v))}/>
+              <Tooltip content={<ChartTooltip sym={sym}/>}
+                cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }}/>
+              <Area type="monotone" dataKey="Revenue"
+                stroke="var(--chart-line)" strokeWidth={2}
+                fill="url(#gR)" dot={false} name="Sales"/>
+              <Area type="monotone" dataKey="Profit"
+                stroke="var(--text-3)" strokeWidth={1.8} strokeDasharray="5 4"
+                fill="none" dot={false} name="Profit"/>
+            </AreaChart>
+          </ResponsiveContainer>
           </div>
-
-          {/* Unified Engine Intelligence — always synthesises from whatever
-              engines have data (even one), so this space is never empty. */}
-          <SectionCard
-            explainId="card.unifiedIntelligence"
-            title="Unified Engine Intelligence"
-            subtitle="Synthesised across Financial · Customer · Operations"
-            delay={0.22}
-            action={
-              orderedInsights.length > 0 ? (
-                <Link className="tap-link" href="/dashboard/brief?tab=ops" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
-                  View all →
-                </Link>
-              ) : undefined
-            }
-          >
-            {/* Per-engine score synthesis — inactive engines dim, never vanish. */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-              {engineStrip.map(s => (
-                <div key={s.label} style={{
-                  flex: '1 1 0', minWidth: 92, padding: '10px 12px', borderRadius: 10,
-                  border: '1px solid var(--border)', opacity: s.active ? 1 : 0.4,
-                }}>
-                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px' }}>
-                    {s.label}
-                  </p>
-                  <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 600, color: s.active ? s.colour : 'var(--text-4)', margin: 0, letterSpacing: '-0.03em' }}>
-                    {s.active && s.score !== undefined ? s.score : 'Not yet'}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* Synthesised signals (cross-engine when available, else single-engine). */}
-            {unifiedInsights.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {unifiedInsights.map((ins, i) => (
-                  <InsightCard
-                    key={i} index={i}
-                    insight={ins.insight}
-                    action={ins.action}
-                    priority={ins.priority as 'high' | 'medium' | 'low'}
-                    sourceEngines={ins.source_engines}
-                  />
-                ))}
+          <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+            {[['var(--chart-line)', 'Sales', false], ['var(--text-3)', 'Profit', true]].map(([c, l, dashed]) => (
+              <div key={String(l)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg width="24" height="4" aria-hidden="true"><line x1="0" y1="2" x2="24" y2="2" stroke={String(c)} strokeWidth="2" strokeDasharray={dashed ? '5 3' : undefined} /></svg>
+                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{String(l)}</span>
               </div>
-            ) : (
-              <EmptyState colour="var(--cyan)" chip="Needs your sales" text="Record your sales and costs, or upload a file, and AIBOS puts its findings across money, customers and operations here." action={{ label: 'Record a sale', href: '/dashboard/record' }} secondary={{ label: 'Or upload a file', href: '/dashboard/import' }} />
-            )}
-
-            {/* Encourage more engines — informational, never a blocking lock. */}
-            {activeEngineCount < 3 && unifiedInsights.length > 0 && (
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '14px 0 0', lineHeight: 1.5 }}>
-                {activeEngineCount === 1
-                  ? 'Add customer or POS data to unlock full cross-engine synthesis.'
-                  : 'Add the remaining engine to unlock full cross-engine synthesis.'}
-              </p>
-            )}
-          </SectionCard>
-
-          {/* Executive brief preview */}
-          {briefLines.length > 0 && (
-            <SectionCard
-              explainId="card.executiveBrief"
-              title="Executive Action Plan"
-              subtitle="AIBOS unified brief · Financial + Customer Intelligence + Operations"
-              delay={0.26}
-              action={
-                <Link className="tap-link" href="/dashboard/brief?tab=ops" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>
-                  Full brief →
-                </Link>
-              }
-            >
-              {briefLines.map((line, i) => (
-                <div key={i} style={{
-                  display: 'flex', gap: 12, alignItems: 'flex-start',
-                  padding: '10px 0',
-                  borderTop: i > 0 ? '1px solid var(--border)' : 'none',
-                }}>
-                  <span style={{
-                    width: 22, height: 22, borderRadius: 6, flexShrink: 0,
-                    background: 'var(--cyan-dim)',
-                    border: '1px solid rgba(0,212,255,0.25)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--cyan)',
-                  }}>
-                    {i + 1}
-                  </span>
-                  <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>
-                    {line.replace(/^\d+\.\s*/, '')}
-                  </p>
-                </div>
-              ))}
-            </SectionCard>
-          )}
-        </div>
-
-        {/* RIGHT column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-          {/* Upload — ONE place, so a file is never uploaded twice to two
-              different screens that each understood half of it. */}
-          <SectionCard explainId="card.upload" title="Upload a file" subtitle="Any spreadsheet: every sheet read at once" delay={0.08}>
-            <div id="upload-section" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <p style={{ margin: 0, fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.6 }}>
-                Bring in an Excel or CSV file of any shape. AIBOS reads every sheet together,
-                files each row against the right worker, product or cost and updates these
-                dashboards: from the one upload.
-              </p>
-              <a
-                href="/dashboard/import"
-                className="touch-target"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '12px 20px', minHeight: 48, borderRadius: 10, border: 'none',
-                  background: 'var(--brand-fill)', color: 'var(--on-brand)',
-                  fontSize: 'var(--fs-body)', fontWeight: 700, textDecoration: 'none',
-                }}
-              >
-                Upload a file →
-              </a>
-            </div>
-          </SectionCard>
-
-          {/* Active alerts */}
-          {safeAlerts.length > 0 && (
-            <SectionCard explainId="card.alerts" title="Active Alerts" subtitle="Variance & anomaly flags" delay={0.14}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {safeAlerts.slice(0, 4).map((a: any, i: number) => (
-                  <div key={i} style={{
-                    padding: '10px 12px', borderRadius: 'var(--radius-md)',
-                    background: 'var(--bg-badge)', border: '1px solid var(--border)',
-                  }}>
-                    <p style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
-                      {a.title ?? a.type}
-                    </p>
-                    <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>
-                      {a.description ?? a.month}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </SectionCard>
-          )}
-
-          {/* Quick access */}
-          <SectionCard explainId="card.quickAccess" title="Quick Access" delay={0.2}>
-            {[
-              { href: '/dashboard/customers',  label: 'Customer Intelligence', sub: 'RFM · CLV · Segments',    colour: 'var(--e2)'   },
-              { href: '/dashboard/pos',         label: 'POS Intelligence',      sub: 'Revenue · Velocity · BCG', colour: 'var(--e3)'   },
-              { href: '/dashboard/benchmarks',  label: 'Benchmarks',            sub: 'QSR · Industry targets',   colour: 'var(--e3)'   },
-              { href: '/dashboard/churn',       label: 'Churn Risk',            sub: 'Interventions · CLV risk', colour: 'var(--e2)'   },
-              { href: '/dashboard/brief?tab=ops',   label: 'Intelligence Brief',    sub: 'E1 + CI + Ops synthesis',  colour: 'var(--cyan)' },
-            ].map(item => (
-              <Link key={item.href} href={item.href} style={{ textDecoration: 'none', display: 'block', marginBottom: 6 }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '10px 12px', borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border)', background: 'var(--bg-badge)',
-                  transition: 'border-color 0.15s ease',
-                }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-md)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; }}
-                >
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: item.colour, flexShrink: 0 }}/>
-                  <div>
-                    <p style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{item.label}</p>
-                    <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>{item.sub}</p>
-                  </div>
-                </div>
-              </Link>
             ))}
-          </SectionCard>
+          </div>
+        </SectionCard>
+      )}
 
-          {/* AI brief delivery — gated to paid tiers (the retention engine). */}
-          <FeatureGate
-            feature="scheduled_brief"
-            title="AI Brief"
-            colour="var(--cyan)"
-            headline="Get the one number that matters, every morning."
-            detail="A scheduled brief lands in your inbox leading with what changed: “Your cash runway dropped to 12 days.” Every line links straight back into the product."
-          >
-            <BriefSubscribe />
-          </FeatureGate>
+      {/* ── What AIBOS found: the owner's bento layout (5 Oct 2026) ─────── */}
+      <div className="bento-section">
+        <header className="bento-section-head">
+          <div>
+            <p className="eyebrow">Across your business</p>
+            <h2 className="bento-section-title">What AIBOS found</h2>
+          </div>
+          <p className="bento-section-sub">
+            Money, customers and the till read together, the most pressing first.
+            {orderedInsights.length > 0 && <> <Link href="/dashboard/brief?tab=ops" className="pill pill-quiet" style={{ marginTop: 12 }}>See every finding</Link></>}
+          </p>
+        </header>
+        {unifiedInsights.length > 0 ? (
+          <div className="bento-grid" data-tour="findings">
+            {unifiedInsights.slice(0, 5).map((ins, i) => (
+              <InsightCard
+                key={i} index={i}
+                className={['span-4 rows-2', 'span-2', 'span-2', 'span-3', 'span-3'][i]}
+                insight={ins.insight}
+                action={ins.action}
+                priority={ins.priority as 'high' | 'medium' | 'low'}
+                sourceEngines={ins.source_engines}
+              />
+            ))}
+          </div>
+        ) : (
+          <BentoCard icon={<Aperture />} title="Nothing to read yet" tag="Start"
+            text="Record your sales and costs, or upload a file, and AIBOS puts what it finds across money, customers and operations here."
+            foot={<><Link href="/dashboard/record" className="pill pill-primary">Record a sale</Link><Link href="/dashboard/import" className="pill pill-quiet">Upload a file</Link></>} />
+        )}
+        {activeEngineCount < 3 && unifiedInsights.length > 0 && (
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '12px 0 0', lineHeight: 1.6 }}>
+            {activeEngineCount === 1
+              ? "Add customers' names or your till's sales report and AIBOS reads all three together."
+              : 'Add the last one and AIBOS reads all three together.'}
+          </p>
+        )}
+      </div>
+
+      {/* ── At a glance: the rest of the business, as bento cards ────────── */}
+      <div className="bento-section">
+        <header className="bento-section-head">
+          <div>
+            <p className="eyebrow">At a glance</p>
+            <h2 className="bento-section-title">Customers, till and next steps</h2>
+          </div>
+        </header>
+        <div className="bento-grid">
+          {/* Next steps from the brief: the big card. */}
+          {briefLines.length > 0 && (
+            <BentoCard className="span-4 rows-2" icon={<ListChecks />} title="What to do next" tag="Plan" motion="tilt"
+              explainId="card.executiveBrief"
+              foot={<Link href="/dashboard/brief?tab=ops" className="pill pill-quiet">Read the full brief</Link>}>
+              <ol style={{ listStyle: 'none', margin: '12px 0 0', padding: 0 }}>
+                {briefLines.map((line, i) => (
+                  <li key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                    <span className="avatar" aria-hidden="true" style={{ width: 32, height: 32 }}>{i + 1}</span>
+                    <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.6 }}>{line.replace(/^\d+\.\s*/, '')}</span>
+                  </li>
+                ))}
+              </ol>
+            </BentoCard>
+          )}
+
+          <BentoCard className="span-2" icon={<Users />} title="Customers" tag="People" explainId="card.customer"
+            href={hasEngine2Data ? '/dashboard/customers' : undefined}
+            text={hasEngine2Data ? undefined : "Add the customer's name when you record a sale. After about 10, AIBOS shows who buys most and who has gone quiet."}
+            foot={hasEngine2Data ? undefined : <Link href="/dashboard/record" className="pill">Record a sale</Link>}>
+            {hasEngine2Data && (
+              <div className="mini-stats" style={{ marginTop: 12 }}>
+                {[
+                  { l: 'Best', v: String(champions) },
+                  { l: 'Gone quiet', v: String(highChurn) },
+                  { l: 'Come back', v: `${retRate.toFixed(0)}%` },
+                ].map((item) => (
+                  <div key={item.l} className="mini-stat">
+                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{item.l}</span>
+                    <span className="money money-md">{item.v}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </BentoCard>
+
+          <BentoCard className="span-2" icon={<BarChart3 />} title="Till" tag="Sales" motion="pulse" explainId="card.operations"
+            href={hasEngine3Data ? '/dashboard/pos' : undefined}
+            text={hasEngine3Data || hasItemOps ? undefined : "Upload your till's sales report to see what sells, how fast and at what time of day."}
+            foot={hasEngine3Data || hasItemOps ? undefined : <Link href="/dashboard/import" className="pill">Upload a file</Link>}>
+            {(hasEngine3Data || hasItemOps) && (
+              <div className="mini-stats" style={{ marginTop: 12 }}>
+                {(hasEngine3Data ? [
+                  { l: 'Sales after discounts', v: fmt(gt?.net_revenue ?? 0, true, sym) },
+                  { l: 'Sold with a drink', v: `${drinkAttach.toFixed(0)}%` },
+                  { l: 'Below target', v: String(warnB) },
+                ] : [
+                  { l: 'Products', v: String(safeBreakdown.length) },
+                  { l: 'Sells most', v: topSeller?.item ?? 'None' },
+                  { l: 'Best margin', v: bestMargin ? `${bestMargin.margin.toFixed(0)}%` : 'None' },
+                ]).map((item) => (
+                  <div key={item.l} className="mini-stat">
+                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{item.l}</span>
+                    <span className="money money-md" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.v}>{item.v}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </BentoCard>
+
+          {/* Upload: ONE place, so a file is never uploaded twice. */}
+          <BentoCard className={briefLines.length > 0 ? 'span-3' : 'span-2'} icon={<Upload />} title="Upload a file" tag="Import" motion="tilt" explainId="card.upload"
+            text="Any Excel or CSV file. AIBOS reads every sheet together and files each row against the right worker, product or cost."
+            foot={<Link href="/dashboard/import" className="pill pill-primary">Upload a file</Link>} />
+
+          {safeAlerts.length > 0 && (
+            <BentoCard className="span-3" icon={<Activity />} title="Worth checking" tag="Alerts" motion="pulse" explainId="card.alerts">
+              <div style={{ marginTop: 8 }}>
+                {safeAlerts.slice(0, 3).map((a: any, i: number) => (
+                  <div key={i} style={{ padding: '8px 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                    <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{a.title ?? a.type}</p>
+                    <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>{a.description ?? a.month}</p>
+                  </div>
+                ))}
+              </div>
+            </BentoCard>
+          )}
         </div>
+      </div>
+
+      {/* ── More reports: link cards in the same grid ──────────────────────── */}
+      <div className="bento-section">
+        <header className="bento-section-head">
+          <div>
+            <p className="eyebrow">Reports</p>
+            <h2 className="bento-section-title">Go deeper</h2>
+          </div>
+        </header>
+        <div className="bento-grid">
+          {[
+            { href: '/dashboard/customers',     title: 'Best customers',  tag: 'People', text: 'Who buys most, how often and how much each is worth to you.', icon: <Users />,      span: 'span-2' },
+            { href: '/dashboard/churn',         title: 'Quiet customers', tag: 'People', text: 'Who has stopped coming, and what to send them.',              icon: <Layers />,     span: 'span-2' },
+            { href: '/dashboard/pos',           title: 'Till sales',      tag: 'Sales',  text: 'What sells, how fast and at what time of day.',              icon: <BarChart3 />,  span: 'span-2' },
+            { href: '/dashboard/benchmarks',    title: 'How you compare', tag: 'Sales',  text: 'Your numbers against businesses like yours.',               icon: <LayoutGrid />, span: 'span-3' },
+            { href: '/dashboard/brief?tab=ops', title: 'Briefs',          tag: 'Plan',   text: 'Everything above in one read, with what to do first.',      icon: <ListChecks />, span: 'span-3' },
+          ].map((c) => (
+            <BentoCard key={c.href} className={c.span} href={c.href} icon={c.icon} title={c.title} tag={c.tag} text={c.text} />
+          ))}
+        </div>
+      </div>
+
+      {/* AI brief delivery: gated to paid tiers (the retention engine). */}
+      <div style={{ marginBottom: 24 }}>
+        <FeatureGate
+          feature="scheduled_brief"
+          title="Morning brief"
+          colour="var(--cyan)"
+          headline="Get the one number that matters, every morning."
+          detail="A brief lands in your inbox leading with what changed: “Your cash runway dropped to 12 days.” Every line links straight back into AIBOS."
+        >
+          <BriefSubscribe />
+        </FeatureGate>
       </div>
 
       {/* ── AI CFO Chat ─────────────────────────────────────────────────── */}

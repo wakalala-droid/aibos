@@ -1,47 +1,49 @@
 'use client';
 
+// What a report shows over itself before it has the data it needs: a bento
+// card (5 Oct 2026) with a round outlined lock, a spaced-capital title, one
+// plain sentence, what it will show and the one way to unlock it.
+
+import Link from 'next/link';
+import { Lock, ArrowRight } from 'lucide-react';
+
 interface LockOverlayProps {
+  /** Accepted from older callers; the card is monochrome. */
   colour?: string;
   title: string;
   description: string;
   bullets?: string[];
 }
 
-export default function LockOverlay({ colour = 'var(--cyan)', title, description, bullets }: LockOverlayProps) {
+export default function LockOverlay({ title, description, bullets }: LockOverlayProps) {
   return (
     <div style={{
       position: 'absolute', inset: 0, zIndex: 20,
       background: 'var(--overlay-bg)',
-      backdropFilter: 'blur(8px)',
-      borderRadius: 'var(--radius-md)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: 28, textAlign: 'center',
+      borderRadius: 'var(--radius-card)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
     }}>
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 12, color: colour }}>
-        <rect x="5" y="11" width="14" height="10" rx="2" stroke={colour} strokeWidth="1.5" fill="none"/>
-        <path d="M8 11V7a4 4 0 018 0v4" stroke={colour} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-      </svg>
-      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: colour, margin: '0 0 6px' }}>{title}</p>
-      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 14px', maxWidth: 300, lineHeight: 1.5 }}>
-        {description}
-      </p>
-      {bullets?.map(b => (
-        <p key={b} style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '3px 0' }}>
-          <span style={{ color: colour }}>› </span>{b}
-        </p>
-      ))}
-      <button
-        onClick={() => document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' })}
-        style={{
-          marginTop: 18,
-          background: colour, color: '#fff', border: 'none',
-          borderRadius: 'var(--radius-md)', padding: '9px 22px',
-          fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer',
-        }}
-      >
-        Upload Data →
-      </button>
+      <div className="bento" style={{ maxWidth: 440, width: '100%' }}>
+        <div className="bento-head">
+          <span className="bento-icon" aria-hidden="true"><Lock /></span>
+          <div className="bento-main">
+            <p className="bento-title">{title}</p>
+            <p className="bento-text">{description}</p>
+            {bullets && bullets.length > 0 && (
+              <ul style={{ listStyle: 'none', margin: '12px 0 0', padding: 0, display: 'grid', gap: 4 }}>
+                {bullets.map((b) => (
+                  <li key={b} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
+                    <ArrowRight aria-hidden="true" style={{ width: 18, height: 18, flexShrink: 0, marginTop: 5 }} />{b}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+        <div className="bento-foot">
+          <Link href="/dashboard/import" className="pill pill-primary">Upload a file</Link>
+        </div>
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { CalendarCheck } from 'lucide-react';
 import { listEvents, type BusinessEvent } from '@/lib/api';
 
 const GOAL_DAYS = 3;
@@ -44,35 +45,40 @@ export default function ActivationProgress() {
   const reached = days >= GOAL_DAYS;
   const pct = Math.min(days / GOAL_DAYS, 1) * 100;
 
+  // A bento card (5 Oct 2026): round mark, spaced-capital title with the day
+  // count as its tag, one even bar and one next step.
   return (
-    <div role="status" style={{
-      padding: '14px 16px', marginBottom: 20, borderRadius: 'var(--radius-md)',
-      border: `1px solid ${reached ? 'var(--good)' : 'var(--border-md)'}`,
-      background: reached ? 'color-mix(in srgb, var(--good) 8%, transparent)' : 'var(--bg-card)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
-        <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
-          {reached ? 'Your Morning Brief is ready' : `Record on ${GOAL_DAYS} days to unlock your Morning Brief`}
-        </span>
-        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
-          {Math.min(days, GOAL_DAYS)} / {GOAL_DAYS} days
-        </span>
+    <div role="status" className="bento" style={{ marginBottom: 16 }}>
+      <div className="bento-head">
+        <span className="bento-icon" aria-hidden="true"><CalendarCheck /></span>
+        <div className="bento-main">
+          <div className="bento-titlerow">
+            <p className="bento-title">{reached ? 'Your morning brief is ready' : 'Unlock your morning brief'}</p>
+            <span className="bento-tag">{Math.min(days, GOAL_DAYS)} of {GOAL_DAYS} days</span>
+          </div>
+          <div className="progress-track" style={{ height: 8, marginTop: 12 }}>
+            <div className="progress-fill" style={{ width: `${pct}%` }} />
+          </div>
+          <p className="bento-text">
+            {reached
+              ? 'Every morning AIBOS now sums up your day.'
+              : `Record a sale or expense on ${GOAL_DAYS} different days. That is enough for AIBOS to spot your first patterns.`}
+          </p>
+        </div>
       </div>
-      <div style={{ height: 8, borderRadius: 'var(--radius-sm)', background: 'var(--bg-badge)', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, borderRadius: 'var(--radius-sm)', background: reached ? 'var(--good)' : 'var(--cyan)', transition: 'width .5s ease' }} />
-      </div>
-      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '10px 0 0' }}>
+      <div className="bento-foot">
         {reached ? (
-          <>Every morning AIBOS now sums up your day. <Link href="/dashboard/brief" style={{ color: 'var(--good)', fontWeight: 600 }}>See it →</Link>{' '}
-            <button type="button" onClick={() => { try { window.localStorage.setItem(DISMISS_KEY, '1'); } catch { /* */ } setDone(true); }}
-              style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', textDecoration: 'underline', fontSize: 'var(--fs-label)' }}>dismiss</button>
+          <>
+            <Link href="/dashboard/brief" className="pill pill-primary">See it</Link>
+            <button type="button" className="pill pill-quiet" onClick={() => { try { window.localStorage.setItem(DISMISS_KEY, '1'); } catch { /* private mode */ } setDone(true); }}>Dismiss</button>
           </>
         ) : (
-          <>Record a sale or expense on {GOAL_DAYS} different days: that&apos;s enough for AIBOS to spot your first patterns. <Link href="/dashboard/record" style={{ color: 'var(--cyan)', fontWeight: 600 }}>Record now →</Link>
-            {days === 0 && <> · <Link href="/dashboard/demo" style={{ color: 'var(--text-3)', fontWeight: 600 }}>see a sample first</Link></>}
+          <>
+            <Link href="/dashboard/record" className="pill pill-primary">Record now</Link>
+            {days === 0 && <Link href="/dashboard/demo" className="pill pill-quiet">See a sample first</Link>}
           </>
         )}
-      </p>
+      </div>
     </div>
   );
 }

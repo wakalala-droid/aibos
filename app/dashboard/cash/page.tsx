@@ -152,7 +152,7 @@ export default function CashPage() {
               <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>On average, from your records</p>
             </Panel>
             <Panel title="How long it lasts" labelledBy="money-runway-title">
-              <span className="money money-lg" style={{ color: notShrinking ? 'var(--green)' : runwayColor }}>
+              <span className="money money-lg">
                 {notShrinking ? 'Not shrinking' : `${runway} months`}
               </span>
               <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
@@ -178,7 +178,7 @@ export default function CashPage() {
       {!fromBooks && (
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
-          label="CASH POSITION" value={fmt(currentCash, false, sym)} sub="current balance"
+          label="Cash" value={fmt(currentCash, false, sym)} sub="current balance"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="var(--chart-line)" strokeWidth="1.5" fill="none"/><path d="M2 10h20" stroke="var(--chart-line)" strokeWidth="1.3" strokeLinecap="round"/><circle cx="8" cy="15" r="1.5" fill="var(--chart-line)"/></svg>}
           iconBg="rgba(0,212,255,0.12)"
           sparkData={cashSpark.length > 1 ? cashSpark.slice(-6) : undefined}
@@ -283,9 +283,9 @@ export default function CashPage() {
                 {history.map((row) => (
                   <tr key={row.label}>
                     <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{row.label}</td>
-                    <td style={{ color: 'var(--good)' }}>{fmt(row.income, false, sym)}</td>
-                    <td style={{ color: 'var(--e2)' }}>{fmt(row.costs, false, sym)}</td>
-                    <td style={{ color: row.profit >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 700 }}>
+                    <td style={{ color: 'var(--text-1)' }}>{fmt(row.income, false, sym)}</td>
+                    <td style={{ color: 'var(--text-1)' }}>{fmt(row.costs, false, sym)}</td>
+                    <td style={{ color: 'var(--text-1)', fontWeight: 700 }}>
                       {row.profit >= 0 ? '+' : ''}{fmt(row.profit, false, sym)}
                     </td>
                   </tr>
@@ -310,12 +310,12 @@ export default function CashPage() {
                 return (
                   <tr key={i}>
                     <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{row.label}</td>
-                    <td style={{ color: 'var(--good)' }}>{fmt(row.inflow, false, sym)}</td>
-                    <td style={{ color: 'var(--e2)' }}>{fmt(row.outflow, false, sym)}</td>
-                    <td style={{ color: net >= 0 ? 'var(--good)' : 'var(--crit)', fontWeight: 700 }}>
+                    <td style={{ color: 'var(--text-1)' }}>{fmt(row.inflow, false, sym)}</td>
+                    <td style={{ color: 'var(--text-1)' }}>{fmt(row.outflow, false, sym)}</td>
+                    <td style={{ color: 'var(--text-1)', fontWeight: 700 }}>
                       {net >= 0 ? '+' : ''}{fmt(net, false, sym)}
                     </td>
-                    <td style={{ color: 'var(--cyan)', fontWeight: 600 }}>{fmt(row.cash, false, sym)}</td>
+                    <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{fmt(row.cash, false, sym)}</td>
                   </tr>
                 );
               })}

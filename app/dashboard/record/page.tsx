@@ -91,7 +91,7 @@ export default function RecordPage() {
           </div>
         </SectionCard>
 
-        <SectionCard title="Your AIBOS journey" subtitle="Capability grows as you record">
+        <SectionCard title="What AIBOS can do for you" subtitle="It does more the more you record.">
           <GrowthJourney />
         </SectionCard>
         </div>

@@ -149,7 +149,6 @@ export function WelcomeTourPanel({ tier, step, onStep, onClose, closing = false 
               // items is already 1200px of scrolling before the padding.
               style={{ padding: 'clamp(20px, 4vw, 32px)', outline: 'none' }}
             >
-              <span className="bento-tex" aria-hidden="true" />
 
               {/* Progress. A 2px line, per the design system: never a thick ribbon. */}
               <div style={{ display: 'flex', gap: 4, marginBottom: 24 }}>

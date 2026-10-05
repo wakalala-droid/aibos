@@ -27,7 +27,7 @@ const AUTH_ROUTES   = ['/login'];          // Redirect to dashboard if already l
 // Everything that needs an account. Checkout, onboarding and the data studio
 // were open, so a signed-out visitor who chose a plan on the pricing page got
 // as far as "Pay" and was then refused with a raw "Unauthenticated" error.
-const PROTECTED_PREFIXES = ['/dashboard', '/checkout', '/onboarding', '/data-studio'];
+const PROTECTED_PREFIXES = ['/dashboard', '/checkout', '/onboarding'];
 const ADMIN_PREFIX     = '/admin';
 
 /** Where to come back to after signing in: the page AND its query, so

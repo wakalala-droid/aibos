@@ -43,19 +43,16 @@ export default function FeatureGate({
     return (
       <>
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
-          padding: '8px 12px', marginBottom: 8, borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border)', background: 'var(--bg-badge)',
+          display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+          padding: '8px 8px 8px 16px', marginBottom: 12, borderRadius: 999,
+          border: '1px solid var(--border-md)', background: 'var(--bg-card)',
         }}>
-          <span className="badge" style={{ color: 'var(--cyan)', borderColor: 'var(--cyan)' }}>FREE</span>
-          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+          <span className="bento-tag" style={{ marginLeft: 0 }}>Free</span>
+          <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>
             {taster.perDay} {taster.noun}s a day, included.
           </span>
-          <Link className="tap-link" href={`/checkout?plan=${need}`} style={{
-            fontSize: 'var(--fs-label)', color: 'var(--cyan)', fontWeight: 600,
-            marginLeft: 'auto', textDecoration: 'none',
-          }}>
-            Unlimited with {meta.name}: {perMonth(meta.priceMonthly)} →
+          <Link className="pill pill-quiet" href={`/checkout?plan=${need}`} style={{ marginLeft: 'auto' }}>
+            Unlimited with {meta.name}: {perMonth(meta.priceMonthly)}
           </Link>
         </div>
         {children}
@@ -71,7 +68,7 @@ export default function FeatureGate({
       ctaLabel={`Unlock with ${meta.name}: ${perMonth(meta.priceMonthly)}`}
       ctaHref={`/checkout?plan=${need}`}
       colour={colour}
-      badge={meta.name.toUpperCase()}
+      badge={meta.name}
       state={state}
     />
   );

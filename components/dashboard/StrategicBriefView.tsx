@@ -8,18 +8,20 @@ import { fmt, scoreColor } from '@/lib/utils';
 import { monthChange, monthName, enoughHistory, MIN_MONTHS } from '@/lib/change';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
+import BentoCard from '@/components/ui/BentoCard';
+import { AlertTriangle, Lightbulb, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { KpiShape, HealthShape, MonthlyRow, AlertRow, IntelligenceScoresShape } from '@/lib/store';
 
 function BriefPoint({ text, index, colour }: { text: string; index: number; colour?: string }) {
   const content = text.replace(/^\d+\.\s*/, '').trim();
-  const c = colour ?? 'var(--cyan)';
+  void colour;
   return (
     <motion.div
       initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + index * 0.08 }}
       style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '13px 0', borderTop: index > 0 ? '1px solid var(--border)' : 'none' }}
     >
-      <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: `color-mix(in srgb, ${c} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${c} 25%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-label)', fontWeight: 700, color: c }}>
+      <span className="avatar" aria-hidden="true" style={{ width: 32, height: 32 }}>
         {index + 1}
       </span>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>{content}</p>
@@ -27,25 +29,14 @@ function BriefPoint({ text, index, colour }: { text: string; index: number; colo
   );
 }
 
-function RecommendationCard({ title, recommendation, priority, index }: { title: string; recommendation: string; priority: string; index: number }) {
-  const priorityColour = priority === 'high' || priority === 'critical' ? 'var(--crit)' : priority === 'medium' ? 'var(--warn)' : 'var(--good)';
+function RecommendationCard({ title, recommendation, priority, className }: { title: string; recommendation: string; priority: string; index: number; className?: string }) {
+  const urgent = priority === 'high' || priority === 'critical';
   return (
-    <motion.div
-      initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + index * 0.07 }}
-      style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 12, alignItems: 'flex-start' }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, paddingTop: 3 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: priorityColour, flexShrink: 0 }} />
-        <div style={{ width: 1, flex: 1, minHeight: 16, background: `color-mix(in srgb, ${priorityColour} 20%, transparent)` }} />
-      </div>
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{title}</p>
-          <span className="badge" style={{ color: priorityColour, background: `color-mix(in srgb, ${priorityColour} 10%, transparent)`, borderColor: `color-mix(in srgb, ${priorityColour} 25%, transparent)` }}>{priority.toUpperCase()}</span>
-        </div>
-        <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', lineHeight: 1.55, margin: 0 }}>{recommendation}</p>
-      </div>
-    </motion.div>
+    <BentoCard className={className} icon={urgent ? <AlertTriangle /> : priority === 'medium' ? <Lightbulb /> : <Sparkles />}
+      title={urgent ? 'Act now' : priority === 'medium' ? 'Worth a look' : 'Good to know'} tag="Money" motion={urgent ? 'pulse' : 'float'}>
+      <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.5, color: 'var(--text-1)' }}>{title}</p>
+      <p className="bento-text" style={{ marginTop: 4 }}>{recommendation}</p>
+    </BentoCard>
   );
 }
 
@@ -70,29 +61,29 @@ export default function StrategicBriefView({
   // ── Derived recommendations (identical logic to the product) ──────────────
   const recs: Array<{ title: string; recommendation: string; priority: string }> = [];
   if (kpi.avgMargin < 20) {
-    recs.push({ title: 'Margin Below Target', recommendation: `Average margin of ${kpi.avgMargin.toFixed(1)}% is below the 20% target. Review cost structure and pricing strategy.`, priority: 'high' });
+    recs.push({ title: 'Your margin is low', recommendation: `You keep ${kpi.avgMargin.toFixed(1)}% of each sale, under the 20% a healthy business keeps. Look at your prices and your biggest costs.`, priority: 'high' });
   }
   if (alerts.filter((a) => a.severity === 'warning' || a.severity === 'critical').length > 0) {
-    recs.push({ title: 'Active Variance Alerts', recommendation: `${alerts.length} variance alert${alerts.length > 1 ? 's' : ''} detected. Review month-on-month cost spikes and anomalies.`, priority: 'medium' });
+    recs.push({ title: 'Some costs jumped', recommendation: `${alerts.length} cost${alerts.length > 1 ? 's' : ''} moved more than usual from one month to the next. Check what changed.`, priority: 'medium' });
   }
   if (kpi.totalProfit > 0) {
-    recs.push({ title: 'Reinvest Profit', recommendation: `Net profit of ${fmt(kpi.totalProfit, true, sym)} provides capacity for growth investment. Prioritise customer acquisition and inventory.`, priority: 'low' });
+    recs.push({ title: 'Put your profit to work', recommendation: `You made ${fmt(kpi.totalProfit, true, sym)} profit. That is room to win new customers or stock up on what sells.`, priority: 'low' });
   }
   // Only judge an engine that was actually measured. Firing "Customer Retention
   // at Risk — score is 0/100" at an owner who has never uploaded customer data
   // is a finding about nothing, and it is the kind of thing that costs trust in
   // every other number on the page.
   if (scores && (scores.measured?.e2 ?? true) && scores.e2_score < 70) {
-    recs.push({ title: 'Customer Retention at Risk', recommendation: `Customer Intelligence score is ${scores.e2_score}/100. Focus on reducing churn in the At Risk segment.`, priority: 'medium' });
+    recs.push({ title: 'Customers are drifting away', recommendation: `Your customers score ${scores.e2_score} out of 100. Win back the ones who have gone quiet.`, priority: 'medium' });
   }
   if (scores && (scores.measured?.e3 ?? true) && scores.e3_score < 70) {
-    recs.push({ title: 'Operations Below Benchmark', recommendation: `Operations score is ${scores.e3_score}/100. Drink attach rate and primary category mix need improvement.`, priority: 'medium' });
+    recs.push({ title: 'Your till is below target', recommendation: `Your till scores ${scores.e3_score} out of 100. Sell more drinks with meals and push your main lines.`, priority: 'medium' });
   }
   if (recs.length === 0) {
     recs.push(
-      { title: 'Maintain Cost Discipline', recommendation: 'Continue monitoring cost-to-revenue ratios monthly to protect margin above 25%.', priority: 'low' },
-      { title: 'Customer Intelligence', recommendation: 'Upload transaction data to unlock customer segmentation, CLV analysis and churn risk scoring.', priority: 'medium' },
-      { title: 'Operations Intelligence', recommendation: 'Upload POS export data to benchmark against QSR industry standards and identify revenue gaps.', priority: 'medium' },
+      { title: 'Keep costs in check', recommendation: 'Look at costs against sales once a month so you keep more than a quarter of every sale.', priority: 'low' },
+      { title: 'Get to know your customers', recommendation: "Add customers' names to your sales and AIBOS shows who buys most, what each is worth and who has gone quiet.", priority: 'medium' },
+      { title: 'Read your till', recommendation: "Upload your till's sales report and AIBOS compares you with businesses like yours and shows where sales are slipping.", priority: 'medium' },
     );
   }
 
@@ -100,7 +91,8 @@ export default function StrategicBriefView({
   // A score from one or two months is noise (it read 100 "Excellent" on two
   // months), so it waits until there are enough months to mean something.
   const scoreReady = enoughHistory(health.monthsCounted ?? monthly.length);
-  const healthColour = scoreReady ? scoreColor(health.score) : 'var(--text-4)';
+  const healthColour = scoreReady ? 'var(--chart-line)' : 'var(--text-4)';
+  void scoreColor;
 
   // Real month-on-month change, or nothing. These two cards carried the fixed
   // numbers +8.4% and +12.1% from a demo, so every customer was shown growth,
@@ -129,7 +121,8 @@ export default function StrategicBriefView({
 
   // Colour carries meaning in this system, so a loss is never green — not even
   // when it is the least bad month of the ones recorded.
-  const profitColour = (v: number) => (v < 0 ? 'var(--crit)' : 'var(--good)');
+  // One ink for every figure (5 Oct 2026): "loss" and "profit" are said in words.
+  const profitColour = (_v: number) => 'var(--text-1)';
   // Bars in proportion to the figures they represent, against whichever month
   // is largest either way. A hardcoded width is a picture of nothing.
   const barScale = Math.max(Math.abs(bestProfit), Math.abs(worstProfit), 1);
@@ -139,30 +132,30 @@ export default function StrategicBriefView({
     <>
       {!hideHeader && (
         <div style={{ marginBottom: 24 }}>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--cyan)', margin: '0 0 4px' }}>Financial Intelligence</p>
-          <Heading style={{ fontSize: 'var(--fs-h2)', fontWeight: 600, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.03em' }}>Strategic Brief</Heading>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>AI-generated executive summary · recommendations · action plan</p>
+          <p className="eyebrow">Money</p>
+          <Heading className="bento-section-title">Money brief</Heading>
+          <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '8px 0 0' }}>How the money is doing, what it means and what to do next.</p>
         </div>
       )}
 
       {/* KPI summary cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
-        <KPICard label="HEALTH SCORE" value={scoreReady ? String(health.score) : 'Not yet'} sub={scoreReady ? health.label : `Needs ${MIN_MONTHS} months of records`}
+        <KPICard label="Health score" value={scoreReady ? String(health.score) : 'Not yet'} sub={scoreReady ? health.label : `Needs ${MIN_MONTHS} months of records`}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke={healthColour} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           iconBg={`color-mix(in srgb, ${healthColour} 15%, transparent)`} sparkColor={healthColour} delay={0} />
-        <KPICard label="TOTAL REVENUE" value={fmt(kpi.totalRevenue, true, sym)} sub={monthly.length > 1 && prev ? `${periodLabel}, change vs ${monthName(prev.Month)}` : monthly.length ? periodLabel : 'no months yet'} change={revenueChange}
+        <KPICard label="Sales" value={fmt(kpi.totalRevenue, true, sym)} sub={monthly.length > 1 && prev ? `${periodLabel}, change vs ${monthName(prev.Month)}` : monthly.length ? periodLabel : 'no months yet'} change={revenueChange}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><polyline points="16 7 22 7 22 13" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkData={monthly.slice(-6).map((m) => Number(m.Revenue) || 0)} sparkColor="var(--good)" delay={0.06} />
-        <KPICard label="NET PROFIT" value={fmt(kpi.totalProfit, true, sym)} sub={`${kpi.avgMargin.toFixed(1)}% avg margin`} change={profitChange}
+        <KPICard label="Profit" value={fmt(kpi.totalProfit, true, sym)} sub={`${kpi.avgMargin.toFixed(1)}% average margin`} change={profitChange}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--cyan)" strokeWidth="1.5" fill="none" /><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H9m0 0h4.5a1.5 1.5 0 010 3H9" stroke="var(--cyan)" strokeWidth="1.4" strokeLinecap="round" /></svg>}
           iconBg="rgba(0,212,255,0.12)" sparkData={monthly.slice(-6).map((m) => (Number(m.Revenue) || 0) - (Number(m.Costs) || 0))} sparkColor="var(--cyan)" delay={0.12} />
-        <KPICard label="RECOMMENDATIONS" value={String(recs.length)} sub="strategic action items"
+        <KPICard label="Things to do" value={String(recs.length)} sub="from what AIBOS read"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="var(--purple)" strokeWidth="1.5" fill="none" strokeLinejoin="round" /><path d="M8 9h8M8 13h5M8 17h6" stroke="var(--purple)" strokeWidth="1.3" strokeLinecap="round" /></svg>}
           iconBg="rgba(167,139,250,0.15)" sparkColor="var(--purple)" delay={0.18} />
       </div>
 
       {/* Financial Health */}
-      <SectionCard title="Financial Health" subtitle="Score breakdown · best & worst month" delay={0.1} style={{ marginBottom: 20 }}>
+      <SectionCard title="How healthy the money is" subtitle="The score, and your best and worst month" style={{ marginBottom: 16 }}>
         <div className="brief-health" style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 28, alignItems: 'center' }}>
           <div style={{ position: 'relative', width: 130, height: 130 }}>
             <svg width="130" height="130" viewBox="0 0 130 130">
@@ -218,7 +211,7 @@ export default function StrategicBriefView({
             ) : (
               <>
                 <div style={{ marginBottom: 14 }}>
-                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 5px' }}>Best Month</p>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 5px' }}>Best month</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 5 }}>
                     <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{monthName(health.bestMonth)}</span>
                     <span style={{ fontSize: 'var(--fs-label)', color: profitColour(bestProfit) }}>
@@ -232,7 +225,7 @@ export default function StrategicBriefView({
                   </div>
                 </div>
                 <div>
-                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 5px' }}>Worst Month</p>
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 5px' }}>Worst month</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 5 }}>
                     <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{monthName(health.worstMonth)}</span>
                     <span style={{ fontSize: 'var(--fs-label)', color: profitColour(worstProfit) }}>
@@ -253,14 +246,14 @@ export default function StrategicBriefView({
                     measured zero, so a business with no POS export read as
                     "Operations: 0" rather than "nothing uploaded yet". */}
                 {[
-                  { label: 'Financial', score: scores.e1_score, colour: 'var(--e1)', measured: scores.measured?.e1 ?? true },
-                  { label: 'Customer', score: scores.e2_score, colour: 'var(--e2)', measured: scores.measured?.e2 ?? true },
+                  { label: 'Money', score: scores.e1_score, colour: 'var(--e1)', measured: scores.measured?.e1 ?? true },
+                  { label: 'Customers', score: scores.e2_score, colour: 'var(--e2)', measured: scores.measured?.e2 ?? true },
                   { label: 'Operations', score: scores.e3_score, colour: 'var(--e3)', measured: scores.measured?.e3 ?? true },
                 ].map((item) => (
                   <div key={item.label} style={{ flex: 1 }}>
                     <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 4px' }}>{item.label}</p>
                     <div className="progress-track" style={{ marginBottom: 3 }}><motion.div className="progress-fill" style={{ background: item.measured ? item.colour : 'var(--border-md)' }} initial={false} animate={{ width: item.measured ? `${item.score}%` : '0%' }} transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }} /></div>
-                    <span style={{ fontSize: 'var(--fs-label)', color: item.measured ? item.colour : 'var(--text-4)', fontWeight: 700 }}>
+                    <span style={{ fontSize: 'var(--fs-label)', color: item.measured ? 'var(--text-1)' : 'var(--text-4)', fontWeight: 600 }}>
                       {item.measured ? item.score : 'No data yet'}
                     </span>
                   </div>
@@ -272,32 +265,42 @@ export default function StrategicBriefView({
       </SectionCard>
 
       {/* Strategic Recommendations */}
-      <SectionCard title="Strategic Recommendations" subtitle="AI-generated · prioritised action items" delay={0.16} style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {recs.map((rec, i) => (<RecommendationCard key={i} {...rec} index={i} />))}
+      <section className="bento-section" style={{ marginTop: 24, marginBottom: 24 }} aria-label="What to do about it">
+        <header className="bento-section-head">
+          <div>
+            <p className="eyebrow">AIBOS suggests</p>
+            <h2 className="bento-section-title">What to do about it</h2>
+          </div>
+          <p className="bento-section-sub">The most pressing first, worked out from your own records.</p>
+        </header>
+        <div className="bento-grid">
+          {recs.map((rec, i) => (
+            <RecommendationCard key={i} {...rec} index={i}
+              className={recs.length === 1 ? 'span-6' : recs.length === 2 ? 'span-3' : ['span-4 rows-2', 'span-2', 'span-2', 'span-3', 'span-3'][i] ?? 'span-3'} />
+          ))}
         </div>
-      </SectionCard>
+      </section>
 
       {briefLines.length > 0 && (
-        <SectionCard title="Executive Action Plan" subtitle="AIBOS Intelligence · E1 + Customer Intelligence + Operations" delay={0.24} style={{ marginBottom: 20 }}>
+        <SectionCard title="What to do next" subtitle="From everything AIBOS has read: money, customers and the till." style={{ marginBottom: 16 }}>
           {briefLines.map((line, i) => (<BriefPoint key={i} text={line} index={i} colour="var(--cyan)" />))}
         </SectionCard>
       )}
 
       {/* Period Summary */}
-      <SectionCard title="Period Summary" subtitle={`${months}-month rolling · ${sym} ZMW`} delay={0.28}>
+      <SectionCard title="This period" subtitle={months === 1 ? 'The month recorded so far' : `The last ${months} months`}>
         <div className="grid-3">
           {[
-            { label: 'Total Revenue', value: fmt(kpi.totalRevenue, true, sym), colour: 'var(--cyan)' },
-            { label: 'Total Costs', value: fmt(kpi.totalCosts, true, sym), colour: 'var(--e2)' },
-            { label: 'Net Profit', value: fmt(kpi.totalProfit, true, sym), colour: 'var(--good)' },
-            { label: 'Avg Margin', value: `${kpi.avgMargin.toFixed(1)}%`, colour: 'var(--purple)' },
-            { label: 'Best Month', value: monthName(health.bestMonth), colour: profitColour(bestProfit) },
-            { label: 'Worst Month', value: monthName(health.worstMonth), colour: profitColour(worstProfit) },
+            { label: 'Sales', value: fmt(kpi.totalRevenue, true, sym) },
+            { label: 'Costs', value: fmt(kpi.totalCosts, true, sym) },
+            { label: 'Profit', value: fmt(kpi.totalProfit, true, sym) },
+            { label: 'Average margin', value: `${kpi.avgMargin.toFixed(1)}%` },
+            { label: 'Best month', value: monthName(health.bestMonth) },
+            { label: 'Worst month', value: monthName(health.worstMonth) },
           ].map((item) => (
-            <div key={item.label} style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 5px' }}>{item.label}</p>
-              <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: item.colour, margin: 0, letterSpacing: '-0.02em' }}>{item.value}</p>
+            <div key={item.label} className="mini-stat">
+              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{item.label}</span>
+              <span className="money money-md">{item.value}</span>
             </div>
           ))}
         </div>

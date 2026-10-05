@@ -15,6 +15,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme';
@@ -57,6 +58,7 @@ const Icon = {
 };
 
 export function FloatingAiAssistant() {
+  const router = useRouter();
   const {
     open, setOpen, toggle,
     messages, loading, status, online, suggestions, setSuggestions,
@@ -126,11 +128,11 @@ export function FloatingAiAssistant() {
     rec.start();
   }, [listening, speechSupported]);
 
+  // Attaching a file opens Upload a file, the one place files come in.
   const onAttach = useCallback(() => {
-    const el = document.getElementById('upload-section');
-    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); setOpen(false); }
-    else pushAssistant('Open the Overview page and use **Upload & Analyse** to bring in a CSV or Excel file: month, revenue and cost columns to start.');
-  }, [setOpen, pushAssistant]);
+    setOpen(false);
+    router.push('/dashboard/import');
+  }, [setOpen, router]);
 
   const tierMeta = TIERS[tier] ?? TIERS.free;
   const paid = tier !== 'free';
@@ -154,49 +156,32 @@ export function FloatingAiAssistant() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.96 }}
             transition={{ duration: 0.26, ease: 'easeOut' }}
-            className="ai-panel-glass"
+            className="ai-panel-glass ai-panel"
             style={{
               pointerEvents: 'auto',
-              width: 'min(420px, calc(100vw - 32px))',
-              height: 'min(620px, calc(100vh - 132px))',
-              display: 'flex', flexDirection: 'column',
-              background: 'color-mix(in srgb, var(--bg-card) 88%, transparent)',
-              backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid var(--border-md)', borderRadius: 16,
-              boxShadow: '0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,212,255,0.06)',
-              overflow: 'hidden',
+              width: 'min(440px, calc(100vw - 32px))',
+              height: 'min(640px, calc(100vh - 132px))',
             }}
           >
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                <span
-                  aria-hidden
-                  style={{ width: 8, height: 8, borderRadius: '50%', background: online ? 'var(--good)' : 'var(--warn)', flexShrink: 0, boxShadow: online ? '0 0 8px var(--good)' : 'none' }}
-                />
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>Ask AIBOS</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{
-                  fontSize: 'var(--fs-label)', fontWeight: 700, borderRadius: 6, padding: '3px 7px', whiteSpace: 'nowrap',
-                  color: paid ? 'var(--on-cyan)' : 'var(--text-3)',
-                  background: paid ? 'var(--cyan)' : 'var(--bg-badge)',
-                  border: paid ? 'none' : '1px solid var(--border-md)',
-                }}>
-                  {tierMeta.name}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 16px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+              <span className="bento-icon" aria-hidden="true" style={{ width: 44, height: 44 }}>{Icon.spark}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span className="bento-title" style={{ display: 'block' }}>Ask AIBOS</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                  <span aria-hidden style={{ width: 8, height: 8, borderRadius: '50%', background: online ? 'var(--text-1)' : 'var(--text-4)', flexShrink: 0 }} />
+                  {online ? 'Ready' : 'Reconnecting…'} · {tierMeta.name}
                 </span>
-                {messages.length > 0 && (
-                  <button type="button" onClick={clearConversation} disabled={loading}
-                    title="Start a new conversation. The AI forgets this one."
-                    style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--text-2)', border: '1px solid var(--border-md)', borderRadius: 6, padding: '3px 8px', background: 'transparent', cursor: loading ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: loading ? 0.5 : 1 }}>
-                    New chat
-                  </button>
-                )}
-                <button type="button" onClick={() => setOpen(false)} aria-label="Close assistant"
-                  style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius-md)', border: 'none', background: 'transparent', color: 'var(--text-3)', cursor: 'pointer' }}>
-                  {Icon.close}
-                </button>
               </div>
+              {messages.length > 0 && (
+                <button type="button" onClick={clearConversation} disabled={loading} className="pill pill-quiet"
+                  title="Start a new conversation. AIBOS forgets this one.">
+                  New chat
+                </button>
+              )}
+              <button type="button" onClick={() => setOpen(false)} aria-label="Close assistant" className="icon-pill">
+                {Icon.close}
+              </button>
             </div>
 
             {/* Body */}
@@ -205,11 +190,12 @@ export function FloatingAiAssistant() {
 
               {!hasUserMsg && messages.length === 0 && (
                 <div style={{ margin: 'auto 0', paddingTop: 8 }}>
-                  <p style={{ fontSize: 'var(--fs-h3)', fontWeight: 600, lineHeight: 1.4, color: 'var(--text-3)', margin: '0 0 6px' }}>
-                    What would you like to explore today?
+                  <p className="eyebrow">Your business, answered</p>
+                  <p style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.25, color: 'var(--text-1)', margin: '0 0 8px' }}>
+                    What would you like to know?
                   </p>
-                  <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.55, color: 'var(--text-4)', margin: 0 }}>
-                    Ask about any number on your dashboard, or <strong style={{ color: 'var(--cyan)', fontWeight: 600 }}>long-press any card</strong> and I&apos;ll explain what it is and why it matters.
+                  <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
+                    Ask about any number you see, or <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>hold your finger on any card</strong> and AIBOS explains what it is and why it matters.
                   </p>
                 </div>
               )}
@@ -220,16 +206,16 @@ export function FloatingAiAssistant() {
                     style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
                     <div style={{
                       maxWidth: '88%',
-                      background: m.role === 'user' ? 'linear-gradient(135deg, #0097b2, #00d4ff)' : 'var(--bg-badge)',
-                      border: m.role === 'user' ? 'none' : '1px solid var(--border)',
-                      borderRadius: m.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-                      padding: '11px 14px',
+                      background: m.role === 'user' ? 'var(--text-1)' : 'var(--bg-card)',
+                      border: m.role === 'user' ? 'none' : '1px solid var(--border-md)',
+                      borderRadius: m.role === 'user' ? '16px 16px 6px 16px' : '16px 16px 16px 6px',
+                      padding: '12px 16px',
                       fontSize: 'var(--fs-body)',
                     }}>
                       {m.role === 'assistant'
                         ? <RichText text={m.content} />
-                        : <p style={{ margin: 0, lineHeight: 1.55, color: '#04121a' }}>{m.content}</p>}
-                      <p style={{ fontSize: 'var(--fs-label)', margin: '5px 0 0', textAlign: m.role === 'user' ? 'right' : 'left', color: m.role === 'user' ? 'rgba(4,18,26,0.75)' : 'var(--text-4)' }}>
+                        : <p style={{ margin: 0, lineHeight: 1.6, color: 'var(--bg-card)' }}>{m.content}</p>}
+                      <p style={{ fontSize: 'var(--fs-label)', margin: '5px 0 0', textAlign: m.role === 'user' ? 'right' : 'left', color: m.role === 'user' ? 'color-mix(in srgb, var(--bg-card) 75%, transparent)' : 'var(--text-4)' }}>
                         {m.timestamp}
                       </p>
                     </div>
@@ -246,7 +232,7 @@ export function FloatingAiAssistant() {
 
               {status && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                  <div role="status" style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: '14px 14px 14px 4px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div role="status" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: '16px 16px 16px 6px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ display: 'flex', gap: 5 }} aria-hidden="true">
                       {[0, 1, 2].map((i) => (
                         <motion.span key={i} animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
@@ -260,12 +246,9 @@ export function FloatingAiAssistant() {
 
               {/* Suggested prompts */}
               {suggestions.length > 0 && !loading && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 2 }}>
+                <div className="chips" style={{ marginTop: 4 }}>
                   {suggestions.map((p) => (
-                    <button key={p} type="button" onClick={() => submit(p)}
-                      style={{ padding: '6px 11px', borderRadius: 16, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', cursor: 'pointer', fontSize: 'var(--fs-label)', color: 'var(--text-2)', transition: 'all 0.15s ease' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--cyan)'; e.currentTarget.style.color = 'var(--cyan)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-md)'; e.currentTarget.style.color = 'var(--text-2)'; }}>
+                    <button key={p} type="button" className="chip" onClick={() => submit(p)} style={{ whiteSpace: 'normal', textAlign: 'left' }}>
                       {p}
                     </button>
                   ))}
@@ -277,7 +260,7 @@ export function FloatingAiAssistant() {
 
             {/* Composer */}
             <div style={{ padding: '12px 14px 14px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', padding: '12px 12px 10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-lg)', padding: '12px 12px 8px 16px', boxShadow: 'var(--shadow-card)' }}>
                 <label htmlFor="ai-assistant-input" className="sr-only">Ask AIBOS</label>
                 <textarea id="ai-assistant-input" ref={inputRef} value={input} rows={2}
                   onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))} onKeyDown={handleKey}
@@ -298,25 +281,17 @@ export function FloatingAiAssistant() {
                       {input.length}/{MAX_CHARS}
                     </span>
                     <button type="button" onClick={() => submit(input)} disabled={!input.trim() || loading} aria-label="Send message"
-                      style={{ width: 38, height: 38, borderRadius: 10, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                        background: input.trim() && !loading ? 'linear-gradient(135deg, #0097b2, #00d4ff)' : 'var(--border)',
-                        color: input.trim() && !loading ? '#fff' : 'var(--text-4)',
-                        cursor: input.trim() && !loading ? 'pointer' : 'not-allowed', transition: 'all 0.15s ease' }}>
+                      className="icon-pill"
+                      style={input.trim() && !loading ? { background: 'var(--brand-fill)', color: 'var(--on-brand)' } : { cursor: 'not-allowed', color: 'var(--text-4)' }}>
                       {Icon.send}
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 9 }}>
-                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
-                  Press <kbd style={{ background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-sm)', padding: '1px 5px', color: 'var(--text-3)' }}>Shift + Enter</kbd> for new line
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 'var(--fs-label)', color: online ? 'var(--good)' : 'var(--warn)' }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: online ? 'var(--good)' : 'var(--warn)' }} />
-                  {online ? 'All systems operational' : 'Reconnecting…'}
-                </span>
-              </div>
+              <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                <kbd style={{ border: '1px solid var(--border-md)', borderRadius: 'var(--radius-sm)', padding: '1px 6px', color: 'var(--text-2)', fontFamily: 'inherit' }}>Shift + Enter</kbd> for a new line
+              </p>
             </div>
           </motion.div>
         )}
@@ -337,15 +312,15 @@ export function FloatingAiAssistant() {
           pointerEvents: 'auto',
           width: 62, height: 62, borderRadius: '50%', border: 'none', cursor: 'pointer',
           padding: 0, position: 'relative', flexShrink: 0,
-          background: isDark ? '#0b1220' : '#e6e4de',
-          boxShadow: '0 0 0 1px rgba(0,212,255,0.35), 0 0 22px rgba(0,212,255,0.35), 0 8px 24px rgba(0,0,0,0.4)',
+          background: isDark ? '#111112' : '#ffffff',
+          boxShadow: '0 0 0 1px var(--border-strong), var(--shadow-lg)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
         }}
       >
         <AnimatePresence mode="wait" initial={false}>
           {open ? (
             <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.18 }}
-              style={{ color: isDark ? '#fff' : '#0b1220', display: 'flex' }}>
+              style={{ color: 'var(--text-1)', display: 'flex' }}>
               {Icon.close}
             </motion.span>
           ) : (
@@ -362,11 +337,8 @@ export function FloatingAiAssistant() {
 // Small composer tool button.
 function ToolBtn({ children, label, onClick, active }: { children: React.ReactNode; label: string; onClick: () => void; active?: boolean }) {
   return (
-    <button type="button" onClick={onClick} aria-label={label} title={label}
-      style={{ width: 34, height: 34, borderRadius: 'var(--radius-md)', border: 'none', background: active ? 'color-mix(in srgb, var(--crit) 18%, transparent)' : 'transparent',
-        color: active ? 'var(--crit)' : 'var(--text-3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease' }}
-      onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = 'var(--bg-card-hover)'; e.currentTarget.style.color = 'var(--text-1)'; } }}
-      onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-3)'; } }}>
+    <button type="button" onClick={onClick} aria-label={label} title={label} aria-pressed={active || undefined}
+      className="icon-pill" style={active ? { background: 'var(--text-1)', color: 'var(--bg-card)' } : { background: 'transparent' }}>
       {children}
     </button>
   );

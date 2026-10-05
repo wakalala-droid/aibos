@@ -9,7 +9,7 @@
 //
 // Handles:
 //   - multipart/form-data (file uploads) — preserves boundary
-//   - application/json (chat, data-studio) — preserves body + content-type
+//   - application/json (chat and the rest) — preserves body + content-type
 //   - GET (no body), DELETE (with or without a JSON body)
 
 import { NextRequest, NextResponse } from "next/server";

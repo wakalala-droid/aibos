@@ -17,9 +17,9 @@ import PageHeader from '@/components/ui/PageHeader';
 
 type Tab = 'financial' | 'ops' | 'advisor';
 const TABS: { id: Tab; label: string; colour: string }[] = [
-  { id: 'financial', label: 'Financial', colour: 'var(--e1)' },
-  { id: 'ops',       label: 'Operations', colour: 'var(--e3)' },
-  { id: 'advisor',   label: 'Recommendations', colour: 'var(--cyan)' },
+  { id: 'financial', label: 'Money', colour: 'var(--e1)' },
+  { id: 'ops',       label: 'Whole business', colour: 'var(--e3)' },
+  { id: 'advisor',   label: 'What to try', colour: 'var(--cyan)' },
 ];
 
 function BriefsInner() {
@@ -39,7 +39,7 @@ function BriefsInner() {
         subtitle="The long reads: deeper analysis and every recommendation."
       />
 
-      <div role="tablist" aria-label="Brief type" style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+      <div role="tablist" aria-label="Brief type" className="chips" style={{ marginBottom: 24 }}>
         {TABS.map(t => (
           <button
             key={t.id}
@@ -47,15 +47,7 @@ function BriefsInner() {
             aria-selected={tab === t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className="touch-target"
-            style={{
-              padding: '8px 16px', minHeight: 44, borderRadius: 'var(--radius-md)', cursor: 'pointer',
-              fontSize: 'var(--fs-data)', fontWeight: tab === t.id ? 700 : 600,
-              color: tab === t.id ? 'var(--text-1)' : 'var(--text-3)',
-              background: tab === t.id ? 'var(--bg-badge)' : 'transparent',
-              border: `1px solid ${tab === t.id ? 'var(--border-md)' : 'transparent'}`,
-              borderBottom: tab === t.id ? `2px solid ${t.colour}` : '2px solid transparent',
-            }}
+            className="chip"
           >
             {t.label}
           </button>

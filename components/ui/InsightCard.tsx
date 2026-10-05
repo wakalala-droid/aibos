@@ -1,58 +1,41 @@
 'use client';
 
+// A finding, as a bento card (5 Oct 2026): how much it matters as the title,
+// the part of the business as the tag, the finding in plain words and the
+// next step under it. Monochrome: the words carry the urgency, not colour.
+
+import { AlertTriangle, Activity, Lightbulb, ArrowRight } from 'lucide-react';
+import BentoCard from './BentoCard';
+
 interface InsightCardProps {
   insight: string;
   action: string;
   priority: 'high' | 'medium' | 'low';
   sourceEngines?: string[];
   index?: number;
+  /** Grid placement inside a .bento-grid. */
+  className?: string;
 }
 
-const PRIORITY_MAP = {
-  high:   { color: 'var(--crit)',  label: 'HIGH',   dot: '#ef4444' },
-  medium: { color: 'var(--warn)',  label: 'MEDIUM', dot: '#fbbf24' },
-  low:    { color: 'var(--info)',  label: 'LOW',     dot: '#60a5fa' },
+const PRIORITY = {
+  high:   { title: 'Act now',      icon: <AlertTriangle />, motion: 'pulse' as const },
+  medium: { title: 'Worth a look', icon: <Activity />,      motion: 'float' as const },
+  low:    { title: 'Good to know', icon: <Lightbulb />,     motion: 'tilt' as const },
 };
 
-const ENGINE_COLORS: Record<string, string> = {
-  E1: 'var(--e1)', E2: 'var(--e2)', E3: 'var(--e3)',
-};
+const AREA: Record<string, string> = { E1: 'Money', E2: 'Customers', E3: 'Operations' };
 
-export default function InsightCard({ insight, action, priority, sourceEngines = [] }: InsightCardProps) {
-  const cfg = PRIORITY_MAP[priority] ?? PRIORITY_MAP.low;
-
+export default function InsightCard({ insight, action, priority, sourceEngines = [], className }: InsightCardProps) {
+  const cfg = PRIORITY[priority] ?? PRIORITY.low;
+  const area = sourceEngines.map((e) => AREA[e] ?? e).join(' and ');
   return (
-    <div className="insight-card">
-      {/* Left: severity indicator */}
-      <div className="insight-severity">
-        <div className="severity-dot" style={{ background: cfg.dot }} />
-        <div className="severity-line" style={{ background: `color-mix(in srgb, ${cfg.dot} 20%, transparent)` }} />
-      </div>
-
-      {/* Middle: content */}
-      <div className="insight-body">
-        <p className="insight-label" style={{ color: cfg.color }}>
-          {cfg.label}
-        </p>
-        <p className="insight-text">{insight}</p>
-        <p className="insight-action">
-          <span style={{ color: cfg.color, marginRight: 6 }}>→</span>
+    <BentoCard icon={cfg.icon} title={cfg.title} tag={area || undefined} text={insight} motion={cfg.motion} className={className}>
+      {action && (
+        <p style={{ margin: '12px 0 0', display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-1)', fontWeight: 500 }}>
+          <ArrowRight aria-hidden="true" style={{ width: 18, height: 18, flexShrink: 0, marginTop: 5 }} />
           {action}
         </p>
-      </div>
-
-      {/* Right: engine tags */}
-      <div className="insight-engines">
-        {sourceEngines.map(e => (
-          <span
-            key={e}
-            className="engine-tag"
-            style={{ color: ENGINE_COLORS[e] ?? 'var(--text-3)', borderColor: `color-mix(in srgb, ${ENGINE_COLORS[e] ?? 'var(--text-3)'} 30%, transparent)` }}
-          >
-            {e}
-          </span>
-        ))}
-      </div>
-    </div>
+      )}
+    </BentoCard>
   );
 }

@@ -21,7 +21,7 @@ export default function AnomalyPage() {
   const sym = currencySymbol || 'K';
 
   if (dataShape === 'cross_sectional') {
-    return <TimeSeriesUnavailable title="Anomaly Detection" feature="Anomaly detection" />;
+    return <TimeSeriesUnavailable title="Unusual months" feature="Anomaly detection" />;
   }
 
   // ── Null-safe: derive anomalies from monthly if store.anomalies is empty ─
@@ -81,12 +81,12 @@ export default function AnomalyPage() {
   return (
     <FeatureGate
       feature="anomaly"
-      title="Anomaly Detection"
+      title="Unusual months"
       colour="var(--cyan)"
       headline={derivedAnomalies.length > 0
         ? `We flagged ${derivedAnomalies.length} anomal${derivedAnomalies.length === 1 ? 'y' : 'ies'} in your numbers: ${critical.length} critical.`
-        : 'No anomalies yet: keep uploading and we’ll catch the outliers.'}
-      detail="See exactly which months broke trend, the z-score for each spike and the likely root cause behind every flag: across revenue and costs."
+        : 'Nothing unusual yet. Keep recording and AIBOS spots any month that breaks your pattern.'}
+      detail="See exactly which months broke your normal pattern, how far each one went and the likely cause, across sales and costs."
     >
     <>
       <PageHeader
@@ -103,30 +103,30 @@ export default function AnomalyPage() {
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
-          label="TOTAL ANOMALIES" value={String(derivedAnomalies.length)}
-          sub="statistical outliers detected"
+          label="Unusual months" value={String(derivedAnomalies.length)}
+          sub="months off your normal pattern"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--warn)" strokeWidth="1.5" strokeLinejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="var(--warn)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(251,191,36,0.15)"
           sparkColor="var(--warn)" delay={0}
         />
         <KPICard
-          label="CRITICAL ANOMALIES" value={String(critical.length)}
-          sub="Z-score > 2.0"
+          label="Far out of line" value={String(critical.length)}
+          sub="well out of line"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--crit)" strokeWidth="1.5" fill="none"/><path d="M12 8v5M12 16v.5" stroke="var(--crit)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(239,68,68,0.15)"
           sparkColor="var(--crit)" delay={0.06}
         />
         <KPICard
-          label="MAX Z-SCORE" value={maxZ.toFixed(1)}
-          sub="highest statistical deviation"
+          label="Biggest jump" value={maxZ.toFixed(1)}
+          sub="times further than usual (2 or more is far)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 20l5-10 4 6 3-4 4 8" stroke="var(--purple)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
           iconBg="rgba(167,139,250,0.15)"
           sparkData={scatterData.map(d => Math.max(d.revZ, d.costZ))}
           sparkColor="var(--purple)" delay={0.12}
         />
         <KPICard
-          label="WARNINGS" value={String(warnings.length)}
-          sub="Z-score 1.5 to 2.0"
+          label="Worth a look" value={String(warnings.length)}
+          sub="somewhat out of line"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="var(--blue)" strokeWidth="1.5" fill="none"/><path d="M12 9v4M12 17h.01" stroke="var(--blue)" strokeWidth="1.5" strokeLinecap="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)"
           sparkColor="var(--blue)" delay={0.18}
@@ -135,7 +135,7 @@ export default function AnomalyPage() {
 
       {/* Z-score chart */}
       {scatterData.length > 0 && (
-        <SectionCard title="Z-Score Distribution" subtitle="Statistical deviation from monthly mean · threshold at 2.0" delay={0.1} style={{ marginBottom: 20 }}>
+        <SectionCard title="How far each month strayed" subtitle="How far each month strayed from your usual. Past 2 is far." delay={0.1} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={scatterData} barCategoryGap="22%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
@@ -159,7 +159,7 @@ export default function AnomalyPage() {
             </BarChart>
           </ResponsiveContainer>
           <div style={{ display: 'flex', gap: 16, marginTop: 10 }}>
-            {[['var(--chart-line)', 'Revenue Z-score'], ['var(--e2)', 'Cost Z-score']].map(([c, l]) => (
+            {[['var(--chart-line)', 'Sales'], ['var(--e2)', 'Costs']].map(([c, l]) => (
               <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <div style={{ width: 10, height: 10, borderRadius: 3, background: c as string, opacity: 0.8 }} />
                 <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>{l}</span>
@@ -171,7 +171,7 @@ export default function AnomalyPage() {
 
       {/* Anomaly detail cards */}
       {derivedAnomalies.length > 0 ? (
-        <SectionCard title="Detected Anomalies" subtitle="Statistical outliers requiring review" delay={0.16} style={{ marginBottom: 20 }}>
+        <SectionCard title="Unusual months" subtitle="Months worth checking" delay={0.16} style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {derivedAnomalies.map((a: any, i: number) => {
               const sc = severityColor(a.severity);
@@ -222,7 +222,7 @@ export default function AnomalyPage() {
         // "All clear" would be a claim the arithmetic cannot make (the API's
         // own investigation refuses below four months for the same reason).
         monthly.length < 4 ? (
-          <SectionCard title="Anomaly Detection" subtitle="Not enough months yet" delay={0.16} style={{ marginBottom: 20 }}>
+          <SectionCard title="Unusual months" subtitle="Not enough months yet" delay={0.16} style={{ marginBottom: 20 }}>
             <div style={{ textAlign: 'center', padding: '24px 0' }}>
               <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-2)', margin: '0 0 4px' }}>
                 {monthly.length} month{monthly.length === 1 ? '' : 's'} recorded so far
@@ -233,7 +233,7 @@ export default function AnomalyPage() {
             </div>
           </SectionCard>
         ) : (
-        <SectionCard title="Anomaly Detection" subtitle="No anomalies detected in current data" delay={0.16} style={{ marginBottom: 20 }}>
+        <SectionCard title="Unusual months" subtitle="Nothing unusual in your figures" delay={0.16} style={{ marginBottom: 20 }}>
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style={{ margin: '0 auto 12px', display: 'block', color: 'var(--good)' }}>
               <path d="M5 13l4 4L19 7" stroke="var(--good)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -248,7 +248,7 @@ export default function AnomalyPage() {
       )}
 
       {/* Monthly data table */}
-      <SectionCard title="Monthly Data Overview" subtitle="Revenue, costs and Z-scores" delay={0.24}>
+      <SectionCard title="Every month" subtitle="Sales, costs and how far each month strayed" delay={0.24}>
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table">
             <thead>
@@ -266,11 +266,11 @@ export default function AnomalyPage() {
                   <tr key={row.month}>
                     <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{monthName(row.month)}</td>
                     <td>{fmt(row.revenue, false, sym)}</td>
-                    <td style={{ color: row.revZ > 2 ? 'var(--crit)' : row.revZ > 1.5 ? 'var(--warn)' : 'var(--text-3)', fontWeight: row.revZ > 1.5 ? 700 : 400 }}>
+                    <td style={{ color: 'var(--text-1)', fontWeight: row.revZ > 1.5 ? 700 : 400 }}>
                       {row.revZ.toFixed(2)}
                     </td>
                     <td>{fmt(row.cost, false, sym)}</td>
-                    <td style={{ color: row.costZ > 2 ? 'var(--crit)' : row.costZ > 1.5 ? 'var(--warn)' : 'var(--text-3)', fontWeight: row.costZ > 1.5 ? 700 : 400 }}>
+                    <td style={{ color: 'var(--text-1)', fontWeight: row.costZ > 1.5 ? 700 : 400 }}>
                       {row.costZ.toFixed(2)}
                     </td>
                     <td>

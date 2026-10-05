@@ -121,7 +121,6 @@ function Panel({ children, labelledBy, className = '' }: { children: React.React
         colors={MESH}
       >
         <section className="section-card glow-inner co-card" aria-labelledby={labelledBy}>
-          <span className="bento-tex" aria-hidden="true" />
           {children}
         </section>
       </BorderGlow>

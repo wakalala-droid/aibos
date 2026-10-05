@@ -41,23 +41,23 @@ export default function MarketPage() {
 
       {/* KPI cards */}
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
-        <KPICard label="MARKET REVENUE" value={fmt(totalRevenue, true, sym)} sub="across all segments"
+        <KPICard label="Sales" value={fmt(totalRevenue, true, sym)} sub="across all segments"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--e2)" strokeWidth="1.5" fill="none"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20" stroke="var(--e2)" strokeWidth="1.2" fill="none"/></svg>}
           iconBg="rgba(249,115,22,0.15)" sparkColor="var(--e2)" delay={0} />
-        <KPICard label="TOTAL CUSTOMERS" value={String(totalCustomers)} sub="tracked customers"
+        <KPICard label="Customers" value={String(totalCustomers)} sub="tracked customers"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" stroke="var(--blue)" strokeWidth="1.5" fill="none"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="var(--blue)" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)" sparkColor="var(--blue)" delay={0.06} />
-        <KPICard label="TOTAL CLV POOL" value={fmt(totalCLV, true, sym)} sub="combined lifetime value"
+        <KPICard label="What customers are worth" value={fmt(totalCLV, true, sym)} sub="added up over time"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkColor="var(--good)" delay={0.12} />
-        <KPICard label="PRODUCT COUNT" value={String(productsE2.length)} sub="distinct products"
+        <KPICard label="Products" value={String(productsE2.length)} sub="distinct products"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="var(--purple)" strokeWidth="1.5" fill="none"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="var(--purple)" strokeWidth="1.5" fill="none"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="var(--purple)" strokeWidth="1.5" fill="none"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="var(--purple)" strokeWidth="1.5" fill="none"/></svg>}
           iconBg="rgba(167,139,250,0.15)" sparkColor="var(--purple)" delay={0.18} />
       </div>
 
       {/* Charts row */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-        <SectionCard title="Revenue by Segment" delay={0.1}>
+        <SectionCard title="Sales by customer group" delay={0.1}>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={segData} barCategoryGap="32%">
               <XAxis minTickGap={16} dataKey="name" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
@@ -70,7 +70,7 @@ export default function MarketPage() {
           </ResponsiveContainer>
         </SectionCard>
 
-        <SectionCard title="CLV Distribution" delay={0.14}>
+        <SectionCard title="What customers are worth" delay={0.14}>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={clvData} barCategoryGap="32%">
               <XAxis minTickGap={16} dataKey="name" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
@@ -85,7 +85,7 @@ export default function MarketPage() {
       </div>
 
       {/* Segment table */}
-      <SectionCard title="Segment Breakdown" delay={0.18} style={{ marginBottom: 20 }}>
+      <SectionCard title="Customer groups" delay={0.18} style={{ marginBottom: 20 }}>
         <table className="data-table">
           <thead><tr><th>Segment</th><th>Count</th><th>Avg Spend</th><th>Total Revenue</th><th>Revenue Share</th></tr></thead>
           <tbody>
@@ -118,7 +118,7 @@ export default function MarketPage() {
       </SectionCard>
 
       {/* AI Brief */}
-      <SectionCard title="AI Market Intelligence Brief" subtitle="Customer Intelligence · Kwacha analysis" delay={0.24} style={{ position: 'relative' }}>
+      <SectionCard title="What AIBOS sees" subtitle="Read from your customer sales" delay={0.24} style={{ position: 'relative' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--e2)', borderRadius: '10px 10px 0 0', opacity: 0.6 }} />
         {briefLines.length > 0 ? (
           briefLines.map((line, i) => (
@@ -129,7 +129,7 @@ export default function MarketPage() {
             </motion.div>
           ))
         ) : (
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Upload transaction data to generate AI market intelligence</p>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Add customers&apos; names to your sales and AIBOS reads your market here.</p>
         )}
         {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Needs your customer sales" description="Record sales with the customer's name, or upload a sales file, to see what each customer group brings in." />}
       </SectionCard>

@@ -380,7 +380,7 @@ export default function BookingsPage() {
                         {fmt(b.total_amount || 0, false, bookingSymbol(b))}
                       </div>
                       {earns(b) && (
-                        <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, fontWeight: 600, color: owedOn(b) > 0 ? 'var(--warn)' : 'var(--good)' }}>
+                        <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)' }}>
                           {b.payment_status === 'paid'
                             ? 'Paid'
                             : b.payment_status === 'partial'

@@ -39,8 +39,6 @@ export default function EngineScoreCard({
           title={explainId ? 'Hold (long-press) to have AIBOS explain this score' : undefined}
           style={{ ...bloom.style, opacity: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer' }}
         >
-          {/* Bento dot texture — faint grid that lights up on hover (dashboard only) */}
-          <span className="bento-tex" aria-hidden="true" />
 
           <p className="kpi-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span aria-hidden="true" style={{ width: 10, height: 10, borderRadius: 999, background: colour, flexShrink: 0 }} />

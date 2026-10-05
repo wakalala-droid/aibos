@@ -25,11 +25,8 @@ import {
   reorderProposals, draftReorder, followUpProposals, dismissedFollowUps, dismissFollowUp,
   type ReorderProposal,
 } from '@/lib/automation';
-import BorderGlow from '@/components/ui/BorderGlow';
-
-// Core chrome tuning — identical to KPICard/SectionCard (craft-bar rule).
-const CURSOR_GLOW = '190 95 62';
-const MESH = ['#22d3ee', '#60a5fa', '#a78bfa'];
+import { AlertTriangle, Activity, MessageCircle, Package, Wallet } from 'lucide-react';
+import BentoCard from '@/components/ui/BentoCard';
 
 type Severity = 'crit' | 'warn';
 
@@ -47,8 +44,6 @@ interface Decision {
   customerId?: string;
 }
 
-const SEV_COLOR: Record<Severity, string> = { crit: 'var(--crit)', warn: 'var(--warn)' };
-const SEV_WORD: Record<Severity, string> = { crit: 'Critical', warn: 'Attention' };
 
 
 export default function DecisionsQueue() {
@@ -101,7 +96,7 @@ export default function DecisionsQueue() {
         severity: 'crit',
         headline: crit.length === 1 ? String(crit[0].title) : `${crit.length} critical alerts on your numbers`,
         reason: crit.length === 1
-          ? String(crit[0].description || 'Flagged by anomaly detection.')
+          ? String(crit[0].description || 'AIBOS spotted it breaking your usual pattern.')
           : crit.slice(0, 2).map(a => String(a.title)).join(' · '),
         kind: 'link', href: '/dashboard/anomaly', actionLabel: 'Review alerts',
       });
@@ -185,70 +180,50 @@ export default function DecisionsQueue() {
   const hidden = decisions.length - visible.length;
   const critCount = decisions.filter(d => d.severity === 'crit').length;
 
+  // Which part of the business a decision is about, for the card's tag.
+  const areaOf = (d: (typeof decisions)[number]) =>
+    d.kind === 'draft' ? 'Stock' : d.kind === 'followup' ? 'Customers'
+      : d.href?.includes('/cash') ? 'Money' : d.href?.includes('/inventory') ? 'Stock'
+      : d.href?.includes('/customers') || d.href?.includes('/churn') ? 'Customers' : 'Spending';
+  const iconOf = (d: (typeof decisions)[number]) =>
+    d.kind === 'draft' ? <Package /> : d.kind === 'followup' ? <MessageCircle />
+      : d.href?.includes('/cash') ? <Wallet /> : d.severity === 'crit' ? <AlertTriangle /> : <Activity />;
+  const spanOf = (count: number) => (count === 1 ? 'span-6' : count === 2 ? 'span-3' : 'span-2');
+
   return (
-    <section aria-label="What needs you today" style={{ marginBottom: 24 }}>
-      <BorderGlow glowColor={CURSOR_GLOW} backgroundColor="var(--bg-card)" borderRadius={14} glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH}>
-        <div className="section-card glow-inner">
-          <span className="bento-tex" aria-hidden="true" />
+    <section aria-labelledby="decide-title" className="bento-section" style={{ marginTop: 24, marginBottom: 24 }}>
+      <header className="bento-section-head">
+        <div>
+          <p className="eyebrow">Today</p>
+          <h2 id="decide-title" className="bento-section-title">
+            {decisions.length === 0
+              ? 'Nothing needs you right now'
+              : `${decisions.length} thing${decisions.length === 1 ? '' : 's'} need${decisions.length === 1 ? 's' : ''} you`}
+          </h2>
+        </div>
+        <p className="bento-section-sub">
+          {decisions.length === 0
+            ? 'Cash, stock, customers and spending are all inside their limits. The numbers below are the evidence.'
+            : critCount > 0 ? `${critCount} of them cannot wait. Each has its answer one tap away.` : 'Each has its answer one tap away.'}
+        </p>
+      </header>
 
-          {/* Header: the count IS the summary. */}
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: decisions.length > 0 ? 14 : 0 }}>
-            <h2 className="section-title" style={{ margin: 0 }}>
-              {decisions.length === 0
-                ? 'Nothing needs you right now'
-                : `${decisions.length} thing${decisions.length === 1 ? '' : 's'} need${decisions.length === 1 ? 's' : ''} you today`}
-            </h2>
-            {critCount > 0 && (
-              <span style={{
-                fontSize: 'var(--fs-label)',
-                fontWeight: 700,
-                color: 'var(--crit)',
-                background: 'var(--red-dim)',
-                border: '1px solid color-mix(in srgb, var(--crit) 30%, transparent)',
-                padding: '3px 9px',
-                borderRadius: 999,
-                whiteSpace: 'nowrap',
-              }}>
-                {critCount} critical
-              </span>
-            )}
-          </div>
-
-          {decisions.length === 0 ? (
-            <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: '6px 0 0', lineHeight: 1.5 }}>
-              Runway, stock, customers and anomalies are all inside their limits.
-              The numbers below are the evidence.
-            </p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {visible.map(d => {
-                const sev = SEV_COLOR[d.severity];
-                const st = d.proposal ? draftState[d.proposal.productId] : undefined;
-                return (
-                  <div
-                    key={d.id}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 14,
-                      padding: '12px 14px', borderRadius: 'var(--radius-md)',
-                      background: 'var(--bg-badge)', border: '1px solid var(--border)',
-                      borderLeft: `2px solid ${sev}`,
-                    }}
-                  >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 2px' }}>
-                        {d.headline}
-                        <span style={{ marginLeft: 8, fontSize: 'var(--fs-label)', fontWeight: 700, color: sev }}>
-                          {SEV_WORD[d.severity]}
-                        </span>
-                      </p>
-                      <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0, lineHeight: 1.45 }}>
-                        {d.reason}
-                      </p>
-                    </div>
-
-                    {/* One-tap response */}
+      {decisions.length > 0 && (
+        <div className="bento-grid">
+          {visible.map(d => {
+            const st = d.proposal ? draftState[d.proposal.productId] : undefined;
+            return (
+              <BentoCard
+                key={d.id}
+                className={spanOf(visible.length)}
+                icon={iconOf(d)}
+                title={d.severity === 'crit' ? 'Cannot wait' : 'This week'}
+                tag={areaOf(d)}
+                motion={d.severity === 'crit' ? 'pulse' : 'float'}
+                foot={
+                  <>
                     {d.kind === 'link' && d.href && (
-                      <Link href={d.href} className="pill pill-quiet">{d.actionLabel} →</Link>
+                      <Link href={d.href} className="pill">{d.actionLabel}</Link>
                     )}
                     {d.kind === 'draft' && d.proposal && (
                       canAutomate ? (
@@ -256,19 +231,17 @@ export default function DecisionsQueue() {
                           type="button"
                           onClick={() => void onDraft(d.proposal!)}
                           disabled={st === 'drafting' || st === 'done'}
-                          className="pill" style={{ background: st === 'done' ? 'var(--green-dim)' : 'var(--cyan)', color: st === 'done' ? 'var(--good)' : 'var(--on-cyan)', cursor: st === 'drafting' || st === 'done' ? 'default' : 'pointer' }}
+                          className={st === 'done' ? 'pill pill-quiet' : 'pill pill-primary'}
                         >
-                          {st === 'drafting' ? 'Drafting…' : st === 'done' ? 'Drafted ✓' : st === 'error' ? 'Try again' : d.actionLabel}
+                          {st === 'drafting' ? 'Drafting…' : st === 'done' ? 'Drafted' : st === 'error' ? 'Try again' : d.actionLabel}
                         </button>
                       ) : (
-                        <Link href={d.href!} className="pill pill-quiet">{d.actionLabel} →</Link>
+                        <Link href={d.href!} className="pill">{d.actionLabel}</Link>
                       )
                     )}
                     {d.kind === 'followup' && d.waLink && d.customerId && (
-                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                        <a href={d.waLink} target="_blank" rel="noreferrer" className="pill">
-                          {d.actionLabel}
-                        </a>
+                      <>
+                        <a href={d.waLink} target="_blank" rel="noreferrer" className="pill">{d.actionLabel}</a>
                         <button
                           type="button"
                           onClick={() => onFollowUpDone(d.customerId!)}
@@ -277,28 +250,23 @@ export default function DecisionsQueue() {
                         >
                           Done
                         </button>
-                      </div>
+                      </>
                     )}
-                  </div>
-                );
-              })}
-
-              {hidden > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setExpanded(true)}
-                  style={{
-                    alignSelf: 'flex-start', background: 'none', border: 'none', cursor: 'pointer',
-                    fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)', padding: '2px 0',
-                  }}
-                >
-                  Show {hidden} more
-                </button>
-              )}
-            </div>
-          )}
+                  </>
+                }
+              >
+                <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.5, color: 'var(--text-1)' }}>{d.headline}</p>
+                <p className="bento-text" style={{ marginTop: 4 }}>{d.reason}</p>
+              </BentoCard>
+            );
+          })}
         </div>
-      </BorderGlow>
+      )}
+      {hidden > 0 && (
+        <button type="button" onClick={() => setExpanded(true)} className="pill pill-quiet" style={{ marginTop: 12 }}>
+          Show {hidden} more
+        </button>
+      )}
     </section>
   );
 }

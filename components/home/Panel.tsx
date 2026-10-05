@@ -25,7 +25,6 @@ export default function Panel({ title, action, children, style, innerStyle, expl
       glowIntensity={1.2} coneSpread={12} colors={MESH} style={{ height: '100%', ...style }}>
       <section className="section-card glow-inner panel" style={innerStyle} data-ai-explain={explainId}
         aria-labelledby={labelledBy}>
-        <span className="bento-tex" aria-hidden="true" />
         {(title || action) && (
           <div className="panel-head">
             {typeof title === 'string' ? <h2 id={labelledBy} className="panel-title">{title}</h2> : title}

@@ -164,7 +164,7 @@ export default function InventoryPage() {
       </div>
 
       {takeMode && (
-        <SectionCard title="Stock-take" subtitle="Count what's physically on the shelf. AIBOS adjusts only where your count differs." style={{ marginBottom: 16 }}>
+        <SectionCard title="Count your stock" subtitle="Count what is on the shelf. AIBOS changes only the ones that differ." style={{ marginBottom: 16 }}>
           {takeMsg && <p role="status" style={{ fontSize: 'var(--fs-body)', color: 'var(--good)', margin: '0 0 12px' }}>{takeMsg}</p>}
           <div>
             {items.map(p => {
