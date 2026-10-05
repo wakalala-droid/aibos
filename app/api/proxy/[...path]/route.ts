@@ -162,7 +162,13 @@ async function proxy(req: NextRequest, method: string): Promise<NextResponse> {
     if (!res.ok) {
       let looksLikeOurApi = false;
       try {
-        looksLikeOurApi = typeof JSON.parse(text)?.detail === "string";
+        // `detail` is a sentence for most errors but an object for some: the
+        // "this file is already in your books" 409 carries {code, message,
+        // imported_at, saved_count} so the upload page can offer to import it
+        // again. Checking for a string turned that answer into "not this API"
+        // (owner's screenshot, 5 Oct 2026). Any `detail` at all is ours.
+        const parsed = JSON.parse(text);
+        looksLikeOurApi = parsed !== null && typeof parsed === "object" && "detail" in parsed;
       } catch {
         /* not JSON at all — an HTML error page, say. Definitely not ours. */
       }
