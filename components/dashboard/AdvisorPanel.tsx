@@ -11,7 +11,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, Lightbulb, Sparkles, RefreshCw } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
-import BentoCard from '@/components/ui/BentoCard';
+import BentoCard, { bentoSpans } from '@/components/ui/BentoCard';
 import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import {
@@ -127,8 +127,6 @@ export function RecommendationList({ limit, seeAllHref, title = 'What to try', s
 
   const shown = limit ? visible.slice(0, limit) : visible;
 
-  const spanFor = (i: number, n: number) =>
-    n === 1 ? 'span-6' : n === 2 ? 'span-3' : n === 3 ? 'span-2' : i % 3 === 0 ? 'span-6' : 'span-3';
 
   return (
     <section className="bento-section" aria-labelledby="recs-title" style={limit ? { marginTop: 0, marginBottom: 24 } : { marginTop: 0 }}>
@@ -153,7 +151,7 @@ export function RecommendationList({ limit, seeAllHref, title = 'What to try', s
       ) : (
         <div className="bento-grid">
           {shown.map((r, i) => (
-            <RecCard key={r.rec_id ?? i} r={r} onFeedback={onFeedback} busy={busyId === r.rec_id} className={spanFor(i, shown.length)} />
+            <RecCard key={r.rec_id ?? i} r={r} onFeedback={onFeedback} busy={busyId === r.rec_id} className={bentoSpans(shown.length)[i]} />
           ))}
         </div>
       )}

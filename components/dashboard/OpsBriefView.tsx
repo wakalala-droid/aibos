@@ -9,6 +9,7 @@ import { useStore } from '@/lib/store';
 import { scoreColor } from '@/lib/utils';
 import SectionCard from '@/components/ui/SectionCard';
 import InsightCard from '@/components/ui/InsightCard';
+import { bentoSpans } from '@/components/ui/BentoCard';
 import { motion } from 'framer-motion';
 
 function BriefPoint({ text, index }: { text: string; index: number }) {
@@ -105,7 +106,7 @@ export default function OpsBriefView() {
           <div className="bento-grid">
             {orderedInsights.map((ins, i) => (
               <InsightCard key={i} index={i} insight={ins.insight} action={ins.action} priority={ins.priority as any} sourceEngines={ins.source_engines}
-                className={['span-4 rows-2', 'span-2', 'span-2', 'span-3', 'span-3'][i % 5]} />
+                className={bentoSpans(orderedInsights.length)[i]} />
             ))}
           </div>
         </section>

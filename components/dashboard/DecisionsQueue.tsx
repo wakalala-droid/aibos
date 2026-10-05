@@ -188,7 +188,12 @@ export default function DecisionsQueue() {
   const iconOf = (d: (typeof decisions)[number]) =>
     d.kind === 'draft' ? <Package /> : d.kind === 'followup' ? <MessageCircle />
       : d.href?.includes('/cash') ? <Wallet /> : d.severity === 'crit' ? <AlertTriangle /> : <Activity />;
-  const spanOf = (count: number) => (count === 1 ? 'span-6' : count === 2 ? 'span-3' : 'span-2');
+  // Rows of three, then a pair or a single across the row, so no holes.
+  const spanOf = (count: number, i: number) => {
+    const full = count - (count % 3);
+    if (i < full) return 'span-2';
+    return count % 3 === 2 ? 'span-3' : 'span-6';
+  };
 
   return (
     <section aria-labelledby="decide-title" className="bento-section" style={{ marginTop: 24, marginBottom: 24 }}>
@@ -215,7 +220,7 @@ export default function DecisionsQueue() {
             return (
               <BentoCard
                 key={d.id}
-                className={spanOf(visible.length)}
+                className={spanOf(visible.length, visible.indexOf(d))}
                 icon={iconOf(d)}
                 title={d.severity === 'crit' ? 'Cannot wait' : 'This week'}
                 tag={areaOf(d)}

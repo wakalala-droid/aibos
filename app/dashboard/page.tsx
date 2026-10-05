@@ -24,7 +24,7 @@ import EngineScoreCard from '@/components/ui/EngineScoreCard';
 import { bloomProps } from '@/lib/cometStyle';
 import Link from 'next/link';
 import { Aperture, BarChart3, LayoutGrid, Activity, Layers, ListChecks, Upload, Users } from 'lucide-react';
-import BentoCard from '@/components/ui/BentoCard';
+import BentoCard, { bentoSpans } from '@/components/ui/BentoCard';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -207,6 +207,9 @@ function OverviewPage() {
   }
 
   const unifiedInsights = (orderedInsights.length > 0 ? orderedInsights : synthSignals).slice(0, 6);
+  // The at-a-glance cards in order; the grid layout follows how many there are.
+  const glanceKeys = [briefLines.length > 0 ? 'brief' : '', 'customers', 'till', 'upload', safeAlerts.length > 0 ? 'alerts' : ''].filter(Boolean);
+  const gSpan = (k: string) => bentoSpans(glanceKeys.length)[glanceKeys.indexOf(k)] ?? 'span-3';
   const activeEngineCount = [hasEngine1, hasEngine2Data, opsActive].filter(Boolean).length;
 
   return (
@@ -359,10 +362,10 @@ function OverviewPage() {
         </header>
         {unifiedInsights.length > 0 ? (
           <div className="bento-grid" data-tour="findings">
-            {unifiedInsights.slice(0, 5).map((ins, i) => (
+            {unifiedInsights.slice(0, 5).map((ins, i, all) => (
               <InsightCard
                 key={i} index={i}
-                className={['span-4 rows-2', 'span-2', 'span-2', 'span-3', 'span-3'][i]}
+                className={bentoSpans(all.length)[i]}
                 insight={ins.insight}
                 action={ins.action}
                 priority={ins.priority as 'high' | 'medium' | 'low'}
@@ -393,9 +396,9 @@ function OverviewPage() {
           </div>
         </header>
         <div className="bento-grid">
-          {/* Next steps from the brief: the big card. */}
+          {/* Next steps from the brief: the big card when there is one. */}
           {briefLines.length > 0 && (
-            <BentoCard className="span-4 rows-2" icon={<ListChecks />} title="What to do next" tag="Plan" motion="tilt"
+            <BentoCard className={gSpan('brief')} icon={<ListChecks />} title="What to do next" tag="Plan" motion="tilt"
               explainId="card.executiveBrief"
               foot={<Link href="/dashboard/brief?tab=ops" className="pill pill-quiet">Read the full brief</Link>}>
               <ol style={{ listStyle: 'none', margin: '12px 0 0', padding: 0 }}>
@@ -409,7 +412,7 @@ function OverviewPage() {
             </BentoCard>
           )}
 
-          <BentoCard className="span-2" icon={<Users />} title="Customers" tag="People" explainId="card.customer"
+          <BentoCard className={gSpan('customers')} icon={<Users />} title="Customers" tag="People" explainId="card.customer"
             href={hasEngine2Data ? '/dashboard/customers' : undefined}
             text={hasEngine2Data ? undefined : "Add the customer's name when you record a sale. After about 10, AIBOS shows who buys most and who has gone quiet."}
             foot={hasEngine2Data ? undefined : <Link href="/dashboard/record" className="pill">Record a sale</Link>}>
@@ -429,7 +432,7 @@ function OverviewPage() {
             )}
           </BentoCard>
 
-          <BentoCard className="span-2" icon={<BarChart3 />} title="Till" tag="Sales" motion="pulse" explainId="card.operations"
+          <BentoCard className={gSpan('till')} icon={<BarChart3 />} title="Till" tag="Sales" motion="pulse" explainId="card.operations"
             href={hasEngine3Data ? '/dashboard/pos' : undefined}
             text={hasEngine3Data || hasItemOps ? undefined : "Upload your till's sales report to see what sells, how fast and at what time of day."}
             foot={hasEngine3Data || hasItemOps ? undefined : <Link href="/dashboard/import" className="pill">Upload a file</Link>}>
@@ -454,12 +457,12 @@ function OverviewPage() {
           </BentoCard>
 
           {/* Upload: ONE place, so a file is never uploaded twice. */}
-          <BentoCard className={briefLines.length > 0 ? 'span-3' : 'span-2'} icon={<Upload />} title="Upload a file" tag="Import" motion="tilt" explainId="card.upload"
+          <BentoCard className={gSpan('upload')} icon={<Upload />} title="Upload a file" tag="Import" motion="tilt" explainId="card.upload"
             text="Any Excel or CSV file. AIBOS reads every sheet together and files each row against the right worker, product or cost."
             foot={<Link href="/dashboard/import" className="pill pill-primary">Upload a file</Link>} />
 
           {safeAlerts.length > 0 && (
-            <BentoCard className="span-3" icon={<Activity />} title="Worth checking" tag="Alerts" motion="pulse" explainId="card.alerts">
+            <BentoCard className={gSpan('alerts')} icon={<Activity />} title="Worth checking" tag="Alerts" motion="pulse" explainId="card.alerts">
               <div style={{ marginTop: 8 }}>
                 {safeAlerts.slice(0, 3).map((a: any, i: number) => (
                   <div key={i} style={{ padding: '8px 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>

@@ -8,7 +8,7 @@ import { fmt, scoreColor } from '@/lib/utils';
 import { monthChange, monthName, enoughHistory, MIN_MONTHS } from '@/lib/change';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
-import BentoCard from '@/components/ui/BentoCard';
+import BentoCard, { bentoSpans } from '@/components/ui/BentoCard';
 import { AlertTriangle, Lightbulb, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { KpiShape, HealthShape, MonthlyRow, AlertRow, IntelligenceScoresShape } from '@/lib/store';
@@ -276,7 +276,7 @@ export default function StrategicBriefView({
         <div className="bento-grid">
           {recs.map((rec, i) => (
             <RecommendationCard key={i} {...rec} index={i}
-              className={recs.length === 1 ? 'span-6' : recs.length === 2 ? 'span-3' : ['span-4 rows-2', 'span-2', 'span-2', 'span-3', 'span-3'][i] ?? 'span-3'} />
+              className={bentoSpans(recs.length)[i]} />
           ))}
         </div>
       </section>
