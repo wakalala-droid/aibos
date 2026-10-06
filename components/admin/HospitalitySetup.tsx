@@ -251,7 +251,7 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
       ) : (
         /* ── First-time setup ─────────────────────────────────────────────── */
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 12, marginBottom: 14 }}>
             <div>
               <label style={lbl}>Property name</label>
               <input style={input} value={propertyName} onChange={(e) => setPropertyName(e.target.value)} placeholder="Dunslim Apartments" />
@@ -264,7 +264,7 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
 
           {units.map((u, i) => (
             <div key={i} style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginBottom: 12 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 110px), 1fr))', gap: 10 }}>
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={lbl}>Unit {i + 1} name</label>
                   <input

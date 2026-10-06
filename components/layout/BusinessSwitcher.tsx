@@ -99,7 +99,7 @@ export default function BusinessSwitcher() {
   }
 
   return (
-    <div ref={wrapRef} style={{ position: 'relative' }}>
+    <div ref={wrapRef} className="biz-switch" style={{ position: 'relative' }}>
       <button type="button" onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open}
         className="touch-target"
         style={{ display: 'flex', alignItems: 'center', gap: 6, maxWidth: 200, padding: '6px 10px', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 600, cursor: 'pointer' }}>
@@ -122,7 +122,7 @@ export default function BusinessSwitcher() {
                     aria-current={w.current || undefined}
                     style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, padding: '11px 14px', border: 'none', background: w.current ? 'var(--bg-badge)' : 'transparent', color: 'var(--text-1)', fontSize: 'var(--fs-body)', fontWeight: w.current ? 700 : 500, cursor: 'pointer', textAlign: 'left' }}>
                     <span aria-hidden style={{ width: 7, height: 7, borderRadius: '50%', background: w.current ? 'var(--cyan)' : 'var(--border-md)', flexShrink: 0 }} />
-                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ flex: 1, minWidth: 0, overflowWrap: 'break-word' }}>
                       {w.acting_as === 'self' ? `${w.name} (mine)` : w.name}
                     </span>
                     <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>{ROLE_LABEL[w.role]}</span>
@@ -137,7 +137,7 @@ export default function BusinessSwitcher() {
                 <button key={b.id} type="button" role="menuitem" onClick={() => b.id !== active?.id && switchTo(b.id)}
                   style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, padding: '11px 14px', border: 'none', background: b.id === active?.id ? 'var(--bg-badge)' : 'transparent', color: 'var(--text-1)', fontSize: 'var(--fs-body)', fontWeight: b.id === active?.id ? 700 : 500, cursor: 'pointer', textAlign: 'left' }}>
                   <span aria-hidden style={{ width: 7, height: 7, borderRadius: '50%', background: b.id === active?.id ? 'var(--cyan)' : 'var(--border-md)', flexShrink: 0 }} />
-                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.name}</span>
+                  <span style={{ flex: 1, minWidth: 0, overflowWrap: 'break-word' }}>{b.name}</span>
                   {b.is_default && <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>default</span>}
                 </button>
               ))}

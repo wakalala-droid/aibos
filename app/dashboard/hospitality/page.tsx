@@ -24,6 +24,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
 import KPICard from '@/components/ui/KPICard';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import LockedPreviewCard from '@/components/ui/LockedPreviewCard';
 import { useStore } from '@/lib/store';
 import { canAccess, requiredTier, TIERS, type Tier } from '@/lib/tiers';
@@ -242,7 +243,14 @@ export default function HospitalityPage() {
   }, [selected]);
 
   // ── Derived metrics ────────────────────────────────────────────────────────
-  const days = useMemo(() => Array.from({ length: WINDOW }, (_, i) => addDays(gridStart, i)), [gridStart]);
+  // A phone shows one week (the arrows move a week at a time) in the screen's
+  // width; fourteen days needed a 720px strip that scrolled sideways.
+  const phone = useMediaQuery('(max-width: 639px)');
+  const span = phone ? 7 : WINDOW;
+  // On a phone each unit's name sits on its own line above its week, so the
+  // seven days get the full width (about 40px each, near the 44px tap size).
+  const gridCols = phone ? `repeat(${span}, minmax(0, 1fr))` : `160px repeat(${span}, minmax(0, 1fr))`;
+  const days = useMemo(() => Array.from({ length: span }, (_, i) => addDays(gridStart, i)), [gridStart, span]);
   const unitName = useCallback((id: string) => units.find(u => u.id === id)?.unit_name ?? 'Unit', [units]);
 
   const monthBookings = useMemo(
@@ -436,7 +444,7 @@ export default function HospitalityPage() {
       {/* First-run setup: create the single source of truth for a listing. */}
       {noUnits && (
         <SectionCard title="Add your first property" subtitle="One record per unit becomes the single source of truth every channel pulls from.">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, alignItems: 'end' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 12, alignItems: 'end' }}>
             <div><label className="field-label">Property name</label><input className="field" value={setupName} onChange={e => setSetupName(e.target.value)} placeholder="Dunslim Apartments" /></div>
             <div><label className="field-label">First unit</label><input className="field" value={setupUnit} onChange={e => setSetupUnit(e.target.value)} placeholder="Unit A, 2 bedroom" /></div>
             <div><label className="field-label">Nightly rate ({sym})</label><input className="field" type="number" min="0" value={setupRate} onChange={e => setSetupRate(e.target.value)} placeholder="850" /></div>
@@ -506,7 +514,7 @@ export default function HospitalityPage() {
           {/* Hero: multi-unit availability calendar */}
           <SectionCard
             title="Availability" explainId="hospitality.calendar"
-            subtitle={loading ? 'Loading…' : `${days[0].toLocaleDateString([], { day: 'numeric', month: 'short' })} to ${days[WINDOW - 1].toLocaleDateString([], { day: 'numeric', month: 'short' })}`}
+            subtitle={loading ? 'Loading…' : `${days[0].toLocaleDateString([], { day: 'numeric', month: 'short' })} to ${days[days.length - 1].toLocaleDateString([], { day: 'numeric', month: 'short' })}`}
             action={
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                 <button aria-label="Previous week" onClick={() => setGridStart(addDays(gridStart, -7))} className="icon-pill"><ChevronLeft aria-hidden="true" /></button>
@@ -529,10 +537,10 @@ export default function HospitalityPage() {
             }
           >
             <div style={{ overflowX: 'auto' }}>
-              <div style={{ minWidth: 720 }}>
+              <div style={{ minWidth: phone ? 0 : 720 }}>
                 {/* Header row */}
-                <div style={{ display: 'grid', gridTemplateColumns: `160px repeat(${WINDOW}, 1fr)`, gap: 2, marginBottom: 4 }}>
-                  <div />
+                <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 2, marginBottom: 4 }}>
+                  {!phone && <div />}
                   {days.map((d, i) => {
                     const weekend = d.getDay() === 0 || d.getDay() === 6;
                     const isToday = iso(d) === iso(new Date());
@@ -547,10 +555,12 @@ export default function HospitalityPage() {
 
                 {/* Unit rows */}
                 {units.map(u => (
-                  <div key={u.id} style={{ display: 'grid', gridTemplateColumns: `160px repeat(${WINDOW}, 1fr)`, gap: 2, marginBottom: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 8px', minWidth: 0 }}>
-                      <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.6, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.unit_name}</span>
-                      <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>{fmt(u.base_nightly_rate, false, symbolForToken(u.currency) || sym)}/night</span>
+                  <div key={u.id} style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 2, marginBottom: phone ? 10 : 2 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: phone ? '6px 0 2px' : '4px 8px', minWidth: 0, gridColumn: phone ? '1 / -1' : undefined }}>
+                      {/* The whole name, on two lines if it needs them: "Garden
+                          Suite with Two..." did not say which unit it was. */}
+                      <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.35, color: 'var(--text-1)', overflowWrap: 'break-word', ...(phone ? {} : { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }) }} title={u.unit_name}>{u.unit_name}</span>
+                      {!phone && <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>{fmt(u.base_nightly_rate, false, symbolForToken(u.currency) || sym)}/night</span>}
                     </div>
                     {days.map((d, i) => {
                       const bk = occupancyOn(u.id, d);
@@ -566,7 +576,7 @@ export default function HospitalityPage() {
                             ? `${guestName(bk) || 'No name given'} · ${statusLabel(bk.status)} · ${shortDate(bk.check_in)} to ${shortDate(bk.check_out)}`
                             : 'Free. Click to book.'}
                           style={{
-                            height: 34, borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+                            height: phone ? 44 : 34, minWidth: 0, borderRadius: 'var(--radius-sm)', cursor: 'pointer',
                             border: bk ? 'none' : '1px dashed var(--border)',
                             background: bk ? `color-mix(in srgb, ${colour} 24%, transparent)` : 'transparent',
                             borderLeft: isStart ? `3px solid ${colour}` : (bk ? 'none' : '1px dashed var(--border)'),
@@ -603,7 +613,7 @@ export default function HospitalityPage() {
           {draft && (
             <div id="new-booking">
             <SectionCard title="New booking" subtitle="A confirmed booking with an amount records a Sale in your books. It counts as money owed to you until the guest pays.">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12, alignItems: 'end' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: 12, alignItems: 'end' }}>
                 <div>
                   <label className="field-label">Unit</label>
                   <select className="field" value={draft.unit_id} onChange={e => setDraft({ ...draft, unit_id: e.target.value })}>
@@ -1081,7 +1091,7 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
         </button>
       )}
       {adding && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, alignItems: 'end', maxWidth: 640 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: 10, alignItems: 'end', maxWidth: 640 }}>
           <div>
             <label className="field-label" htmlFor="inst-amount">Amount ({symbol})</label>
             <input id="inst-amount" className="field" type="number" min="0" step="0.01" inputMode="decimal"
@@ -1229,7 +1239,7 @@ function PanelBlock({ title, children, tone = 'var(--border-md)' }: { title: str
 }
 
 function FieldGrid({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px 24px' }}>{children}</div>;
+  return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '16px 24px' }}>{children}</div>;
 }
 
 function Field({ label, value, colour, hint }: { label: string; value: string; colour?: string; hint?: string }) {

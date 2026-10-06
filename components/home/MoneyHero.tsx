@@ -107,7 +107,7 @@ export default function MoneyHero({ title = 'Money right now', initialDays = 30 
                     <stop offset="100%" stopColor="var(--chart-line)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="day" ticks={ticks} interval={0} tickFormatter={(d: string) => dayWords(d, false)}
+                <XAxis tickMargin={8} dataKey="day" ticks={ticks} interval={0} tickFormatter={(d: string) => dayWords(d, false)}
                   tick={{ fontSize: 18, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
                 <YAxis hide domain={[lo - pad, hi + pad]} />
                 <Tooltip content={() => null} cursor={{ stroke: 'var(--border-strong)', strokeWidth: 1 }} />

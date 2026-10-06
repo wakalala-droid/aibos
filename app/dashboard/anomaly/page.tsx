@@ -139,7 +139,7 @@ export default function AnomalyPage() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={scatterData} barCategoryGap="22%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5}
@@ -181,7 +181,7 @@ export default function AnomalyPage() {
                   initial={false} animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.22 + i * 0.05 }}
                   style={{
-                    display: 'grid', gridTemplateColumns: 'auto 1fr auto',
+                    display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)',
                     gap: 12, alignItems: 'center',
                     padding: '13px 16px', borderRadius: 10,
                     background: 'var(--bg-badge)', border: `1px solid color-mix(in srgb, ${sc} 20%, var(--border))`,
@@ -194,24 +194,24 @@ export default function AnomalyPage() {
                   </div>
 
                   {/* Content */}
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  {/* The severity sits with the month and the score, and the
+                      line wraps on a phone instead of pushing past the card. */}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 4 }}>
                       <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
                         {String(a.month)}: {String(a.field)}
                       </span>
                       <span className="badge" style={{ color: sc, background: `color-mix(in srgb, ${sc} 10%, transparent)`, borderColor: `color-mix(in srgb, ${sc} 25%, transparent)` }}>
                         Z = {Number(a.zScore ?? 0).toFixed(1)}
                       </span>
+                      <span className="badge" style={{ color: sc, background: `color-mix(in srgb, ${sc} 10%, transparent)`, borderColor: `color-mix(in srgb, ${sc} 25%, transparent)`, whiteSpace: 'nowrap' }}>
+                        {String(a.severity ?? 'info').toUpperCase()}
+                      </span>
                     </div>
                     <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>
                       Actual: {fmt(Number(a.value) || 0, false, sym)} · Expected: {fmt(Number(a.expected) || 0, false, sym)} · Δ {diff >= 0 ? '+' : ''}{fmt(diff, false, sym)}
                     </p>
                   </div>
-
-                  {/* Severity badge */}
-                  <span className="badge" style={{ color: sc, background: `color-mix(in srgb, ${sc} 10%, transparent)`, borderColor: `color-mix(in srgb, ${sc} 25%, transparent)`, whiteSpace: 'nowrap' }}>
-                    {String(a.severity ?? 'info').toUpperCase()}
-                  </span>
                 </motion.div>
               );
             })}

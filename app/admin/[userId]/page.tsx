@@ -301,7 +301,7 @@ export default function AdminAccountDetailPage() {
 
       <div className="section-card" style={{ marginBottom: 16 }}>
         <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px' }}>Profile</p>
-        <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+        <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))' }}>
           {/* Display name from the ladder — hand-writing the Pro+ special case
               here is how a new tier ends up shown as a raw id. */}
           <Fact label="Plan" value={<span style={{ textTransform: 'uppercase' }}>{isTier(tier) ? TIERS[tier].name : tier}</span>} />

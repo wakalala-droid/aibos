@@ -535,7 +535,7 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
+      <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))' }}>
         <label>
           <span className="field-label">Name your guests see</span>
           <input className="field" value={form.guest_email_from_name} onChange={set('guest_email_from_name')} placeholder={p.name} />

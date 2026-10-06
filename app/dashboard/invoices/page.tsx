@@ -273,7 +273,7 @@ export default function InvoicesPage() {
 
       {showForm && (
         <SectionCard title="New invoice" style={{ marginBottom: 16 }}>
-          <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', marginBottom: 12 }}>
+          <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', marginBottom: 12 }}>
             <div>
               <label htmlFor="inv-customer" className="field-label">Customer</label>
               <input id="inv-customer" className="field" value={customer} onChange={e => setCustomer(e.target.value)} placeholder="e.g. Chanda's Grill" />

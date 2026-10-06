@@ -110,12 +110,13 @@ export default function WhereMoneyWent({ sym }: { sym: string }) {
               <Link href={period === 'all' ? p.href : `${p.href}${p.href.includes('?') ? '&' : '?'}period=${period}`} className="tap-link"
                 style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '6px 0', textDecoration: 'none', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
                 <span aria-hidden="true" style={{ width: 12, height: 12, borderRadius: 3, flexShrink: 0, background: p.name === 'Everything else' ? 'var(--text-4)' : COLOURS[i % COLOURS.length] }} />
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  {p.name}
-                  <span style={{ color: 'var(--text-3)' }}> · {p.count} {p.count === 1 ? 'entry' : 'entries'}</span>
+                {/* Name over its count and share, amount on the right: on a
+                    phone four columns left the name three lines tall. */}
+                <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', lineHeight: 1.4 }}>
+                  <span style={{ overflowWrap: 'break-word' }}>{p.name}</span>
+                  <span className="tnum" style={{ color: 'var(--text-3)' }}>{p.count} {p.count === 1 ? 'entry' : 'entries'} · {pct}%</span>
                 </span>
                 <span className="tnum" style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{fmt(p.total, false, sym)}</span>
-                <span className="tnum" style={{ color: 'var(--text-3)', width: 48, textAlign: 'right', flexShrink: 0 }}>{pct}%</span>
                 <span aria-hidden="true" style={{ color: 'var(--text-3)' }}>›</span>
               </Link>
             </li>

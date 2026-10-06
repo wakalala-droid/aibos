@@ -73,9 +73,10 @@ export default function ProductsPage() {
               <p style={{ fontSize: 'var(--fs-h1)', fontWeight: 600, color: cfg.color, margin: '0 0 4px', letterSpacing: '-0.03em' }}>{items.length}</p>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 12px' }}>products</p>
               {items.slice(0, 3).map(p => (
-                <div key={p.product} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderTop: '1px solid var(--border)' }}>
-                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.product}</span>
-                  <span style={{ fontSize: 'var(--fs-label)', color: cfg.color, fontWeight: 600 }}>{fmt(p.total_revenue, true, sym)}</span>
+                <div key={p.product} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '5px 0', borderTop: '1px solid var(--border)' }}>
+                  {/* The whole name: a 90px cap turned "accommodation" into "accommo...". */}
+                  <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)', flex: 1, minWidth: 0, overflowWrap: 'break-word' }}>{p.product}</span>
+                  <span style={{ fontSize: 'var(--fs-label)', color: cfg.color, fontWeight: 600, whiteSpace: 'nowrap' }}>{fmt(p.total_revenue, true, sym)}</span>
                 </div>
               ))}
             </div>
@@ -88,7 +89,7 @@ export default function ProductsPage() {
         <SectionCard title="Best sellers" subtitle="Highest sales first" delay={0.2} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={barData} barCategoryGap="28%">
-              <XAxis minTickGap={16} dataKey="name" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <XAxis tickMargin={8} minTickGap={16} dataKey="name" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="total_revenue" radius={[5, 5, 0, 0]}>
@@ -106,13 +107,13 @@ export default function ProductsPage() {
         {basketPairs.length === 0 ? (
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>No basket pairs detected</p>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', gap: 10 }}>
             {basketPairs.slice(0, 9).map((pair, i) => (
               <motion.div key={i}
                 initial={false} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 + i * 0.04 }}
                 style={{ background: 'var(--bg-badge)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '11px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, minWidth: 0 }}>
                   <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-1)', fontWeight: 600 }}>{pair.product_a}</span>
                   <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>+</span>
                   <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-1)', fontWeight: 600 }}>{pair.product_b}</span>

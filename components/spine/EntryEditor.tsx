@@ -80,7 +80,7 @@ export default function EntryEditor({ ev, onDone, onCancel }: { ev: BusinessEven
       onSubmit={(e) => { e.preventDefault(); void save(); }}
       style={{ width: '100%', marginTop: 12, padding: 16, borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', display: 'grid', gap: 16 }}
     >
-      <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+      <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))' }}>
         {hasAmount && (
           <div>
             <label htmlFor={`fix-amount-${ev.id}`} style={label}>Amount</label>

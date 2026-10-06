@@ -85,7 +85,7 @@ export default function GuestsPage() {
         {/* Add form */}
         {showAdd && (
           <div style={{ padding: 14, borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', marginBottom: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 12 }}>
               <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Full name</label><input className="field" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} /></div>
               <div><label className="field-label">Phone (WhatsApp)</label><input className="field" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+2609…" /></div>
               <div><label className="field-label">Email</label><input className="field" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>

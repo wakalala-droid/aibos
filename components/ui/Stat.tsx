@@ -36,7 +36,9 @@ export default function Stat({ label, money, count, text, sym = 'K', sub, tone, 
         <>
           {money !== undefined ? <BigMoney value={money} sym={sym} size="lg" roll />
             : (
-              <span className="money money-lg">
+              // A name in the big figure's place wraps ("Kabwe Mining Canteen"
+              // ran off a phone); a count stays on one line.
+              <span className="money money-lg" style={count === undefined ? { display: 'block', whiteSpace: 'normal', overflowWrap: 'break-word' } : undefined}>
                 {count !== undefined ? count.toLocaleString('en-ZM') : text}
               </span>
             )}

@@ -177,7 +177,7 @@ export default function BillingPage() {
             </p>
 
             {card ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: 12, marginBottom: 18 }}>
                 <Fact label="Price" value={price ? `${price} a ${cardPeriod}` : ''} />
                 <Fact label="Paid by" value="Card, through Paddle" />
                 {card.cancel_at
@@ -187,7 +187,7 @@ export default function BillingPage() {
                   : <Fact label="Renews automatically on" value={day(card.renews_on)} />}
               </div>
             ) : (data.state === 'active' || data.state === 'grace' || data.state === 'expired') && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: 12, marginBottom: 18 }}>
                 <Fact label="Price by card" value={price ? `${price} a ${period}` : ''} />
                 <Fact label={data.state === 'active' ? 'Paid up to' : 'Was due on'} value={day(data.renews_on)} />
                 <Fact label={data.state === 'expired' ? 'Switched off on' : 'Switches off without a card'} value={day(data.switches_off_on)} />

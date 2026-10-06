@@ -162,7 +162,7 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
       subtitle={`${fmt(unit.base_nightly_rate, false, sym)}/night · sleeps ${unit.max_guests}`}
       action={<span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Pushed to every channel</span>}
     >
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: 12 }}>
         <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Unit name</label><input className="field" value={f.unit_name} onChange={e => set('unit_name', e.target.value)} /></div>
         <div><label className="field-label">Bedrooms</label><input className="field" type="number" min="0" value={f.bedrooms} onChange={e => set('bedrooms', e.target.value)} /></div>
         <div><label className="field-label">Bathrooms</label><input className="field" type="number" min="0" step="0.5" value={f.bathrooms} onChange={e => set('bathrooms', e.target.value)} /></div>

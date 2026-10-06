@@ -309,9 +309,12 @@ export default function BookingsPage() {
         </div>
 
         {/* The list */}
+        {/* A grid of five columns on a wide screen. On a phone each booking is
+            a card instead (guest and amount on top, then unit, stay and
+            actions), so nothing scrolls sideways. */}
         <div style={{ overflowX: 'auto' }}>
-          <div style={{ minWidth: 860 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: COLUMNS, gap: 12, padding: '0 12px 8px 14px', borderBottom: '1px solid var(--border)' }}>
+          <div className="bk-list">
+            <div className="bk-head" style={{ display: 'grid', gridTemplateColumns: COLUMNS, gap: 12, padding: '0 12px 8px 14px', borderBottom: '1px solid var(--border)' }}>
               <span className="quiet-label">Guest</span>
               <span className="quiet-label">Unit</span>
               <span className="quiet-label">Stay</span>
@@ -326,7 +329,7 @@ export default function BookingsPage() {
                 <div key={b.id} style={{ borderBottom: '1px solid var(--border)' }}>
                   {/* The 2px edge is the status indicator: the eye finds the
                       amber rows before it reads a single word. */}
-                  <div style={{
+                  <div className="bk-row" style={{
                     display: 'grid', gridTemplateColumns: COLUMNS, gap: 12,
                     padding: '16px 12px', borderLeft: `2px solid ${m.colour}`,
                     alignItems: 'center',

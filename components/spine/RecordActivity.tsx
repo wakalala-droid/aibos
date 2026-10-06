@@ -501,7 +501,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                 </p>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 12 }}>
                 {/* Type */}
                 <div>
                   <label className="field-label">Type</label>

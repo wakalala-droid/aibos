@@ -25,7 +25,9 @@ export default function GrowthJourney() {
                 background: reached ? 'var(--cyan)' : 'var(--border)',
                 opacity: current ? 1 : reached ? 0.7 : 1,
               }} />
-              <div style={{
+              {/* Five names do not fit across a phone ("Unders..."): there the
+                  bars show the progress and the line below names the stage. */}
+              <div className="journey-step-label" style={{
                 marginTop: 6,
                 fontSize: 'var(--fs-label)',
                 fontWeight: current ? 700 : 500,

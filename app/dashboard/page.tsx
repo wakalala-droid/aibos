@@ -323,7 +323,7 @@ function OverviewPage() {
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--border)" vertical={false}/>
-              <XAxis minTickGap={16} dataKey="month" tickFormatter={monthTick}
+              <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick}
                 tick={{ fontSize: 18, fill: 'var(--text-3)' }}
                 axisLine={false} tickLine={false}/>
               <YAxis width={84}

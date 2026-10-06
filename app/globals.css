@@ -323,6 +323,10 @@ h1, h2, h3, h4 { line-height: 1.25; }
 .main-content {
   margin-left: var(--sidebar-width);
   flex: 1;
+  /* A flex item will not shrink below its widest unbreakable child unless
+     told to. Without this one long button stretched the whole page past a
+     phone's edge and the right side of every card was cut off. */
+  min-width: 0;
   min-height: 100vh;
   transition: margin-left 0.25s cubic-bezier(0.4,0,0.2,1);
 }
@@ -373,6 +377,14 @@ h1, h2, h3, h4 { line-height: 1.25; }
   .dash-searchbar { flex: 0 0 44px; width: 44px; margin-right: 0; padding: 0; justify-content: center; }
   .dash-searchbar-hint, .dash-searchbar-kbd { display: none; }
 }
+/* On a phone the header's five controls and the business name do not fit on
+   one line: the name was pushed off the left edge. It gets its own line. */
+@media (max-width: 639px) {
+  .dash-header { flex-wrap: wrap; row-gap: 8px; }
+  .biz-switch { order: -1; flex: 1 1 100%; min-width: 0; }
+  .biz-switch > button { max-width: 100% !important; }
+  .dash-searchbar { margin-right: auto; }
+}
 .dash-pop {
   position: absolute;
   top: calc(100% + 8px);
@@ -385,6 +397,11 @@ h1, h2, h3, h4 { line-height: 1.25; }
   overflow: hidden;
 }
 .dash-row:hover { background: var(--pill-bg); }
+/* On a phone a header menu stops above the tab bar and scrolls: the currency
+   list ran 50px past the bottom of the screen with no way to reach it. */
+@media (max-width: 1023px) {
+  .dash-pop { max-height: calc(100dvh - 280px - env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; }
+}
 
 @media (max-width: 1023px) {
   /* On mobile the profile chip shows just the avatar to save space. */
@@ -760,9 +777,12 @@ h1, h2, h3, h4 { line-height: 1.25; }
   table.card-table:not(.keep-table) td,
   table.card-table:not(.keep-table) tbody th {
     display: flex !important;
+    /* A value too long to sit beside its name (a customer's full name)
+       drops onto its own line under it rather than squeezing to a sliver. */
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: baseline;
-    gap: 16px;
+    gap: 4px 16px;
     width: auto !important;
     padding: 10px 0 !important;
     border: none !important;
@@ -1010,6 +1030,12 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
 .pill:active { transform: scale(0.97); }
 .pill:disabled { opacity: 0.55; cursor: default; transform: none; }
 .pill svg { width: 18px; height: 18px; flex-shrink: 0; }
+/* A pill never runs past its card. On a phone a long one wraps onto two lines
+   instead of pushing the page wider than the screen. */
+.pill { max-width: 100%; }
+@media (max-width: 767px) {
+  .pill { white-space: normal; line-height: 1.25; text-align: center; padding-top: 10px; padding-bottom: 10px; }
+}
 .pill-primary { background: var(--brand-fill); color: var(--on-brand); border-color: rgba(4,18,26,0.10); }
 .pill-primary:hover { background: var(--brand-fill-hover); }
 .pill-quiet { background: transparent; border-color: var(--border-md); }
@@ -1030,6 +1056,12 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
    flat surface with Mercury's generous inner space. */
 .panel.section-card { padding: 24px; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+/* A panel's buttons go under its title when both do not fit side by side. */
+.panel-head { flex-wrap: wrap; }
+.panel-head > div { max-width: 100%; }
+/* The title keeps at least 200px; a chart key that does not fit beside it
+   goes underneath ("Sales by customer group" was three lines tall). */
+.panel-head > .panel-title { flex: 1 1 200px; min-width: 0; }
 .panel-title { margin: 0; font-size: var(--fs-body); font-weight: 600; color: var(--text-2); }
 .panel-link { color: var(--text-1); text-decoration: none; }
 .panel-link:hover .panel-title { color: var(--text-1); }
@@ -1084,6 +1116,9 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
 .row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .row-title { font-size: var(--fs-body); font-weight: 600; color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row-sub { font-size: var(--fs-label); color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A long name wraps rather than losing its end ("Transport and deliv...",
+   "Customers who still have to..."). */
+.row-title, .row-sub { white-space: normal; overflow-wrap: break-word; }
 .day-label { margin: 16px 0 4px; font-size: var(--fs-caps); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-4); }
 .day-label:first-child { margin-top: 0; }
 
@@ -1126,6 +1161,26 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
   border: 1px solid transparent; background: var(--pill-bg); color: var(--text-2); cursor: pointer;
   font-family: inherit; font-size: var(--fs-body); font-weight: 500; white-space: nowrap; text-decoration: none;
   transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.chip { max-width: 100%; }
+@media (max-width: 767px) {
+  /* A long suggestion ("How long will my cash last...") wraps instead of
+     running past the card. */
+  .chip { white-space: normal; line-height: 1.3; text-align: left; padding-top: 10px; padding-bottom: 10px; }
+  /* A row's name keeps at least this much room; an amount or a button that
+     does not fit beside it moves to the next line instead of squeezing it. */
+  .row-main { flex: 1 1 130px; }
+  .row, .row-link { flex-wrap: wrap; row-gap: 4px; }
+  .row > .row-amount, .row-link > .row-amount { margin-left: auto; }
+  /* The period buttons fit across a narrow phone. */
+  .seg { max-width: 100%; }
+  .seg button { padding: 0 10px; white-space: nowrap; }
+}
+/* Small phones (320 to 360px wide): cards give their contents a little more
+   of the width. */
+@media (max-width: 360px) {
+  .section-card, .bento, .kpi-card { padding: 16px; }
+  .page-container { padding-left: 12px; padding-right: 12px; }
 }
 .chip:hover { background: var(--pill-bg-hover); color: var(--text-1); }
 .chip:active { transform: scale(0.97); }
@@ -1203,7 +1258,19 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 [data-theme="dark"] .bento-icon { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.15); }
 .bento-icon svg { width: 26px; height: 26px; stroke-width: 1.5; }
 .bento-main { flex: 1; min-width: 0; }
-.bento-titlerow { display: flex; align-items: flex-start; gap: 12px; }
+/* On a phone the icon and title share the first line and everything under
+   them (words, charts, meters, lists) uses the card's full width. Indented
+   under the title, a chart was left about 230px wide and its labels ran into
+   each other. */
+@media (max-width: 639px) {
+  .bento-head:has(> .bento-icon) { display: grid; grid-template-columns: 48px minmax(0, 1fr); column-gap: 16px; }
+  .bento-head:has(> .bento-icon) > .bento-main { display: contents; }
+  .bento-head:has(> .bento-icon) .bento-titlerow { grid-column: 2; align-self: center; }
+  .bento-head:has(> .bento-icon) > .bento-main > :not(.bento-titlerow) { grid-column: 1 / -1; min-width: 0; }
+}
+/* The tag drops under the title when both do not fit (a phone, a long date
+   like "OCTOBER 2026"), instead of running past the card's edge. */
+.bento-titlerow { display: flex; align-items: flex-start; gap: 8px 12px; flex-wrap: wrap; }
 .bento-title {
   margin: 0; font-size: var(--fs-body); font-weight: 600; line-height: 1.4;
   text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-1);
@@ -1212,6 +1279,7 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
   margin-left: auto; flex-shrink: 0; padding: 2px 12px; border-radius: 999px;
   border: 1px solid var(--border-md); color: var(--text-3);
   font-size: var(--fs-caps); font-weight: 500; text-transform: uppercase; letter-spacing: 0.2em; white-space: nowrap;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis;
 }
 .bento-text { margin: 8px 0 0; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); }
 .bento-foot { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -1806,6 +1874,16 @@ html, body {
 .notice-text { margin-top: 6px; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); overflow-wrap: anywhere; }
 .notice-text strong { color: var(--text-1); font-weight: 600; }
 .notice-close { margin: -2px -6px 0 0; background: transparent; }
+/* On a phone: the icon, title and close share the first line and the words
+   use the full width under them (between the icon and the close button they
+   had 170px and a short notice stood 400px tall). */
+@media (max-width: 639px) {
+  .notice-head { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; column-gap: 12px; align-items: center; }
+  .notice-head > .notice-main { display: contents; }
+  .notice-head .notice-titlerow { grid-column: 2; grid-row: 1; }
+  .notice-head > .notice-close { grid-column: 3; grid-row: 1; }
+  .notice-head .notice-text { grid-column: 1 / -1; grid-row: 2; margin-top: 12px; }
+}
 .notice-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-left: 60px; }
 @media (max-width: 480px) { .notice-actions { padding-left: 0; } }
 .notice-bad .notice-icon { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, transparent); }
@@ -1853,4 +1931,17 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   .update-dock { animation-name: reminder-fade; }
   .reminder-stack .notice { animation-name: reminder-fade; }
+}
+
+@media (max-width: 639px) { .journey-step-label { display: none; } }
+
+/* Rooms and Stays: the bookings list (app/dashboard/hospitality/bookings). */
+.bk-list { min-width: 860px; }
+@media (max-width: 767px) {
+  .bk-list { min-width: 0; }
+  .bk-head { display: none !important; }
+  .bk-row { grid-template-columns: minmax(0, 1fr) auto !important; row-gap: 8px !important; }
+  .bk-row > :nth-child(1) { grid-column: 1; grid-row: 1; }
+  .bk-row > :nth-child(4) { grid-column: 2; grid-row: 1; align-self: start; }
+  .bk-row > :nth-child(2), .bk-row > :nth-child(3), .bk-row > :nth-child(5) { grid-column: 1 / -1; }
 }

@@ -220,7 +220,7 @@ export default function BusinessProfilePage() {
         subtitle="Your business details, your team, getting paid and taking your books with you."
       />
 
-      <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr', maxWidth: 980 }}>
+      <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'minmax(0, 1fr)', maxWidth: 980 }}>
         {/* Editable form */}
         <form onSubmit={onSubmit} className="section-card" noValidate>
           {/* Logo */}
@@ -252,7 +252,7 @@ export default function BusinessProfilePage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))' }}>
             <div>
               <label htmlFor="bp-name" className="field-label">Business name <span style={{ color: 'var(--crit)' }}>*</span></label>
               <input id="bp-name" value={form.business_name} onChange={(e) => set('business_name', e.target.value)} required aria-required="true" aria-invalid={!nameValid} className="field" placeholder="e.g. Lusaka Bites" />
@@ -323,7 +323,7 @@ export default function BusinessProfilePage() {
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 14px' }}>
             Account
           </p>
-          <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+          <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))' }}>
             <div>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>Plan</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

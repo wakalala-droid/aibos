@@ -31,7 +31,7 @@ export default function HospitalityLayout({ children }: { children: React.ReactN
       />
       {/* The sections as pills, the chosen one filled: the same chips every
           page uses for its filters (redesign 2026-10). Scrolls sideways on a phone. */}
-      <nav aria-label="Rooms and Stays sections" className="chips" style={{ flexWrap: 'nowrap', overflowX: 'auto', marginBottom: 16, paddingBottom: 2 }}>
+      <nav aria-label="Rooms and Stays sections" className="chips" style={{ marginBottom: 16 }}>
         {TABS.map(t => {
           const active = t.href === '/dashboard/hospitality' ? pathname === t.href : pathname.startsWith(t.href);
           return (
