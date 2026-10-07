@@ -1900,6 +1900,8 @@ html, body {
 .notice-art-strip .art-ring.dashed { stroke-dasharray: 2 6; }
 .notice-art-strip .art-dot { fill: var(--text-3); }
 .notice-art-strip .art-dot.brand { fill: var(--chart-line); }
+.notice-art-strip .art-mark-disc { fill: var(--bg-card); stroke: var(--border-strong); stroke-width: 1; }
+.notice-art-strip .art-arrow { fill: var(--text-1); }
 .notice-art-line { fill: none; stroke: var(--chart-line); stroke-width: 2; stroke-linecap: round; }
 .notice-art-under { fill: var(--chart-line); opacity: 0.10; }
 /* A row of notices in a list (the bell): the same pieces, no card around each. */

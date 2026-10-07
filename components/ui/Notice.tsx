@@ -55,8 +55,10 @@ export function BrandMark({ size = 26 }: { size?: number }) {
 
 /** The splash art as a strip across the top of the card, the way the What's
  *  new screen opens with its art panel: hairline tiles, the money line rising
- *  with its shading under it, a ring with the brand point on it. */
-function NoticeArt() {
+ *  with its shading under it, the AIBOS mark in its rings in the middle and
+ *  the rising double arrow at the right (owner, 7 Oct 2026). */
+export function NoticeArt() {
+  const { isDark } = useTheme();
   const line = 'M0 66 C 50 64, 80 58, 120 60 S 190 50, 230 52 S 300 40, 340 42 S 420 22, 470 24 S 530 10, 560 8';
   return (
     <div className="notice-art-strip" aria-hidden="true">
@@ -66,13 +68,15 @@ function NoticeArt() {
         <rect className="art-tile" x="16" y="48" width="64" height="24" rx="8" />
         <circle className="art-ring" cx="32" cy="27" r="7" />
         <rect className="art-dot" x="46" y="24" width="52" height="5" rx="2.5" opacity="0.5" />
-        <circle className="art-ring" cx="300" cy="40" r="26" />
-        <circle className="art-ring dashed" cx="300" cy="40" r="38" />
-        <rect className="art-tile" x="392" y="12" width="70" height="30" rx="9" />
-        <rect className="art-tile" x="470" y="12" width="74" height="30" rx="9" />
+        <rect className="art-tile" x="372" y="12" width="70" height="30" rx="9" />
         <path d={`${line} L560 80 L0 80 Z`} className="notice-art-under" />
         <path className="notice-art-line" d={line} />
-        <circle className="art-dot brand" cx={300 + 38 * Math.cos(-0.9)} cy={40 + 38 * Math.sin(-0.9)} r="4" />
+        <circle className="art-ring dashed" cx="280" cy="40" r="36" />
+        <circle className="art-mark-disc" cx="280" cy="40" r="25" />
+        <image href={isDark ? '/brand/aibos-mark-white-glyph.png' : '/brand/aibos-mark.png'} x="266" y="26" width="28" height="28" preserveAspectRatio="xMidYMid meet" />
+        <circle className="art-dot brand" cx={280 + 36 * Math.cos(-0.9)} cy={40 + 36 * Math.sin(-0.9)} r="4" />
+        <path className="art-arrow" d="M512 30 L530 12 L548 30 L540 30 L530 20 L520 30 Z" />
+        <path className="art-arrow" d="M512 48 L530 30 L548 48 L540 48 L530 38 L520 48 Z" />
       </svg>
     </div>
   );
