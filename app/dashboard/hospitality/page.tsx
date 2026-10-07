@@ -16,15 +16,18 @@
  * whole booking (who, when, what, their words, the decision) and carries the two
  * buttons the job actually needs: Confirm and Decline. A "Needs your answer" band
  * sits at the top because a request for dates three weeks out is invisible inside a
- * 14-day calendar window, which is exactly how requests went unanswered.
+ * one-week calendar, which is exactly how requests went unanswered.
+ *
+ * The calendar itself is a week (components/hospitality/WeekCalendar): Monday to
+ * Sunday, one lane per unit, each stay a block across its nights, with the month,
+ * New booking, Find a guest and the units in a panel beside it.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { confirmSheet } from '@/lib/confirm';
-import Link from 'next/link';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
 import KPICard from '@/components/ui/KPICard';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
+import WeekCalendar, { weekStartOf, monthOf, monthGrid } from '@/components/hospitality/WeekCalendar';
 import LockedPreviewCard from '@/components/ui/LockedPreviewCard';
 import { useStore } from '@/lib/store';
 import { canAccess, requiredTier, TIERS, type Tier } from '@/lib/tiers';
@@ -44,7 +47,6 @@ const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart
 const parseISO = (s: string) => new Date(s + 'T00:00:00');
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-const WINDOW = 14; // days shown across the calendar
 
 /** Dates an owner reads out loud: the weekday is the part they check against
  *  their own week, so it never gets dropped. */
@@ -144,7 +146,10 @@ export default function HospitalityPage() {
   const [units, setUnits] = useState<Unit[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [awaiting, setAwaiting] = useState<Booking[]>([]);
-  const [gridStart, setGridStart] = useState(() => startOfDay(new Date()));
+  // The Monday of the week on screen, and the month the small calendar shows.
+  const [weekStart, setWeekStart] = useState(() => weekStartOf(new Date()));
+  const [calMonth, setCalMonth] = useState(() => monthOf(new Date()));
+  const [refreshing, setRefreshing] = useState(false);
 
   // Panels
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -169,15 +174,22 @@ export default function HospitalityPage() {
   const monthStart = useMemo(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); }, []);
   const monthEnd = useMemo(() => new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1), [monthStart]);
 
-  const load = useCallback(async (gStart: Date) => {
+  // Paging through weeks fires one load per press, and the answers can come
+  // back out of order. Only the newest one is drawn, or a fast double press
+  // could leave last week's stays on this week's days.
+  const loadSeq = useRef(0);
+  const load = useCallback(async () => {
+    const seq = ++loadSeq.current;
+    const current = () => seq === loadSeq.current;
     setError('');
+    setRefreshing(true);
     try {
       const [props, us] = await Promise.all([listProperties(), listUnits()]);
-      setProperties(props);
-      setUnits(us);
-      // One fetch covering both the month KPIs and the visible grid window.
-      const from = new Date(Math.min(monthStart.getTime(), gStart.getTime()));
-      const to = new Date(Math.max(monthEnd.getTime(), addDays(gStart, WINDOW).getTime()));
+      // One fetch covering the month's figures, the week on screen and the
+      // small month beside it (its dots mark the days guests arrive).
+      const mini = monthGrid(calMonth);
+      const from = new Date(Math.min(monthStart.getTime(), weekStart.getTime(), mini.start.getTime()));
+      const to = new Date(Math.max(monthEnd.getTime(), addDays(weekStart, 7).getTime(), mini.end.getTime()));
       let bk: Booking[] = [];
       let waiting: Booking[] = [];
       if (us.length) {
@@ -188,16 +200,22 @@ export default function HospitalityPage() {
           listBookings({ statuses: ['pending'], order: 'check_in', limit: 100 }),
         ]);
       }
+      if (!current()) return;
+      setProperties(props);
+      setUnits(us);
       setBookings(bk);
       setAwaiting(waiting);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not load hospitality data.');
+      if (current()) setError(e instanceof Error ? e.message : 'Could not load hospitality data.');
     } finally {
-      setLoading(false);
+      if (current()) { setLoading(false); setRefreshing(false); }
     }
-  }, [monthStart, monthEnd]);
+  }, [monthStart, monthEnd, weekStart, calMonth]);
 
-  useEffect(() => { if (entitled) load(gridStart); }, [entitled, gridStart, load]);
+  useEffect(() => { if (entitled) load(); }, [entitled, load]);
+
+  /** Put a day's week on screen, with its month beside it. */
+  const goTo = (d: Date) => { setWeekStart(weekStartOf(d)); setCalMonth(monthOf(d)); };
 
   // The "New booking" shortcut on the installed app's icon lands on ?new=1:
   // the new-booking form opens once the units are known.
@@ -208,8 +226,6 @@ export default function HospitalityPage() {
     url.searchParams.delete('new');
     window.history.replaceState(null, '', url.pathname + url.search);
     openDraft('');
-    // The form sits under the calendar: bring it into view.
-    window.setTimeout(() => document.getElementById('new-booking')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entitled, loading, units.length]);
 
@@ -226,7 +242,7 @@ export default function HospitalityPage() {
     getBooking(id)
       .then(b => {
         if (cancelled) return;
-        setGridStart(addDays(startOfDay(parseISO(b.check_in)), -1));
+        goTo(parseISO(b.check_in));
         openBooking(b);
       })
       .catch(() => { if (!cancelled) setError('That booking could not be opened. It may have been removed.'); });
@@ -242,16 +258,18 @@ export default function HospitalityPage() {
     document.getElementById('booking-detail')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [selected]);
 
+  // The same for the new-booking form: New booking sits beside the calendar and
+  // the form opens under it.
+  const drafting = draft !== null;
+  useEffect(() => {
+    if (!drafting) return;
+    document.getElementById('new-booking')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [drafting]);
+
   // ── Derived metrics ────────────────────────────────────────────────────────
-  // A phone shows one week (the arrows move a week at a time) in the screen's
-  // width; fourteen days needed a 720px strip that scrolled sideways.
-  const phone = useMediaQuery('(max-width: 639px)');
-  const span = phone ? 7 : WINDOW;
-  // On a phone each unit's name sits on its own line above its week, so the
-  // seven days get the full width (about 40px each, near the 44px tap size).
-  const gridCols = phone ? `repeat(${span}, minmax(0, 1fr))` : `160px repeat(${span}, minmax(0, 1fr))`;
-  const days = useMemo(() => Array.from({ length: span }, (_, i) => addDays(gridStart, i)), [gridStart, span]);
   const unitName = useCallback((id: string) => units.find(u => u.id === id)?.unit_name ?? 'Unit', [units]);
+  /** What the calendar draws: only stays that are holding their nights. */
+  const stays = useMemo(() => bookings.filter(HOLDS), [bookings]);
 
   const monthBookings = useMemo(
     () => bookings.filter(b => { const ci = parseISO(b.check_in); return ci >= monthStart && ci < monthEnd; }),
@@ -273,15 +291,6 @@ export default function HospitalityPage() {
       const ci = parseISO(b.check_in);
       return ci >= today && ci < soon && HOLDS(b);
     }).length;
-  }, [bookings]);
-
-  /** The blocking booking occupying a given unit on a given day, if any. */
-  const occupancyOn = useCallback((unitId: string, day: Date): Booking | undefined => {
-    const t = day.getTime();
-    return bookings.find(b =>
-      b.unit_id === unitId && HOLDS(b) &&
-      parseISO(b.check_in).getTime() <= t && parseISO(b.check_out).getTime() > t,
-    );
   }, [bookings]);
 
   // ── Actions ────────────────────────────────────────────────────────────────
@@ -320,7 +329,7 @@ export default function HospitalityPage() {
         payment_status: draft.paid,
       });
       setDraft(null);
-      await load(gridStart);
+      await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not save the booking.');
     } finally { setBusy(false); }
@@ -339,7 +348,7 @@ export default function HospitalityPage() {
       const { booking, guestEmail } = await confirmBooking(b.id);
       applyUpdate(booking);
       setEmailNote(guestEmailOutcome(guestEmail, guestName(b), 'Confirmed'));
-      await load(gridStart);
+      await load();
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
       setPanelNote(isDatesTaken(e)
@@ -355,7 +364,7 @@ export default function HospitalityPage() {
       applyUpdate(booking);
       setEmailNote(guestEmailOutcome(guestEmail, guestName(b), 'Turned down'));
       setDeclining(false); setDeclineReason('');
-      await load(gridStart);
+      await load();
     } catch (e) {
       setPanelNote(e instanceof Error ? e.message : 'Could not turn down this request.');
     } finally { setBusy(false); }
@@ -375,7 +384,7 @@ export default function HospitalityPage() {
     setBusy(true); setPanelNote(''); setError('');
     try {
       applyUpdate(await cancelBooking(b.id, refund));
-      await load(gridStart);
+      await load();
     } catch (e) {
       setPanelNote(e instanceof Error ? e.message : 'Could not cancel this booking.');
     } finally { setBusy(false); }
@@ -390,7 +399,7 @@ export default function HospitalityPage() {
       applyUpdate(await updateBooking(b.id, deposit === undefined
         ? { payment_status: status }
         : { payment_status: status, deposit_amount: deposit }));
-      await load(gridStart);
+      await load();
       return true;
     } catch (e) {
       setPanelNote(e instanceof Error ? e.message : 'Could not save what the guest paid. Try again in a moment.');
@@ -405,7 +414,7 @@ export default function HospitalityPage() {
       const prop = await createProperty({ name: setupName.trim() });
       await createUnit({ property_id: prop.id, unit_name: setupUnit.trim(), base_nightly_rate: Number(setupRate) || 0 });
       setSetupName(''); setSetupUnit(''); setSetupRate('');
-      await load(gridStart);
+      await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not create the property.');
     } finally { setBusy(false); }
@@ -456,7 +465,7 @@ export default function HospitalityPage() {
       {!noUnits && (
         <>
           {/* Needs your answer: the requests that expire quietly if nobody looks.
-              Top of the page on purpose: the calendar only shows 14 days. */}
+              Top of the page on purpose: the calendar only shows one week. */}
           {awaiting.length > 0 && (
             <div style={{ marginBottom: 18 }}>
               <SectionCard
@@ -511,102 +520,22 @@ export default function HospitalityPage() {
             <KPICard label="Properties" sublabel="portfolio" value={String(properties.length)} sub={`${units.length} unit${units.length === 1 ? '' : 's'} total`} sparkColor="#a78bfa" />
           </div>
 
-          {/* Hero: multi-unit availability calendar */}
-          <SectionCard
-            title="Availability" explainId="hospitality.calendar"
-            subtitle={loading ? 'Loading…' : `${days[0].toLocaleDateString([], { day: 'numeric', month: 'short' })} to ${days[days.length - 1].toLocaleDateString([], { day: 'numeric', month: 'short' })}`}
-            action={
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-                <button aria-label="Previous week" onClick={() => setGridStart(addDays(gridStart, -7))} className="icon-pill"><ChevronLeft aria-hidden="true" /></button>
-                <button onClick={() => setGridStart(startOfDay(new Date()))} className="pill pill-quiet">Today</button>
-                <button aria-label="Next week" onClick={() => setGridStart(addDays(gridStart, 7))} className="icon-pill"><ChevronRight aria-hidden="true" /></button>
-                {/* Any date in one step. A stay months away used to take a press
-                    of Next week for every week in between. */}
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-3)' }}>
-                  Go to
-                  <input
-                    type="date"
-                    aria-label="Show the calendar from this date"
-                    value={iso(gridStart)}
-                    onChange={e => { if (e.target.value) setGridStart(parseISO(e.target.value)); }}
-                    style={{ height: 34, padding: '0 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
-                  />
-                </label>
-                <button onClick={() => openDraft('')} className="pill pill-primary">+ Booking</button>
-              </div>
-            }
-          >
-            <div style={{ overflowX: 'auto' }}>
-              <div style={{ minWidth: phone ? 0 : 720 }}>
-                {/* Header row */}
-                <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 2, marginBottom: 4 }}>
-                  {!phone && <div />}
-                  {days.map((d, i) => {
-                    const weekend = d.getDay() === 0 || d.getDay() === 6;
-                    const isToday = iso(d) === iso(new Date());
-                    return (
-                      <div key={i} style={{ textAlign: 'center', fontSize: 'var(--fs-label)', fontWeight: 700, color: isToday ? 'var(--cyan)' : weekend ? 'var(--text-3)' : 'var(--text-4)' }}>
-                        <div>{d.toLocaleDateString([], { weekday: 'narrow' })}</div>
-                        <div style={{ fontSize: 'var(--fs-body)', letterSpacing: 0, color: isToday ? 'var(--cyan)' : 'var(--text-2)' }}>{d.getDate()}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Unit rows */}
-                {units.map(u => (
-                  <div key={u.id} style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 2, marginBottom: phone ? 10 : 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: phone ? '6px 0 2px' : '4px 8px', minWidth: 0, gridColumn: phone ? '1 / -1' : undefined }}>
-                      {/* The whole name, on two lines if it needs them: "Garden
-                          Suite with Two..." did not say which unit it was. */}
-                      <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.35, color: 'var(--text-1)', overflowWrap: 'break-word', ...(phone ? {} : { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }) }} title={u.unit_name}>{u.unit_name}</span>
-                      {!phone && <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>{fmt(u.base_nightly_rate, false, symbolForToken(u.currency) || sym)}/night</span>}
-                    </div>
-                    {days.map((d, i) => {
-                      const bk = occupancyOn(u.id, d);
-                      const isStart = bk && iso(parseISO(bk.check_in)) === iso(d);
-                      const colour = bk ? statusColour(bk.status) : undefined;
-                      return (
-                        <button
-                          key={i}
-                          onClick={() => bk ? openBooking(bk) : openDraft(u.id, d)}
-                          // The cell is a coloured block with no room for a name, so the
-                          // name lives here: hovering answers "whose booking is that".
-                          title={bk
-                            ? `${guestName(bk) || 'No name given'} · ${statusLabel(bk.status)} · ${shortDate(bk.check_in)} to ${shortDate(bk.check_out)}`
-                            : 'Free. Click to book.'}
-                          style={{
-                            height: phone ? 44 : 34, minWidth: 0, borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-                            border: bk ? 'none' : '1px dashed var(--border)',
-                            background: bk ? `color-mix(in srgb, ${colour} 24%, transparent)` : 'transparent',
-                            borderLeft: isStart ? `3px solid ${colour}` : (bk ? 'none' : '1px dashed var(--border)'),
-                            display: 'flex', alignItems: 'center', paddingLeft: 4, overflow: 'hidden',
-                          }}
-                        >
-                          {isStart && bk?.channel_id && <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-2)' }}>OTA</span>}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Legend + the "it's all connected" note */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-              {(['confirmed', 'pending', 'completed'] as BookingStatus[]).map(s => (
-                <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
-                  <span style={{ width: 10, height: 10, borderRadius: 3, background: `color-mix(in srgb, ${statusColour(s)} 40%, transparent)`, border: `1px solid ${statusColour(s)}` }} />
-                  {statusLabel(s)}
-                </span>
-              ))}
-              <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
-                Confirmed bookings post to your books:{' '}
-                <Link className="tap-link" href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Money</Link>
-                {' · '}
-                <Link className="tap-link" href="/dashboard/timeline" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Activity</Link>
-              </span>
-            </div>
+          {/* Hero: the week, one lane per unit (the owner's reference, 7 Oct 2026) */}
+          <SectionCard explainId="hospitality.calendar">
+            <WeekCalendar
+              units={units}
+              stays={stays}
+              weekStart={weekStart}
+              onWeekStart={setWeekStart}
+              month={calMonth}
+              onMonth={setCalMonth}
+              selectedId={selected?.id}
+              loading={loading || refreshing}
+              rate={u => `${fmt(u.base_nightly_rate, false, symbolForToken(u.currency) || sym)} a night`}
+              onOpen={openBooking}
+              onJump={b => { goTo(parseISO(b.check_in)); openBooking(b); }}
+              onNew={(unitId, day) => openDraft(unitId, day)}
+            />
           </SectionCard>
 
           {/* New-booking form */}
@@ -665,7 +594,7 @@ export default function HospitalityPage() {
                 onDecline={() => doDecline(selected)}
                 onCancel={(refund) => doCancel(selected, refund)}
                 onPayment={(status, deposit) => doPayment(selected, status, deposit)}
-                onSaved={(b) => { applyUpdate(b); void load(gridStart); }}
+                onSaved={(b) => { applyUpdate(b); void load(); }}
                 onClose={closeBooking}
               />
             </div>
