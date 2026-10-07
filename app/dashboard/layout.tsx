@@ -6,6 +6,7 @@ import DashboardHeader from '@/components/layout/DashboardHeader';
 import PlanNotice from '@/components/ui/PlanNotice';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
 import UpdatePrompt from '@/components/pwa/UpdatePrompt';
+import CardReminderPrompt from '@/components/pwa/CardReminderPrompt';
 import WhatsNew from '@/components/pwa/WhatsNew';
 import WelcomeTour from '@/components/onboarding/WelcomeTour';
 import DashboardTour from '@/components/onboarding/DashboardTour';
@@ -56,6 +57,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Says when a newer AIBOS is ready, for a tab or an installed app that
           has been open since before it shipped. */}
       <UpdatePrompt />
+      {/* The admin's "AIBOS is card only now" reminder, on screen like an update. */}
+      <CardReminderPrompt />
       {/* Once per release: what shipped, with the logo and its art. */}
       <WhatsNew />
       {children}
