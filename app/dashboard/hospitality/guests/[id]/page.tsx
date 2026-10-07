@@ -15,7 +15,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { Mail, Phone } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
+import { Chip, DayBadge, Fact, Facts, Note, Section, toneOf } from '@/components/hospitality/kit';
 import KPICard from '@/components/ui/KPICard';
 import { useProfile } from '@/lib/profile';
 import { fmt } from '@/lib/currency';
@@ -37,15 +39,15 @@ const FS_BODY = 'var(--fs-body)';  /* 18px */
 const FS_SMALL = 'var(--fs-label)'; /* 18px: nothing in a sentence is smaller */
 const FS_CAPS = 'var(--fs-label)'; /* 18px */
 
-const STATUS_META: Record<RowStatus, { label: string; colour: string }> = {
-  pending:   { label: 'Waiting on you', colour: 'var(--warn)'   },
-  confirmed: { label: 'Confirmed',      colour: 'var(--good)'   },
-  completed: { label: 'Stayed',         colour: 'var(--text-3)' },
-  declined:  { label: 'Turned down',    colour: 'var(--text-4)' },
-  cancelled: { label: 'Called off',     colour: 'var(--text-4)' },
-  no_show:   { label: 'Never arrived',  colour: 'var(--crit)'   },
+const STATUS_LABEL: Record<RowStatus, string> = {
+  pending:   'Waiting on you',
+  confirmed: 'Confirmed',
+  completed: 'Stayed',
+  declined:  'Turned down',
+  cancelled: 'Called off',
+  no_show:   'Never arrived',
 };
-const statusMeta = (s: string) => STATUS_META[s as RowStatus] ?? { label: s, colour: 'var(--text-3)' };
+const statusLabel = (s: string) => STATUS_LABEL[s as RowStatus] ?? s;
 
 /** Lifetime value counts an agreed stay and a finished one. A request that was
  *  turned down, called off or never walked in earned nothing. Counting it
@@ -68,27 +70,10 @@ function fmtDay(value: string): string {
     : { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-function Badge({ text, colour }: { text: string; colour: string }) {
-  return (
-    <span style={{
-      padding: '4px 10px', borderRadius: 6, fontSize: FS_SMALL, fontWeight: 700, whiteSpace: 'nowrap',
-      color: colour,
-      background: `color-mix(in srgb, ${colour} 14%, transparent)`,
-      border: `1px solid color-mix(in srgb, ${colour} 40%, transparent)`,
-    }}>{text}</span>
-  );
-}
+const initials = (name: string) =>
+  name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
 
-function Field({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div style={{ minWidth: 140 }}>
-      <div className="quiet-label">{label}</div>
-      <div style={{ fontSize: FS_BODY, lineHeight: 1.6, color: 'var(--text-1)', marginTop: 4 }}>{value}</div>
-    </div>
-  );
-}
-
-const COLUMNS = 'minmax(150px, 1.2fr) minmax(120px, 1fr) minmax(90px, 0.6fr) minmax(110px, 0.8fr) minmax(140px, 0.9fr)';
+const COLUMNS = 'minmax(230px, 1.4fr) minmax(120px, 1fr) minmax(90px, 0.6fr) minmax(110px, 0.8fr) minmax(140px, 0.9fr)';
 
 export default function GuestProfilePage() {
   const params = useParams<{ id: string }>();
@@ -171,11 +156,7 @@ export default function GuestProfilePage() {
         <span aria-hidden="true">‹</span> All guests
       </Link>
 
-      {error && (
-        <div style={{ marginBottom: 16, padding: '12px 16px', borderRadius: 10, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: FS_SMALL, lineHeight: 1.6 }}>
-          {error}
-        </div>
-      )}
+      {error && <div style={{ marginBottom: 16 }}><Note tone="bad">{error}</Note></div>}
 
       {loading && (
         <p style={{ fontSize: FS_BODY, lineHeight: 1.6, color: 'var(--text-3)' }}>Loading…</p>
@@ -183,53 +164,74 @@ export default function GuestProfilePage() {
 
       {!loading && guest && (
         <>
-          <SectionCard
-            title={guest.full_name}
-            subtitle={contact}
-            action={
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {guest.vip_flag && <Badge text="VIP" colour="var(--warn)" />}
-                {guest.is_repeat_guest && <Badge text={`Repeat · ${guest.stay_count ?? 0} stays`} colour="var(--good)" />}
+          {/* The guest, drawn like a stay on the calendar: a navy block. */}
+          <SectionCard>
+            <header className="rs-hero is-stay">
+              <div className="rs-hero-top">
+                <div className="rs-person">
+                  <span className="rs-avatar" aria-hidden="true">{initials(guest.full_name)}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <h2 className="rs-hero-name" style={{ marginTop: 0 }}>{guest.full_name}</h2>
+                    {guest.nationality && <div className="rs-hero-org">{guest.nationality}</div>}
+                  </div>
+                </div>
+                {(guest.vip_flag || guest.is_repeat_guest) && (
+                  <div className="rs-hero-chips">
+                    {guest.vip_flag && <Chip>VIP</Chip>}
+                    {guest.is_repeat_guest && <Chip>Repeat · {guest.stay_count ?? 0} stays</Chip>}
+                  </div>
+                )}
               </div>
-            }
-          >
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 32, marginBottom: 24 }}>
-              <Field label="Phone" value={guest.phone || 'Not on file'} />
-              <Field label="Email" value={guest.email || 'Not on file'} />
-              <Field label="Nationality" value={guest.nationality || 'Not recorded'} />
-              <Field
-                label="ID document"
-                value={
-                  guest.id_document_on_file ? (
-                    revealed ? (
-                      <span>
-                        {ID_TYPE_LABEL[guest.id_document_type ?? 'other'] ?? 'ID document'}: {revealed}
-                      </span>
-                    ) : canReveal ? (
-                      <button className="pill pill-quiet" onClick={reveal} title="Reveal sealed ID">
-                        {guest.id_document_masked || 'ID on file'} · reveal
-                      </button>
-                    ) : (
-                      <span
-                        style={{ color: 'var(--text-2)' }}
-                        title="Only the owner can reveal a sealed ID"
-                      >
-                        {guest.id_document_masked || 'ID on file'}
-                      </span>
-                    )
-                  ) : (
-                    <span style={{ color: 'var(--text-3)' }}>None on file</span>
-                  )
-                }
-              />
-            </div>
+              <div className="rs-hero-links">
+                {guest.phone && (
+                  <a className="rs-hero-link" href={`tel:${guest.phone.replace(/[^\d+]/g, '')}`}>
+                    <Phone aria-hidden="true" /> Call {guest.phone}
+                  </a>
+                )}
+                {guest.email && (
+                  <a className="rs-hero-link" href={`mailto:${guest.email}`}>
+                    <Mail aria-hidden="true" /> {guest.email}
+                  </a>
+                )}
+                {!guest.phone && !guest.email && <span className="rs-hero-quiet">{contact}</span>}
+              </div>
+            </header>
 
-            <div>
-              <div className="quiet-label">Staff notes (private)</div>
-              <p style={{ fontSize: FS_BODY, lineHeight: 1.6, color: guest.notes ? 'var(--text-2)' : 'var(--text-4)', marginTop: 4 }}>
+            <Section title="Details">
+              <Facts>
+                <Fact label="Phone" value={guest.phone || 'Not on file'} />
+                <Fact label="Email" value={guest.email || 'Not on file'} />
+                <Fact label="Nationality" value={guest.nationality || 'Not recorded'} />
+                <Fact
+                  label="ID document"
+                  value={
+                    guest.id_document_on_file ? (
+                      revealed ? (
+                        <span>
+                          {ID_TYPE_LABEL[guest.id_document_type ?? 'other'] ?? 'ID document'}: {revealed}
+                        </span>
+                      ) : canReveal ? (
+                        <button type="button" className="rs-btn is-quiet is-sm" onClick={reveal} title="Reveal sealed ID">
+                          {guest.id_document_masked || 'ID on file'} · reveal
+                        </button>
+                      ) : (
+                        <span title="Only the owner can reveal a sealed ID">
+                          {guest.id_document_masked || 'ID on file'}
+                        </span>
+                      )
+                    ) : (
+                      'None on file'
+                    )
+                  }
+                />
+              </Facts>
+            </Section>
+
+            <Section title="Staff notes (private)">
+              <p className="rs-quote is-plain" style={{ color: guest.notes ? undefined : 'var(--text-4)' }}>
                 {guest.notes || 'Nothing written down yet.'}
               </p>
-            </div>
+            </Section>
           </SectionCard>
 
           {/* Lifetime value. The number that answers "can I give this one a
@@ -268,7 +270,7 @@ export default function GuestProfilePage() {
               </p>
             ) : (
               <div style={{ overflowX: 'auto' }}>
-                <div style={{ minWidth: 720 }}>
+                <div style={{ minWidth: 800 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: COLUMNS, gap: 12, padding: '0 12px 8px 14px', borderBottom: '1px solid var(--border)' }}>
                     <span className="quiet-label">Stay</span>
                     <span className="quiet-label">Unit</span>
@@ -278,7 +280,6 @@ export default function GuestProfilePage() {
                   </div>
 
                   {stays.map(b => {
-                    const m = statusMeta(b.status);
                     const nightCount = nights(b);
                     return (
                       <div
@@ -287,18 +288,20 @@ export default function GuestProfilePage() {
                           display: 'grid', gridTemplateColumns: COLUMNS, gap: 12,
                           padding: '16px 12px', alignItems: 'center',
                           borderBottom: '1px solid var(--border)',
-                          // 2px edge in the status colour: the shape of the
-                          // history reads before any of the words do.
-                          borderLeft: `2px solid ${m.colour}`,
                         }}
                       >
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: FS_BODY, lineHeight: 1.6, color: 'var(--text-1)' }}>
-                            {fmtDay(b.check_in)} <span style={{ color: 'var(--text-4)' }}>to</span> {fmtDay(b.check_out)}
-                          </div>
-                          <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, color: 'var(--text-3)' }}>
-                            {[b.reference ? `Ref ${b.reference}` : null, b.source ? SOURCE_LABEL[b.source] : null]
-                              .filter(Boolean).join(' · ') || 'No reference'}
+                        {/* The arrival day as the calendar draws it: the shape
+                            of the history reads before any of the words do. */}
+                        <div className="rs-person">
+                          <DayBadge date={b.check_in} tone={toneOf(b.status)} />
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: FS_BODY, lineHeight: 1.6, color: 'var(--text-1)' }}>
+                              {fmtDay(b.check_in)} <span style={{ color: 'var(--text-4)' }}>to</span> {fmtDay(b.check_out)}
+                            </div>
+                            <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, color: 'var(--text-3)' }}>
+                              {[b.reference ? `Ref ${b.reference}` : null, b.source ? SOURCE_LABEL[b.source] : null]
+                                .filter(Boolean).join(' · ') || 'No reference'}
+                            </div>
                           </div>
                         </div>
                         <div style={{ fontSize: FS_BODY, lineHeight: 1.6, color: 'var(--text-2)', minWidth: 0 }}>
@@ -311,8 +314,8 @@ export default function GuestProfilePage() {
                         <div style={{ fontSize: FS_BODY, lineHeight: 1.6, fontWeight: 700, color: 'var(--text-1)', textAlign: 'right' }}>
                           {fmt(b.total_amount || 0, false, bookingSymbol(b))}
                         </div>
-                        <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, fontWeight: 600, color: m.colour }}>
-                          {m.label}
+                        <div>
+                          <Chip tone={toneOf(b.status)}>{statusLabel(b.status)}</Chip>
                         </div>
                       </div>
                     );

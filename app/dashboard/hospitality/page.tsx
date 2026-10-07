@@ -24,10 +24,11 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { confirmSheet } from '@/lib/confirm';
-import { X } from 'lucide-react';
+import { CalendarDays, CalendarPlus, Check, Copy, Link2, Mail, MapPin, MessageCircle, Phone, Plus, UserRound, X } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
 import KPICard from '@/components/ui/KPICard';
 import WeekCalendar, { weekStartOf, monthOf, monthGrid } from '@/components/hospitality/WeekCalendar';
+import { Chip, DayBadge, Fact, Facts, Note, Section, Segmented, toneOf } from '@/components/hospitality/kit';
 import LockedPreviewCard from '@/components/ui/LockedPreviewCard';
 import { useStore } from '@/lib/store';
 import { canAccess, requiredTier, TIERS, type Tier } from '@/lib/tiers';
@@ -68,17 +69,9 @@ const sentence = (s?: string | null) => {
   return t ? t.charAt(0).toUpperCase() + t.slice(1) : '';
 };
 
-// Status → colour and words (visual_language_system: colour carries meaning).
-// Keyed on the plain string because the API also answers 'declined' for a request
-// that was never agreed to, which the shared BookingStatus union does not carry yet.
-const STATUS_COLOUR: Record<string, string> = {
-  confirmed: 'var(--good)',
-  pending:  'var(--warn)',
-  completed: 'var(--text-3)',
-  cancelled: 'var(--text-4)',
-  declined: 'var(--text-4)',
-  no_show:  'var(--crit)',
-};
+// Status in words. Its look is the calendar's fill (toneOf in the kit). Keyed on
+// the plain string because the API also answers 'declined' for a request that
+// was never agreed to, which the shared BookingStatus union does not carry yet.
 const STATUS_LABEL: Record<string, string> = {
   confirmed: 'Confirmed',
   pending:  'Waiting for your answer',
@@ -87,7 +80,6 @@ const STATUS_LABEL: Record<string, string> = {
   declined: 'Turned down',
   no_show:  'Never arrived',
 };
-const statusColour = (s: string) => STATUS_COLOUR[s] ?? 'var(--text-3)';
 const statusLabel = (s: string) => STATUS_LABEL[s] ?? sentence(s);
 
 const PAYMENT_LABEL: Record<PaymentStatus, string> = {
@@ -95,12 +87,6 @@ const PAYMENT_LABEL: Record<PaymentStatus, string> = {
   partial: 'Part paid',
   paid:    'Paid in full',
   refunded: 'Refunded',
-};
-const PAYMENT_COLOUR: Record<PaymentStatus, string> = {
-  unpaid:  'var(--warn)',
-  partial: 'var(--warn)',
-  paid:    'var(--good)',
-  refunded: 'var(--text-3)',
 };
 
 const BLOCKING: BookingStatus[] = ['confirmed', 'pending', 'completed'];
@@ -127,7 +113,7 @@ const guestName = (b: Booking) => (b.guest?.full_name || b.guest_name || '').tri
 const guestPhone = (b: Booking) => (b.guest?.phone || b.guest_phone || '').trim();
 const guestEmail = (b: Booking) => (b.guest?.email || b.guest_email || '').trim();
 const sourceLabel = (b: Booking) => (b.source ? SOURCE_LABEL[b.source] : b.channel_id ? SOURCE_LABEL.ota : SOURCE_LABEL.direct);
-const nightsLabel = (b: Booking) => { const n = nights(b); return `${n} night${n === 1 ? '' : 's'}`; };
+const nightsLabel = (b: Pick<Booking, 'check_in' | 'check_out'>) => { const n = nights(b); return `${n} night${n === 1 ? '' : 's'}`; };
 
 
 interface Draft { unit_id: string; guest: string; check_in: string; check_out: string; guests: string; amount: string; status: BookingStatus; paid: PaymentStatus; }
@@ -465,45 +451,34 @@ export default function HospitalityPage() {
       {!noUnits && (
         <>
           {/* Needs your answer: the requests that expire quietly if nobody looks.
-              Top of the page on purpose: the calendar only shows one week. */}
+              Top of the page on purpose: the calendar only shows one week. Each
+              one is drawn the calendar's way for a request: a dashed date. */}
           {awaiting.length > 0 && (
             <div style={{ marginBottom: 18 }}>
               <SectionCard
                 title="Needs your answer"
                 subtitle={`${awaiting.length} request${awaiting.length === 1 ? '' : 's'} waiting on you. Confirming one books the stay and records the money in your books.`}
-                action={<Badge text={`${awaiting.length} waiting`} colour="var(--warn)" />}
+                action={<Chip tone="wait">{awaiting.length} waiting</Chip>}
               >
-                <div style={{ display: 'grid', gap: 8 }}>
+                <div className="rs-list">
                   {awaiting.map(b => (
-                    <button
-                      key={b.id}
-                      onClick={() => openBooking(b)}
-                      style={{
-                        display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 16px',
-                        width: '100%', textAlign: 'left', padding: '12px 14px', borderRadius: 10,
-                        border: '1px solid var(--border-md)', borderLeft: '2px solid var(--warn)',
-                        background: 'var(--bg-badge)', cursor: 'pointer',
-                      }}
-                    >
-                      <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.6, color: 'var(--text-1)' }}>
-                        {guestName(b) || 'No name given'}
-                      </span>
-                      <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
-                        {shortDate(b.check_in)} to {shortDate(b.check_out)} · {nightsLabel(b)} · {unitName(b.unit_id)}
-                      </span>
-                      {/* Still in the queue, no longer standing in anyone's way.
-                          Saying nothing would have the owner believe the room is
-                          being kept when the website can already sell it. */}
-                      {b.holding === false && (
-                        <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.6, color: 'var(--warn)' }}>
-                          Waited too long, so the dates are open again
+                    <button key={b.id} type="button" className="rs-req" onClick={() => openBooking(b)}>
+                      <DayBadge date={b.check_in} tone="wait" />
+                      <span className="rs-req-main">
+                        <span className="rs-row-title">{guestName(b) || 'No name given'}</span>
+                        <span className="rs-row-line">
+                          {shortDate(b.check_in)} to {shortDate(b.check_out)} · {nightsLabel(b)} · {unitName(b.unit_id)}
                         </span>
-                      )}
-                      <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
-                        <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.6, color: 'var(--text-2)' }}>
-                          {fmt(b.total_amount || 0, false, bookingSymbol(b))}
-                        </span>
-                        <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.6, color: 'var(--cyan)' }}>Answer</span>
+                        {/* Still in the queue, no longer standing in anyone's way.
+                            Saying nothing would have the owner believe the room is
+                            being kept when the website can already sell it. */}
+                        {b.holding === false && (
+                          <span className="rs-req-flag">Waited too long, so the dates are open again</span>
+                        )}
+                      </span>
+                      <span className="rs-req-side">
+                        <span className="rs-req-amt">{fmt(b.total_amount || 0, false, bookingSymbol(b))}</span>
+                        <span className="rs-btn is-navy is-sm">Answer</span>
                       </span>
                     </button>
                   ))}
@@ -542,7 +517,15 @@ export default function HospitalityPage() {
           {draft && (
             <div id="new-booking">
             <SectionCard title="New booking" subtitle="A confirmed booking with an amount records a Sale in your books. It counts as money owed to you until the guest pays.">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: 12, alignItems: 'end' }}>
+              {/* The booking as it will sit on the calendar, drawn as it is typed. */}
+              <div className={`wk-block rs-preview${draft.status === 'pending' ? ' is-wait' : ''}`} aria-hidden="true">
+                <span className="wk-block-name">{draft.guest.trim() || 'New guest'}</span>
+                <span className="wk-block-sub">
+                  {unitName(draft.unit_id)} · {shortDate(draft.check_in)} to {shortDate(draft.check_out)}
+                </span>
+                <span className="wk-block-meta">{nightsLabel(draft)}</span>
+              </div>
+              <div className="rs-form">
                 <div>
                   <label className="field-label">Unit</label>
                   <select className="field" value={draft.unit_id} onChange={e => setDraft({ ...draft, unit_id: e.target.value })}>
@@ -554,22 +537,32 @@ export default function HospitalityPage() {
                 <div><label className="field-label">Check-out</label><input className="field" type="date" value={draft.check_out} min={draft.check_in} onChange={e => setDraft({ ...draft, check_out: e.target.value })} /></div>
                 <div><label className="field-label">Guests</label><input className="field" type="number" min="1" value={draft.guests} onChange={e => setDraft({ ...draft, guests: e.target.value })} /></div>
                 <div><label className="field-label">Total ({sym})</label><input className="field" type="number" min="0" value={draft.amount} onChange={e => setDraft({ ...draft, amount: e.target.value })} placeholder="Records revenue" /></div>
+              </div>
+              <div className="rs-form" style={{ marginTop: 18 }}>
                 <div>
-                  <label className="field-label">Status</label>
-                  <select className="field" value={draft.status} onChange={e => setDraft({ ...draft, status: e.target.value as BookingStatus })}>
-                    {(['confirmed', 'pending'] as BookingStatus[]).map(s => <option key={s} value={s}>{statusLabel(s)}</option>)}
-                  </select>
+                  <span className="field-label">Status</span>
+                  <Segmented<BookingStatus>
+                    label="Status"
+                    options={(['confirmed', 'pending'] as BookingStatus[]).map(s => ({ value: s, label: statusLabel(s) }))}
+                    value={draft.status}
+                    onChange={s => setDraft({ ...draft, status: s })}
+                  />
                 </div>
                 <div>
-                  <label className="field-label">Paid?</label>
-                  <select className="field" value={draft.paid} onChange={e => setDraft({ ...draft, paid: e.target.value as PaymentStatus })}>
-                    {(['unpaid', 'paid'] as PaymentStatus[]).map(s => <option key={s} value={s}>{PAYMENT_LABEL[s]}</option>)}
-                  </select>
+                  <span className="field-label">Paid?</span>
+                  <Segmented<PaymentStatus>
+                    label="Paid?"
+                    options={(['unpaid', 'paid'] as PaymentStatus[]).map(s => ({ value: s, label: PAYMENT_LABEL[s] }))}
+                    value={draft.paid}
+                    onChange={s => setDraft({ ...draft, paid: s })}
+                  />
                 </div>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
-                <button className="pill pill-primary" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy || !draft.unit_id} onClick={submitBooking}>{busy ? 'Saving…' : 'Save booking'}</button>
-                <button className="pill pill-quiet" onClick={() => setDraft(null)}>Discard</button>
+              <div className="rs-btns" style={{ marginTop: 20 }}>
+                <button type="button" className="rs-btn is-navy" disabled={busy || !draft.unit_id} onClick={submitBooking}>
+                  <CalendarPlus aria-hidden="true" /> {busy ? 'Saving…' : 'Save booking'}
+                </button>
+                <button type="button" className="rs-btn is-quiet" onClick={() => setDraft(null)}>Discard</button>
               </div>
             </SectionCard>
             </div>
@@ -607,6 +600,10 @@ export default function HospitalityPage() {
 
 
 // ── The booking panel ────────────────────────────────────────────────────────
+// Built from the calendar's pieces (components/hospitality/kit.tsx): the stay
+// as a large block at the top, its nights drawn as on the calendar, facts
+// under spaced-capital labels, and parts set off by hairlines. Status is told
+// by fill, as on the calendar, never by a thin coloured edge.
 
 interface PanelProps {
   booking: Booking;
@@ -627,6 +624,13 @@ interface PanelProps {
   onClose: () => void;
 }
 
+const PAYMENT_CHOICES: { value: PaymentStatus; label: string }[] = [
+  { value: 'unpaid', label: 'Not paid yet' },
+  { value: 'partial', label: 'Deposit paid' },
+  { value: 'paid', label: 'Paid in full' },
+  { value: 'refunded', label: 'Refunded' },
+];
+
 function BookingPanel({
   booking: b, unitName, busy, note, emailNote, declining, declineReason,
   onDeclineReason, onStartDecline, onStopDecline, onConfirm, onDecline, onCancel, onPayment, onSaved, onClose,
@@ -636,7 +640,8 @@ function BookingPanel({
   const phone = guestPhone(b);
   const email = guestEmail(b);
   const symbol = bookingSymbol(b);
-  const colour = statusColour(b.status);
+  const tone = toneOf(b.status);
+  const people = `${b.guests_count} guest${b.guests_count === 1 ? '' : 's'}`;
 
   // Only a request that is still waiting can be answered. Anything cancelled,
   // declined or already finished is closed: offering Confirm on it would post
@@ -657,6 +662,7 @@ function BookingPanel({
   const depositValue = Number(deposit);
   const depositOk = deposit.trim() !== '' && depositValue > 0 && depositValue < total;
   const paidSoFar = payment === 'paid' ? total : payment === 'partial' ? Math.min(b.deposit_amount || 0, total) : 0;
+  const paidShare = payment === 'refunded' || total <= 0 ? 0 : Math.min(100, Math.round((paidSoFar / total) * 100));
   const moneySummary = payment === 'refunded'
     ? 'Refunded. This stay no longer counts as income.'
     : payment === 'paid'
@@ -674,94 +680,130 @@ function BookingPanel({
     if (await onPayment('partial', Math.round(depositValue * 100) / 100)) setTakingDeposit(false);
   };
 
+  // Everything that has happened to the booking, oldest first: the decision
+  // and the emails the guest was sent used to sit in two separate lists.
+  const history = ([
+    b.created_at && { at: b.created_at, what: b.source === 'website' ? 'Request came in' : 'Booking made', dot: '' },
+    b.guest_emails?.received && { at: b.guest_emails.received, what: 'Email sent: request received', dot: '' },
+    b.confirmed_at && { at: b.confirmed_at, what: 'Confirmed', dot: '' },
+    b.guest_emails?.confirmed && { at: b.guest_emails.confirmed, what: 'Email sent: booking confirmed', dot: '' },
+    b.declined_at && { at: b.declined_at, what: 'Turned down', dot: 'is-off' },
+    b.guest_emails?.declined && { at: b.guest_emails.declined, what: 'Email sent: request turned down', dot: 'is-off' },
+    b.cancelled_at && { at: b.cancelled_at, what: 'Cancelled', dot: 'is-off' },
+  ].filter(Boolean) as { at: string; what: string; dot: string }[])
+    .map((h, i) => ({ ...h, i, t: new Date(h.at).getTime() }))
+    .sort((x, y) => (Number.isNaN(x.t) || Number.isNaN(y.t) ? x.i - y.i : x.t - y.t || x.i - y.i));
+
+  const arrive = parseISO(b.check_in);
+  const leave = parseISO(b.check_out);
+  const weekday = (d: Date) => d.toLocaleDateString([], { weekday: 'long' });
+  const monthYear = (d: Date) => d.toLocaleDateString([], { month: 'long', year: 'numeric' });
+
   return (
-    <SectionCard
-      title="Booking"
-      subtitle={unitName}
-      action={<button aria-label="Close this booking" onClick={onClose} className="icon-pill"><X aria-hidden="true" /></button>}
-    >
-      {/* WHO */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, lineHeight: 1.4, color: 'var(--text-1)' }}>
-          {name || 'No name on this booking'}
-        </span>
-        <Badge text={statusLabel(b.status)} colour={colour} />
-        {g?.vip_flag && <Badge text="VIP" colour="var(--warn)" />}
-        {g?.is_repeat_guest && (
-          <Badge text={g.stay_count && g.stay_count > 1 ? `Repeat guest · ${g.stay_count} stays` : 'Repeat guest'} colour="var(--info)" />
-        )}
-      </div>
+    <SectionCard>
+      {/* WHO, WHEN AND WHERE: the stay as a block, as on the calendar */}
+      <header className={`rs-hero is-${tone}`}>
+        <div className="rs-hero-top">
+          <div className="rs-hero-chips">
+            <Chip tone={tone}>{statusLabel(b.status)}</Chip>
+            {g?.vip_flag && <Chip>VIP</Chip>}
+            {g?.is_repeat_guest && (
+              <Chip>{g.stay_count && g.stay_count > 1 ? `Repeat guest · ${g.stay_count} stays` : 'Repeat guest'}</Chip>
+            )}
+          </div>
+          <button type="button" aria-label="Close this booking" onClick={onClose} className="rs-hero-close">
+            <X aria-hidden="true" />
+          </button>
+        </div>
+        <h2 className="rs-hero-name">{name || 'No name on this booking'}</h2>
+        {(b.organisation || '').trim() && <div className="rs-hero-org">{b.organisation}</div>}
+        <div className="rs-hero-meta">
+          <span><CalendarDays aria-hidden="true" />{shortDate(b.check_in)} to {shortDate(b.check_out)} · {nightsLabel(b)}</span>
+          <span><MapPin aria-hidden="true" />{unitName} · {sourceLabel(b)}</span>
+          <span><UserRound aria-hidden="true" />{people}</span>
+        </div>
+        <div className="rs-hero-links">
+          {phone && (
+            <a className="rs-hero-link" href={`tel:${phone.replace(/[^\d+]/g, '')}`}>
+              <Phone aria-hidden="true" /> Call {phone}
+            </a>
+          )}
+          {email && (
+            <a className="rs-hero-link" href={`mailto:${email}`}>
+              <Mail aria-hidden="true" /> {email}
+            </a>
+          )}
+          {!phone && !email && <span className="rs-hero-quiet">No phone number or email on this booking.</span>}
+        </div>
+      </header>
 
-      {(b.organisation || '').trim() && (
-        <div style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', marginTop: 4 }}>{b.organisation}</div>
-      )}
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12 }}>
-        {phone && <ContactLink href={`tel:${phone.replace(/[^\d+]/g, '')}`} label="Call" value={phone} />}
-        {email && <ContactLink href={`mailto:${email}`} label="Email" value={email} />}
-        {!phone && !email && (
-          <span style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>No phone number or email on this booking.</span>
-        )}
-      </div>
-
-      {/* WHEN */}
-      <PanelBlock title="When">
-        <FieldGrid>
-          <Field label="Arrives" value={longDate(b.check_in)} hint={b.arrival_time ? `From ${String(b.arrival_time).slice(0, 5)}` : undefined} />
-          <Field label="Leaves" value={longDate(b.check_out)} />
-          <Field label="Nights" value={nightsLabel(b)} />
-          {b.created_at && <Field label="Request came in" value={stamp(b.created_at)} />}
-        </FieldGrid>
-      </PanelBlock>
+      {/* WHEN: arrival, the nights between, departure */}
+      <Section title="When">
+        <div className={`rs-stay is-${tone}`}>
+          <div className="rs-date" role="group" aria-label={`Arrives ${longDate(b.check_in)}`}>
+            <span className="rs-date-num" aria-hidden="true">{arrive.getDate()}</span>
+            <div aria-hidden="true">
+              <div className="rs-date-label">Arrives</div>
+              <div className="rs-date-day">{weekday(arrive)}</div>
+              <div className="rs-date-month">
+                {monthYear(arrive)}{b.arrival_time ? ` · from ${String(b.arrival_time).slice(0, 5)}` : ''}
+              </div>
+            </div>
+          </div>
+          <div className="rs-stay-bar" aria-hidden="true">{nightsLabel(b)}</div>
+          <div className="rs-date is-leave" role="group" aria-label={`Leaves ${longDate(b.check_out)}`}>
+            <span className="rs-date-num" aria-hidden="true">{leave.getDate()}</span>
+            <div aria-hidden="true">
+              <div className="rs-date-label">Leaves</div>
+              <div className="rs-date-day">{weekday(leave)}</div>
+              <div className="rs-date-month">{monthYear(leave)}</div>
+            </div>
+          </div>
+        </div>
+      </Section>
 
       {/* WHAT */}
-      <PanelBlock title="What they booked">
-        <FieldGrid>
-          <Field label="Unit" value={unitName} />
-          <Field label="People staying" value={`${b.guests_count} guest${b.guests_count === 1 ? '' : 's'}`} />
-          <Field label="Amount" value={fmt(b.total_amount || 0, false, symbol)} />
-          {showQuoted && <Field label="You quoted" value={fmt(quoted || 0, false, symbol)} hint="Different from the amount above" />}
-          {!earns && <Field label="Payment" value={PAYMENT_LABEL[b.payment_status] ?? sentence(b.payment_status)} colour={PAYMENT_COLOUR[b.payment_status]} hint={sentence(b.payment_method) || undefined} />}
-          {b.reference && <Field label="Their reference" value={b.reference} hint="The code the guest was given" />}
-          <Field label="Came from" value={sourceLabel(b)} />
-          {b.purpose && <Field label="Reason for the stay" value={sentence(b.purpose)} />}
-          <Field
+      <Section title="What they booked">
+        <Facts>
+          <Fact label="Unit" value={unitName} />
+          <Fact label="People staying" value={people} />
+          <Fact label="Amount" value={fmt(b.total_amount || 0, false, symbol)} />
+          {showQuoted && <Fact label="You quoted" value={fmt(quoted || 0, false, symbol)} hint="Different from the amount above" />}
+          {!earns && <Fact label="Payment" value={PAYMENT_LABEL[b.payment_status] ?? sentence(b.payment_status)} hint={sentence(b.payment_method) || undefined} />}
+          {b.reference && <Fact label="Their reference" value={b.reference} hint="The code the guest was given" />}
+          <Fact label="Came from" value={sourceLabel(b)} />
+          {b.purpose && <Fact label="Reason for the stay" value={sentence(b.purpose)} />}
+          <Fact
             label="In your books"
-            value={b.linked_event_id ? 'Yes, posted' : waiting ? 'Not until you confirm' : 'Not posted'}
-            colour={b.linked_event_id ? 'var(--good)' : 'var(--text-3)'}
+            value={b.linked_event_id ? <span className="rs-yes">Yes, posted</span> : waiting ? 'Not until you confirm' : 'Not posted'}
           />
-        </FieldGrid>
-      </PanelBlock>
+        </Facts>
+      </Section>
 
       {/* WHAT THEY HAVE PAID */}
       {earns && (
-        <PanelBlock title="Money from this stay" tone={PAYMENT_COLOUR[payment]}>
-          <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)' }}>{moneySummary}</p>
-          {b.payment_method && (
-            <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>
-              The guest said they would pay by {sentence(b.payment_method).toLowerCase()}.
-            </p>
-          )}
-          <div role="group" aria-label="What the guest has paid" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {(['unpaid', 'partial', 'paid', 'refunded'] as PaymentStatus[]).map(s => {
-              const on = takingDeposit ? s === 'partial' : payment === s;
-              return (
-                <button
-                  key={s}
-                  aria-pressed={on}
-                  disabled={busy}
-                  onClick={() => choose(s)}
-                  className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', padding: '8px 14px', opacity: busy ? 0.7 : 1, color: on ? 'var(--text-1)' : 'var(--text-2)', background: on ? `color-mix(in srgb, ${PAYMENT_COLOUR[s]} 16%, transparent)` : 'transparent', border: `1px solid ${on ? PAYMENT_COLOUR[s] : 'var(--border-md)'}` }}
-                >
-                  {s === 'partial' ? 'Deposit paid' : PAYMENT_LABEL[s]}
-                </button>
-              );
-            })}
+        <Section title="Money from this stay">
+          <div className="rs-money-head">
+            <span className="rs-money-big">{payment === 'refunded' ? 'Refunded' : fmt(paidSoFar, false, symbol)}</span>
+            <span className="rs-money-of">{payment === 'refunded' ? `of ${fmt(total, false, symbol)}` : `paid of ${fmt(total, false, symbol)}`}</span>
           </div>
-          <Instalments booking={b} symbol={symbol} owed={total - paidSoFar} onSaved={onSaved} />
+          <div className="rs-progress" aria-hidden="true"><span style={{ width: `${paidShare}%` }} /></div>
+          <p className="rs-text is-strong">{moneySummary}</p>
+          {b.payment_method && (
+            <p className="rs-text is-quiet">The guest said they would pay by {sentence(b.payment_method).toLowerCase()}.</p>
+          )}
+          <div style={{ marginTop: 16 }}>
+            <Segmented
+              label="What the guest has paid"
+              options={PAYMENT_CHOICES}
+              value={takingDeposit ? 'partial' : payment}
+              onChange={choose}
+              disabled={busy}
+            />
+          </div>
           {takingDeposit && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'end', marginTop: 12, maxWidth: 520 }}>
-              <div style={{ flex: '1 1 200px' }}>
+            <div className="rs-form" style={{ marginTop: 16, maxWidth: 640 }}>
+              <div>
                 <label className="field-label" htmlFor="deposit-amount">Deposit received ({symbol})</label>
                 <input
                   id="deposit-amount"
@@ -775,27 +817,34 @@ function BookingPanel({
                   placeholder={`Less than ${fmt(total, false, symbol)}`}
                 />
               </div>
-              <button className="pill pill-primary" style={{ opacity: busy || !depositOk ? 0.7 : 1 }} disabled={busy || !depositOk} onClick={saveDeposit}>
-                {busy ? 'Saving…' : 'Save deposit'}
-              </button>
-              <button className="pill pill-quiet" disabled={busy} onClick={() => setTakingDeposit(false)}>Never mind</button>
+              <div className="rs-btns">
+                <button type="button" className="rs-btn is-navy is-sm" disabled={busy || !depositOk} onClick={saveDeposit}>
+                  {busy ? 'Saving…' : 'Save deposit'}
+                </button>
+                <button type="button" className="rs-btn is-quiet is-sm" disabled={busy} onClick={() => setTakingDeposit(false)}>Never mind</button>
+              </div>
               {deposit.trim() !== '' && !depositOk && (
-                <p style={{ flexBasis: '100%', margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--warn)' }}>
+                <p className="rs-text" style={{ gridColumn: '1 / -1', color: 'var(--warn)' }}>
                   A deposit is more than nothing and less than the whole {fmt(total, false, symbol)}. If they paid it all, choose Paid in full.
                 </p>
               )}
             </div>
           )}
-        </PanelBlock>
+          <Instalments booking={b} symbol={symbol} owed={total - paidSoFar} onSaved={onSaved} />
+        </Section>
       )}
 
       {/* KEPT WHEN CALLED OFF (upgrade 5) */}
       {(b.status === 'cancelled' || b.status === 'no_show') && (b.kept_amount || 0) > 0 && b.payment_status !== 'refunded' && (
-        <PanelBlock title="Money from this stay" tone="var(--good)">
-          <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)' }}>
+        <Section title="Money from this stay">
+          <div className="rs-money-head">
+            <span className="rs-money-big">{fmt(b.kept_amount || 0, false, symbol)}</span>
+            <span className="rs-money-of">kept</span>
+          </div>
+          <p className="rs-text" style={{ marginTop: 12 }}>
             You kept {fmt(b.kept_amount || 0, false, symbol)} when this stay was called off. It stays in your books as income.
           </p>
-        </PanelBlock>
+        </Section>
       )}
 
       {/* A LINK THE GUEST PAYS FROM (upgrade 3) */}
@@ -805,82 +854,63 @@ function BookingPanel({
 
       {/* THEIR WORDS */}
       {(b.guest_notes || '').trim() && (
-        <PanelBlock title="What the guest wrote" tone="var(--info)">
-          <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>{b.guest_notes}</p>
-        </PanelBlock>
+        <Section title="What the guest wrote">
+          <blockquote className="rs-quote">{b.guest_notes}</blockquote>
+        </Section>
       )}
 
       {myNote && (
-        <PanelBlock title="Your note about this guest">
-          <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>{myNote}</p>
-        </PanelBlock>
+        <Section title="Your note about this guest">
+          <p className="rs-quote is-plain">{myNote}</p>
+        </Section>
       )}
 
-      {/* THE DECISION */}
-      {(b.confirmed_at || b.declined_at || b.cancelled_at) && (
-        <PanelBlock title="The decision" tone={colour}>
-          <div style={{ display: 'grid', gap: 6 }}>
-            {b.confirmed_at && <DecisionLine text={`Confirmed on ${stamp(b.confirmed_at)}`} colour="var(--good)" />}
-            {b.declined_at && <DecisionLine text={`Turned down on ${stamp(b.declined_at)}`} colour="var(--text-3)" />}
-            {b.cancelled_at && <DecisionLine text={`Cancelled on ${stamp(b.cancelled_at)}`} colour="var(--text-3)" />}
-            {(b.decline_reason || '').trim() && (
-              <div style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)' }}>Reason given: {b.decline_reason}</div>
-            )}
-          </div>
-        </PanelBlock>
+      {/* WHAT HAS HAPPENED: the decision and the emails, in order. "Did they
+          hear from us?" never needs a phone call. */}
+      {history.length > 0 && (
+        <Section title="What has happened">
+          <ol className="rs-timeline">
+            {history.map(h => (
+              <li key={`${h.what}-${h.i}`}>
+                <span className={`rs-dot ${h.dot}`} aria-hidden="true" />
+                <div>
+                  <div className="rs-tl-what">{h.what}</div>
+                  <div className="rs-tl-when">{stamp(h.at)}</div>
+                </div>
+              </li>
+            ))}
+          </ol>
+          {(b.decline_reason || '').trim() && (
+            <p className="rs-text" style={{ marginTop: 16 }}>Reason given: {b.decline_reason}</p>
+          )}
+        </Section>
       )}
 
-      {/* EMAILS TO THE GUEST: so "did they hear from us?" never needs a phone call. */}
-      {b.guest_emails && Object.keys(b.guest_emails).length > 0 && (
-        <PanelBlock title="Emails to the guest">
-          <div style={{ display: 'grid', gap: 6 }}>
-            {b.guest_emails.received && <DecisionLine text={`Request received, sent ${stamp(b.guest_emails.received)}`} colour="var(--text-3)" />}
-            {b.guest_emails.confirmed && <DecisionLine text={`Booking confirmed, sent ${stamp(b.guest_emails.confirmed)}`} colour="var(--good)" />}
-            {b.guest_emails.declined && <DecisionLine text={`Request turned down, sent ${stamp(b.guest_emails.declined)}`} colour="var(--text-3)" />}
-          </div>
-        </PanelBlock>
-      )}
-
-      {emailNote && (
-        <div style={{
-          marginTop: 20, padding: '12px 14px', borderRadius: 10, background: 'var(--bg-badge)', fontSize: 'var(--fs-body)', lineHeight: 1.6,
-          border: `1px solid ${emailNote.tone === 'good' ? 'var(--good)' : 'var(--warn)'}`, color: 'var(--text-1)',
-        }}>
-          {emailNote.text}
-        </div>
-      )}
+      {emailNote && <Note tone={emailNote.tone}>{emailNote.text}</Note>}
 
       {/* Something went wrong on the last action, said plainly. */}
-      {note && (
-        <div style={{ marginTop: 20, padding: '12px 14px', borderRadius: 10, background: 'var(--red-dim)', border: '1px solid var(--crit)', color: 'var(--crit)', fontSize: 'var(--fs-body)', lineHeight: 1.6 }}>
-          {note}
-        </div>
-      )}
+      {note && <Note tone="bad">{note}</Note>}
 
       {/* THE ACTIONS */}
-      <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+      <div className="rs-actions">
         {waiting && !declining && (
           <>
-            <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
+            <p className="rs-text">
               Confirming holds the dates for this guest and records the money in your books. Turning it down frees the nights straight away.
             </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              <button
-                className="pill pill-primary"
-                disabled={busy}
-                onClick={onConfirm}
-              >
-                {busy ? 'Confirming…' : 'Confirm and put it in the books'}
+            <div className="rs-btns">
+              <button type="button" className="rs-btn is-navy" disabled={busy} onClick={onConfirm}>
+                <Check aria-hidden="true" /> {busy ? 'Confirming…' : 'Confirm and put it in the books'}
               </button>
-              <button className="pill pill-quiet" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={onStartDecline}>
-                Turn it down
+              <button type="button" className="rs-btn is-dark" disabled={busy} onClick={onStartDecline}>
+                <X aria-hidden="true" /> Turn it down
               </button>
             </div>
           </>
         )}
 
         {waiting && declining && (
-          <div style={{ maxWidth: 520 }}>
+          <div style={{ maxWidth: 560 }}>
             <label className="field-label" htmlFor="decline-reason">Why are you turning it down?</label>
             <input
               id="decline-reason"
@@ -889,35 +919,27 @@ function BookingPanel({
               onChange={e => onDeclineReason(e.target.value)}
               placeholder="Optional. The guest never sees this"
             />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
-              <button
-                className="pill pill-quiet" style={{ color: 'var(--crit)', borderColor: 'var(--crit)' }}
-                disabled={busy}
-                onClick={onDecline}
-              >
+            <div className="rs-btns" style={{ marginTop: 14 }}>
+              <button type="button" className="rs-btn is-danger" disabled={busy} onClick={onDecline}>
                 {busy ? 'Turning it down…' : 'Turn down this request'}
               </button>
-              <button className="pill pill-quiet" disabled={busy} onClick={onStopDecline}>Keep it waiting</button>
+              <button type="button" className="rs-btn is-quiet" disabled={busy} onClick={onStopDecline}>Keep it waiting</button>
             </div>
           </div>
         )}
 
         {cancellable && (
           <>
-            <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
+            <p className="rs-text">
               This stay is booked. Cancelling frees the nights for somebody else.
               {paidSoFar > 0 && ` The guest has paid ${fmt(paidSoFar, false, symbol)}: keep it (a deposit they lose) or refund it.`}
             </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              <button
-                className="pill" style={{ background: 'var(--red-dim)', color: 'var(--crit)' }}
-                disabled={busy}
-                onClick={() => onCancel(false)}
-              >
+            <div className="rs-btns">
+              <button type="button" className="rs-btn is-danger" disabled={busy} onClick={() => onCancel(false)}>
                 {busy ? 'Cancelling…' : paidSoFar > 0 ? `Cancel and keep the ${fmt(paidSoFar, false, symbol)}` : 'Cancel this booking'}
               </button>
               {paidSoFar > 0 && (
-                <button className="pill pill-quiet" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={() => onCancel(true)}>
+                <button type="button" className="rs-btn is-dark" disabled={busy} onClick={() => onCancel(true)}>
                   Cancel and refund it
                 </button>
               )}
@@ -926,9 +948,7 @@ function BookingPanel({
         )}
 
         {!waiting && !cancellable && (
-          <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>
-            This booking is closed. Nothing left to answer.
-          </p>
+          <p className="rs-text is-quiet" style={{ margin: 0 }}>This booking is closed. Nothing left to answer.</p>
         )}
       </div>
     </SectionCard>
@@ -937,8 +957,6 @@ function BookingPanel({
 
 // ── Small pieces ─────────────────────────────────────────────────────────────
 
-/** A named group with the 2px line indicator the design system uses to bind a
- *  block of facts together without drawing another card inside a card. */
 const METHOD_LABEL: Record<StayPaymentMethod, string> = {
   cash: 'Cash', mobile_money: 'Mobile money', card: 'Card', bank: 'Bank',
 };
@@ -998,16 +1016,18 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
   };
 
   return (
-    <div style={{ marginTop: 14 }}>
+    <div style={{ marginTop: 20 }}>
       {list && list.length > 0 && (
-        <div style={{ display: 'grid', gap: 6, marginBottom: 10 }}>
-          <div className="field-label" style={{ marginBottom: 0 }}>Payments received</div>
+        <div className="rs-list" style={{ marginBottom: 12 }}>
+          <div className="rs-fact-label">Payments received</div>
           {list.map((p) => (
-            <div key={p.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 14px', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-              <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{fmt(p.amount, false, symbol)}</span>
-              <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>{shortDate(p.date)} · {METHOD_LABEL[p.method] ?? p.method}</span>
-              <button onClick={() => remove(p)} disabled={busy}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--text-3)', textDecoration: 'underline', fontSize: 'var(--fs-body)', cursor: 'pointer', padding: 4 }}>
+            <div key={p.id} className="rs-row">
+              <DayBadge date={p.date} small />
+              <div className="rs-row-main">
+                <span className="rs-row-title">{fmt(p.amount, false, symbol)}</span>
+                <span className="rs-row-line">{shortDate(p.date)} · {METHOD_LABEL[p.method] ?? p.method}</span>
+              </div>
+              <button type="button" className="rs-btn is-quiet is-sm" onClick={() => remove(p)} disabled={busy}>
                 Remove
               </button>
             </div>
@@ -1015,12 +1035,12 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
         </div>
       )}
       {owed > 0.005 && !adding && (
-        <button className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', padding: '8px 14px' }} disabled={busy} onClick={() => setAdding(true)}>
-          + Add a payment
+        <button type="button" className="rs-btn is-quiet is-sm" disabled={busy} onClick={() => setAdding(true)}>
+          <Plus aria-hidden="true" /> Add a payment
         </button>
       )}
       {adding && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: 10, alignItems: 'end', maxWidth: 640 }}>
+        <div className="rs-form" style={{ maxWidth: 720 }}>
           <div>
             <label className="field-label" htmlFor="inst-amount">Amount ({symbol})</label>
             <input id="inst-amount" className="field" type="number" min="0" step="0.01" inputMode="decimal"
@@ -1036,20 +1056,20 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
               {(Object.keys(METHOD_LABEL) as StayPaymentMethod[]).map(m => <option key={m} value={m}>{METHOD_LABEL[m]}</option>)}
             </select>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="pill pill-primary" style={{ opacity: busy || !ok ? 0.7 : 1 }} disabled={busy || !ok} onClick={add}>
+          <div className="rs-btns">
+            <button type="button" className="rs-btn is-navy is-sm" disabled={busy || !ok} onClick={add}>
               {busy ? 'Saving…' : 'Save'}
             </button>
-            <button className="pill pill-quiet" disabled={busy} onClick={() => { setAdding(false); setError(''); }}>Cancel</button>
+            <button type="button" className="rs-btn is-quiet is-sm" disabled={busy} onClick={() => { setAdding(false); setError(''); }}>Cancel</button>
           </div>
         </div>
       )}
       {amount.trim() !== '' && value > owed + 0.005 && (
-        <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--warn)' }}>
+        <p className="rs-text" style={{ marginTop: 10, color: 'var(--warn)' }}>
           That is more than the {fmt(owed, false, symbol)} still owed.
         </p>
       )}
-      {error && <p role="alert" style={{ margin: '8px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--crit)' }}>{error}</p>}
+      {error && <Note tone="bad">{error}</Note>}
     </div>
   );
 }
@@ -1102,119 +1122,53 @@ function PayLinkBlock({ booking: b, owed, symbol, unitName, phone, name }: {
     : '';
 
   return (
-    <PanelBlock title="Payment link for the guest" tone="var(--cyan)">
-      <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)' }}>
+    <Section title="Payment link for the guest">
+      <p className="rs-text">
         Send the guest a link. They pay by mobile money from their phone and this booking marks itself paid.
       </p>
-      <div role="group" aria-label="How much the link asks for" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-        {(['all', 'deposit'] as const).map(m => (
-          <button
-            key={m}
-            aria-pressed={mode === m}
-            onClick={() => { setMode(m); setLink(null); }}
-            className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', padding: '8px 14px', color: mode === m ? 'var(--text-1)' : 'var(--text-2)', background: mode === m ? 'color-mix(in srgb, var(--cyan) 16%, transparent)' : 'transparent', border: `1px solid ${mode === m ? 'var(--cyan)' : 'var(--border-md)'}` }}
-          >
-            {m === 'all' ? `Everything owed (${fmt(owed, false, symbol)})` : 'A deposit'}
-          </button>
-        ))}
+      <div style={{ marginTop: 16 }}>
+        <Segmented
+          label="How much the link asks for"
+          options={[
+            { value: 'all', label: `Everything owed (${fmt(owed, false, symbol)})` },
+            { value: 'deposit', label: 'A deposit' },
+          ]}
+          value={mode}
+          onChange={m => { setMode(m); setLink(null); }}
+        />
       </div>
       {mode === 'deposit' && (
-        <div style={{ maxWidth: 320, marginBottom: 12 }}>
+        <div style={{ maxWidth: 320, marginTop: 16 }}>
           <label className="field-label" htmlFor="link-deposit">Deposit to ask for ({symbol})</label>
           <input id="link-deposit" className="field" type="number" min="0" step="0.01" inputMode="decimal"
             value={deposit} onChange={e => { setDeposit(e.target.value); setLink(null); }}
             placeholder={`Less than ${fmt(owed, false, symbol)}`} />
         </div>
       )}
-      <button
-        className="pill pill-primary" style={{ opacity: busy || (mode === 'deposit' && !depositOk) ? 0.7 : 1 }}
-        disabled={busy || (mode === 'deposit' && !depositOk)}
-        onClick={make}
-      >
-        {busy ? 'Making the link…' : link ? 'Make it again' : 'Make the link'}
-      </button>
-      {error && <p role="alert" style={{ margin: '10px 0 0', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--crit)' }}>{error}</p>}
+      <div className="rs-btns" style={{ marginTop: 16 }}>
+        <button type="button" className="rs-btn is-navy" disabled={busy || (mode === 'deposit' && !depositOk)} onClick={make}>
+          <Link2 aria-hidden="true" /> {busy ? 'Making the link…' : link ? 'Make it again' : 'Make the link'}
+        </button>
+      </div>
+      {error && <Note tone="bad">{error}</Note>}
       {link && (
-        <div style={{ marginTop: 14, padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
-          <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-3)', marginBottom: 4 }}>
-            Asks for {fmt(link.requested, false, symbol)}
-          </div>
-          <div style={{ fontSize: 'var(--fs-body)', lineHeight: 1.5, color: 'var(--text-1)', wordBreak: 'break-all', marginBottom: 10 }}>{link.url}</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            <button className="pill pill-quiet" style={{ fontSize: 'var(--fs-body)', padding: '8px 14px' }} onClick={copy}>{copied ? 'Copied' : 'Copy link'}</button>
+        <div className="rs-quote is-plain" style={{ marginTop: 16, whiteSpace: 'normal' }}>
+          <span className="rs-quote-label">Asks for {fmt(link.requested, false, symbol)}</span>
+          <div style={{ wordBreak: 'break-all' }}>{link.url}</div>
+          <div className="rs-btns" style={{ marginTop: 14 }}>
+            <button type="button" className="rs-btn is-dark is-sm" onClick={copy}>
+              <Copy aria-hidden="true" /> {copied ? 'Copied' : 'Copy link'}
+            </button>
             <a
               href={`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`}
               target="_blank" rel="noopener noreferrer"
-              className="pill pill-primary" style={{ fontSize: 'var(--fs-body)', padding: '8px 14px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+              className="rs-btn is-navy is-sm"
             >
-              {waNumber ? 'Send on WhatsApp' : 'Share on WhatsApp'}
+              <MessageCircle aria-hidden="true" /> {waNumber ? 'Send on WhatsApp' : 'Share on WhatsApp'}
             </a>
           </div>
         </div>
       )}
-    </PanelBlock>
+    </Section>
   );
-}
-
-function PanelBlock({ title, children, tone = 'var(--border-md)' }: { title: string; children: React.ReactNode; tone?: string }) {
-  return (
-    <section style={{ marginTop: 24, paddingLeft: 14, borderLeft: `2px solid ${tone}` }}>
-      <h4 style={{ margin: '0 0 12px', fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-4)' }}>
-        {title}
-      </h4>
-      {children}
-    </section>
-  );
-}
-
-function FieldGrid({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '16px 24px' }}>{children}</div>;
-}
-
-function Field({ label, value, colour, hint }: { label: string; value: string; colour?: string; hint?: string }) {
-  return (
-    <div>
-      <div style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-4)' }}>{label}</div>
-      <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.6, color: colour || 'var(--text-1)', marginTop: 2 }}>{value}</div>
-      {hint && <div style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-4)' }}>{hint}</div>}
-    </div>
-  );
-}
-
-function Badge({ text, colour }: { text: string; colour: string }) {
-  return (
-    <span style={{
-      fontSize: 'var(--fs-label)',
-      fontWeight: 700,
-      whiteSpace: 'nowrap',
-      color: colour,
-      background: `color-mix(in srgb, ${colour} 16%, transparent)`,
-      border: `1px solid color-mix(in srgb, ${colour} 40%, transparent)`,
-      borderRadius: 6,
-      padding: '5px 10px',
-    }}>
-      {text}
-    </span>
-  );
-}
-
-/** Phone and email as one tap. On a phone this dials; on a laptop it opens mail. */
-function ContactLink({ href, label, value }: { href: string; label: string; value: string }) {
-  return (
-    <a
-      href={href}
-      style={{
-        display: 'inline-flex', alignItems: 'baseline', gap: 8, padding: '10px 14px', minHeight: 44,
-        borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)',
-        fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-1)', textDecoration: 'none',
-      }}
-    >
-      <span style={{ fontSize: 'var(--fs-label)', fontWeight: 700, color: 'var(--text-4)' }}>{label}</span>
-      <span style={{ fontWeight: 600 }}>{value}</span>
-    </a>
-  );
-}
-
-function DecisionLine({ text, colour }: { text: string; colour: string }) {
-  return <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, lineHeight: 1.6, color: colour }}>{text}</div>;
 }

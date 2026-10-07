@@ -23,8 +23,10 @@ const TABS = [
 
 export default function HospitalityLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  // .rooms gives the whole section the calendar's accents: navy buttons and
+  // chips, charcoal round buttons, larger card titles (globals.css).
   return (
-    <>
+    <div className="rooms">
       <PageHeader
         title="Rooms & Stays"
         subtitle="Every unit&apos;s availability on one calendar. Bookings go straight into your books."
@@ -42,6 +44,6 @@ export default function HospitalityLayout({ children }: { children: React.ReactN
         })}
       </nav>
       {children}
-    </>
+    </div>
   );
 }

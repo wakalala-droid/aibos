@@ -1936,7 +1936,7 @@ html, body {
 @media (max-width: 639px) { .journey-step-label { display: none; } }
 
 /* Rooms and Stays: the bookings list (app/dashboard/hospitality/bookings). */
-.bk-list { min-width: 860px; }
+.bk-list { min-width: 920px; }
 @media (max-width: 767px) {
   .bk-list { min-width: 0; }
   .bk-head { display: none !important; }
@@ -2102,16 +2102,12 @@ html, body {
 .wk-pop-status { font-weight: 700; color: var(--text-1); }
 @keyframes wk-pop-in { from { opacity: 0; } to { opacity: 1; } }
 @media (hover: none) { .wk-pop { display: none; } }
-@media (prefers-reduced-motion: reduce) { .wk-pop { animation: none; } .wk-block, .wk-round, .wk-action { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .wk-pop { animation: none; } .wk-block, .wk-round { transition: none; } }
 
 /* What the blocks mean. */
 .wk-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin-top: 16px; }
 .wk-key { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); }
-.wk-key i { display: inline-block; width: 22px; height: 14px; border-radius: var(--radius-sm); flex-shrink: 0; }
-.wk-key-stay { background: var(--cal-stay); }
-.wk-key-wait { border: 2px dashed var(--cal-stay-edge); background: repeating-linear-gradient(135deg, var(--cal-stripe) 0 4px, transparent 4px 8px); }
-.wk-key-done { background: var(--cal-done); }
-.wk-key-open { background: var(--cal-open); }
+.wk-key .rs-swatch { width: 22px; }
 .wk-foot-note { margin-left: auto; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); }
 
 /* The panel: below the week on a narrow card, beside it on a wide one. */
@@ -2150,19 +2146,9 @@ html, body {
   border-radius: 999px; background: var(--cal-stay-edge);
 }
 
-.wk-action {
-  display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 56px; padding: 0 20px;
-  border: 1px solid transparent; border-radius: var(--radius-lg); cursor: pointer;
-  font: inherit; font-size: var(--fs-body); font-weight: 600; color: #fff; background: var(--cal-button);
-  box-shadow: 0 12px 24px -14px rgba(0,0,0,0.6);
-  transition: transform 0.12s ease, filter 0.15s ease;
-}
-[data-theme="dark"] .wk-action { border-color: var(--border-strong); }
-.wk-action.is-primary { background: var(--cal-stay); }
-.wk-action:hover { filter: brightness(1.14); }
-.wk-action:active { transform: scale(0.98); }
-.wk-action:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-.wk-action svg { width: 22px; height: 22px; flex-shrink: 0; }
+/* The panel's two big buttons are the set's buttons (.rs-btn), full width. */
+.wk-action { width: 100%; min-height: 56px; gap: 12px; }
+.wk-action svg { width: 22px; height: 22px; }
 
 .wk-find { display: grid; gap: 10px; }
 .wk-find-row { display: flex; align-items: center; gap: 6px; }
@@ -2232,3 +2218,262 @@ html, body {
   .wk-block.is-narrow .wk-block-name { display: block; white-space: nowrap; overflow: hidden; text-overflow: clip; letter-spacing: -0.02em; }
   .wk-foot-note { margin-left: 0; }
 }
+
+/* ── Rooms and Stays: the set (components/hospitality/kit.tsx) ───────────────
+   Every screen in the section speaks the calendar's language (the owner,
+   7 Oct 2026): status by fill, never by a thin coloured edge; navy and
+   charcoal buttons with rounded corners; dates as a number in a circle;
+   facts under spaced-capital labels; parts set off by hairlines and a
+   20px title, as the calendar's "Your units" is. */
+
+/* The section's own accents. The app's cyan stays the focus ring. */
+.rooms .pill-primary { background: var(--cal-stay); color: #fff; border-color: transparent; box-shadow: 0 10px 22px -14px rgba(11,42,77,0.75); }
+.rooms .pill-primary:hover { background: var(--cal-stay); filter: brightness(1.12); }
+.rooms .icon-pill { background: var(--cal-button); color: #fff; }
+.rooms .icon-pill:hover { background: var(--cal-button); color: #fff; filter: brightness(1.18); }
+[data-theme="dark"] .rooms .icon-pill { border: 1px solid var(--border-strong); }
+.rooms .chip[aria-pressed="true"],
+.rooms .chip[aria-current="page"] { background: var(--cal-stay-solid); color: #fff; }
+[data-theme="dark"] .rooms .chip[aria-pressed="true"],
+[data-theme="dark"] .rooms .chip[aria-current="page"] { background: var(--cal-today); }
+.rooms .panel-title { font-size: var(--fs-h3); font-weight: 500; letter-spacing: -0.01em; color: var(--text-1); }
+
+/* Buttons: the calendar's New booking and Find a guest. */
+.rs-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 52px; padding: 0 22px; max-width: 100%;
+  border: 1px solid transparent; border-radius: var(--radius-lg); cursor: pointer;
+  font: inherit; font-size: var(--fs-body); font-weight: 600; line-height: 1.2; text-decoration: none; white-space: nowrap;
+  color: var(--text-1); background: var(--pill-bg);
+  transition: transform 0.12s ease, filter 0.15s ease, background 0.15s ease;
+}
+.rs-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+.rs-btn:hover { background: var(--pill-bg-hover); }
+.rs-btn:active { transform: scale(0.98); }
+.rs-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.rs-btn:disabled { opacity: 0.55; cursor: default; transform: none; filter: none; }
+.rs-btn.is-navy { background: var(--cal-stay); color: #fff; box-shadow: 0 12px 24px -14px rgba(11,42,77,0.75); }
+.rs-btn.is-dark { background: var(--cal-button); color: #fff; box-shadow: 0 12px 24px -14px rgba(0,0,0,0.6); }
+.rs-btn.is-navy:hover, .rs-btn.is-dark:hover { filter: brightness(1.14); }
+[data-theme="dark"] .rs-btn.is-dark { border-color: var(--border-strong); }
+.rs-btn.is-danger { background: var(--red-dim); color: var(--crit); }
+.rs-btn.is-danger:hover { background: color-mix(in srgb, var(--crit) 18%, transparent); }
+.rs-btn.is-quiet { background: transparent; border-color: var(--border-md); }
+.rs-btn.is-quiet:hover { background: var(--pill-bg); }
+.rs-btn.is-sm { min-height: 44px; padding: 0 16px; }
+.rs-btns { display: flex; flex-wrap: wrap; gap: 10px; }
+@media (max-width: 767px) { .rs-btn { white-space: normal; text-align: center; } }
+
+/* The calendar's key: one swatch per status. */
+.rs-swatch { display: inline-block; flex-shrink: 0; width: 14px; height: 14px; border-radius: var(--radius-sm); }
+.rs-swatch.is-stay { background: var(--cal-stay); }
+.rs-swatch.is-wait { border: 2px dashed var(--cal-stay-edge); background: repeating-linear-gradient(135deg, var(--cal-stripe) 0 4px, transparent 4px 8px); }
+.rs-swatch.is-done { background: var(--cal-done); }
+.rs-swatch.is-open { background: var(--cal-open); }
+.rs-swatch.is-off { border: 2px solid var(--border-strong); }
+.rs-swatch.is-bad { background: var(--crit); }
+
+.rs-chip {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 4px 14px;
+  border-radius: 999px; border: 1px solid var(--border-md); background: var(--bg-card);
+  font-size: var(--fs-label); font-weight: 600; line-height: 1.3; color: var(--text-1); white-space: nowrap;
+}
+.rs-chip svg { width: 18px; height: 18px; }
+.rs-chip-x {
+  display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin-right: -8px;
+  border: none; border-radius: 999px; background: transparent; color: var(--text-3); cursor: pointer; padding: 0;
+}
+.rs-chip-x:hover { background: var(--pill-bg-hover); color: var(--text-1); }
+.rs-chip-x:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+
+/* A day: the month in capitals over the date in a circle. */
+.rs-day { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; width: 56px; }
+.rs-day-mon { font-size: var(--fs-caps); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; line-height: 1.2; color: var(--text-3); }
+.rs-day-num {
+  display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 999px;
+  font-size: var(--fs-h3); font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1;
+  background: var(--cal-stay); color: #fff; box-shadow: 0 8px 18px -10px rgba(11,42,77,0.7);
+}
+.rs-day.is-wait .rs-day-num { background: var(--bg-card); color: var(--cal-wait-ink); border: 2px dashed var(--cal-stay-edge); box-shadow: none; }
+.rs-day.is-done .rs-day-num { background: var(--cal-done); }
+.rs-day.is-open .rs-day-num { background: var(--cal-open); }
+.rs-day.is-off .rs-day-num { background: transparent; color: var(--text-3); border: 2px solid var(--border-strong); box-shadow: none; }
+.rs-day.is-bad .rs-day-num { background: transparent; color: var(--crit); border: 2px solid color-mix(in srgb, var(--crit) 55%, transparent); box-shadow: none; }
+.rs-day.is-sm { width: 40px; }
+.rs-day.is-sm .rs-day-num { width: 40px; height: 40px; font-size: var(--fs-body); }
+
+/* A titled part, set off by a hairline. */
+.rs-sec { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); }
+.rs-sec-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 16px; }
+.rs-sec-title { margin: 0; font-size: var(--fs-h3); font-weight: 500; letter-spacing: -0.01em; line-height: 1.3; color: var(--text-1); }
+.rs-text { margin: 0; font-size: var(--fs-body); line-height: 1.6; color: var(--text-2); }
+.rs-text.is-quiet { color: var(--text-3); }
+.rs-text.is-strong { font-weight: 600; color: var(--text-1); }
+.rs-text + .rs-text, .rs-text + .rs-seg, .rs-seg + .rs-text { margin-top: 12px; }
+
+.rs-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 22px 24px; }
+.rs-fact { min-width: 0; }
+.rs-fact-label { font-size: var(--fs-caps); font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; line-height: 1.3; color: var(--text-3); }
+.rs-fact-value { margin-top: 6px; font-size: var(--fs-body); font-weight: 600; line-height: 1.5; color: var(--text-1); overflow-wrap: anywhere; }
+.rs-fact-hint { font-size: var(--fs-body); line-height: 1.5; color: var(--text-4); }
+.rs-yes { display: inline-flex; align-items: center; gap: 8px; }
+.rs-yes::before { content: ''; width: 10px; height: 10px; border-radius: 999px; background: var(--cal-stay-edge); }
+
+/* One choice out of a few: the chosen one is filled navy, like a stay. */
+.rs-seg { display: inline-grid; grid-auto-flow: column; gap: 4px; max-width: 100%; padding: 6px; border-radius: var(--radius-lg); background: var(--pill-bg); }
+.rs-seg button {
+  min-height: 44px; padding: 0 18px; border: none; border-radius: var(--radius-md); cursor: pointer;
+  font: inherit; font-size: var(--fs-body); font-weight: 600; line-height: 1.2; white-space: nowrap;
+  color: var(--text-2); background: transparent; transition: background 0.15s ease, color 0.15s ease;
+}
+.rs-seg button:hover { color: var(--text-1); background: var(--pill-bg-hover); }
+.rs-seg button[aria-pressed="true"] { color: #fff; background: var(--cal-stay); box-shadow: 0 8px 18px -10px rgba(11,42,77,0.7); }
+.rs-seg button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.rs-seg button:disabled { cursor: default; opacity: 0.6; }
+@media (max-width: 639px) {
+  .rs-seg { display: grid; grid-auto-flow: row; grid-template-columns: 1fr 1fr; width: 100%; }
+  .rs-seg button { white-space: normal; padding: 8px 10px; }
+}
+
+.rs-note { display: flex; align-items: flex-start; gap: 12px; margin-top: 20px; padding: 14px 16px; border-radius: var(--radius-lg); background: var(--pill-bg); font-size: var(--fs-body); line-height: 1.6; color: var(--text-1); }
+.rs-note svg { width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px; color: var(--cal-stay-edge); }
+.rs-note:first-child { margin-top: 0; }
+.rs-note.is-warn svg { color: var(--warn); }
+.rs-note.is-bad { background: var(--red-dim); color: var(--crit); }
+.rs-note.is-bad svg { color: var(--crit); }
+
+/* The booking's header: the stay block, large. */
+.rs-hero {
+  position: relative; overflow: hidden; padding: 24px; border-radius: var(--radius-lg);
+  background: var(--cal-stay); color: #fff; box-shadow: 0 22px 44px -26px rgba(11,42,77,0.85);
+}
+.rs-hero.is-done { background: var(--cal-done); box-shadow: 0 22px 44px -26px rgba(0,0,0,0.7); }
+.rs-hero.is-open { background: var(--cal-open); }
+.rs-hero.is-wait {
+  padding: 22px; color: var(--cal-wait-ink); border: 2px dashed var(--cal-stay-edge); box-shadow: none;
+  background: repeating-linear-gradient(135deg, var(--cal-stripe) 0 10px, transparent 10px 20px), var(--bg-card);
+}
+.rs-hero.is-off, .rs-hero.is-bad { padding: 23px; color: var(--text-1); background: var(--pill-bg); border: 1px solid var(--border-md); box-shadow: none; }
+.rs-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.rs-hero-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rs-hero.is-stay .rs-chip, .rs-hero.is-done .rs-chip, .rs-hero.is-open .rs-chip { color: #fff; background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.26); }
+.rs-hero.is-stay .rs-swatch, .rs-hero.is-done .rs-swatch, .rs-hero.is-open .rs-swatch { background: #fff; border: none; }
+.rs-hero-close {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px;
+  border: none; border-radius: 999px; cursor: pointer; color: #fff; background: rgba(255,255,255,0.16);
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+.rs-hero-close:hover { background: rgba(255,255,255,0.26); }
+.rs-hero-close:active { transform: scale(0.94); }
+.rs-hero-close:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.rs-hero-close svg { width: 22px; height: 22px; }
+.rs-hero.is-wait .rs-hero-close, .rs-hero.is-off .rs-hero-close, .rs-hero.is-bad .rs-hero-close { background: var(--cal-button); }
+.rs-hero-name { margin: 18px 0 0; font-size: var(--fs-h1); font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; overflow-wrap: anywhere; }
+.rs-hero-org { margin-top: 4px; font-size: var(--fs-body); line-height: 1.5; opacity: 0.88; }
+.rs-hero-meta { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 14px; font-size: var(--fs-body); line-height: 1.5; }
+.rs-hero-meta > span { display: inline-flex; align-items: center; gap: 8px; opacity: 0.92; }
+.rs-hero-meta svg { width: 18px; height: 18px; flex-shrink: 0; }
+.rs-hero-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.rs-hero-link {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; max-width: 100%; padding: 0 16px;
+  border-radius: 999px; border: 1px solid rgba(255,255,255,0.26); background: rgba(255,255,255,0.14);
+  color: inherit; text-decoration: none; font-size: var(--fs-body); font-weight: 600; overflow-wrap: anywhere;
+}
+.rs-hero-link:hover { background: rgba(255,255,255,0.24); }
+.rs-hero-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+.rs-hero.is-wait .rs-hero-link, .rs-hero.is-off .rs-hero-link, .rs-hero.is-bad .rs-hero-link { background: var(--bg-card); border-color: var(--border-md); }
+.rs-hero.is-wait .rs-hero-link:hover, .rs-hero.is-off .rs-hero-link:hover, .rs-hero.is-bad .rs-hero-link:hover { background: var(--pill-bg-hover); }
+.rs-hero-quiet { font-size: var(--fs-body); opacity: 0.85; }
+
+/* The stay from arrival to departure, drawn as on the calendar. */
+.rs-stay { display: grid; grid-template-columns: auto minmax(64px, 1fr) auto; align-items: center; gap: 18px; }
+.rs-date { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.rs-date-num {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 60px; height: 60px; border-radius: 999px;
+  font-size: var(--fs-h2); font-weight: 600; font-variant-numeric: tabular-nums;
+  background: var(--cal-stay); color: #fff; box-shadow: 0 10px 22px -12px rgba(11,42,77,0.75);
+}
+.rs-date.is-leave .rs-date-num { background: transparent; color: var(--text-1); border: 2px solid var(--cal-stay-edge); box-shadow: none; }
+.rs-date-label { font-size: var(--fs-caps); font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); }
+.rs-date-day { font-size: var(--fs-body); font-weight: 600; line-height: 1.4; color: var(--text-1); }
+.rs-date-month { font-size: var(--fs-body); line-height: 1.4; color: var(--text-3); }
+.rs-stay-bar {
+  display: flex; align-items: center; justify-content: center; height: 44px; padding: 0 12px; border-radius: var(--radius-md);
+  font-size: var(--fs-caps); font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap;
+  color: #fff; background: var(--cal-stay); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 22px -12px rgba(11,42,77,0.65);
+}
+.rs-stay.is-wait .rs-stay-bar { color: var(--cal-wait-ink); border: 2px dashed var(--cal-stay-edge); box-shadow: none; background: repeating-linear-gradient(135deg, var(--cal-stripe) 0 10px, transparent 10px 20px), var(--bg-card); }
+.rs-stay.is-wait .rs-date:not(.is-leave) .rs-date-num { background: var(--bg-card); color: var(--cal-wait-ink); border: 2px dashed var(--cal-stay-edge); box-shadow: none; }
+.rs-stay.is-done .rs-stay-bar, .rs-stay.is-done .rs-date:not(.is-leave) .rs-date-num { background: var(--cal-done); }
+.rs-stay.is-off .rs-stay-bar, .rs-stay.is-bad .rs-stay-bar { color: var(--text-3); background: var(--pill-bg); box-shadow: none; }
+.rs-stay.is-off .rs-date-num, .rs-stay.is-bad .rs-date-num { background: transparent; color: var(--text-3); border: 2px solid var(--border-strong); box-shadow: none; }
+@media (max-width: 639px) {
+  .rs-stay { grid-template-columns: 1fr; gap: 12px; }
+  .rs-stay-bar { height: 36px; }
+}
+
+/* Money from a stay: the figure, how much of it is in, then the choice. */
+.rs-money-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+.rs-money-big { font-size: var(--fs-display); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; color: var(--text-1); font-variant-numeric: tabular-nums; }
+.rs-money-of { font-size: var(--fs-body); color: var(--text-3); }
+.rs-progress { height: 12px; margin: 14px 0 16px; border-radius: 999px; overflow: hidden; background: var(--pill-bg); }
+.rs-progress > span { display: block; height: 100%; border-radius: 999px; background: var(--cal-stay); transition: width 0.3s ease; }
+
+.rs-list { display: grid; gap: 8px; }
+.rs-row {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 10px 14px;
+  border-radius: var(--radius-lg); border: 1px solid var(--border-md); background: var(--bg-card);
+}
+.rs-row-main { display: grid; gap: 2px; min-width: 0; flex: 1 1 160px; }
+.rs-row-title { font-size: var(--fs-body); font-weight: 700; line-height: 1.4; color: var(--text-1); }
+.rs-row-line { font-size: var(--fs-body); line-height: 1.5; color: var(--text-3); }
+
+/* A link or a quote the owner reads out: a soft navy tile, never an edge. */
+.rs-quote { margin: 0; padding: 18px 20px; border-radius: var(--radius-lg); font-size: var(--fs-body); line-height: 1.6; color: var(--text-1); white-space: pre-wrap; overflow-wrap: anywhere; background: color-mix(in srgb, var(--cal-stay-solid) 7%, var(--bg-card)); }
+.rs-quote.is-plain { background: var(--pill-bg); }
+.rs-quote-label { display: block; margin-bottom: 6px; font-size: var(--fs-caps); font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); white-space: normal; }
+
+/* What has happened, in order: a dot like the small month's arrival dots. */
+.rs-timeline { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.rs-timeline li { display: grid; grid-template-columns: 12px minmax(0, 1fr); column-gap: 14px; align-items: start; }
+.rs-dot { width: 12px; height: 12px; margin-top: 7px; border-radius: 999px; background: var(--cal-stay-edge); }
+.rs-dot.is-off { background: var(--text-4); }
+.rs-dot.is-bad { background: var(--crit); }
+.rs-tl-what { font-size: var(--fs-body); font-weight: 600; line-height: 1.5; color: var(--text-1); }
+.rs-tl-when { font-size: var(--fs-body); line-height: 1.5; color: var(--text-3); }
+
+.rs-actions { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); }
+.rs-actions .rs-text { margin-bottom: 14px; color: var(--text-3); }
+.rs-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 14px; align-items: end; }
+
+/* A request waiting on an answer, in the band at the top of the calendar. */
+.rs-req {
+  display: flex; align-items: center; gap: 16px; width: 100%; padding: 14px 16px; text-align: left; cursor: pointer;
+  border-radius: var(--radius-lg); border: 1px solid var(--border-md); background: var(--bg-card);
+  font: inherit; color: var(--text-1); transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+}
+.rs-req:hover { border-color: var(--border-strong); box-shadow: 0 14px 28px -18px rgba(0,0,0,0.4); }
+.rs-req:active { transform: scale(0.995); }
+.rs-req:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.rs-req-main { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.rs-req-side { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.rs-req-amt { font-size: var(--fs-body); font-weight: 700; color: var(--text-1); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rs-req-flag { font-size: var(--fs-body); font-weight: 700; line-height: 1.5; color: var(--warn); }
+.rs-req .rs-btn { pointer-events: none; }
+@media (max-width: 639px) {
+  .rs-req { flex-wrap: wrap; align-items: flex-start; }
+  .rs-req-main { flex-basis: calc(100% - 72px); }
+  .rs-req-side { width: 100%; justify-content: space-between; }
+}
+
+/* The new booking as it will look on the calendar. */
+.rs-preview { display: flex; flex-direction: column; min-height: 104px; max-width: 560px; margin: 0 0 20px; cursor: default; }
+.rs-preview:hover, .rs-preview:active { transform: none; filter: none; }
+
+/* A person: initials in a navy circle. */
+.rs-avatar {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 48px; height: 48px; border-radius: 999px;
+  font-size: var(--fs-body); font-weight: 700; letter-spacing: 0.02em; color: #fff; background: var(--cal-stay);
+}
+.rs-hero .rs-avatar { width: 64px; height: 64px; font-size: var(--fs-h3); background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.26); }
+.rs-person { display: flex; align-items: center; gap: 16px; min-width: 0; }

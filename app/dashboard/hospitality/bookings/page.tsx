@@ -15,6 +15,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
+import { Chip, DayBadge, Note, toneOf } from '@/components/hospitality/kit';
 import { fmt } from '@/lib/currency';
 import {
   listBookings, listUnits, confirmBooking, declineBooking, updateBooking, guestEmailOutcome,
@@ -36,18 +37,19 @@ const FS_BODY = 'var(--fs-body)';  /* 18px */
 const FS_SMALL = 'var(--fs-label)'; /* 18px: nothing in a sentence is smaller */
 const FS_CAPS = 'var(--fs-label)'; /* 18px */
 
-/** Status in the owner's words, with the colour that carries the meaning.
+/** Status in the owner's words. Its look is the calendar's: navy for a stay,
+ *  a dashed outline for a request, charcoal once it is over (kit.tsx).
  *  "Pending" and "no_show" are database words: nobody running a guest house
  *  says them out loud. */
-const STATUS_META: Record<RowStatus, { label: string; colour: string }> = {
-  pending:   { label: 'Waiting on you', colour: 'var(--warn)'   },
-  confirmed: { label: 'Confirmed',      colour: 'var(--good)'   },
-  completed: { label: 'Stayed',         colour: 'var(--text-3)' },
-  declined:  { label: 'Turned down',    colour: 'var(--text-4)' },
-  cancelled: { label: 'Called off',     colour: 'var(--text-4)' },
-  no_show:   { label: 'Never arrived',  colour: 'var(--crit)'   },
+const STATUS_LABEL: Record<RowStatus, string> = {
+  pending:   'Waiting on you',
+  confirmed: 'Confirmed',
+  completed: 'Stayed',
+  declined:  'Turned down',
+  cancelled: 'Called off',
+  no_show:   'Never arrived',
 };
-const statusMeta = (s: string) => STATUS_META[s as RowStatus] ?? { label: s, colour: 'var(--text-3)' };
+const statusLabel = (s: string) => STATUS_LABEL[s as RowStatus] ?? s;
 
 /** The questions an owner actually asks, each as one chip. A set beats a single
  *  status because "what is live" is pending plus confirmed, never one of them. */
@@ -94,23 +96,7 @@ function fmtDay(value: string): string {
  *  on the request, because the CRM row is the one an owner has corrected. */
 const guestName = (b: Booking) => b.guest?.full_name || b.guest_name || 'No name given';
 
-function StatusBadge({ status }: { status: string }) {
-  const m = statusMeta(status);
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 8, padding: '4px 10px',
-      borderRadius: 6, fontSize: FS_SMALL, fontWeight: 600, whiteSpace: 'nowrap',
-      color: m.colour,
-      background: `color-mix(in srgb, ${m.colour} 14%, transparent)`,
-      border: `1px solid color-mix(in srgb, ${m.colour} 40%, transparent)`,
-    }}>
-      <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 6, background: m.colour }} />
-      {m.label}
-    </span>
-  );
-}
-
-const COLUMNS = 'minmax(200px, 1.5fr) minmax(120px, 1fr) minmax(150px, 1.1fr) minmax(110px, 0.8fr) minmax(150px, 0.9fr)';
+const COLUMNS = 'minmax(264px, 1.6fr) minmax(120px, 1fr) minmax(150px, 1.1fr) minmax(110px, 0.8fr) minmax(150px, 0.9fr)';
 
 export default function BookingsPage() {
   const [loading, setLoading] = useState(true);
@@ -228,19 +214,8 @@ export default function BookingsPage() {
 
   return (
     <>
-      {error && (
-        <div style={{ marginBottom: 16, padding: '12px 16px', borderRadius: 10, background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: FS_SMALL, lineHeight: 1.6 }}>
-          {error}
-        </div>
-      )}
-      {emailNote && (
-        <div style={{
-          marginBottom: 16, padding: '12px 16px', borderRadius: 10, background: 'var(--bg-badge)', color: 'var(--text-1)',
-          border: `1px solid ${emailNote.tone === 'good' ? 'var(--good)' : 'var(--warn)'}`, fontSize: FS_BODY, lineHeight: 1.6,
-        }}>
-          {emailNote.text}
-        </div>
-      )}
+      {error && <div style={{ marginBottom: 16 }}><Note tone="bad">{error}</Note></div>}
+      {emailNote && <div style={{ marginBottom: 16 }}><Note tone={emailNote.tone}>{emailNote.text}</Note></div>}
 
       <SectionCard
         title="Bookings"
@@ -323,34 +298,36 @@ export default function BookingsPage() {
             </div>
 
             {rows.map(b => {
-              const m = statusMeta(b.status);
               const nightCount = nights(b);
               return (
                 <div key={b.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  {/* The 2px edge is the status indicator: the eye finds the
-                      amber rows before it reads a single word. */}
+                  {/* The arrival day leads each row, drawn as on the calendar:
+                      a dashed circle is a request, so the eye finds the ones
+                      waiting before it reads a single word. */}
                   <div className="bk-row" style={{
                     display: 'grid', gridTemplateColumns: COLUMNS, gap: 12,
-                    padding: '16px 12px', borderLeft: `2px solid ${m.colour}`,
-                    alignItems: 'center',
+                    padding: '16px 12px', alignItems: 'center',
                   }}>
-                    <div style={{ minWidth: 0 }}>
-                      {/* Opens the booking in the calendar's panel: deposit,
-                          refund, cancel and the guest's details. The list used to
-                          be a dead end, so a stay months away meant paging the
-                          calendar forward week by week to find it. */}
-                      <Link
-                        href={`/dashboard/hospitality?booking=${encodeURIComponent(b.id)}`}
-                        style={{ fontSize: FS_BODY, lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)', textDecoration: 'underline', textDecorationColor: 'var(--border-md)', textUnderlineOffset: 3 }}
-                      >
-                        {guestName(b)}
-                      </Link>
-                      <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, color: 'var(--text-3)' }}>
-                        {[
-                          b.reference ? `Ref ${b.reference}` : null,
-                          b.source ? SOURCE_LABEL[b.source] : null,
-                          b.organisation,
-                        ].filter(Boolean).join(' · ') || 'No reference'}
+                    <div className="rs-person">
+                      <DayBadge date={b.check_in} tone={toneOf(b.status)} />
+                      <div style={{ minWidth: 0 }}>
+                        {/* Opens the booking in the calendar's panel: deposit,
+                            refund, cancel and the guest's details. The list used to
+                            be a dead end, so a stay months away meant paging the
+                            calendar forward week by week to find it. */}
+                        <Link
+                          href={`/dashboard/hospitality?booking=${encodeURIComponent(b.id)}`}
+                          style={{ fontSize: FS_BODY, lineHeight: 1.6, fontWeight: 600, color: 'var(--text-1)', textDecoration: 'underline', textDecorationColor: 'var(--border-md)', textUnderlineOffset: 3 }}
+                        >
+                          {guestName(b)}
+                        </Link>
+                        <div style={{ fontSize: FS_SMALL, lineHeight: 1.6, color: 'var(--text-3)' }}>
+                          {[
+                            b.reference ? `Ref ${b.reference}` : null,
+                            b.source ? SOURCE_LABEL[b.source] : null,
+                            b.organisation,
+                          ].filter(Boolean).join(' · ') || 'No reference'}
+                        </div>
                       </div>
                     </div>
 
@@ -402,7 +379,7 @@ export default function BookingsPage() {
                     </div>
 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-                      <StatusBadge status={b.status} />
+                      <Chip tone={toneOf(b.status)}>{statusLabel(b.status)}</Chip>
                       <Link
                         href={`/dashboard/hospitality?booking=${encodeURIComponent(b.id)}`}
                         aria-label={`Open ${guestName(b)}'s booking`}

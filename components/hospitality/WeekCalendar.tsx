@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { CalendarPlus, ChevronLeft, ChevronRight, MapPin, Plus, Search, UserRound, Users, X } from 'lucide-react';
 import { fmt } from '@/lib/currency';
 import { listBookings, nights, bookingSymbol, SOURCE_LABEL, type Booking, type Unit } from '@/lib/hospitality';
+import { Swatch } from './kit';
 
 // ── Dates (browser zone, CAT for Lusaka) ────────────────────────────────────
 const DAY_MS = 86_400_000;
@@ -365,10 +366,10 @@ export default function WeekCalendar({
 
           {/* What the blocks mean, and where the money goes */}
           <div className="wk-foot">
-            <span className="wk-key"><i className="wk-key-stay" aria-hidden="true" />Confirmed</span>
-            <span className="wk-key"><i className="wk-key-wait" aria-hidden="true" />Waiting for your answer</span>
-            <span className="wk-key"><i className="wk-key-done" aria-hidden="true" />Stay finished</span>
-            <span className="wk-key"><i className="wk-key-open" aria-hidden="true" />Open below</span>
+            <span className="wk-key"><Swatch tone="stay" />Confirmed</span>
+            <span className="wk-key"><Swatch tone="wait" />Waiting for your answer</span>
+            <span className="wk-key"><Swatch tone="done" />Stay finished</span>
+            <span className="wk-key"><Swatch tone="open" />Open below</span>
             <span className="wk-foot-note">
               Confirmed bookings post to your books:{' '}
               <Link className="tap-link" href="/dashboard/cash" style={{ color: 'var(--cyan)', textDecoration: 'none' }}>Money</Link>
@@ -449,10 +450,10 @@ export default function WeekCalendar({
           </div>
 
           <div className="wk-side-rest">
-            <button type="button" className="wk-action is-primary" onClick={() => onNew('')}>
+            <button type="button" className="rs-btn is-navy wk-action" onClick={() => onNew('')}>
               <CalendarPlus aria-hidden="true" /> New booking
             </button>
-            <button type="button" className="wk-action" aria-expanded={finding} onClick={() => (finding ? closeFind() : setFinding(true))}>
+            <button type="button" className="rs-btn is-dark wk-action" aria-expanded={finding} onClick={() => (finding ? closeFind() : setFinding(true))}>
               <Users aria-hidden="true" /> Find a guest
             </button>
 

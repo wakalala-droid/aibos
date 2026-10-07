@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { confirmSheet } from '@/lib/confirm';
 import FileDrop from '@/components/ui/FileDrop';
 import SectionCard from '@/components/ui/SectionCard';
+import { Chip, Note, type Tone } from '@/components/hospitality/kit';
 import { useAuth } from '@/hooks/useAuth';
 import { slugFrom } from '@/lib/slug';
 import {
@@ -26,10 +27,12 @@ import {
 const TYPE_LABEL: Record<ChannelType, string> = {
   direct: 'Direct', booking_com: 'Booking.com', airbnb: 'Airbnb', ical_generic: 'Other (iCal)',
 };
-const SYNC_META: Record<SyncStatus, { label: string; colour: string }> = {
-  ok: { label: 'Synced', colour: 'var(--green)' },
-  error: { label: 'Error', colour: 'var(--red)' },
-  unconfigured: { label: 'Not set up', colour: 'var(--text-4)' },
+// Sync state in the calendar's key: navy when it is working, red when it is
+// not, an empty outline before it has been set up.
+const SYNC_META: Record<SyncStatus, { label: string; tone: Tone }> = {
+  ok: { label: 'Synced', tone: 'stay' },
+  error: { label: 'Error', tone: 'bad' },
+  unconfigured: { label: 'Not set up', tone: 'off' },
 };
 
 export default function ChannelsPage() {
@@ -56,7 +59,7 @@ export default function ChannelsPage() {
 
   return (
     <>
-      {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
+      {error && <div style={{ marginBottom: 16 }}><Note tone="bad">{error}</Note></div>}
       {loading && <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>Loading…</p>}
       {noUnits && <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>Add a unit first: channels attach to a unit.</p>}
 
@@ -116,10 +119,10 @@ function UnitChannels({ unit, channels, onChange, onError }: { unit: Unit; chann
         {channels.map(c => {
           const meta = SYNC_META[c.sync_status];
           return (
-            <div key={c.id} style={{ padding: 12, borderRadius: 10, border: '1px solid var(--border)' }}>
+            <div key={c.id} style={{ padding: 16, borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-md)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
                 <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>{TYPE_LABEL[c.channel_type]}</span>
-                <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 'var(--fs-label)', fontWeight: 700, color: meta.colour, background: `color-mix(in srgb, ${meta.colour} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${meta.colour} 40%, transparent)` }}>{meta.label}</span>
+                <Chip tone={meta.tone}>{meta.label}</Chip>
                 {c.last_synced_at && <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>last: {new Date(c.last_synced_at).toLocaleString()}</span>}
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
                   <button className="pill pill-primary" style={{ opacity: busy === c.id ? 0.6 : 1 }} disabled={busy === c.id} onClick={() => sync(c.id)}>{busy === c.id ? 'Syncing…' : 'Sync now'}</button>

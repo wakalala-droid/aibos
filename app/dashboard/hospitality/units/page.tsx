@@ -9,7 +9,9 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { confirmSheet } from '@/lib/confirm';
+import { X } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
+import { Note } from '@/components/hospitality/kit';
 import { slugFrom } from '@/lib/slug';
 import { fmt, symbolForToken, CURRENCIES } from '@/lib/currency';
 import {
@@ -55,7 +57,7 @@ export default function UnitsPage() {
 
   return (
     <>
-      {error && <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-data)' }}>{error}</div>}
+      {error && <div style={{ marginBottom: 16 }}><Note tone="bad">{error}</Note></div>}
 
       {/* Add property */}
       <SectionCard title="Properties" subtitle="Each property holds one or more lettable units.">
@@ -203,9 +205,11 @@ function UnitEditor({ unit, onSaved, onError }: { unit: Unit; onSaved: () => Pro
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
           {amenities.length === 0 && <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)' }}>None yet: add the real ones so no listing can diverge.</span>}
           {amenities.map(a => (
-            <span key={a} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 999, background: 'var(--bg-badge)', border: '1px solid var(--border-md)', fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>
+            <span key={a} className="rs-chip">
               {a}
-              <button aria-label={`Remove ${a}`} onClick={() => { setAmenities(amenities.filter(x => x !== a)); setSaved(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 'var(--fs-data)', lineHeight: 1 }}>✕</button>
+              <button type="button" className="rs-chip-x" aria-label={`Remove ${a}`} onClick={() => { setAmenities(amenities.filter(x => x !== a)); setSaved(false); }}>
+                <X aria-hidden="true" />
+              </button>
             </span>
           ))}
         </div>
