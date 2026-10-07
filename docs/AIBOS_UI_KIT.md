@@ -26,7 +26,7 @@ Import: `import { Notice, BentoCard, NoticeArt, BrandMark } from '@/components/k
 | Small figures | side by side inside a card | `.mini-stats`, `.mini-stat` |
 
 ## Rules
-- Geist only. Nothing in a sentence under 18px; spaced capitals at least 16px. Taps at least 44px. Contrast at least 4.5:1.
+- Geist only. Mercury-standard sizes (owner, 7 Oct 2026): body 15px, data and labels 14px, spaced capitals 12px, card titles 17px, page titles 22px. Taps at least 44px. Contrast at least 4.5:1.
 - Numbers are ink. Red only for a figure that went the wrong way (`trendTone`, `signTone`).
 - Charts use `--chart-1..6` and `--chart-muted`.
 - No em-dashes, no comma before "and", no emoji. Plain owner words.

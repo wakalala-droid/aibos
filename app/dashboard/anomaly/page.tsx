@@ -139,8 +139,8 @@ export default function AnomalyPage() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={scatterData} barCategoryGap="22%" barGap={4}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5}
                 label={{ value: 'Critical (2.0)', fill: 'var(--crit)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />

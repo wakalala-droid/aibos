@@ -123,8 +123,8 @@ export default function AdminUsagePage() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.series} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                  <XAxis tickMargin={8} dataKey="date" tick={{ fontSize: 18, fill: 'var(--text-3)' }} tickFormatter={(d: string) => d.slice(5)} minTickGap={24} stroke="var(--border)" />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 18, fill: 'var(--text-3)' }} stroke="var(--border)" width={48} />
+                  <XAxis tickMargin={8} dataKey="date" tick={{ fontSize: 13, fill: 'var(--text-3)' }} tickFormatter={(d: string) => d.slice(5)} minTickGap={24} stroke="var(--border)" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 13, fill: 'var(--text-3)' }} stroke="var(--border)" width={48} />
                   <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 10, fontSize: 'var(--fs-data)' }} labelStyle={{ color: 'var(--text-2)' }} />
                   <Line type="monotone" dataKey="uploads" name="Uploads" stroke="var(--cyan)" strokeWidth={2} dot={false} />
                   <Line type="monotone" dataKey="chats" name="Chats" stroke="#f97316" strokeWidth={2} dot={false} />

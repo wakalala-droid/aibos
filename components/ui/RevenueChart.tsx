@@ -35,10 +35,10 @@ export default function RevenueChart({
           </defs>
           <CartesianGrid stroke="var(--border)" vertical={false} />
           <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick}
-            tick={{ fontSize: 18, fill: 'var(--text-3)' }}
+            tick={{ fontSize: 13, fill: 'var(--text-3)' }}
             axisLine={false} tickLine={false} />
           <YAxis width={84}
-            tick={{ fontSize: 18, fill: 'var(--text-3)' }}
+            tick={{ fontSize: 13, fill: 'var(--text-3)' }}
             axisLine={false} tickLine={false}
             tickFormatter={(v) => formatAxis(Number(v))} />
           <Tooltip content={<ChartTooltip sym={sym} />}

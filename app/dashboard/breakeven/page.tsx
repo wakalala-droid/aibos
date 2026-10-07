@@ -220,8 +220,8 @@ export default function BreakevenPage() {
               <ComposedChart data={cvp} margin={{ top: 36, right: 16, bottom: 0, left: 0 }}>
                 <CartesianGrid stroke="var(--border)" vertical={false} />
                 <XAxis tickMargin={8} type="number" dataKey="x" domain={[0, xMax]} tickCount={5} tickFormatter={(v) => formatAxis(Number(v))}
-                  tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-                <YAxis width={84} domain={[0, 'auto']} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
+                  tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+                <YAxis width={84} domain={[0, 'auto']} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
                 <Tooltip content={<CvpTooltip sym={sym} />} cursor={{ stroke: 'var(--border-strong)', strokeWidth: 1 }} />
                 <Area dataKey="loss" stroke="none" fill="var(--red)" fillOpacity={0.14} isAnimationActive={false} connectNulls={false} name="Loss" />
                 <Area dataKey="profit" stroke="none" fill="var(--chart-line)" fillOpacity={0.18} isAnimationActive={false} connectNulls={false} name="Profit" />
@@ -230,10 +230,10 @@ export default function BreakevenPage() {
                 <Line dataKey="take" stroke="var(--chart-line)" strokeWidth={2.5} dot={false} isAnimationActive={false} name="What you take" />
                 {currentRevenue > 0 && currentRevenue < xMax && (
                   <ReferenceLine x={currentRevenue} stroke="var(--border-strong)" strokeDasharray="4 4"
-                    label={{ value: 'You', position: 'top', fill: 'var(--text-1)', fontSize: 18, fontWeight: 600, stroke: 'var(--bg-card)', strokeWidth: 6, paintOrder: 'stroke' }} />
+                    label={{ value: 'You', position: 'top', fill: 'var(--text-1)', fontSize: 13, fontWeight: 600, stroke: 'var(--bg-card)', strokeWidth: 6, paintOrder: 'stroke' }} />
                 )}
                 <ReferenceDot x={bepRevenue} y={bepRevenue} r={7} fill="var(--bg-card)" stroke="var(--text-1)" strokeWidth={2.5}
-                  label={{ value: 'Breakeven', position: bepRevenue / xMax > 0.62 ? 'left' : bepRevenue / xMax < 0.38 ? 'right' : 'top', fill: 'var(--text-1)', fontSize: 18, fontWeight: 600, offset: 12, stroke: 'var(--bg-card)', strokeWidth: 6, paintOrder: 'stroke' }} />
+                  label={{ value: 'Breakeven', position: bepRevenue / xMax > 0.62 ? 'left' : bepRevenue / xMax < 0.38 ? 'right' : 'top', fill: 'var(--text-1)', fontSize: 13, fontWeight: 600, offset: 12, stroke: 'var(--bg-card)', strokeWidth: 6, paintOrder: 'stroke' }} />
                 {currentRevenue > 0 && currentRevenue < xMax && (
                   <ReferenceDot x={currentRevenue} y={currentRevenue} r={6} fill="var(--chart-line)" stroke="var(--bg-card)" strokeWidth={2} />
                 )}
@@ -255,8 +255,8 @@ export default function BreakevenPage() {
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={monthBars} barCategoryGap="30%">
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-              <YAxis width={84} domain={[0, yStep * 4]} ticks={yTicks} interval={0} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
+              <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} domain={[0, yStep * 4]} ticks={yTicks} interval={0} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="Sales" name="Sales" radius={[6, 6, 0, 0]} maxBarSize={72}>
                 {monthBars.map((m) => <Cell key={m.month} fill={m.Sales < bepRevenue ? 'var(--red)' : 'var(--chart-line)'} />)}

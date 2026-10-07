@@ -25,8 +25,8 @@ export function ForecastChart({ data, sym = 'K', height = 240 }: { data: Forecas
             <linearGradient id="mForeG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--purple)" stopOpacity={0.22} /><stop offset="100%" stopColor="var(--purple)" stopOpacity={0} /></linearGradient>
           </defs>
           <CartesianGrid stroke="var(--border)" vertical={false} />
-          <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-          <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
+          <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+          <YAxis width={84} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
           <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
           <Area type="monotone" dataKey="upper" stroke="none" fill="rgba(167,139,250,0.07)" dot={false} name="Upper" connectNulls />
           <Area type="monotone" dataKey="lower" stroke="none" fill="var(--bg-page)" dot={false} name="Lower" connectNulls />
@@ -54,8 +54,8 @@ export function CashProjectionChart({ data, sym = 'K', height = 210 }: { data: C
       <AreaChart data={data}>
         <defs><linearGradient id="mCashGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--brand-fill)" stopOpacity={0.22} /><stop offset="100%" stopColor="var(--brand-fill)" stopOpacity={0} /></linearGradient></defs>
         <CartesianGrid stroke="var(--border)" vertical={false} />
-        <XAxis tickMargin={8} minTickGap={16} dataKey="label" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-        <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
+        <XAxis tickMargin={8} minTickGap={16} dataKey="label" tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+        <YAxis width={84} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
         <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
         <Area type="monotone" dataKey="cash" stroke="var(--chart-line)" strokeWidth={2} fill="url(#mCashGrad)" dot={false} name="Cash Position" />
         <ReferenceLine y={0} stroke="var(--crit)" strokeDasharray="4 4" strokeWidth={1} />
@@ -98,8 +98,8 @@ export function AnomalyZChart({ data, height = 200 }: { data: ZRow[]; height?: n
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} barCategoryGap="22%" barGap={4}>
           <CartesianGrid stroke="var(--border)" vertical={false} />
-          <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-          <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+          <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+          <YAxis width={84} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
           <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
           <ReferenceLine y={2} stroke="var(--crit)" strokeDasharray="5 4" strokeWidth={1.5} label={{ value: 'Far (2)', fill: 'var(--crit)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />
           <ReferenceLine y={1.5} stroke="var(--warn)" strokeDasharray="4 3" strokeWidth={1} label={{ value: 'Worth a look (1.5)', fill: 'var(--warn)', fontSize: 'var(--fs-body)', position: 'insideTopRight' }} />

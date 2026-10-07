@@ -56,16 +56,16 @@ def check_code(path: pathlib.Path, rel: str, problems: list) -> None:
     for i, line in enumerate(lines, 1):
         for m in PX.finditer(line):
             px = size_px(m.group(1), m.group(2))
-            if px >= 18:
+            if px >= 13:
                 continue
             near = " ".join(lines[max(0, i - 4):i + 3]).lower()
-            if px >= 16 and "uppercase" in near:
+            if px >= 12 and "uppercase" in near:
                 continue
-            problems.append(f"{rel}:{i}: text at {px:g}px; use var(--fs-body) (18px) or var(--fs-caps) for spaced capitals")
+            problems.append(f"{rel}:{i}: text at {px:g}px; use var(--fs-body) (15px) or var(--fs-caps) for spaced capitals")
         for m in SIZE_CONST.finditer(line):
             px = size_px(m.group(1), m.group(2))
-            if px < 18:
-                problems.append(f"{rel}:{i}: text size constant at {px:g}px; use var(--fs-body) or var(--fs-label) (18px)")
+            if px < 13:
+                problems.append(f"{rel}:{i}: text size constant at {px:g}px; use var(--fs-body) or var(--fs-label) (15px)")
         if RADIUS.search(line):
             problems.append(f"{rel}:{i}: corner off the scale; use var(--radius-sm) 6, var(--radius-md) 10 or var(--radius-lg) 16")
         if DASH in line:
@@ -75,8 +75,8 @@ def check_code(path: pathlib.Path, rel: str, problems: list) -> None:
 
 
 CSS_PX = re.compile(r"font-size:\s*(\d+(?:\.\d+)?)(px|rem)\s*;")
-TOKEN_FLOOR = {"--fs-body": 18, "--fs-data": 18, "--fs-label": 18, "--fs-caps": 16,
-               "--fs-h3": 20, "--fs-h2": 24, "--fs-h1": 30}
+TOKEN_FLOOR = {"--fs-body": 15, "--fs-data": 14, "--fs-label": 14, "--fs-caps": 12,
+               "--fs-h3": 17, "--fs-h2": 22, "--fs-h1": 26}
 
 
 def check_css(path: pathlib.Path, rel: str, problems: list) -> None:
@@ -84,8 +84,8 @@ def check_css(path: pathlib.Path, rel: str, problems: list) -> None:
     for i, line in enumerate(text.split("\n"), 1):
         for m in CSS_PX.finditer(line):
             px = size_px(m.group(1), m.group(2))
-            if px < 16:
-                problems.append(f"{rel}:{i}: font-size {px:g}px is under the 16px floor")
+            if px < 12:
+                problems.append(f"{rel}:{i}: font-size {px:g}px is under the 12px floor")
         for token, floor in TOKEN_FLOOR.items():
             t = re.search(rf"{re.escape(token)}:\s*(\d+(?:\.\d+)?)(px|rem)", line)
             if t and size_px(t.group(1), t.group(2)) < floor:

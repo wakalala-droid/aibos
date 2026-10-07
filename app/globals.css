@@ -44,15 +44,15 @@
    weight and colour, never from shrinking.
      display 36 · h1 30 · h2 24 · h3 20 · body/data/label 18 · caps 16 */
 :root {
-  --fs-display: 2.25rem;   /* 36px, KPI values, one per card */
-  --fs-h1:      1.875rem;  /* 30px */
-  --fs-h2:      1.5rem;    /* 24px, page titles */
-  --fs-h3:      1.25rem;   /* 20px, card titles */
-  --fs-body:    1.125rem;  /* 18px */
-  --fs-data:    1.125rem;  /* 18px, table cells, captions, helper text */
-  --fs-label:   1.125rem;  /* 18px, time stamps, sub-lines, chips */
-  --fs-caps:    1rem;      /* 16px, SPACED CAPITALS ONLY */
-  --fs-hero:    3rem;      /* 48px, the ONE money figure that leads a page (redesign 2026-10) */
+  --fs-display: 1.875rem;   /* 30px, KPI values, one per card */
+  --fs-h1:      1.625rem;  /* 26px */
+  --fs-h2:      1.375rem;  /* 22px, page titles */
+  --fs-h3:      1.0625rem; /* 17px, card titles */
+  --fs-body:    0.9375rem; /* 15px, Mercury-standard reading size (owner, 7 Oct 2026) */
+  --fs-data:    0.875rem;  /* 14px, table cells, captions, helper text */
+  --fs-label:   0.875rem;  /* 14px, time stamps, sub-lines, chips */
+  --fs-caps:    0.75rem;   /* 12px, SPACED CAPITALS ONLY */
+  --fs-hero:    2.5rem;    /* 40px, the ONE money figure that leads a page */
 
   /* Radius (Design OS: small 6 · medium 10 · large 16; cards keep the
      established 14px the BorderGlow chrome is tuned to). */

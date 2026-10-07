@@ -102,12 +102,12 @@
   color: var(--text-1);
 }
 .co-price-per {
-  font-size: 18px;
+  font-size: 15px;
   color: var(--text-3);
 }
 .co-tagline {
   margin: 8px 0 0;
-  font-size: 18px;
+  font-size: 15px;
   line-height: 1.5;
   color: var(--text-3);
 }
@@ -130,7 +130,7 @@
   border: 1px solid transparent;
   background: transparent;
   font: inherit;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-3);
   cursor: pointer;
@@ -161,7 +161,7 @@
   align-items: baseline;
   gap: 16px;
   padding: 12px 0;
-  font-size: 18px;
+  font-size: 15px;
   color: var(--text-2);
   border-top: 1px solid var(--border);
 }
@@ -304,7 +304,7 @@
   background: var(--cyan);
   color: var(--bg-page);
   font: inherit;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   text-align: center;
   text-decoration: none;

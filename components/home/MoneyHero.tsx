@@ -108,7 +108,7 @@ export default function MoneyHero({ title = 'Money right now', initialDays = 30 
                   </linearGradient>
                 </defs>
                 <XAxis tickMargin={8} dataKey="day" ticks={ticks} interval={0} tickFormatter={(d: string) => dayWords(d, false)}
-                  tick={{ fontSize: 18, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
+                  tick={{ fontSize: 13, fill: 'var(--text-4)' }} axisLine={false} tickLine={false} />
                 <YAxis hide domain={[lo - pad, hi + pad]} />
                 <Tooltip content={() => null} cursor={{ stroke: 'var(--border-strong)', strokeWidth: 1 }} />
                 {/* The fill always hangs under the line. Recharts fills to zero by

@@ -76,8 +76,8 @@ export default function CashForecastFan() {
         <ResponsiveContainer width="100%" height={220}>
           <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid stroke="var(--border)" vertical={false} />
-            <XAxis dataKey="label" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickMargin={10} padding={{ left: 12 }} />
-            <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
+            <XAxis dataKey="label" tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickMargin={10} padding={{ left: 12 }} />
+            <YAxis width={84} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(Number(v))} />
             <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-strong)', strokeWidth: 1 }} />
             {dips && <ReferenceLine y={0} stroke="var(--red)" strokeDasharray="4 4" strokeWidth={1} />}
             <Area dataKey="range" stroke="none" fill="var(--chart-line)" fillOpacity={0.16} isAnimationActive={false} name="Range" legendType="none" />

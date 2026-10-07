@@ -134,8 +134,8 @@ export default function VariancePage() {
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={chartData} barCategoryGap="22%" barGap={6}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="Revenue" fill="var(--chart-line)" radius={[6, 6, 0, 0]} name="Sales" maxBarSize={72} />
               <Bar dataKey="Costs" fill="var(--chart-muted)" radius={[6, 6, 0, 0]} name="Costs" maxBarSize={72} />
@@ -153,8 +153,8 @@ export default function VariancePage() {
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData.slice(1)} barCategoryGap="28%" barGap={6}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={v => `${Number(v).toFixed(0)}%`} />
+              <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={v => `${Number(v).toFixed(0)}%`} />
               <Tooltip content={<ChartTooltip currency={false} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <ReferenceLine y={0} stroke="var(--border-strong)" strokeWidth={1} />
               <Bar dataKey="RevChange" name="Sales change, %" radius={[6, 6, 0, 0]} maxBarSize={72}>

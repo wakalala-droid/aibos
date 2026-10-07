@@ -89,8 +89,8 @@ export default function ProductsPage() {
         <SectionCard title="Best sellers" subtitle="Highest sales first" delay={0.2} style={{ marginBottom: 20 }}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={barData} barCategoryGap="28%">
-              <XAxis tickMargin={8} minTickGap={16} dataKey="name" tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-              <YAxis width={84} tick={{ fontSize: 18, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
+              <XAxis tickMargin={8} minTickGap={16} dataKey="name" tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
+              <YAxis width={84} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(v)} />
               <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ fill: 'var(--table-row-hover)' }} />
               <Bar dataKey="total_revenue" radius={[5, 5, 0, 0]}>
                 {barData.map((entry, i) => (
