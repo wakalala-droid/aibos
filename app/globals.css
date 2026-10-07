@@ -167,7 +167,7 @@
   --card-wash:      rgba(59,130,246,0.24);
   --card-wash-opacity: 0.6;
   /* The page's own light, high on the left (the aurora). */
-  --aurora:         rgba(59,130,246,0.15);
+  --aurora:         rgba(59,130,246,0.26);
   --card-top:       rgba(255,255,255,0.06);
 
   /* ── BENTO DOT TEXTURE ─────────────────────────────────────────
@@ -260,7 +260,7 @@
   --card-sheen:     transparent;
   --card-wash:      rgba(148,163,184,0.32);
   --card-wash-opacity: 0.7;
-  --aurora:         rgba(148,163,184,0.15);
+  --aurora:         rgba(59,130,246,0.12);
   --card-top:       rgba(255,255,255,0.8);
 
   /* Bento dots — warm ink on the off-white surface. Cranked up a touch
@@ -1324,7 +1324,7 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 /* The page's own light: a faint aurora high on the left, under everything. */
 .app-shell {
   background:
-    radial-gradient(ellipse 55% 60% at 12% 0%, var(--aurora), transparent 65%),
+    radial-gradient(ellipse 65% 70% at 12% 0%, var(--aurora), transparent 65%),
     radial-gradient(ellipse 40% 50% at 88% 0%, rgba(148,163,184,0.10), transparent 70%),
     var(--bg-page);
 
