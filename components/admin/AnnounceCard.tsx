@@ -14,21 +14,14 @@
  * to the same person.
  *
  * The API decides who may do this, from an address Google has proven the
- * account owns. This card is only the hands.
+ * account owns. This card is only the hands. Built from the calendar's set
+ * (components/hospitality/kit.tsx), like the card payment reminder below it.
  */
 
 import { useState } from 'react';
+import { Bell, Megaphone, Send, Smartphone, Users } from 'lucide-react';
 import { announce, type AnnounceResult } from '@/lib/api';
-
-const field: React.CSSProperties = {
-  width: '100%', padding: '10px 12px', minHeight: 44, borderRadius: 10,
-  border: '1px solid var(--border-md)', background: 'var(--bg-input)',
-  color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none',
-};
-const label: React.CSSProperties = {
-  display: 'block', marginBottom: 4, fontSize: 'var(--fs-caps)', fontWeight: 700,
-  letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-4)',
-};
+import { Chip, Note } from '@/components/hospitality/kit';
 
 export default function AnnounceCard() {
   const [title, setTitle] = useState('');
@@ -55,58 +48,60 @@ export default function AnnounceCard() {
   const ready = title.trim().length > 2;
 
   return (
-    <section className="section-card" style={{ padding: 16, marginBottom: 16 }}>
-      <h2 style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 4px' }}>Tell everyone</h2>
-      <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 16px' }}>
+    <section className="section-card" style={{ marginBottom: 16 }}>
+      <div className="rs-sec-head" style={{ marginBottom: 6 }}>
+        <h2 className="rs-sec-title">Tell everyone</h2>
+        <Chip><Megaphone aria-hidden="true" /> Every account</Chip>
+      </div>
+      <p className="rs-text is-quiet">
         Goes to every account&apos;s bell and to every phone or computer with notifications on. Check who first.
       </p>
 
-      <div style={{ display: 'grid', gap: 12 }}>
+      <div style={{ display: 'grid', gap: 14, marginTop: 18 }}>
         <div>
-          <label style={label} htmlFor="announce-title">What it says</label>
-          <input id="announce-title" value={title} onChange={(e) => setTitle(e.target.value)}
-            placeholder="AIBOS has been updated" style={field} />
+          <label className="field-label" htmlFor="announce-title">What it says</label>
+          <input id="announce-title" className="field" value={title} onChange={(e) => setTitle(e.target.value)}
+            placeholder="AIBOS has been updated" />
         </div>
         <div>
-          <label style={label} htmlFor="announce-body">The detail</label>
-          <textarea id="announce-body" value={body} onChange={(e) => setBody(e.target.value)} rows={3}
-            placeholder="Close AIBOS and open it again to get the new version." style={{ ...field, minHeight: 88, resize: 'vertical' }} />
+          <label className="field-label" htmlFor="announce-body">The detail</label>
+          <textarea id="announce-body" className="field" value={body} onChange={(e) => setBody(e.target.value)} rows={3}
+            placeholder="Close AIBOS and open it again to get the new version." style={{ minHeight: 88, resize: 'vertical' }} />
         </div>
         <div>
-          <label style={label} htmlFor="announce-link">Where it opens</label>
-          <input id="announce-link" value={link} onChange={(e) => setLink(e.target.value)} style={field} />
+          <label className="field-label" htmlFor="announce-link">Where it opens</label>
+          <input id="announce-link" className="field" value={link} onChange={(e) => setLink(e.target.value)} />
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
-        <button type="button" onClick={() => void run(true)} disabled={!ready || busy !== ''}
-          style={{ minHeight: 44, padding: '0 16px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: ready ? 'pointer' : 'default', opacity: ready ? 1 : 0.6 }}>
-          {busy === 'checking' ? 'Counting…' : 'Who would get this'}
+      <div className="rs-btns" style={{ marginTop: 18 }}>
+        <button type="button" className="rs-btn is-quiet" onClick={() => void run(true)} disabled={!ready || busy !== ''}>
+          <Users aria-hidden="true" /> {busy === 'checking' ? 'Counting…' : 'Who would get this'}
         </button>
-        <button type="button" onClick={() => void run(false)} disabled={!preview || busy !== ''}
-          style={{ minHeight: 44, padding: '0 16px', borderRadius: 10, border: '1px solid var(--text-1)', background: 'var(--text-1)', color: 'var(--bg-card)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: preview ? 'pointer' : 'default', opacity: preview ? 1 : 0.5 }}>
-          {busy === 'sending' ? 'Sending…' : 'Send it'}
+        <button type="button" className="rs-btn is-navy" onClick={() => void run(false)} disabled={!preview || busy !== ''}>
+          <Send aria-hidden="true" /> {busy === 'sending' ? 'Sending…' : 'Send it'}
         </button>
       </div>
 
       {preview && (
-        <p role="status" style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', margin: '12px 0 0' }}>
-          {preview.people} account{preview.people === 1 ? '' : 's'} would see it in the bell
-          {preview.with_devices > 0
-            ? ` and ${preview.with_devices} of them would get it on a phone or computer.`
-            : '. Nobody has notifications on yet, so nothing would buzz.'}
-        </p>
+        <div role="status" style={{ marginTop: 20 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <Chip><Bell aria-hidden="true" /> {preview.people} account{preview.people === 1 ? '' : 's'} in the bell</Chip>
+            {preview.with_devices > 0 && (
+              <Chip><Smartphone aria-hidden="true" /> {preview.with_devices} on a phone or computer</Chip>
+            )}
+          </div>
+          {preview.with_devices === 0 && <Note tone="info">Nobody has notifications on yet, so nothing would buzz.</Note>}
+        </div>
       )}
       {sent && (
-        <p role="status" style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--good)', margin: '12px 0 0' }}>
+        <Note tone="good">
           Sent. {sent.told} told{sent.pushed > 0 ? `, ${sent.pushed} device${sent.pushed === 1 ? '' : 's'} buzzed` : ''}
           {sent.already > 0 ? `, ${sent.already} already had it` : ''}
           {sent.not_pushed > 0 ? `. ${sent.not_pushed} will see it when they next open AIBOS.` : '.'}
-        </p>
+        </Note>
       )}
-      {error && (
-        <p role="alert" style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--crit)', margin: '12px 0 0' }}>{error}</p>
-      )}
+      {error && <Note tone="bad">{error}</Note>}
     </section>
   );
 }

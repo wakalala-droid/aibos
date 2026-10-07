@@ -12,10 +12,15 @@
  * Two steps, as on Tell everyone. "Who would get this" counts them and shows
  * the message the first one would read, sending nothing. Send goes once per
  * day: a second press that day reaches only whoever the first did not.
+ *
+ * Built from the set the calendar introduced (components/hospitality/kit.tsx):
+ * rounded navy buttons, chips, notes and a soft tile for the message.
  */
 
 import { useState } from 'react';
+import { Bell, CreditCard, Mail, Send, Smartphone, Users } from 'lucide-react';
 import { sendCardReminder, type CardReminderResult } from '@/lib/api';
+import { Chip, Note } from '@/components/hospitality/kit';
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
@@ -43,57 +48,58 @@ export default function CardReminderCard() {
   const canSend = (preview !== null && !nobody) || (sent !== null && sent.remaining > 0);
 
   return (
-    <section className="section-card" style={{ padding: 16, marginBottom: 16 }}>
-      <h2 style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 4px' }}>Card payment reminder</h2>
-      <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '0 0 16px' }}>
+    <section className="section-card" style={{ marginBottom: 16 }}>
+      <div className="rs-sec-head" style={{ marginBottom: 6 }}>
+        <h2 className="rs-sec-title">Card payment reminder</h2>
+        <Chip><CreditCard aria-hidden="true" /> Card only</Chip>
+      </div>
+      <p className="rs-text is-quiet">
         Asks every account on a paid plan that is not on a card yet to update its payment details to a card.
         Goes to their bell, their phone or computer, and their email. Free accounts and card plans are left out.
       </p>
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <button type="button" onClick={() => void run(true)} disabled={busy !== ''}
-          style={{ minHeight: 44, padding: '0 16px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer' }}>
-          {busy === 'checking' ? 'Counting…' : 'Who would get this'}
+      <div className="rs-btns" style={{ marginTop: 18 }}>
+        <button type="button" className="rs-btn is-quiet" onClick={() => void run(true)} disabled={busy !== ''}>
+          <Users aria-hidden="true" /> {busy === 'checking' ? 'Counting…' : 'Who would get this'}
         </button>
-        <button type="button" onClick={() => void run(false)} disabled={!canSend || busy !== ''}
-          style={{ minHeight: 44, padding: '0 16px', borderRadius: 10, border: '1px solid var(--text-1)', background: 'var(--text-1)', color: 'var(--bg-card)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canSend ? 'pointer' : 'default', opacity: canSend ? 1 : 0.5 }}>
-          {busy === 'sending' ? 'Sending…' : 'Send it'}
+        <button type="button" className="rs-btn is-navy" onClick={() => void run(false)} disabled={!canSend || busy !== ''}>
+          <Send aria-hidden="true" /> {busy === 'sending' ? 'Sending…' : 'Send it'}
         </button>
       </div>
 
       {preview && (
-        <div role="status" style={{ marginTop: 12 }}>
-          <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', margin: 0 }}>
-            {nobody
-              ? 'Nobody to remind: every paying account is already on a card.'
-              : `${plural(preview.people, 'account')} would get it in the bell. ${preview.with_email} of them by email, ${preview.with_devices} on a phone or computer.`}
-          </p>
+        <div role="status" style={{ marginTop: 20 }}>
+          {nobody ? (
+            <Note tone="info">Nobody to remind: every paying account is already on a card.</Note>
+          ) : (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <Chip><Bell aria-hidden="true" /> {plural(preview.people, 'account')} in the bell</Chip>
+              <Chip><Mail aria-hidden="true" /> {preview.with_email} by email</Chip>
+              <Chip><Smartphone aria-hidden="true" /> {preview.with_devices} on a phone or computer</Chip>
+            </div>
+          )}
           {preview.sample && (
-            <div style={{ marginTop: 12, padding: 14, borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-badge)' }}>
-              <div style={{ fontSize: 'var(--fs-caps)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 6 }}>
-                What the first one reads
-              </div>
-              <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, lineHeight: 1.5, color: 'var(--text-1)' }}>{preview.sample.title}</div>
-              <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', margin: '4px 0 8px' }}>{preview.sample.body}</p>
-              <span style={{ display: 'inline-flex', alignItems: 'center', minHeight: 36, padding: '0 14px', borderRadius: 999, background: 'var(--text-1)', color: 'var(--bg-card)', fontSize: 'var(--fs-body)', fontWeight: 700 }}>
-                {preview.sample.button}
-              </span>
+            <div className="rs-quote is-plain" style={{ marginTop: 14, whiteSpace: 'normal' }}>
+              <span className="rs-quote-label">What the first one reads</span>
+              <div className="rs-row-title">{preview.sample.title}</div>
+              <p className="rs-text" style={{ margin: '4px 0 14px' }}>{preview.sample.body}</p>
+              <span className="rs-btn is-navy is-sm" aria-hidden="true">{preview.sample.button}</span>
             </div>
           )}
         </div>
       )}
       {sent && (
-        <p role="status" style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--good)', margin: '12px 0 0' }}>
+        <Note tone="good">
           Sent. {plural(sent.told, 'account')} told, {sent.emailed} emailed
           {sent.pushed > 0 ? `, ${plural(sent.pushed, 'device')} buzzed` : ''}
           {sent.already > 0 ? `. ${sent.already} already had it` : ''}
           {sent.errors > 0 ? `. ${sent.errors} could not be reached` : ''}.
-          {sent.remaining > 0 ? ` ${sent.remaining} still to go: press Send it again to reach them.` : ''}
-        </p>
+        </Note>
       )}
-      {error && (
-        <p role="alert" style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--crit)', margin: '12px 0 0' }}>{error}</p>
+      {sent && sent.remaining > 0 && (
+        <Note tone="warn">{sent.remaining} still to go. Press Send it again to reach them.</Note>
       )}
+      {error && <Note tone="bad">{error}</Note>}
     </section>
   );
 }
