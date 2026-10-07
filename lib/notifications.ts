@@ -152,6 +152,8 @@ const FEED_SEVERITY: Record<string, NotifySeverity> = {
   plan_renews_soon: 'info',
   plan_renews_today: 'warning',
   plan_renewal_last_call: 'critical',
+  // Plans are card only: the admin's reminder to put a paid plan on a card.
+  plan_card_reminder: 'warning',
   // Something on the owner's schedule is due (aibos-api schedule_reminders.py).
   schedule_reminder: 'warning',
 };

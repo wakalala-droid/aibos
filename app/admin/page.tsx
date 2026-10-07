@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import SystemHealth from '@/components/admin/SystemHealth';
 import AnnounceCard from '@/components/admin/AnnounceCard';
+import CardReminderCard from '@/components/admin/CardReminderCard';
 import type { AccountOverview } from '@/lib/admin';
 import { TIERS, TIER_ORDER, type Tier } from '@/lib/tiers';
 
@@ -342,6 +343,8 @@ export default function AdminAccountsPage() {
       {/* One message to every account, when something changes that customers
           should know about. */}
       <AnnounceCard />
+      {/* Plans are card only: ask every paying account not on a card yet. */}
+      <CardReminderCard />
       {controls}
       {toastEl}
       {body}

@@ -331,6 +331,22 @@ export async function announce(input: {
   return data as unknown as AnnounceResult;
 }
 
+/** The card payment reminder (admin): every account on a paid plan that a card
+ *  is not paying for is asked to put it on a card, by bell, phone and email.
+ *  A dry run counts them and shows the first message. */
+export interface CardReminderResult {
+  key: string; people: number; with_email: number; with_devices: number;
+  told: number; already: number; emailed: number; pushed: number; remaining: number; errors: number;
+  dry_run?: boolean;
+  sample?: { title: string; body: string; button: string; link: string } | null;
+}
+export async function sendCardReminder(input: { key?: string; dry_run?: boolean }): Promise<CardReminderResult> {
+  const data = await spineFetch('/admin/card-reminder', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  });
+  return data as unknown as CardReminderResult;
+}
+
 /** One phone or computer that has notifications on, in plain words
  *  ("Chrome on an Android phone"). Reminders and alerts reach only these. */
 export interface PushDevice { id: string; device: string; since: string | null }
