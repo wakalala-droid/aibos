@@ -275,6 +275,7 @@
 .hero-screen { position: relative; overflow: hidden; width: 100%; background: #f4f3ef; }
 .hero-poster, .hero-poster img, .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
 .hero-video { z-index: 1; }
+.hero-film { display: contents; }
 .hero-caption { width: 100%; margin: 0; padding: 14px 0 clamp(14px, 2.5vw, 22px); font-size: var(--fs-label); color: var(--text-3); }
 @media (min-width: 768px) {
   .hero-screen {
