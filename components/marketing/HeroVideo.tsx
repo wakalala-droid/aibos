@@ -6,14 +6,13 @@
  * public/marketing/hero/. A laptop cut for screens 768px and wider, a phone
  * cut for phones, picked by the device and swapped on rotate or resize.
  *
- * The poster is the first paint (it is the video's own first frame), so the
- * page is never waiting on the video. The video is muted and loops, plays
- * only while it is on screen, and has a Pause button under it (WCAG 2.2.2). With
- * reduced motion it does not start on its own: the poster shows with Play.
+ * It plays on its own, muted and looping, with no buttons (owner, 9 Oct
+ * 2026). The browser starts it itself (autoPlay); if a browser refuses to
+ * autoplay, the first touch, click, key or scroll on the page starts it.
+ * The poster is the video's own first frame, so the stage is never empty.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pause, Play } from 'lucide-react';
 
 type Cut = 'desktop' | 'phone';
 const SRC: Record<Cut, { mp4: string; webm: string; poster: string; w: number; h: number }> = {
@@ -22,57 +21,45 @@ const SRC: Record<Cut, { mp4: string; webm: string; poster: string; w: number; h
 };
 const WIDE = '(min-width: 768px)';
 const STORY = 'AIBOS in action: recording a sale, getting paid by mobile money, asking AIBOS a question and the morning brief';
+const NUDGES = ['pointerdown', 'touchstart', 'keydown', 'scroll'] as const;
 
 export default function HeroVideo() {
   const [cut, setCut] = useState<Cut | null>(null);
-  const [reduced, setReduced] = useState(false);
-  const [playing, setPlaying] = useState(false);
   const video = useRef<HTMLVideoElement | null>(null);
-  const stage = useRef<HTMLDivElement>(null);
-  const pausedByOwner = useRef(false);
-  const onScreen = useRef(false);
 
-  // Which cut, and whether the visitor asked for less motion. Both follow
-  // changes (a phone turned on its side, a setting switched).
+  // The laptop or the phone cut, following a phone turned on its side.
   useEffect(() => {
     const wide = window.matchMedia(WIDE);
-    const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
     const pick = () => setCut(wide.matches ? 'desktop' : 'phone');
-    const still = () => setReduced(calm.matches);
     pick();
-    still();
     wide.addEventListener('change', pick);
-    calm.addEventListener('change', still);
-    return () => { wide.removeEventListener('change', pick); calm.removeEventListener('change', still); };
+    return () => wide.removeEventListener('change', pick);
   }, []);
 
-  // Play while on screen, pause when scrolled away.
-  useEffect(() => {
-    const el = stage.current;
-    if (!el || !cut) return;
-    const io = new IntersectionObserver(([entry]) => {
-      onScreen.current = entry.isIntersecting;
-      const v = video.current;
-      if (!v) return;
-      if (entry.isIntersecting && !reduced && !pausedByOwner.current) v.play().catch(() => { /* autoplay refused: the poster stays */ });
-      else if (!entry.isIntersecting) v.pause();
-    }, { threshold: 0.2 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [cut, reduced]);
-
-  const toggle = useCallback(() => {
+  const play = useCallback(() => {
     const v = video.current;
     if (!v) return;
-    if (v.paused) { pausedByOwner.current = false; v.play().catch(() => {}); }
-    else { pausedByOwner.current = true; v.pause(); }
+    v.muted = true;
+    v.play().catch(() => { /* refused for now: the next touch or scroll tries again */ });
   }, []);
 
+  // Start it, and if the browser held it back, start it on the first touch,
+  // click, key or scroll anywhere on the page.
+  useEffect(() => {
+    if (!cut) return;
+    play();
+    const nudge = () => {
+      play();
+      if (video.current && !video.current.paused) NUDGES.forEach((e) => window.removeEventListener(e, nudge));
+    };
+    NUDGES.forEach((e) => window.addEventListener(e, nudge, { passive: true }));
+    return () => NUDGES.forEach((e) => window.removeEventListener(e, nudge));
+  }, [cut, play]);
+
   // The app floats on the kit's dark surface with its blue light, so the
-  // light product reads clearly against the page; the caption and the
-  // Pause button sit on the stage under it, never over the app.
+  // light product reads clearly against the page.
   return (
-    <div ref={stage} className="hero-player">
+    <div className="hero-player">
       <div className="hero-stage" data-theme="dark">
         <div className="hero-screen">
           <picture className="hero-poster">
@@ -90,30 +77,23 @@ export default function HeroVideo() {
                 if (el) { el.muted = true; el.defaultMuted = true; el.setAttribute('muted', ''); }
               }}
               className="hero-video"
+              autoPlay
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               poster={SRC[cut].poster}
               disablePictureInPicture
               disableRemotePlayback
               aria-label={STORY}
-              onPlay={() => setPlaying(true)}
-              onPause={() => setPlaying(false)}
-              onLoadedData={() => { if (onScreen.current && !reduced && !pausedByOwner.current) video.current?.play().catch(() => {}); }}
+              onCanPlay={play}
             >
               <source src={SRC[cut].webm} type="video/webm" />
               <source src={SRC[cut].mp4} type="video/mp4" />
             </video>
           )}
         </div>
-        <div className="hero-controls">
-          <p className="hero-caption">A sample business, Zoe&apos;s Kitchen in Lusaka</p>
-          <button type="button" className="pill pill-quiet" onClick={toggle} aria-pressed={!playing}>
-            {playing ? <Pause aria-hidden /> : <Play aria-hidden />}
-            {playing ? 'Pause' : 'Play'}
-          </button>
-        </div>
+        <p className="hero-caption">A sample business, Zoe&apos;s Kitchen in Lusaka</p>
       </div>
     </div>
   );
