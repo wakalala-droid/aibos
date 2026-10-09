@@ -68,47 +68,52 @@ export default function HeroVideo() {
     else { pausedByOwner.current = true; v.pause(); }
   }, []);
 
+  // The app floats on the kit's dark surface with its blue light, so the
+  // light product reads clearly against the page; the caption and the
+  // Pause button sit on the stage under it, never over the app.
   return (
-    <div ref={stage} className="hero-stage">
-      <div className="hero-screen">
-        <picture className="hero-poster">
-          <source media={WIDE} srcSet={SRC.desktop.poster} width={SRC.desktop.w} height={SRC.desktop.h} />
-          {/* eslint-disable-next-line @next/next/no-img-element -- the poster must switch by device in plain HTML, before any script runs */}
-          <img src={SRC.phone.poster} width={SRC.phone.w} height={SRC.phone.h} alt={STORY} fetchPriority="high" />
-        </picture>
-        {cut && (
-          <video
-            key={cut}
-            ref={(el) => {
-              video.current = el;
-              // React sets muted as a property only; iPhone Safari needs the
-              // attribute before it lets a video play on its own.
-              if (el) { el.muted = true; el.defaultMuted = true; el.setAttribute('muted', ''); }
-            }}
-            className="hero-video"
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            poster={SRC[cut].poster}
-            disablePictureInPicture
-            disableRemotePlayback
-            aria-label={STORY}
-            onPlay={() => setPlaying(true)}
-            onPause={() => setPlaying(false)}
-            onLoadedData={() => { if (onScreen.current && !reduced && !pausedByOwner.current) video.current?.play().catch(() => {}); }}
-          >
-            <source src={SRC[cut].webm} type="video/webm" />
-            <source src={SRC[cut].mp4} type="video/mp4" />
-          </video>
-        )}
-      </div>
-      {/* Under the screen, so it never covers the app in the video. */}
-      <div className="hero-controls">
-        <button type="button" className="pill pill-quiet" onClick={toggle} aria-pressed={!playing}>
-          {playing ? <Pause aria-hidden /> : <Play aria-hidden />}
-          {playing ? 'Pause' : 'Play'}
-        </button>
+    <div ref={stage} className="hero-player">
+      <div className="hero-stage" data-theme="dark">
+        <div className="hero-screen">
+          <picture className="hero-poster">
+            <source media={WIDE} srcSet={SRC.desktop.poster} width={SRC.desktop.w} height={SRC.desktop.h} />
+            {/* eslint-disable-next-line @next/next/no-img-element -- the poster must switch by device in plain HTML, before any script runs */}
+            <img src={SRC.phone.poster} width={SRC.phone.w} height={SRC.phone.h} alt={STORY} fetchPriority="high" />
+          </picture>
+          {cut && (
+            <video
+              key={cut}
+              ref={(el) => {
+                video.current = el;
+                // React sets muted as a property only; iPhone Safari needs the
+                // attribute before it lets a video play on its own.
+                if (el) { el.muted = true; el.defaultMuted = true; el.setAttribute('muted', ''); }
+              }}
+              className="hero-video"
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster={SRC[cut].poster}
+              disablePictureInPicture
+              disableRemotePlayback
+              aria-label={STORY}
+              onPlay={() => setPlaying(true)}
+              onPause={() => setPlaying(false)}
+              onLoadedData={() => { if (onScreen.current && !reduced && !pausedByOwner.current) video.current?.play().catch(() => {}); }}
+            >
+              <source src={SRC[cut].webm} type="video/webm" />
+              <source src={SRC[cut].mp4} type="video/mp4" />
+            </video>
+          )}
+        </div>
+        <div className="hero-controls">
+          <p className="hero-caption">A sample business, Zoe&apos;s Kitchen in Lusaka</p>
+          <button type="button" className="pill pill-quiet" onClick={toggle} aria-pressed={!playing}>
+            {playing ? <Pause aria-hidden /> : <Play aria-hidden />}
+            {playing ? 'Pause' : 'Play'}
+          </button>
+        </div>
       </div>
     </div>
   );

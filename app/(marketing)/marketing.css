@@ -253,26 +253,47 @@
 .mkt-hero-copy .mkt-actions { justify-content: center; margin-top: 32px; }
 .mkt-hero-copy .mkt-facts { justify-content: center; }
 
-/* The video stage (components/marketing/HeroVideo.tsx). A laptop screen from
-   768px: the kit's surface, its hairline and its deep shadow. Below 768px: a
-   phone in a hairline frame. The poster sits under the video, so the stage
-   is never empty. */
-.hero-stage { margin-top: clamp(40px, 6vw, 72px); display: flex; flex-direction: column; align-items: center; }
-.hero-screen { position: relative; isolation: isolate; overflow: hidden; width: 100%; background: var(--bg-card); }
+/* The video stage (components/marketing/HeroVideo.tsx): the kit's dark
+   surface (data-theme="dark") lit by the kit's blue aurora from the top
+   left and a little cyan from the right, with the light app floating on it:
+   a hairline edge, a deep shadow and a soft blue glow under it. A laptop
+   window from 768px; a phone in its bezel below that. The poster sits under
+   the video, so the screen is never empty. */
+.hero-player { margin-top: clamp(40px, 6vw, 72px); }
+.hero-stage {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center;
+  padding: clamp(20px, 4.5vw, 56px) clamp(16px, 4.5vw, 56px) 0;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(ellipse 60% 70% at 10% 0%, var(--aurora), transparent 65%),
+    radial-gradient(ellipse 40% 55% at 92% 6%, rgba(34, 211, 238, 0.16), transparent 70%),
+    radial-gradient(ellipse 70% 45% at 50% 100%, rgba(59, 130, 246, 0.14), transparent 70%),
+    var(--bg-page);
+}
+.hero-screen { position: relative; overflow: hidden; width: 100%; background: #f4f3ef; }
 .hero-poster, .hero-poster img, .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
 .hero-video { z-index: 1; }
-.hero-controls { width: 100%; display: flex; justify-content: flex-end; margin-top: 12px; }
+.hero-controls {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 0 clamp(16px, 2.5vw, 24px);
+}
+.hero-caption { margin: 0; font-size: var(--fs-label); color: var(--text-3); }
 @media (min-width: 768px) {
-  .hero-screen { aspect-ratio: 16 / 10; border-radius: var(--radius-lg); border: 1px solid var(--border-md); box-shadow: var(--shadow-lg); }
+  .hero-screen {
+    aspect-ratio: 16 / 10; border-radius: var(--radius-card);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 30px 90px rgba(0, 0, 0, 0.6), 0 0 140px rgba(59, 130, 246, 0.22);
+  }
 }
 @media (max-width: 767px) {
   .hero-screen {
-    width: min(300px, 82vw); aspect-ratio: 390 / 844;
-    border-radius: 40px; border: 1px solid var(--border-strong);
-    box-shadow: 0 0 0 7px var(--bg-card), 0 0 0 8px var(--border-strong), var(--shadow-lg);
-    margin-block: 8px;
+    width: min(280px, 74vw); aspect-ratio: 390 / 844; margin-top: 8px;
+    border-radius: 38px;
+    box-shadow: 0 0 0 7px #161617, 0 0 0 8px rgba(255, 255, 255, 0.16), 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 120px rgba(59, 130, 246, 0.25);
   }
-  .hero-controls { justify-content: center; margin-top: 16px; }
+  .hero-controls { flex-direction: column; justify-content: center; padding-top: 24px; }
+  .hero-caption { text-align: center; }
 }
 
 /* ── Website motion ─────────────────────────────────────────── */
