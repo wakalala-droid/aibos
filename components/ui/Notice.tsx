@@ -37,15 +37,20 @@ export interface NoticeProps {
   art?: boolean;
   /** Floating over the page (a deeper shadow) or sitting in it. */
   floating?: boolean;
+  /** Fix the mark's colour for a surface with its own theme (see BrandMark). */
+  theme?: 'dark' | 'light';
   role?: 'status' | 'alert' | 'region' | 'dialog';
   ariaLabel?: string;
   className?: string;
   style?: React.CSSProperties;
 }
 
-/** The AIBOS mark, white on the dark theme and navy on the light one. */
-export function BrandMark({ size = 26 }: { size?: number }) {
-  const { isDark } = useTheme();
+/** The AIBOS mark, white on the dark theme and navy on the light one.
+ *  `theme` fixes it for a surface that keeps its own theme whatever the
+ *  owner picked (the public website's light page and dark bands). */
+export function BrandMark({ size = 26, theme }: { size?: number; theme?: 'dark' | 'light' }) {
+  const { isDark: ownerDark } = useTheme();
+  const isDark = theme ? theme === 'dark' : ownerDark;
   return (
     // eslint-disable-next-line @next/next/no-img-element -- a fixed small mark, nothing to optimise
     <img src={isDark ? '/brand/aibos-mark-white-glyph.png' : '/brand/aibos-mark.png'} alt="" aria-hidden="true"
@@ -57,8 +62,9 @@ export function BrandMark({ size = 26 }: { size?: number }) {
  *  new screen opens with its art panel: hairline tiles, the money line rising
  *  with its shading under it, the AIBOS mark in its rings in the middle and
  *  the rising double arrow at the right (owner, 7 Oct 2026). */
-export function NoticeArt() {
-  const { isDark } = useTheme();
+export function NoticeArt({ theme }: { theme?: 'dark' | 'light' } = {}) {
+  const { isDark: ownerDark } = useTheme();
+  const isDark = theme ? theme === 'dark' : ownerDark;
   const line = 'M0 66 C 50 64, 80 58, 120 60 S 190 50, 230 52 S 300 40, 340 42 S 420 22, 470 24 S 530 10, 560 8';
   return (
     <div className="notice-art-strip" aria-hidden="true">
@@ -84,17 +90,17 @@ export function NoticeArt() {
 
 export default function Notice({
   icon: Icon, brand, title, tag, children, actions, onClose, closeLabel = 'Close',
-  bad, art, floating, role = 'status', ariaLabel, className = '', style,
+  bad, art, floating, theme, role = 'status', ariaLabel, className = '', style,
 }: NoticeProps) {
   return (
     <div
       className={`notice${floating ? ' notice-floating' : ''}${bad ? ' notice-bad' : ''}${art ? ' notice-with-art' : ''} ${className}`.trim()}
       role={role} aria-label={ariaLabel} aria-live={role === 'status' ? 'polite' : undefined} style={style}
     >
-      {art && <NoticeArt />}
+      {art && <NoticeArt theme={theme} />}
       <div className="notice-head">
         <span className="bento-icon notice-icon" aria-hidden="true">
-          {brand ? <BrandMark /> : Icon ? <Icon /> : <BrandMark />}
+          {brand ? <BrandMark theme={theme} /> : Icon ? <Icon /> : <BrandMark theme={theme} />}
         </span>
         <div className="notice-main">
           <div className="notice-titlerow">

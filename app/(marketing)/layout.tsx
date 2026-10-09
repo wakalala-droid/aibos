@@ -10,9 +10,11 @@ import MarketingFooter from '@/components/marketing/MarketingFooter';
  * (sidebar / dashboard chrome) — AppShell detects marketing routes and
  * renders its children bare (see components/layout/AppShell.tsx).
  *
- * The `data-marketing` wrapper applies the warm premium-light skin from
- * marketing.css, scoped to this subtree only, so the product's saved
- * dark/light theme is never disturbed.
+ * The wrapper carries data-theme="light", so the AI-BOS UI kit's own light
+ * tokens resolve here whatever theme the visitor saved in the product (that
+ * saved choice is never touched). Dark bands set data-theme="dark" on
+ * themselves. marketing.css adds only the website's layout and headline
+ * sizes on top of the kit (docs/AIBOS_UI_KIT.md).
  */
 
 export const metadata: Metadata = {
@@ -36,7 +38,7 @@ export const metadata: Metadata = {
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div data-marketing className="mkt-root">
+    <div data-marketing data-theme="light" className="mkt-root">
       <a href="#mkt-main" className="skip-link">Skip to main content</a>
       <MarketingNav />
       <main id="mkt-main" tabIndex={-1} style={{ outline: 'none' }}>

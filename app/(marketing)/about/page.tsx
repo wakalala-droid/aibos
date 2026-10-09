@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import Reveal from '@/components/marketing/Reveal';
+import { EyeOff, MessageCircle, Earth, HeartHandshake } from 'lucide-react';
+import { BentoCard } from '@/components/kit';
+import StartFree from '@/components/marketing/StartFree';
 
 export const metadata: Metadata = {
   title: 'Our Story',
@@ -24,24 +25,29 @@ const FOUNDER = {
     'I kept picturing a world where every business simply ran: no nasty surprises, no finding out too late that you’d been bleeding cash just because nobody was turning the numbers into real insight. That’s the day I stopped wishing and started building AIBOS.',
 };
 
-const ARC: { eyebrow: string; title: string; body: string }[] = [
+// The story as kit bento cards: a round icon, a spaced-capital title and a tag.
+const ARC: { icon: React.ReactNode; tag: string; title: string; body: string }[] = [
   {
-    eyebrow: 'Your reality today',
+    icon: <EyeOff />,
+    tag: 'Today',
     title: 'Smart owners, flying blind',
-    body: 'Across Lusaka and beyond, brilliant business owners make life-or-death decisions on gut feel and month-old spreadsheets. Not because they’re careless, but because real financial insight has always been too expensive, too complex, or simply not built for them.',
+    body: 'Across Lusaka and beyond, brilliant business owners make life-or-death decisions on gut feel and month-old spreadsheets. Not because they’re careless, but because real financial insight has always been too expensive, too complex or simply not built for them.',
   },
   {
-    eyebrow: 'Your business tomorrow',
+    icon: <MessageCircle />,
+    tag: 'Tomorrow',
     title: 'A CFO in your pocket',
     body: 'Imagine asking your business a question in plain words and getting a straight answer, in Kwacha, in seconds. Knowing your runway before it runs out. Seeing which product really pays. That’s not enterprise software; that’s AIBOS and it costs less than one bad decision.',
   },
   {
-    eyebrow: 'The world we’re building',
+    icon: <Earth />,
+    tag: 'The goal',
     title: 'Every African business, intelligent',
     body: 'When millions of SMEs can see clearly, they hire with confidence, price fairly and survive the lean months. We think that’s how economies are built: not from the top down, but from every shop, restaurant and workshop getting a little bit smarter.',
   },
   {
-    eyebrow: 'Our commitment to you',
+    icon: <HeartHandshake />,
+    tag: 'Our promise',
     title: 'We earn it on your numbers',
     body: 'We will keep our prices public and simple, let you cancel any time, never hold your data hostage and never invent a number we can’t back. You can start free and judge us on your own business, which is exactly how it should be.',
   },
@@ -50,124 +56,70 @@ const ARC: { eyebrow: string; title: string; body: string }[] = [
 export default function AboutPage() {
   return (
     <>
-      {/* Vision hero */}
-      <section className="mkt-section" style={{ position: 'relative', overflow: 'hidden' }}>
-        <span className="mkt-glow" style={{ top: '-25%', left: '-8%', width: 480, height: 480, background: 'radial-gradient(circle, rgba(224,121,42,0.22), transparent 60%)' }} />
-        <span className="mkt-glow" style={{ bottom: '-30%', right: '-8%', width: 420, height: 420, background: 'radial-gradient(circle, rgba(10,143,199,0.18), transparent 62%)' }} />
-        <div className="mkt-wrap" style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-          <Reveal>
-            <p className="mkt-eyebrow">Our story</p>
-            <h1 className="mkt-h1" style={{ maxWidth: 880, marginInline: 'auto' }}>
-              Make every African business intelligent.
-            </h1>
-            <p className="mkt-lead" style={{ marginTop: 20, marginInline: 'auto', maxWidth: 580 }}>
-              AIBOS exists for one reason: the tools that let big companies see clearly should belong to the small ones too, in their language, their currency and their reach.
-            </p>
-          </Reveal>
+      <section className="mkt-section">
+        <div className="mkt-wrap" style={{ textAlign: 'center' }}>
+          <p className="mkt-eyebrow">Our story</p>
+          <h1 className="mkt-h1" style={{ maxWidth: 880, marginInline: 'auto' }}>
+            Make every African business intelligent.
+          </h1>
+          <p className="mkt-lead" style={{ marginTop: 20, marginInline: 'auto', maxWidth: 580 }}>
+            AIBOS exists for one reason: the tools that let big companies see clearly should belong to the small ones too, in their language, their currency and their reach.
+          </p>
         </div>
       </section>
 
-      {/* Founder story — driven by the FOUNDER object above. */}
-      <section className="mkt-section mkt-section--tight">
+      {/* Founder story, driven by the FOUNDER object above, on a kit bento surface. */}
+      <section className="mkt-section mkt-section--tight" style={{ paddingTop: 0 }}>
         <div className="mkt-wrap">
-          <Reveal>
-            <div className="mkt-card mkt-2col" style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.2fr', gap: 'clamp(24px, 4vw, 48px)', alignItems: 'center' }}>
-              {/* Portrait, or a dashed placeholder until a photo is provided */}
-              {FOUNDER.photo ? (
-                // eslint-disable-next-line @next/next/no-img-element -- founder portrait served from /public
-                <img
-                  src={FOUNDER.photo}
-                  alt={FOUNDER.name ? `${FOUNDER.name}, ${FOUNDER.title}` : 'AIBOS founder'}
-                  style={{ width: '100%', aspectRatio: '4 / 5', objectFit: 'cover', objectPosition: 'center 25%', borderRadius: 16, border: '1px solid var(--border-md)' }}
-                />
-              ) : (
-                <div
-                  aria-hidden
-                  style={{
-                    aspectRatio: '4 / 5', borderRadius: 16,
-                    background: 'linear-gradient(160deg, var(--bg-badge), var(--bg-card-hover))',
-                    border: '1px dashed var(--border-strong)',
-                    display: 'grid', placeItems: 'center',
-                    color: 'var(--text-4)', fontSize: 'var(--fs-label)', textAlign: 'center', padding: 16,
-                  }}
-                >
-                  Founder photo / “Our Story” video
-                </div>
-              )}
+          <article className="bento mkt-founder" aria-labelledby="founder-h">
+            {FOUNDER.photo ? (
+              // eslint-disable-next-line @next/next/no-img-element -- founder portrait served from /public
+              <img
+                src={FOUNDER.photo}
+                alt={FOUNDER.name ? `${FOUNDER.name}, ${FOUNDER.title}` : 'AIBOS founder'}
+                className="mkt-founder-photo"
+              />
+            ) : (
+              <div aria-hidden className="mkt-founder-photo mkt-founder-empty">Founder photo or “Our Story” video</div>
+            )}
 
-              <div>
-                <p className="mkt-eyebrow">From the founder</p>
-                <blockquote style={{ margin: 0, fontSize: 'clamp(1.1rem, 2vw, 1.4rem)', fontWeight: 600, lineHeight: 1.45, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
-                  “{FOUNDER.quote}”
-                </blockquote>
-
-                {FOUNDER.story && (
-                  <p className="mkt-body" style={{ marginTop: 16, fontSize: 'var(--fs-body)' }}>{FOUNDER.story}</p>
-                )}
-
-                {FOUNDER.name ? (
-                  <p style={{ marginTop: 18, fontSize: 'var(--fs-body)' }}>
-                    <span style={{ fontWeight: 800, color: 'var(--text-1)' }}>{FOUNDER.name}</span>
-                    <span style={{ color: 'var(--text-3)' }}>, {FOUNDER.title}{FOUNDER.location ? `, ${FOUNDER.location}` : ''}</span>
-                  </p>
-                ) : (
-                  <p className="mkt-body" style={{ marginTop: 16 }}>
-                    <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                      Placeholder: fill in the FOUNDER object at the top of this file.
-                    </span>
-                  </p>
-                )}
-
-                {FOUNDER.videoHref && (
-                  <a href={FOUNDER.videoHref} className="mkt-btn mkt-btn-secondary mkt-btn-sm" style={{ marginTop: 16 }}>
-                    Watch our story
-                  </a>
-                )}
+            <div>
+              <div className="bento-titlerow">
+                <h2 id="founder-h" className="bento-title">From the founder</h2>
+                {FOUNDER.location && <span className="bento-tag">{FOUNDER.location.split(',')[0]}</span>}
               </div>
+              <blockquote className="mkt-founder-quote">“{FOUNDER.quote}”</blockquote>
+              {FOUNDER.story && <p className="bento-text" style={{ marginTop: 16 }}>{FOUNDER.story}</p>}
+              {FOUNDER.name ? (
+                <p className="bento-text" style={{ marginTop: 16 }}>
+                  <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>{FOUNDER.name}</strong>, {FOUNDER.title}{FOUNDER.location ? `, ${FOUNDER.location}` : ''}
+                </p>
+              ) : (
+                <p className="bento-text" style={{ marginTop: 16 }}>Placeholder: fill in the FOUNDER object at the top of this file.</p>
+              )}
+              {FOUNDER.videoHref && (
+                <a href={FOUNDER.videoHref} className="pill pill-quiet" style={{ marginTop: 16 }}>Watch our story</a>
+              )}
             </div>
-          </Reveal>
+          </article>
         </div>
       </section>
 
-      {/* Narrative arc */}
-      <section className="mkt-section mkt-section--tight" aria-label="Why we exist">
-        <div className="mkt-wrap mkt-wrap--narrow">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            {ARC.map((s, i) => (
-              <Reveal key={s.eyebrow} delay={i * 0.05}>
-                <div className="mkt-card">
-                  <p style={{ fontSize: 'var(--fs-caps)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 10px' }}>
-                    {s.eyebrow}
-                  </p>
-                  <h2 className="mkt-h3" style={{ fontSize: 'var(--fs-h3)' }}>{s.title}</h2>
-                  <p className="mkt-body" style={{ marginTop: 10, fontSize: 'var(--fs-body)' }}>{s.body}</p>
-                </div>
-              </Reveal>
+      <section className="mkt-section mkt-section--tight" aria-label="Why we exist" style={{ paddingTop: 0 }}>
+        <div className="mkt-wrap">
+          <div className="bento-grid">
+            {ARC.map((s) => (
+              <BentoCard key={s.title} className="span-3" icon={s.icon} title={s.title} tag={s.tag} titleAs="h2" text={s.body} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="mkt-section">
-        <div className="mkt-wrap">
-          <Reveal>
-            <div className="mkt-card mkt-dark" style={{ textAlign: 'center', padding: 'clamp(40px, 6vw, 72px) clamp(24px, 5vw, 56px)', position: 'relative', overflow: 'hidden' }}>
-              <span className="mkt-glow" style={{ top: '-40%', left: '50%', transform: 'translateX(-50%)', width: 420, height: 420, background: 'radial-gradient(circle, rgba(0,212,255,0.35), transparent 60%)' }} />
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <h2 className="mkt-h2" style={{ maxWidth: 560, marginInline: 'auto' }}>Build the future with us.</h2>
-                <p className="mkt-lead" style={{ marginTop: 16, marginInline: 'auto', maxWidth: 460 }}>
-                  Your business is exactly the kind we built this for. See what it can do, free, on your own numbers.
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 30 }}>
-                  <Link href="/login" className="mkt-btn mkt-btn-primary">Start free</Link>
-                  <Link href="/pricing" className="mkt-btn mkt-btn-secondary">See pricing</Link>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      <StartFree
+        id="about-start-h"
+        title="Build the future with us."
+        text="Your business is exactly the kind we built this for. See what it can do, free, on your own numbers."
+      />
     </>
   );
 }

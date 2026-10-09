@@ -1,90 +1,60 @@
-'use client';
+import { Check } from 'lucide-react';
+import { BrandMark } from '@/components/kit';
+import Rise from '@/components/marketing/Rise';
 
-import { motion, useReducedMotion } from 'framer-motion';
-
-// The answer is staged line-by-line for a "thinking → answering" feel.
-// Content is illustrative; the caption keeps the no-fabrication promise honest.
-const ANSWER_LINES = [
-  { text: 'Your Grilled Chicken Platter made the most: ', strong: 'K18,400 gross profit in May' },
-  { text: ', about 22% of your total profit across 14 products.', strong: '' },
-  { text: 'But its margin slipped from 41% to 36% as chicken prices rose.', strong: '', muted: true },
-  { text: 'Next move: ', strong: 'raise its price by ~K6 or renegotiate poultry supply', after: ', which recovers roughly K2,900 a month.' },
+// Ask AIBOS, on the kit's dark surface: the assistant's own panel (.ai-panel)
+// with a question, the answer from the books and the follow-ups the app
+// suggests. The answer is illustrative and the caption says so.
+const VALUES = [
+  'Answers from your own records, never a made-up trend',
+  'Remembers the conversation, so “and July?” just works',
+  'On Pro+, tell it about a sale and it records it',
 ];
 
-export default function AskAnything() {
-  const reduce = useReducedMotion();
+const FOLLOW_UPS = ['And July?', 'Who owes me money?', 'How long will my cash last?'];
 
+export default function AskAnything() {
   return (
-    <section className="mkt-dark mkt-section" style={{ position: 'relative', overflow: 'hidden' }}>
-      <div className="mkt-wrap mkt-2col" style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', gap: 'clamp(28px, 5vw, 56px)', alignItems: 'center', position: 'relative', zIndex: 1 }}>
-        {/* Copy */}
+    <section className="mkt-dark mkt-section" data-theme="dark" aria-labelledby="ask-h">
+      <div className="mkt-wrap mkt-split">
         <div>
-          <p className="mkt-eyebrow" style={{ color: 'var(--cyan)' }}>Your everyday genius</p>
-          <h2 className="mkt-h2">Ask your business anything.</h2>
-          <p className="mkt-lead" style={{ marginTop: 18 }}>
-            No dashboards to learn, no formulas to write. Type a question the way
-            you’d ask a sharp employee and AIBOS answers from your own numbers
-            in seconds.
+          <p className="mkt-eyebrow">Ask AIBOS</p>
+          <h2 id="ask-h" className="mkt-h2">Ask the way you would ask a sharp employee.</h2>
+          <p className="mkt-lead" style={{ marginTop: 20, maxWidth: 520 }}>
+            No dashboards to learn and no formulas to write. Type a question and AIBOS answers
+            from your own books in seconds. It answers in Kwacha and says where each figure came from.
           </p>
-          <ul style={{ listStyle: 'none', margin: '24px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {['Reads straight from the files you upload', 'Shows its working and never invents a trend', 'Answers in plain English, in Kwacha'].map((t) => (
-              <li key={t} style={{ display: 'flex', gap: 10, alignItems: 'center', color: 'var(--text-2)', fontSize: 'var(--fs-body)' }}>
-                <span aria-hidden style={{ color: 'var(--cyan)' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                </span>
-                {t}
-              </li>
+          <ul className="mkt-values">
+            {VALUES.map((v) => (
+              <li key={v}><Check aria-hidden />{v}</li>
             ))}
           </ul>
         </div>
 
-        {/* Chat card */}
-        <motion.div
-          className="mkt-card"
-          initial={reduce ? { opacity: 0 } : { opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          style={{ padding: 'clamp(18px, 2.4vw, 26px)' }}
-        >
-          {/* manifest chip */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-            <span style={{ width: 7, height: 7, borderRadius: 50, background: 'var(--good)' }} aria-hidden />
-            Reading sales_may.xlsx · 14 products · 1,204 rows
-          </div>
-
-          {/* question bubble */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-            <p style={{ margin: 0, maxWidth: '85%', background: 'var(--cyan-dim)', border: '1px solid color-mix(in srgb, var(--cyan) 30%, transparent)', color: 'var(--text-1)', padding: '10px 14px', borderRadius: '14px 14px 4px 14px', fontSize: 'var(--fs-body)', fontWeight: 600 }}>
-              Which product made me the most money last month?
+        <figure className="ai-panel" style={{ margin: 0 }}>
+          <Rise className="mkt-chat" mode="seq">
+            <p className="mkt-chat-status">Reading last month’s sales · 14 products · 1,204 sales</p>
+            <p className="mkt-chat-q">Which product made me the most money last month?</p>
+            <div className="mkt-chat-from">
+              <span className="bento-icon" aria-hidden="true"><BrandMark size={18} theme="dark" /></span>
+              AIBOS
+            </div>
+            <p className="mkt-chat-a">
+              Your grilled chicken platter made the most: <strong>K18,400 gross profit last month</strong>,
+              about 22% of your profit across 14 products.
             </p>
-          </div>
-
-          {/* answer */}
-          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-            <span aria-hidden style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 9, background: 'linear-gradient(135deg, var(--cyan), #a78bfa)', display: 'grid', placeItems: 'center', color: '#04222c', fontWeight: 900, fontSize: 'var(--fs-data)' }}>AI</span>
-            <p style={{ margin: 0, fontSize: 'var(--fs-body)', lineHeight: 1.62, color: 'var(--text-2)' }}>
-              {ANSWER_LINES.map((line, i) => (
-                <motion.span
-                  key={i}
-                  initial={reduce ? { opacity: 0 } : { opacity: 0, y: 6 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: 0.4 + i * 0.55, ease: 'easeOut' }}
-                  style={{ display: 'inline' }}
-                >
-                  {line.text}
-                  {line.strong && <strong style={{ color: 'var(--text-1)', fontWeight: 800 }}>{line.strong}</strong>}
-                  {line.after}{' '}
-                </motion.span>
-              ))}
+            <p className="mkt-chat-a">
+              Its margin slipped from 41% to 36% as chicken prices rose. Next move: <strong>raise its price
+              by about K6 or agree a better poultry price</strong>, which brings back roughly K2,900 a month.
             </p>
-          </div>
-
-          <p style={{ margin: '18px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'right' }}>
-            Illustrative. AIBOS answers only from your own uploaded data.
-          </p>
-        </motion.div>
+            <div className="chips" aria-label="Questions AIBOS suggests next">
+              {FOLLOW_UPS.map((q) => <span key={q} className="chip">{q}</span>)}
+            </div>
+            <figcaption className="mkt-preview-cap" style={{ margin: 0 }}>
+              An illustration on a sample business. AIBOS answers only from your own records.
+            </figcaption>
+          </Rise>
+        </figure>
       </div>
     </section>
   );

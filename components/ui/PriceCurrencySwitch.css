@@ -12,19 +12,19 @@
   font-weight: 500;
   color: var(--text-3);
 }
+/* The kit's segmented control (.seg in globals.css): a pill of pills. */
 .pcs-seg {
   display: inline-grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 10px;
-  background: var(--bg-badge);
-  border: 1px solid var(--border);
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--pill-bg);
 }
 .pcs-seg button {
   min-height: 44px;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 0 16px;
+  border-radius: 999px;
   border: 1px solid transparent;
   background: transparent;
   font: inherit;
@@ -38,7 +38,6 @@
 .pcs-seg button:hover:not(:disabled) { color: var(--text-1); }
 .pcs-seg button[aria-checked="true"] {
   background: var(--bg-card);
-  border-color: var(--border-md);
   color: var(--text-1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }

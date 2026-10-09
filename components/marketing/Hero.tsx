@@ -1,53 +1,40 @@
-'use client';
-
 import Link from 'next/link';
-import LiveDashboard from './LiveDashboard';
+import { ArrowRight, Check } from 'lucide-react';
+import HeroVideo from './HeroVideo';
 
+const FACTS = ['Free to start', 'No card needed', 'Works on any phone', 'Your data stays yours'];
+
+// The hero: the words, then the AI-BOS UI kit in action (HeroVideo). It
+// arrives once on load in the kit's brand curve (website motion, see
+// docs/AIBOS_UI_KIT.md). The headline and the video rise without fading, so
+// the page's largest paint is never held back (UI/UX audit 2026-10 A20).
 export default function Hero() {
-  // No entrance animation: the headline is the page's largest paint and
-  // fading it in delayed it on phones (UI/UX audit 2026-10 A20).
   return (
-    <section style={{ position: 'relative', overflow: 'hidden', paddingTop: 'clamp(40px, 6vw, 80px)', paddingBottom: 'clamp(40px, 6vw, 80px)' }}>
-      {/* Still aurora behind the hero (masked to the top) */}
-      <div className="mkt-aurora" aria-hidden />
-      <span className="mkt-glow" style={{ bottom: '-24%', left: '-10%', width: 520, height: 520, background: 'radial-gradient(circle, rgba(224,121,42,0.20), transparent 62%)' }} />
-
-      <div
-        className="mkt-wrap mkt-hero-grid"
-        style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: '1.02fr 1.18fr', gap: 'clamp(28px, 5vw, 64px)', alignItems: 'center' }}
-      >
-        {/* Copy */}
-        <div>
-          <p className="mkt-eyebrow">
-            The brain behind every business
-          </p>
-          <h1 className="mkt-display">
-            Ask your business{' '}
-            <span style={{ color: 'var(--cyan)' }}>anything.</span>
+    <section className="mkt-hero">
+      <div className="mkt-wrap">
+        <div className="mkt-hero-copy">
+          <p className="mkt-eyebrow hero-in">The brain behind every business</p>
+          <h1 className="mkt-display hero-lift">
+            Ask your business <span className="mkt-brand">anything.</span>
           </h1>
-          <p className="mkt-lead" style={{ marginTop: 24, maxWidth: 480 }}>
-            Upload your numbers and get the answer back in Kwacha, in seconds. AIBOS is
-            the AI business operating system that gives African SMEs a CFO, analyst
-            and consultant in their pocket.
+          <p className="mkt-lead hero-in" style={{ '--d': '120ms' } as React.CSSProperties}>
+            Record a sale, send an invoice or drop in a spreadsheet. AIBOS keeps your books,
+            watches your cash and answers your questions in Kwacha, in plain words.
           </p>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 32 }}>
-            <Link href="/login" className="mkt-btn mkt-btn-primary">
-              Start free with your data
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <div className="mkt-actions hero-in" style={{ '--d': '180ms' } as React.CSSProperties}>
+            <Link href="/login" className="pill pill-primary pill-lg">
+              Start free <ArrowRight aria-hidden />
             </Link>
-            <Link href="/pricing" className="mkt-btn mkt-btn-secondary">See pricing</Link>
+            <Link href="/pricing" className="pill pill-quiet pill-lg">See pricing</Link>
           </div>
-
-          <p style={{ marginTop: 20, fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>
-            No card required · Free forever tier · Your numbers never train anyone’s AI
-          </p>
+          <ul className="mkt-facts hero-in" style={{ '--d': '240ms' } as React.CSSProperties}>
+            {FACTS.map((f) => (
+              <li key={f}><Check aria-hidden />{f}</li>
+            ))}
+          </ul>
         </div>
-
-        {/* Real dashboard — genuine KPICard / RevenueChart / EngineScoreCard
-            components with seeded data and live interactions. */}
-        <div>
-          <LiveDashboard />
+        <div className="hero-lift" style={{ '--d': '160ms' } as React.CSSProperties}>
+          <HeroVideo />
         </div>
       </div>
     </section>

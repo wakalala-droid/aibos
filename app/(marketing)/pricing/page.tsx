@@ -1,6 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Reveal from '@/components/marketing/Reveal';
+import {
+  LayoutGrid, MessageCircle, Sunrise, Building2, LockKeyhole,
+  RefreshCw, RotateCcw, Download, ReceiptText, BellRing,
+} from 'lucide-react';
+import { BentoCard } from '@/components/kit';
+import HowItWorks from '@/components/marketing/HowItWorks';
+import StartFree from '@/components/marketing/StartFree';
 import PricingTiers from '@/components/marketing/PricingTiers';
 import ROICalculator from '@/components/marketing/ROICalculator';
 import PaddleLinkHandler from '@/components/marketing/PaddleLinkHandler';
@@ -19,187 +25,126 @@ export const metadata: Metadata = {
   alternates: { canonical: '/pricing' },
 };
 
-const FEATURE_GLOSSARY: { term: string; plain: string }[] = [
-  { term: 'Money, customers and operations', plain: 'The three things AIBOS watches for you, each with its own pages, not just a single chart. Free covers your money; Pro adds customers and operations.' },
-  { term: 'Ask AIBOS', plain: 'Ask your business anything in plain words, as often as you like. It answers from your own records, in Kwacha.' },
-  { term: 'A scheduled brief', plain: 'The one number that matters, delivered every morning so you don’t have to remember to check. Email and WhatsApp delivery are rolling out now.' },
-  { term: 'A business', plain: 'One venture with its own books. Every plan runs one beautifully; Growth lets you run several (a shop, a salon, a lodge) under one login, each with separate books.' },
+// Every block below is a kit bento card (docs/AIBOS_UI_KIT.md).
+const FEATURE_GLOSSARY: { icon: React.ReactNode; term: string; plain: string }[] = [
+  { icon: <LayoutGrid />, term: 'Money, customers and operations', plain: 'The three things AIBOS watches for you, each with its own pages, not just a single chart. Free covers your money. Pro adds the customer and till sales reports.' },
+  { icon: <MessageCircle />, term: 'Ask AIBOS', plain: 'Ask your business anything in plain words. It answers from your own records in Kwacha and remembers the conversation. Free gets 3 questions a day and Pro has no limit.' },
+  { icon: <Sunrise />, term: 'The morning brief', plain: 'Your cash, yesterday’s sales, stock to reorder and the one thing to do, every morning at 06:30. Pro sends it by email and to your phone. Pro+ puts it on Home and sends it to WhatsApp (rolling out).' },
+  { icon: <Building2 />, term: 'A business', plain: 'One venture with its own books. Every plan runs one. Growth runs several (a shop, a salon, a lodge) under one login, each with its own books.' },
 ];
 
-const TIMELINE: { when: string; what: string }[] = [
-  { when: 'Minutes', what: 'Record a sale or upload a spreadsheet and see your profit and cash read straight back to you.' },
-  { when: 'An hour', what: 'Ask your first questions and set the brief that lands on your phone each morning.' },
-  { when: 'A day', what: 'The full picture across money, customers and operations, in one command centre.' },
+const TRUST: { icon: React.ReactNode; title: string; body: string }[] = [
+  { icon: <RefreshCw />, title: 'Renews automatically, cancel any time', body: 'Your plan renews automatically each month or year, so it never switches off by surprise. Cancel any time with two clicks on Plan & billing: it stays on to the end of what you paid and your card is not charged again.' },
+  { icon: <RotateCcw />, title: 'Your money back if it is not right', body: 'Every payment has a 30-day money-back guarantee, no reason needed. Our refund policy has the details.' },
+  { icon: <Download />, title: 'Your data is yours', body: 'Export your full history on any plan, even after you cancel. We never hold it hostage.' },
+  { icon: <ReceiptText />, title: 'No surprise fees', body: 'The price you see is the price you pay. No drip pricing, no pre-ticked add-ons at checkout.' },
+  { icon: <BellRing />, title: 'Fair price changes', body: 'We give advance notice before any plan or price change. No silent increases.' },
 ];
 
-const TRUST: [string, string][] = [
-  ['Renews automatically, cancel any time', 'Your plan renews automatically each month or year, so it never switches off by surprise. Cancel any time with two clicks on Plan & billing: it stays on to the end of what you paid and your card is not charged again.'],
-  ['Your money back if it is not right', 'Every payment has a 30-day money-back guarantee, no reason needed. Our refund policy has the details.'],
-  ['Your data is yours', 'Export your full history on any plan, including after you cancel. We never hold it hostage.'],
-  ['No surprise fees', 'The price you see is the price you pay. No drip pricing, no pre-ticked add-ons at checkout.'],
-  ['Fair price changes', 'We give advance notice before any plan or price change. No silent increases.'],
-];
+// Five cards of words only: three across, then two (the kit's big 4+2 card
+// is for a card with a figure or chart in it; with words alone it stood empty).
+const TRUST_SPANS = ['span-2', 'span-2', 'span-2', 'span-3', 'span-3'];
 
 export default async function PricingPage() {
   const [cardPrices, zmwRate] = await Promise.all([getCardPricesForPage(), fetchZmwRate()]);
   return (
     <>
       <PaddleLinkHandler />
-      {/* Header */}
       <section className="mkt-section mkt-section--tight" style={{ paddingBottom: 0 }}>
         <div className="mkt-wrap" style={{ textAlign: 'center' }}>
-          <Reveal>
-            <p className="mkt-eyebrow">Pricing · US dollars or Kwacha · Cancel any time</p>
-            <h1 className="mkt-h1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', maxWidth: 760, marginInline: 'auto' }}>
-              One expert for your business. One simple price.
-            </h1>
-            <p className="mkt-lead" style={{ marginTop: 18, marginInline: 'auto', maxWidth: 560 }}>
-              Start free on your own numbers. Upgrade when the value is obvious, never before.
-            </p>
-          </Reveal>
+          <p className="mkt-eyebrow">Pricing · US dollars or Kwacha · Cancel any time</p>
+          <h1 className="mkt-h1" style={{ maxWidth: 760, marginInline: 'auto' }}>
+            One expert for your business. One simple price.
+          </h1>
+          <p className="mkt-lead" style={{ marginTop: 18, marginInline: 'auto', maxWidth: 560 }}>
+            Start free on your own numbers. Upgrade when the value is obvious, never before.
+          </p>
         </div>
       </section>
 
       {/* Tiers, with the US dollar / Kwacha switch */}
       <section className="mkt-section mkt-section--tight">
-        <div className="mkt-wrap">
+        <div className="mkt-wrap" style={{ maxWidth: 1240 }}>
           <PricingTiers cardPrices={cardPrices} zmwRate={zmwRate} />
         </div>
       </section>
 
       {/* What counts as a feature */}
-      <section className="mkt-section mkt-section--tight" aria-labelledby="glossary-h">
+      <section className="mkt-section mkt-section--tight" aria-labelledby="glossary-h" style={{ paddingTop: 0 }}>
         <div className="mkt-wrap">
-          <Reveal>
-            <p className="mkt-eyebrow">Plain English, no jargon</p>
-            <h2 id="glossary-h" className="mkt-h2" style={{ maxWidth: 640 }}>What counts as a feature</h2>
-          </Reveal>
-          <div className="mkt-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 32 }}>
-            {FEATURE_GLOSSARY.map((f, i) => (
-              <Reveal key={f.term} delay={i * 0.06}>
-                <div className="mkt-card" style={{ height: '100%' }}>
-                  <h3 className="mkt-h3" style={{ fontSize: 'var(--fs-body)' }}>{f.term}</h3>
-                  <p className="mkt-body" style={{ marginTop: 8 }}>{f.plain}</p>
-                </div>
-              </Reveal>
+          <div className="mkt-head">
+            <div>
+              <p className="mkt-eyebrow">Plain words, no jargon</p>
+              <h2 id="glossary-h" className="mkt-h2">What counts as a feature</h2>
+            </div>
+          </div>
+          <div className="bento-grid">
+            {FEATURE_GLOSSARY.map((f) => (
+              <BentoCard key={f.term} className="span-3" icon={f.icon} title={f.term} text={f.plain} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* Locked-but-visible teaser: same pattern as inside the product. */}
-      <section className="mkt-section mkt-section--tight">
+      {/* Locked but visible: the same pattern as inside the product. */}
+      <section className="mkt-section mkt-section--tight" style={{ paddingTop: 0 }} aria-label="See it before you pay">
         <div className="mkt-wrap">
-          <Reveal>
-            <div className="mkt-card" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, justifyContent: 'space-between' }}>
-              <div style={{ flex: '1 1 280px' }}>
-                <p style={{ fontSize: 'var(--fs-caps)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--e-cust)', margin: '0 0 10px' }}>
-                  See it before you pay
-                </p>
-                <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', margin: 0, lineHeight: 1.5 }}>
-                  Your top 5% of customers drive{' '}
-                  <span style={{ position: 'relative', filter: 'blur(6px)', userSelect: 'none' }} aria-hidden>≈38%</span>{' '}
-                  of revenue.
-                </p>
-                <p className="mkt-body" style={{ marginTop: 8 }}>
-                  We never hide that a feature exists. You see the value first, then choose to unlock the detail. No bait, no dead ends.
-                </p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span aria-hidden style={{ display: 'grid', placeItems: 'center', width: 40, height: 40, borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', color: 'var(--text-3)' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
-                </span>
-                <Link href="/login" className="mkt-btn mkt-btn-secondary mkt-btn-sm">Unlock with Pro</Link>
-              </div>
-            </div>
-          </Reveal>
+          <BentoCard
+            icon={<LockKeyhole />}
+            title="See it before you pay"
+            tag="Pro"
+            text={<>
+              <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>
+                Your top 5% of customers bring in{' '}
+                <span style={{ filter: 'blur(6px)', userSelect: 'none' }} aria-hidden>about 38%</span>{' '}
+                of your sales.
+              </strong>{' '}
+              We never hide that a feature exists. You see the value first, then choose to unlock the detail. No bait and no dead ends.
+            </>}
+            foot={<Link href="/login" className="pill pill-quiet">Unlock with Pro</Link>}
+          />
         </div>
       </section>
 
       {/* ROI calculator */}
-      <section className="mkt-section" aria-labelledby="roi-h">
+      <section className="mkt-section" aria-labelledby="roi-h" style={{ paddingTop: 0 }}>
         <div className="mkt-wrap">
-          <Reveal>
-            <p className="mkt-eyebrow" style={{ textAlign: 'center' }}>Ready to run the numbers?</p>
-            <h2 id="roi-h" className="mkt-h2" style={{ textAlign: 'center', maxWidth: 640, marginInline: 'auto' }}>
-              See what it’s worth to you
-            </h2>
-            <p className="mkt-lead" style={{ textAlign: 'center', marginTop: 14, marginInline: 'auto', maxWidth: 520 }}>
-              Two sliders, an honest estimate. We’d rather under-promise than invent a number.
-            </p>
-          </Reveal>
-          <div style={{ marginTop: 36 }}>
-            <ROICalculator />
-          </div>
-        </div>
-      </section>
-
-      {/* Timeline & effort */}
-      <section className="mkt-section mkt-section--tight" aria-labelledby="timeline-h">
-        <div className="mkt-wrap">
-          <Reveal>
-            <p className="mkt-eyebrow">From upload to first insight</p>
-            <h2 id="timeline-h" className="mkt-h2" style={{ maxWidth: 600 }}>Live in a day, not a quarter</h2>
-          </Reveal>
-          <div className="mkt-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18, marginTop: 32 }}>
-            {TIMELINE.map((t, i) => (
-              <Reveal key={t.when} delay={i * 0.1}>
-                <div className="mkt-card" style={{ height: '100%' }}>
-                  <span style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)' }}>{t.when}</span>
-                  <p className="mkt-body" style={{ marginTop: 12, color: 'var(--text-2)' }}>{t.what}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-          <Reveal>
-            <p style={{ marginTop: 18, fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>
-              Effort from you: just your data. No IT project, no consultant, no migration.
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* Trust signals */}
-      <section className="mkt-section mkt-section--tight" aria-labelledby="ptrust-h">
-        <div className="mkt-wrap">
-          <Reveal>
-            <h2 id="ptrust-h" className="mkt-h2" style={{ textAlign: 'center', maxWidth: 600, marginInline: 'auto' }}>
-              Priced to be fair and built to stay that way
-            </h2>
-          </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 14, marginTop: 28 }}>
-            {TRUST.map(([t, d], i) => (
-              <Reveal key={t} delay={i * 0.05}>
-                <div className="mkt-card" style={{ height: '100%' }}>
-                  <p style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 6px' }}>{t}</p>
-                  <p className="mkt-body" style={{ fontSize: 'var(--fs-body)' }}>{d}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="mkt-section">
-        <div className="mkt-wrap">
-          <Reveal>
-            <div className="mkt-card mkt-dark" style={{ textAlign: 'center', padding: 'clamp(40px, 6vw, 72px) clamp(24px, 5vw, 56px)', position: 'relative', overflow: 'hidden' }}>
-              <span className="mkt-glow" style={{ top: '-40%', left: '50%', transform: 'translateX(-50%)', width: 420, height: 420, background: 'radial-gradient(circle, rgba(0,212,255,0.35), transparent 60%)' }} />
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <h2 className="mkt-h2" style={{ maxWidth: 560, marginInline: 'auto' }}>Start free. Decide with proof.</h2>
-                <p className="mkt-lead" style={{ marginTop: 16, marginInline: 'auto', maxWidth: 460 }}>
-                  Upload your numbers, see it work and only pay when it’s obvious. That’s the whole pitch.
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 30 }}>
-                  <Link href="/login" className="mkt-btn mkt-btn-primary">Start free with your data</Link>
-                  <Link href="/" className="mkt-btn mkt-btn-secondary">Back to overview</Link>
-                </div>
-              </div>
+          <div className="mkt-head">
+            <div>
+              <p className="mkt-eyebrow">Run the numbers</p>
+              <h2 id="roi-h" className="mkt-h2">See what it is worth to you.</h2>
             </div>
-          </Reveal>
+            <p className="mkt-head-sub">Two sliders and an honest estimate. We would rather under-promise than invent a number.</p>
+          </div>
+          <ROICalculator />
         </div>
       </section>
+
+      <HowItWorks id="pricing-how" />
+
+      {/* Fair by design */}
+      <section className="mkt-section" aria-labelledby="ptrust-h" style={{ paddingTop: 0 }}>
+        <div className="mkt-wrap">
+          <div className="mkt-head">
+            <div>
+              <p className="mkt-eyebrow">Fair by design</p>
+              <h2 id="ptrust-h" className="mkt-h2">Priced to be fair and built to stay that way.</h2>
+            </div>
+          </div>
+          <div className="bento-grid">
+            {TRUST.map(({ icon, title, body }, i) => (
+              <BentoCard key={title} className={TRUST_SPANS[i]} icon={icon} title={title} text={body} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <StartFree
+        id="pricing-start-h"
+        title="Start free. Decide with proof."
+        text="Upload your numbers, see it work and only pay when it is obvious. That is the whole pitch."
+        secondary={{ label: 'Back to overview', href: '/' }}
+      />
     </>
   );
 }

@@ -30,5 +30,14 @@ Import: `import { Notice, BentoCard, NoticeArt, BrandMark } from '@/components/k
 - Numbers are ink. Red only for a figure that went the wrong way (`trendTone`, `signTone`).
 - Charts use `--chart-1..6` and `--chart-muted`.
 - No em-dashes, no comma before "and", no emoji. Plain owner words.
-- No entrance animation on page content; icons move on hover only. No blurred sticky headers.
+- No entrance animation on page content; icons move on hover only. No blurred sticky headers. (The public website has one scoped exception, below.)
+
+## Website motion (the public website only)
+The app stays still. The public website (`app/(marketing)`) may move, but only with the kit's own movements and timings from `globals.css`, so it feels like the app arriving:
+- **Hero, once on load:** the brand curve `cubic-bezier(0.2, 0.7, 0.2, 1)` over 0.7s (`brand-rise`). The headline and the video rise without fading, so the largest paint is never held back.
+- **Blocks scrolling into view, once:** 12px over 200ms, like a notice (`update-in`); grids one card after another (`components/marketing/Rise.tsx`). Anything on screen at load just shows.
+- **Lines:** the art strip's money line draws itself over 1.1s, like What's new (`whatsnew-draw`). Report bars and meters fill to their figure.
+- **Notices:** the morning brief arrives like the update notice; a reminder slides in 24px from the right (`reminder-in`).
+- **Hero video:** `components/marketing/HeroVideo.tsx` plays a video of the kit in action. It is made from these same kit pieces in `aibos-film` (`npm run render:hero`), with a laptop cut and a phone cut. It is muted, loops, pauses off screen and has a Pause button.
+- Nothing loops on its own except the video, nothing floats and nothing blocks the page. With `prefers-reduced-motion` none of it runs and the video waits for Play.
 - Phones: everything fits at 320px. Long words wrap, never cut off; card contents use the full width under the icon and title.

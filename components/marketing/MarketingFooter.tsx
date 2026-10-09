@@ -6,7 +6,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
   {
     title: 'Product',
     links: [
-      { href: '/#engines', label: 'The five engines' },
+      { href: '/#features', label: 'Features' },
       { href: '/#how', label: 'How it works' },
       { href: '/pricing', label: 'Pricing' },
       { href: '/login', label: 'Sign in' },
@@ -32,9 +32,10 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
   },
 ];
 
+// The kit's dark surface: monochrome black, neutral greys, the white mark.
 export default function MarketingFooter() {
   return (
-    <footer className="mkt-footer mkt-dark" role="contentinfo">
+    <footer className="mkt-footer mkt-dark" data-theme="dark" role="contentinfo">
       <div className="mkt-wrap" style={{ paddingBlock: 'clamp(48px, 7vw, 80px)' }}>
         <div
           style={{
@@ -44,30 +45,27 @@ export default function MarketingFooter() {
           }}
           className="mkt-footer-grid"
         >
-          {/* Brand + tagline */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, marginLeft: -10 }}>
-              <Image src="/brand/aibos-mark-white.png" alt="AIBOS, Artificial Intelligence Business Operating System" width={210} height={154} style={{ width: 210, height: 'auto', objectFit: 'contain' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+              <Image src="/brand/aibos-mark-white-glyph.png" alt="" aria-hidden width={32} height={32} style={{ width: 32, height: 32, objectFit: 'contain' }} />
+              <Image src="/brand/aibos-wordmark-white.png" alt="AIBOS" width={82} height={21} style={{ width: 82, height: 'auto', objectFit: 'contain' }} />
             </div>
-            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 8px' }}>
               The brain behind every business.
             </p>
-            <p style={{ fontSize: 'var(--fs-body)', color: '#9fabbd', margin: 0, lineHeight: 1.55, maxWidth: 320 }}>
+            <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.6, maxWidth: 320 }}>
               The AI business operating system for African SMEs. Answers in Kwacha,
               built for how you actually run.
             </p>
           </div>
 
-          {/* Link columns */}
           {COLS.map((col) => (
             <nav key={col.title} aria-label={col.title}>
-              <p style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#707d8e', margin: '0 0 14px' }}>
-                {col.title}
-              </p>
-              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <p className="eyebrow" style={{ marginBottom: 12 }}>{col.title}</p>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    <Link href={l.href} className="tap-link" style={{ fontSize: 'var(--fs-body)', color: '#9fabbd', textDecoration: 'none' }}>
+                    <Link href={l.href} className="tap-link" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', textDecoration: 'none' }}>
                       {l.label}
                     </Link>
                   </li>
@@ -80,15 +78,15 @@ export default function MarketingFooter() {
         <div
           style={{
             marginTop: 'clamp(36px, 5vw, 56px)', paddingTop: 22,
-            borderTop: '1px solid rgba(255,255,255,0.08)',
+            borderTop: '1px solid var(--border)',
             display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between',
           }}
         >
-          <p style={{ fontSize: 'var(--fs-label)', color: '#707d8e', margin: 0 }}>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
             © {new Date().getFullYear()} AIBOS · Lusaka, Zambia
           </p>
-          <p style={{ fontSize: 'var(--fs-label)', color: '#707d8e', margin: 0 }}>
-            Your data stays yours · Export anytime
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
+            Your data stays yours · Export any time
           </p>
         </div>
       </div>

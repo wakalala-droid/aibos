@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { SlidersHorizontal, Calculator } from 'lucide-react';
+import { BentoCard } from '@/components/kit';
 import { TIERS } from '@/lib/tiers';
 import { useZmwRate } from '@/lib/planPrice';
 
@@ -63,52 +65,44 @@ export default function ROICalculator() {
     return { hoursLow, hoursHigh, daysLow, daysHigh, leak1pct, multiple };
   }, [revenue, hours, proK]);
 
+  // Two kit bento cards: what you tell it, and the estimate it gives back.
   return (
-    <div className="mkt-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22, alignItems: 'stretch' }}>
-      {/* Inputs */}
-      <div className="mkt-card">
-        <p style={{ fontWeight: 800, color: 'var(--text-1)', margin: '0 0 20px' }}>Your business, roughly</p>
-        <Field label="Monthly revenue" suffix="K" value={revenue} min={5000} max={1000000} step={5000} onChange={setRevenue} />
-        <Field label="Hours a week on spreadsheets & reports" suffix="hrs" value={hours} min={1} max={40} step={1} onChange={setHours} />
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '6px 0 0', lineHeight: 1.5 }}>
-          Drag to match your business. Nothing is sent anywhere; this runs entirely in your browser.
-        </p>
-      </div>
-
-      {/* Results */}
-      <div className="mkt-card" style={{ background: 'linear-gradient(180deg, var(--cyan-dim), transparent 40%), var(--bg-card)', borderColor: 'color-mix(in srgb, var(--cyan) 35%, var(--border-md))' }}>
-        <p style={{ fontSize: 'var(--fs-caps)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 16px' }}>
-          A rough estimate
-        </p>
-
-        <div style={{ marginBottom: 18 }}>
-          <p style={{ fontSize: 'var(--fs-h1)', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-0.03em', margin: 0 }}>
-            {out.hoursLow} to {out.hoursHigh} hrs
-          </p>
-          <p className="mkt-body" style={{ fontSize: 'var(--fs-body)' }}>
-            likely back in your month once the reporting runs itself, about {out.daysLow} to {out.daysHigh} working days.
-          </p>
+    <div className="bento-grid">
+      <BentoCard className="span-3" icon={<SlidersHorizontal />} title="Your business, roughly" motion="tilt">
+        <div style={{ marginTop: 20 }}>
+          <Field label="Monthly revenue" suffix="K" value={revenue} min={5000} max={1000000} step={5000} onChange={setRevenue} />
+          <Field label="Hours a week on spreadsheets and reports" suffix="hrs" value={hours} min={1} max={40} step={1} onChange={setHours} />
+          <p className="bento-note">Drag to match your business. Nothing is sent anywhere: this runs in your browser.</p>
         </div>
+      </BentoCard>
 
-        <div style={{ height: 1, background: 'var(--border)', margin: '4px 0 18px' }} />
-
-        <p className="mkt-body" style={{ fontSize: 'var(--fs-body)' }}>
-          <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Example</span><br />
-          Catching even a <strong style={{ color: 'var(--text-1)' }}>1% margin leak</strong> on K{fmt(revenue)}/mo is{' '}
-          <strong style={{ color: 'var(--text-1)' }}>K{fmt(out.leak1pct)} a month</strong>
+      <BentoCard
+        className="span-3"
+        icon={<Calculator />}
+        title="A rough estimate"
+        tag="Estimate"
+        motion="pulse"
+        foot={
+          <Link href="/login" className="pill pill-primary" style={{ width: '100%' }}>
+            Start free and run it on your real numbers
+          </Link>
+        }
+      >
+        <p className="bento-figure" style={{ marginTop: 16 }}>{out.hoursLow} to {out.hoursHigh} hours</p>
+        <p className="bento-note">
+          likely back in your month once the reporting runs itself, about {out.daysLow} to {out.daysHigh} working days.
+        </p>
+        <p className="bento-note" style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+          Catching even a <strong>1% margin leak</strong> on K{fmt(revenue)} a month is{' '}
+          <strong>K{fmt(out.leak1pct)} a month</strong>
           {out.multiple && proK
-            ? <>, about {out.multiple}× the price of Pro (${PRO_USD} a month, about K{fmt(proK)} at today’s rate).</>
+            ? <>, about {out.multiple} times the price of Pro (${PRO_USD} a month, about K{fmt(proK)} at today’s rate).</>
             : <>. Pro costs ${PRO_USD} a month.</>}
         </p>
-
-        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '16px 0 0', lineHeight: 1.5 }}>
-          Estimates, not promises. Your numbers, your call. AIBOS won’t invent a result it can’t see in your data.
+        <p className="mkt-preview-cap" style={{ marginTop: 12 }}>
+          Estimates, not promises. AIBOS will not invent a result it cannot see in your numbers.
         </p>
-
-        <Link href="/login" className="mkt-btn mkt-btn-primary" style={{ marginTop: 18, justifyContent: 'center', width: '100%' }}>
-          Start free and run it on your real numbers
-        </Link>
-      </div>
+      </BentoCard>
     </div>
   );
 }
