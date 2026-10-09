@@ -2,7 +2,8 @@
 
 /**
  * Website motion (docs/AIBOS_UI_KIT.md, "Website motion"): a block rises into
- * place the first time it scrolls into view, in the kit's own timing: 12px
+ * place the first time it comes near the screen (it starts just before, so
+ * scrolling never waits on it), in the kit's own timing: 12px
  * over 200ms, like a notice arriving (update-in).
  *
  *   - Anything already on screen when the page opens is simply shown, so
@@ -28,7 +29,7 @@ export function useInView<T extends HTMLElement>() {
     setState('wait');
     const io = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) { setState('in'); io.disconnect(); }
-    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.1 });
+    }, { rootMargin: '0px 0px 20% 0px', threshold: 0 });
     io.observe(el);
     return () => io.disconnect();
   }, []);
