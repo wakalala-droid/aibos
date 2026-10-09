@@ -8,20 +8,27 @@
  *
  * It plays on its own, muted and looping, with no buttons (owner, 9 Oct
  * 2026). The browser starts it itself (autoPlay); if a browser refuses to
- * autoplay, the first touch, click, key or scroll on the page starts it.
- * The poster is the video's own first frame, so the stage is never empty.
+ * autoplay (an iPhone in Low Power Mode), the first tap, click, key or scroll
+ * on the page starts it. The poster is the video's own first frame, so the
+ * stage is never empty.
+ *
+ * MP4 (H.264) only: it plays in every browser on every device. A WebM copy
+ * used to come first and Edge on Windows could not decode it, so the video
+ * froze on its first frame (9 Oct 2026). Never put a second format first.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type Cut = 'desktop' | 'phone';
-const SRC: Record<Cut, { mp4: string; webm: string; poster: string; w: number; h: number }> = {
-  desktop: { mp4: '/marketing/hero/desktop.mp4', webm: '/marketing/hero/desktop.webm', poster: '/marketing/hero/desktop.jpg', w: 1920, h: 1200 },
-  phone: { mp4: '/marketing/hero/phone.mp4', webm: '/marketing/hero/phone.webm', poster: '/marketing/hero/phone.jpg', w: 780, h: 1688 },
+const SRC: Record<Cut, { mp4: string; poster: string; w: number; h: number }> = {
+  desktop: { mp4: '/marketing/hero/desktop.mp4', poster: '/marketing/hero/desktop.jpg', w: 1920, h: 1200 },
+  phone: { mp4: '/marketing/hero/phone.mp4', poster: '/marketing/hero/phone.jpg', w: 780, h: 1688 },
 };
 const WIDE = '(min-width: 768px)';
 const STORY = 'AIBOS in action: recording a sale, getting paid by mobile money, asking AIBOS a question and the morning brief';
-const NUDGES = ['pointerdown', 'touchstart', 'keydown', 'scroll'] as const;
+// touchend and click count as a tap on a phone; touchstart and pointerdown
+// from a finger do not, so they cannot start a held-back video.
+const NUDGES = ['click', 'touchend', 'keydown', 'scroll'] as const;
 
 export default function HeroVideo() {
   const [cut, setCut] = useState<Cut | null>(null);
@@ -88,7 +95,6 @@ export default function HeroVideo() {
               aria-label={STORY}
               onCanPlay={play}
             >
-              <source src={SRC[cut].webm} type="video/webm" />
               <source src={SRC[cut].mp4} type="video/mp4" />
             </video>
           )}
