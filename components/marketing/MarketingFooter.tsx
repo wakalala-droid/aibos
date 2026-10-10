@@ -32,7 +32,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
   },
 ];
 
-// The kit's dark surface: monochrome black, neutral greys, the white mark.
+// The website navy (marketing.css), a shade deeper than the page, with the white mark.
 export default function MarketingFooter() {
   return (
     <footer className="mkt-footer mkt-dark" data-theme="dark" role="contentinfo">

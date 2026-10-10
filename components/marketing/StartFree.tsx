@@ -4,7 +4,8 @@ import Rise from '@/components/marketing/Rise';
 
 // The last word on a marketing page, built from the kit's notice: the
 // splash's art strip (tiles, the money line, the mark in its rings, the
-// double arrow) over a title, plain words and the pills.
+// double arrow) over a title, plain words and the pills. It is the light
+// product on the navy page, like the app's What's new screen.
 export default function StartFree({
   id,
   title,
@@ -23,7 +24,7 @@ export default function StartFree({
   return (
     <section className="mkt-section" aria-labelledby={id}>
       <div className="mkt-wrap">
-        <Rise className="notice mkt-final">
+        <Rise className="notice mkt-final" theme="light">
           <NoticeArt theme="light" />
           <div className="mkt-final-body">
             <h2 id={id} className="mkt-h2">{title}</h2>

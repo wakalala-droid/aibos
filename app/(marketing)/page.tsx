@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import { Smartphone, Users, Landmark, ShieldCheck } from 'lucide-react';
 import Hero from '@/components/marketing/Hero';
+import PainPromise from '@/components/marketing/PainPromise';
+import FeatureTheatre from '@/components/marketing/FeatureTheatre';
+import TheGoal from '@/components/marketing/TheGoal';
 import FeatureBento from '@/components/marketing/FeatureBento';
 import AskAnything from '@/components/marketing/AskAnything';
 import MorningBrief from '@/components/marketing/MorningBrief';
@@ -12,7 +15,10 @@ import Rise from '@/components/marketing/Rise';
 
 // The landing page, built from the AI-BOS UI kit (docs/AIBOS_UI_KIT.md): the
 // same bento cards, notices, money figures, rows and pills as the app, so
-// what a visitor sees here is what they get after signing up.
+// what a visitor sees here is what they get after signing up. In navy, in the
+// order of what an owner should feel (docs/LANDING_NAVY_PLAN_2026-10.md):
+// the promise, their week named, the jobs done for them, the proof, how easy
+// it is, who it is for, the goal and the one action.
 
 export const metadata: Metadata = {
   title: 'AIBOS · The brain behind every business',
@@ -32,9 +38,11 @@ export default function MarketingHome() {
   return (
     <>
       <Hero />
-      <FeatureBento />
+      <PainPromise />
+      <FeatureTheatre />
       <AskAnything />
       <MorningBrief />
+      <FeatureBento />
       <ReportsBento />
 
       <HowItWorks />
@@ -55,6 +63,8 @@ export default function MarketingHome() {
           </Rise>
         </div>
       </section>
+
+      <TheGoal />
 
       <StartFree
         id="start-h"

@@ -66,12 +66,11 @@ export default function HeroVideo() {
     };
   }, []);
 
-  // The app floats on the kit's dark surface with its blue light, so the
-  // light product reads clearly against the page. The poster sits under the
-  // video, so the screen is never empty while the video loads.
+  // The light app floats on the website navy in a pool of blue light. The
+  // poster sits under the video, so the screen is never empty while it loads.
   return (
     <div className="hero-player">
-      <div className="hero-stage" data-theme="dark">
+      <div className="hero-stage">
         <div className="hero-screen">
           <picture className="hero-poster">
             <source media={WIDE} srcSet={SRC.desktop.poster} width={SRC.desktop.w} height={SRC.desktop.h} />

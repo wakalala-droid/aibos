@@ -31,37 +31,40 @@ export default function MorningBrief() {
           </ul>
         </div>
 
-        <Rise className="mkt-preview mkt-brief" mode="seq">
-          <Notice
-            brand
-            art
-            theme="light"
-            title="Morning brief"
-            tag="06:30"
-            role="region"
-            ariaLabel="A sample morning brief"
-            actions={
-              <>
-                <span className="pill pill-primary">Send the link</span>
-                <span className="pill pill-quiet">Open Home</span>
-              </>
-            }
-          >
-            <p style={{ margin: 0 }}><strong>K48,230.50</strong> in the business this morning, K3,120 more than yesterday.</p>
-            <p style={{ margin: '8px 0 0' }}>Yesterday: 52 sales for K6,840. Reorder cooking oil: 2 left, reorder level 6.</p>
-            <p style={{ margin: '8px 0 0' }}><strong>One thing today:</strong> Mwila Catering owes K2,350 and is 9 days late. Send them the payment link.</p>
-          </Notice>
-          <Notice
-            icon={CalendarClock}
-            title="NAPSA due on Friday"
-            tag="Reminder"
-            role="region"
-            ariaLabel="A sample reminder"
-          >
-            Last month&apos;s NAPSA, <strong>K3,120.00</strong>. Pay by Friday so there is no penalty.
-          </Notice>
+        <div className="mkt-preview">
+          {/* The notices as the light app shows them, floating on the navy. */}
+          <Rise className="mkt-preview mkt-brief" mode="seq" theme="light">
+            <Notice
+              brand
+              art
+              theme="light"
+              title="Morning brief"
+              tag="06:30"
+              role="region"
+              ariaLabel="A sample morning brief"
+              actions={
+                <>
+                  <span className="pill pill-primary">Send the link</span>
+                  <span className="pill pill-quiet">Open Home</span>
+                </>
+              }
+            >
+              <p style={{ margin: 0 }}><strong>K48,230.50</strong> in the business this morning, K3,120 more than yesterday.</p>
+              <p style={{ margin: '8px 0 0' }}>Yesterday: 52 sales for K6,840. Reorder cooking oil: 2 left, reorder level 6.</p>
+              <p style={{ margin: '8px 0 0' }}><strong>One thing today:</strong> Mwila Catering owes K2,350 and is 9 days late. Send them the payment link.</p>
+            </Notice>
+            <Notice
+              icon={CalendarClock}
+              title="NAPSA due on Friday"
+              tag="Reminder"
+              role="region"
+              ariaLabel="A sample reminder"
+            >
+              Last month&apos;s NAPSA, <strong>K3,120.00</strong>. Pay by Friday so there is no penalty.
+            </Notice>
+          </Rise>
           <p className="mkt-preview-cap">A sample business. Your brief is written from your own records.</p>
-        </Rise>
+        </div>
       </div>
     </section>
   );

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './marketing.css';
 import MarketingNav from '@/components/marketing/MarketingNav';
 import MarketingFooter from '@/components/marketing/MarketingFooter';
@@ -10,12 +10,18 @@ import MarketingFooter from '@/components/marketing/MarketingFooter';
  * (sidebar / dashboard chrome) — AppShell detects marketing routes and
  * renders its children bare (see components/layout/AppShell.tsx).
  *
- * The wrapper carries data-theme="light", so the AI-BOS UI kit's own light
- * tokens resolve here whatever theme the visitor saved in the product (that
- * saved choice is never touched). Dark bands set data-theme="dark" on
- * themselves. marketing.css adds only the website's layout and headline
- * sizes on top of the kit (docs/AIBOS_UI_KIT.md).
+ * The website is navy (owner, 10 Oct 2026: "too much white"). The wrapper
+ * carries data-theme="dark", so the kit's dark tokens resolve here whatever
+ * theme the visitor saved in the product (that saved choice is never
+ * touched) and marketing.css turns them into the website navy. The product
+ * itself shows light, in islands that set data-theme="light". Behind it all,
+ * the sky: three soft lights drifting slowly (.mkt-sky).
  */
+
+export const viewport: Viewport = {
+  // The phone's browser bar matches the navy.
+  themeColor: '#050b18',
+};
 
 export const metadata: Metadata = {
   // The official domain. aibos.app was never ours: every canonical tag and
@@ -38,7 +44,8 @@ export const metadata: Metadata = {
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div data-marketing data-theme="light" className="mkt-root">
+    <div data-marketing data-theme="dark" className="mkt-root">
+      <div className="mkt-sky" aria-hidden="true"><span><i /></span><span><i /></span><span><i /></span></div>
       <a href="#mkt-main" className="skip-link">Skip to main content</a>
       <MarketingNav />
       <main id="mkt-main" tabIndex={-1} style={{ outline: 'none' }}>

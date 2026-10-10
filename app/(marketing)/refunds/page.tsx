@@ -62,7 +62,8 @@ const SECTIONS: { h: string; body: Part[][] }[] = [
 export default function RefundsPage() {
   return (
     <section className="mkt-section mkt-section--tight">
-      <div className="mkt-wrap" style={{ maxWidth: 760 }}>
+      {/* A light reading panel on the navy: long text reads best dark on light. */}
+      <div className="mkt-wrap mkt-paper" data-theme="light" style={{ maxWidth: 820, paddingBlock: 'clamp(28px, 5vw, 56px)' }}>
         <p className="mkt-eyebrow">Legal</p>
         <h1 className="mkt-h1" style={{ fontSize: 'clamp(1.9rem, 4vw, 2.8rem)', marginBottom: 10 }}>Refund Policy</h1>
         <p className="mkt-lead" style={{ marginBottom: 8 }}>

@@ -1,5 +1,7 @@
 'use client';
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
+import { isMarketingRoute } from './routes';
 
 export type Theme = 'dark' | 'light';
 
@@ -20,6 +22,10 @@ const Ctx = createContext<ThemeCtx>({ theme: DEFAULT, toggle: () => {}, isDark: 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(DEFAULT);
   const [mounted, setMounted] = useState(false);
+  // The website brings its own fixed colours (app/(marketing)/layout.tsx), so
+  // nothing there can flash the wrong theme: it shows the moment the page
+  // arrives instead of waiting seconds on a phone for the scripts (10 Oct 2026).
+  const website = isMarketingRoute(usePathname() || '');
 
   useEffect(() => {
     const saved = localStorage.getItem(KEY);
@@ -36,7 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(KEY, next);
   }, [theme]);
 
-  if (!mounted) return <div style={{ visibility: 'hidden' }}>{children}</div>;
+  if (!mounted && !website) return <div style={{ visibility: 'hidden' }}>{children}</div>;
 
   return (
     <Ctx.Provider value={{ theme, toggle, isDark: theme === 'dark' }}>

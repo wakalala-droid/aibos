@@ -12,6 +12,7 @@ import { ProfileProvider } from '@/lib/profile';
 import { AiAssistantProvider } from '@/lib/aiAssistant';
 import { FloatingAiAssistant } from '@/components/ui/glowing-ai-chat-assistant';
 import BootSplash from '@/components/brand/BootSplash';
+import { isMarketingRoute } from '@/lib/routes';
 
 // Routes that render full-screen WITHOUT the app chrome (sidebar + padded
 // main area). The login/auth screens are standalone and must not show the
@@ -23,11 +24,7 @@ import BootSplash from '@/components/brand/BootSplash';
 // sidebar, bottom tabs or floating assistant sitting over the card form.
 const BARE_ROUTES = ['/login', '/auth', '/onboarding', '/pay', '/checkout'];
 
-// Public marketing surface. These live in app/(marketing)/ and bring their own
-// chrome (MarketingNav / MarketingFooter) + warm-light skin, so AppShell must
-// render them bare too. Every folder in app/(marketing)/ belongs here: /privacy
-// was missing, so the privacy policy opened inside the app's sidebar.
-const MARKETING_ROUTES = ['/', '/pricing', '/trust', '/about', '/privacy', '/terms', '/refunds'];
+// The public website (lib/routes.ts) renders bare too.
 
 function HamburgerIcon() {
   return (
@@ -58,7 +55,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
   const isBare =
     BARE_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`)) ||
-    MARKETING_ROUTES.includes(pathname);
+    isMarketingRoute(pathname);
 
   const mobileNavOpen = useStore((s) => s.mobileNavOpen);
   const toggleMobileNav = useStore((s) => s.toggleMobileNav);

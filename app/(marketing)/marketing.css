@@ -6,20 +6,55 @@
    from each card's top-left corner, the page's own light high on the left,
    round outlined icons, spaced-capital titles, pill buttons and Geist only.
 
-   Colours are NOT re-declared here. The marketing root carries
-   data-theme="light" and each dark band carries data-theme="dark", so the
-   kit's own tokens (globals.css) resolve on this site exactly as in the
-   app, whatever theme the visitor picked inside the product. This file only
-   adds the website's layout rhythm and its larger headline sizes.
+   WEBSITE NAVY (owner, 10 Oct 2026: "too much white going on, add dynamic
+   dark navy blue like on the AI section on most of the site"). The root
+   carries data-theme="dark" and this file turns the kit's dark tokens into
+   the website navy below, so every kit piece (bento cards, notices, pills,
+   chips, rows) arrives in navy without a one-off class. The product itself
+   shows light, in islands that set data-theme="light" (the hero video, the
+   feature scenes, the morning brief, the last card). Behind everything, the
+   sky: three soft lights drifting slowly, moved only by transforms on one
+   fixed layer, so scrolling never repaints it (the owner's speed rule).
 
    WEBSITE MOTION (a scoped exception, docs/AIBOS_UI_KIT.md "Website
    motion"; the app itself stays still). Only the kit's own movements, in its
    own timings (the hero itself never animates); blocks rise 12px in
    200ms the first time they scroll into view, like a notice arriving; the
    art line draws itself in 1.1s like the What's new screen; the morning
-   brief and the reminder arrive like they do in the app. Nothing loops,
-   nothing floats, nothing blocks the page. Reduced motion: none of it.
+   brief and the reminder arrive like they do in the app; the feature
+   theatre plays short scenes of the product at work. Nothing blocks the
+   page. Reduced motion: none of it; the scenes show their last frame.
    ============================================================ */
+
+/* The website navy: the kit's dark tokens, tinted. Every text colour keeps
+   at least 4.5:1 on the cards (text-3 is 8.5:1, text-4 7.0:1, the brand
+   cyan 10.2:1). */
+[data-marketing][data-theme="dark"],
+[data-marketing] [data-theme="dark"] {
+  --bg-page:        #050b18;
+  --bg-card:        #0b1629;
+  --bg-card-hover:  #0f1c33;
+  --bg-input:       #0e1a30;
+  --bg-badge:       #13213b;
+  --border:         rgba(148,178,235,0.10);
+  --border-md:      rgba(148,178,235,0.15);
+  --border-strong:  rgba(148,178,235,0.26);
+  --text-2:         #e3e8f2;
+  --text-3:         #a7b3c8;
+  --text-4:         #95a2b9;
+  --pill-bg:        rgba(148,178,235,0.09);
+  --pill-bg-hover:  rgba(148,178,235,0.15);
+  --tooltip-bg:     #0f1c33;
+  --tooltip-border: rgba(148,178,235,0.16);
+  --overlay-bg:     rgba(5,11,24,0.85);
+  --shadow-card:    0 18px 40px rgba(1,4,12,0.45);
+  --shadow-lg:      0 28px 70px rgba(1,4,12,0.6);
+  --card-wash:      rgba(59,130,246,0.30);
+  --card-wash-opacity: 0.75;
+  --aurora:         rgba(59,130,246,0.30);
+}
+/* The page behind a phone's overscroll is navy too, never a white strip. */
+html:has([data-marketing]) { background: #050b18; }
 
 [data-marketing] {
   --mkt-maxw:       1140px;
@@ -51,27 +86,62 @@
   font-size: var(--fs-body);
   -webkit-font-smoothing: antialiased;
 }
-/* The page's own light: the kit's aurora, high on the left, under everything. */
-[data-marketing]::before {
-  content: ''; position: absolute; inset: 0 0 auto 0; height: 1100px; z-index: -1; pointer-events: none;
-  background:
-    radial-gradient(ellipse 60% 70% at 10% 0%, var(--aurora), transparent 65%),
-    radial-gradient(ellipse 40% 50% at 90% 0%, rgba(148,163,184,0.10), transparent 70%);
+/* ── The sky: three soft lights behind the whole website ───────
+   One fixed layer under the page. Each light drifts on its own slow clock
+   (46s, 58s, 70s) and, in browsers with scroll-driven animation, slides a
+   little as you scroll, so the navy is never quite the same twice. Only
+   transforms move: the lights are painted once and the graphics card just
+   slides them. No blur filters. */
+.mkt-sky { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.mkt-sky > span { position: absolute; inset: 0; }
+.mkt-sky i { position: absolute; display: block; border-radius: 50%; will-change: transform; }
+.mkt-sky > span:nth-child(1) i {
+  width: 95vmax; height: 95vmax; left: -38vmax; top: -48vmax;
+  background: radial-gradient(closest-side, rgba(37,99,235,0.42), rgba(37,99,235,0.14) 55%, transparent);
+  animation: sky-a 46s ease-in-out infinite alternate;
 }
+.mkt-sky > span:nth-child(2) i {
+  width: 70vmax; height: 70vmax; right: -30vmax; top: 18vh;
+  background: radial-gradient(closest-side, rgba(34,211,238,0.20), rgba(34,211,238,0.06) 55%, transparent);
+  animation: sky-b 58s ease-in-out infinite alternate;
+}
+.mkt-sky > span:nth-child(3) i {
+  width: 85vmax; height: 85vmax; left: 8vw; bottom: -56vmax;
+  background: radial-gradient(closest-side, rgba(79,70,229,0.30), rgba(79,70,229,0.08) 55%, transparent);
+  animation: sky-c 70s ease-in-out infinite alternate;
+}
+@keyframes sky-a { to { transform: translate3d(22vw, 26vh, 0) scale(1.12); } }
+@keyframes sky-b { to { transform: translate3d(-26vw, 30vh, 0) scale(0.9); } }
+@keyframes sky-c { to { transform: translate3d(14vw, -34vh, 0) scale(1.15); } }
+@supports (animation-timeline: scroll()) {
+  .mkt-sky > span { animation: sky-scroll linear both; animation-timeline: scroll(root); }
+  .mkt-sky > span:nth-child(1) { --sky-x: 6vw;  --sky-y: 34vh; }
+  .mkt-sky > span:nth-child(2) { --sky-x: -8vw; --sky-y: -22vh; }
+  .mkt-sky > span:nth-child(3) { --sky-x: -4vw; --sky-y: -30vh; }
+}
+@keyframes sky-scroll { to { transform: translate3d(var(--sky-x, 0), var(--sky-y, 0), 0); } }
 
-/* ── Dark band: the kit's monochrome black (data-theme="dark" on the band) ── */
-[data-marketing] .mkt-dark {
-  position: relative; isolation: isolate;
-  background: var(--bg-page);
-  color: var(--text-2);
-}
+/* ── Bands: the sky shows through every section ──────────────── */
+[data-marketing] .mkt-dark { position: relative; isolation: isolate; color: var(--text-2); }
 [data-marketing] .mkt-dark::before {
   content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: radial-gradient(ellipse 55% 80% at 8% 0%, var(--aurora), transparent 65%);
 }
+/* A light reading panel (the legal pages): the kit's light paper. */
+[data-marketing] .mkt-paper {
+  background: var(--bg-page); color: var(--text-2);
+  border-radius: var(--radius-lg); border: 1px solid var(--border);
+  box-shadow: 0 30px 80px rgba(1,4,12,0.5);
+}
 /* The round icon follows the surface it sits on, not the owner's app theme. */
-[data-marketing] .bento-icon { background: var(--bg-card); border-color: var(--border-strong); }
-[data-marketing] [data-theme="dark"] .bento-icon { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.15); }
+[data-marketing] .bento-icon { background: rgba(255,255,255,0.08); border-color: rgba(148,178,235,0.22); }
+[data-marketing] [data-theme="light"] .bento-icon { background: var(--bg-card); border-color: var(--border-strong); }
+[data-marketing] [data-theme="light"] .avatar { background: var(--bg-card) !important; border-color: var(--border-md); }
+/* The cursor glow is dark-only (BorderGlow.css); on the navy page its dark
+   rule would reach into the light product too, so the nearer light wins. */
+[data-marketing] [data-theme="light"] .border-glow-card::before,
+[data-marketing] [data-theme="light"] .border-glow-card::after,
+[data-marketing] [data-theme="light"] .border-glow-card > .edge-light { display: none; }
 
 /* ── Layout ─────────────────────────────────────────────────── */
 .mkt-section { padding-block: var(--mkt-section-y); }
@@ -253,30 +323,26 @@
 .mkt-hero-copy .mkt-actions { justify-content: center; margin-top: 32px; }
 .mkt-hero-copy .mkt-facts { justify-content: center; }
 
-/* The video stage (components/marketing/HeroVideo.tsx): the kit's dark
-   surface (data-theme="dark") lit by the kit's blue aurora from the top
-   left and a little cyan from the right, with the light app floating on it:
-   a hairline edge, a deep shadow and a soft blue glow under it. A laptop
-   window from 768px; a phone in its bezel below that. The poster sits under
-   the video, so the screen is never empty. */
+/* The video stage (components/marketing/HeroVideo.tsx): the light app
+   floating straight on the navy sky, a hairline edge, a deep shadow and a
+   pool of blue light under it. A laptop window from 768px; a phone in its
+   bezel below that. The poster sits under the video, so the screen is never
+   empty. */
 .hero-player { margin-top: clamp(40px, 6vw, 72px); }
 .hero-stage {
-  position: relative; isolation: isolate; overflow: hidden;
+  position: relative; isolation: isolate;
   display: flex; flex-direction: column; align-items: center;
-  padding: clamp(20px, 4.5vw, 56px) clamp(16px, 4.5vw, 56px) 0;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  background:
-    radial-gradient(ellipse 60% 70% at 10% 0%, var(--aurora), transparent 65%),
-    radial-gradient(ellipse 40% 55% at 92% 6%, rgba(34, 211, 238, 0.16), transparent 70%),
-    radial-gradient(ellipse 70% 45% at 50% 100%, rgba(59, 130, 246, 0.14), transparent 70%),
-    var(--bg-page);
+}
+.hero-stage::before {
+  content: ''; position: absolute; z-index: -1; left: 50%; top: 46%; width: 120%; height: 100%;
+  transform: translate(-50%, -50%); pointer-events: none;
+  background: radial-gradient(closest-side, rgba(59, 130, 246, 0.38), rgba(34, 211, 238, 0.10) 62%, transparent);
 }
 .hero-screen { position: relative; overflow: hidden; width: 100%; background: #f4f3ef; }
 .hero-poster, .hero-poster img, .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
 .hero-video { z-index: 1; }
 .hero-film { display: contents; }
-.hero-caption { width: 100%; margin: 0; padding: 14px 0 clamp(14px, 2.5vw, 22px); font-size: var(--fs-label); color: var(--text-3); }
+.hero-caption { width: 100%; margin: 0; padding: 16px 0 0; font-size: var(--fs-label); color: var(--text-3); text-align: center; }
 @media (min-width: 768px) {
   .hero-screen {
     aspect-ratio: 16 / 10; border-radius: var(--radius-card);
@@ -291,6 +357,163 @@
   }
   .hero-caption { text-align: center; padding-top: 20px; }
 }
+
+/* ── Pain to promise (components/marketing/PainPromise.tsx) ───── */
+.mkt-pain-head { max-width: 760px; margin-bottom: clamp(28px, 4vw, 48px); }
+.mkt-pain { display: flex; flex-direction: column; border-top: 1px solid var(--border); }
+.mkt-pain-row {
+  display: grid; grid-template-columns: 1fr; gap: 6px; align-items: center;
+  padding: 20px 0; border-bottom: 1px solid var(--border);
+}
+@media (min-width: 760px) {
+  .mkt-pain-row { grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr); gap: 24px; padding: 26px 0; }
+}
+.mkt-pain-old { margin: 0; font-size: clamp(1.125rem, 1.8vw, 1.375rem); line-height: 1.4; color: var(--text-4); }
+/* The brand line that strikes the old job through. */
+.mkt-pain-old span {
+  background: linear-gradient(var(--brand-fill), var(--brand-fill)) no-repeat 0 55% / 100% 2px;
+}
+.mkt-pain-arrow { width: 22px; height: 22px; color: var(--brand-fill); }
+@media (max-width: 759px) { .mkt-pain-arrow { display: none; } }
+.mkt-pain-new {
+  margin: 0; font-size: clamp(1.25rem, 2.1vw, 1.625rem); font-weight: 600; line-height: 1.3;
+  letter-spacing: -0.02em; color: var(--text-1);
+}
+
+/* ── The feature theatre (components/marketing/FeatureTheatre.tsx) ── */
+/* Compact enough that the tabs and the whole stage fit one laptop screen (1366 x 768). */
+.mkt-theatre .mkt-head { margin-bottom: 24px; padding-bottom: 24px; }
+.story-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: clamp(18px, 2.4vw, 28px); }
+@media (max-width: 759px) {
+  /* One row that scrolls sideways under the thumb, edge to edge. */
+  .story-tabs {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+    margin-inline: calc(var(--mkt-pad-x) * -1); padding-inline: var(--mkt-pad-x);
+  }
+  .story-tabs::-webkit-scrollbar { display: none; }
+}
+.story-tab {
+  position: relative; overflow: hidden; flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 20px 0 8px;
+  border-radius: 999px; border: 1px solid var(--border-md); background: var(--pill-bg);
+  color: var(--text-2); font: inherit; font-size: var(--fs-body); font-weight: 500; white-space: nowrap; cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.story-tab .bento-icon { width: 36px; height: 36px; }
+.story-tab .bento-icon svg { width: 18px; height: 18px; }
+.story-tab:hover { background: var(--pill-bg-hover); color: var(--text-1); }
+.story-tab[aria-selected="true"] { background: rgba(148, 178, 235, 0.17); border-color: var(--border-strong); color: var(--text-1); }
+.story-tab:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+/* The scene's time: a 2px brand line filling under the chosen tab. */
+.story-progress {
+  position: absolute; left: 18px; right: 18px; bottom: 6px; height: 2px; border-radius: 2px;
+  background: var(--brand-fill); transform: scaleX(0); transform-origin: left;
+  animation: story-fill linear forwards;
+}
+.story-progress[data-run="off"] { animation-play-state: paused; }
+@keyframes story-fill { to { transform: scaleX(1); } }
+
+.story-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: center; }
+@media (min-width: 960px) { .story-panel { grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr); } }
+.story-copy { animation: mkt-in 260ms var(--mkt-ease) both; }
+.story-plan { display: inline-block; margin: 0 0 16px; }
+.story-goal {
+  margin: 0; font-weight: 600; font-size: clamp(1.625rem, 2.9vw, 2.375rem); line-height: 1.12;
+  letter-spacing: -0.035em; color: var(--text-1); text-wrap: balance;
+}
+@media (max-width: 959px) { .story-copy { order: 2; } }
+
+/* The stage: the light product on a pane of lit navy. */
+.story-stage {
+  position: relative; isolation: isolate; padding: clamp(10px, 1.6vw, 18px);
+  border-radius: var(--radius-lg); border: 1px solid var(--border);
+  background: linear-gradient(160deg, rgba(30, 64, 124, 0.45), rgba(8, 17, 36, 0.35) 70%);
+}
+.story-stage::before {
+  content: ''; position: absolute; z-index: -1; inset: 10% 5% -6%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(59, 130, 246, 0.32), transparent);
+}
+.story-screen {
+  position: relative; overflow: hidden; padding: clamp(10px, 1.6vw, 16px);
+  border-radius: var(--radius-card); background: var(--bg-page); color: var(--text-1);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 30px 80px rgba(1, 4, 12, 0.55);
+  animation: mkt-in 240ms var(--mkt-ease) both;
+}
+
+/* A scene: the product's own pieces, a little tighter than in the app. */
+.scn { position: relative; min-height: 410px; }
+.scn .row { min-height: 52px; }
+.scn .row:hover { background: transparent; }
+.scn .panel.section-card { padding: 18px 20px; }
+.scn .sc-gap { margin-top: 12px; }
+.scn .sc-pill { pointer-events: none; transition: transform 0.1s ease; }
+.scn .sc-pill.is-press { transform: scale(0.95); }
+.scn .sc-tag { display: inline-flex; align-items: center; gap: 6px; margin-left: 0; }
+.scn .sc-tag svg { width: 14px; height: 14px; }
+.scn .notice { padding: 16px 18px; gap: 12px; }
+.scn .notice-actions { padding-left: 60px; }
+.scn .notice-actions .pill { pointer-events: none; }
+.scn .rs-day { width: 44px; }
+.scn .rs-day-num { width: 40px; height: 40px; font-size: var(--fs-body); }
+/* Pieces arrive in the kit's timing: up 10px, from the right 28px, from the
+   top like a phone notification, or up from the bottom like a sheet. */
+.scn .sc-in { opacity: 0; transform: translateY(10px); transition: opacity 260ms var(--mkt-ease), transform 260ms var(--mkt-ease); }
+.scn .sc-in.sc-from-right { transform: translateX(28px); }
+.scn .sc-in.sc-from-top { transform: translateY(-18px); }
+.scn .sc-in.sc-sheet { transform: translateY(36px); }
+.scn .sc-in.is-on { opacity: 1; transform: none; }
+.scn .sc-sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; }
+.scn .sc-toast { position: absolute; top: 0; right: 0; z-index: 3; width: min(340px, 100%); }
+/* The payslip's lines and its take-home figure. */
+.scn .sc-lines { display: flex; flex-direction: column; margin-top: 4px; }
+.scn .sc-line {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin: 0;
+  padding: 6px 0; border-top: 1px solid var(--border); font-size: var(--fs-body); color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.scn .sc-line > span:last-child { font-weight: 600; color: var(--text-1); }
+.scn .sc-total { padding-top: 10px; font-weight: 600; color: var(--text-1); align-items: center; }
+.scn .sc-done { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: var(--fs-label); color: var(--text-3); }
+.scn .sc-done svg { width: 16px; height: 16px; color: var(--text-1); }
+/* Stock: a name, how many are left and a meter against the reorder level. */
+.scn .sc-stock { display: flex; flex-direction: column; gap: 14px; }
+.scn .sc-stock-row { display: flex; flex-direction: column; gap: 8px; }
+.scn .sc-stock-row .row-main { flex: none; }
+.scn .meter-fill { transition: width 1.2s var(--mkt-ease), background 0.3s ease; }
+/* Rooms & Stays: the kit's week calendar, five days wide. */
+.scn .sc-wk .wk-row { grid-template-columns: 76px repeat(5, minmax(0, 1fr)); }
+.scn .sc-wk .wk-lane { grid-template-columns: repeat(5, minmax(0, 1fr)); min-height: 72px; }
+.scn .sc-wk .wk-dayhead { padding-bottom: 10px; }
+.scn .sc-wk .wk-dnum { width: 38px; height: 38px; font-size: var(--fs-h3); }
+.scn .sc-wk .wk-unit { padding: 8px 10px 8px 0; }
+.scn .sc-wk .wk-block { margin: 6px 3px; padding: 8px 9px; cursor: default; transition: opacity 260ms var(--mkt-ease), transform 260ms var(--mkt-ease), background 0.3s ease; }
+.scn .sc-wk .sc-cell { cursor: default; }
+.scn .sc-wk .sc-cell:hover { background: transparent; }
+@media (max-width: 520px) {
+  .scn { min-height: 480px; }
+  .scn .sc-toast { width: 100%; }
+  .scn .notice-actions { padding-left: 0; }
+  /* Four days on a phone, so a one-night name still fits its night. */
+  .scn .sc-wk .wk-row { grid-template-columns: 64px repeat(4, minmax(0, 1fr)); }
+  .scn .sc-wk .wk-lane { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .scn .sc-wk .wk-days > :nth-child(6), .scn .sc-wk .sc-cell:nth-child(5) { display: none; }
+  .scn .sc-wk .wk-dnum { width: 32px; height: 32px; font-size: var(--fs-body); }
+  .scn .sc-wk .wk-unit-name { white-space: nowrap; }
+  .scn .sc-wk .wk-block { padding: 6px 7px; margin: 5px 2px; }
+  .scn .sc-wk .wk-block-sub { display: none; }
+  .scn .sc-wk .wk-block-name { display: block; white-space: nowrap; overflow: hidden; text-overflow: clip; font-size: var(--fs-label); }
+}
+
+/* ── The goal (components/marketing/TheGoal.tsx) ──────────────── */
+.mkt-goal-lines { display: flex; flex-direction: column; gap: 4px; }
+.mkt-goal-line {
+  margin: 0; font-weight: 600; font-size: clamp(2.25rem, 6.4vw, 5rem); line-height: 1.05;
+  letter-spacing: -0.045em; color: var(--text-1);
+  transition: opacity 600ms var(--mkt-ease), color 600ms var(--mkt-ease);
+}
+.mkt-goal-line.is-dim { opacity: 0.28; }
+.mkt-goal-line:last-child { color: var(--brand-fill); }
+.mkt-goal-sub { margin-top: clamp(24px, 3vw, 36px); max-width: 560px; }
 
 /* ── Website motion ─────────────────────────────────────────── */
 @keyframes mkt-in { from { opacity: 0; transform: translateY(12px); } }
@@ -332,14 +555,31 @@
 .mkt-brief[data-rise="in"] > :nth-child(2) { animation: mkt-from-right var(--mkt-notice) ease-out 500ms backwards; }
 .mkt-brief[data-rise="in"] > :nth-child(3) { animation: mkt-in var(--mkt-notice) ease-out 700ms backwards; }
 
+/* Pain to promise: row by row, the brand line strikes the old job through,
+   it fades back and the answer rises in its place. */
+.mkt-pain[data-rise="wait"] .mkt-pain-old span { background-size: 0% 2px; }
+.mkt-pain[data-rise="wait"] .mkt-pain-old { color: var(--text-2); }
+.mkt-pain[data-rise="wait"] .mkt-pain-new,
+.mkt-pain[data-rise="wait"] .mkt-pain-arrow { opacity: 0; }
+.mkt-pain[data-rise="in"] .mkt-pain-old span { animation: mkt-strike 500ms var(--mkt-ease) backwards; animation-delay: calc(var(--i, 0) * 380ms + 200ms); }
+.mkt-pain[data-rise="in"] .mkt-pain-old { animation: mkt-fade-back 500ms ease backwards; animation-delay: calc(var(--i, 0) * 380ms + 400ms); }
+.mkt-pain[data-rise="in"] .mkt-pain-arrow { animation: mkt-from-left 300ms var(--mkt-ease) backwards; animation-delay: calc(var(--i, 0) * 380ms + 550ms); }
+.mkt-pain[data-rise="in"] .mkt-pain-new { animation: mkt-in 300ms var(--mkt-ease) backwards; animation-delay: calc(var(--i, 0) * 380ms + 650ms); }
+.mkt-pain > :nth-child(2) { --i: 1; }
+.mkt-pain > :nth-child(3) { --i: 2; }
+.mkt-pain > :nth-child(4) { --i: 3; }
+@keyframes mkt-strike { from { background-size: 0% 2px; } }
+@keyframes mkt-fade-back { from { color: var(--text-2); } }
+@keyframes mkt-from-left { from { opacity: 0; transform: translateX(-12px); } }
+
 /* The last word: the notice rises and its art line draws itself. */
 .mkt-final[data-rise="in"] .notice-art-line { stroke-dasharray: 700; animation: mkt-draw var(--mkt-line) ease-out 150ms backwards; }
 
 /* Reports: the meter and the bars fill to their figure once seen. */
 .mkt-grow .meter-fill, .mkt-grow .bar-fill { transition: width var(--mkt-brand) var(--mkt-ease) 200ms; }
 
-/* ── Footer ─────────────────────────────────────────────────── */
-.mkt-footer { border-top: 1px solid var(--border); }
+/* ── Footer: a shade deeper than the page ──────────────────── */
+.mkt-footer { border-top: 1px solid var(--border); background: rgba(2, 6, 15, 0.72); }
 .mkt-footer a:hover { color: var(--text-1) !important; }
 
 /* ── Nav responsive: collapse to a menu button below 880px ──── */

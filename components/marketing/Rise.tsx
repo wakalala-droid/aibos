@@ -37,7 +37,7 @@ export function useInView<T extends HTMLElement>() {
 }
 
 export default function Rise({
-  children, className, style, mode = 'self', id, ariaLabel,
+  children, className, style, mode = 'self', id, ariaLabel, theme,
 }: {
   children: ReactNode;
   className?: string;
@@ -45,10 +45,12 @@ export default function Rise({
   mode?: 'self' | 'stagger' | 'seq';
   id?: string;
   ariaLabel?: string;
+  /** "light" makes the block a piece of the light product on the navy page. */
+  theme?: 'light' | 'dark';
 }) {
   const [ref, state] = useInView<HTMLDivElement>();
   return (
-    <div ref={ref} id={id} className={className} style={style} data-rise={state} data-rise-mode={mode} aria-label={ariaLabel}>
+    <div ref={ref} id={id} className={className} style={style} data-rise={state} data-rise-mode={mode} aria-label={ariaLabel} data-theme={theme}>
       {children}
     </div>
   );

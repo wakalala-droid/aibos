@@ -44,8 +44,9 @@ export default function MarketingNav() {
           style={{ display: 'flex', alignItems: 'center', gap: 9, minHeight: 44, textDecoration: 'none' }}
           aria-label="AIBOS home"
         >
-          <Image src="/brand/aibos-mark.png" alt="" aria-hidden width={30} height={30} style={{ width: 30, height: 30, objectFit: 'contain' }} priority />
-          <Image src="/brand/aibos-wordmark.png" alt="" aria-hidden width={78} height={20} style={{ width: 78, height: 'auto', objectFit: 'contain' }} priority />
+          {/* The white mark and wordmark: the website is navy (10 Oct 2026). */}
+          <Image src="/brand/aibos-mark-white-glyph.png" alt="" aria-hidden width={30} height={30} style={{ width: 30, height: 30, objectFit: 'contain' }} priority />
+          <Image src="/brand/aibos-wordmark-white.png" alt="" aria-hidden width={78} height={20} style={{ width: 78, height: 'auto', objectFit: 'contain' }} priority />
         </Link>
 
         <div className="mkt-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
