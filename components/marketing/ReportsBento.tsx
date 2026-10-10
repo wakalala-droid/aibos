@@ -5,19 +5,69 @@
 // breakeven on a meter, best customers as a bar list and the file read-out.
 // Sample numbers; every chart colour comes from --chart-* (one palette).
 
-import { AreaChart, Area, YAxis, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TriangleAlert, Scale, Trophy, FileSearch } from 'lucide-react';
 import { BentoCard, ChartKey } from '@/components/kit';
 import Rise, { useInView } from '@/components/marketing/Rise';
 
 // Six months as recorded, then three forecast with the range around them.
-const FORECAST = [
-  { hist: 198000 }, { hist: 214500 }, { hist: 231000 }, { hist: 248000 }, { hist: 263000 },
-  { hist: 284500, fcast: 284500, range: [284500, 284500] },
-  { fcast: 299500, range: [275540, 323460] },
-  { fcast: 314500, range: [289340, 339660] },
-  { fcast: 329500, range: [303140, 355860] },
-];
+const HIST = [198000, 214500, 231000, 248000, 263000, 284500];
+const FCAST = [284500, 299500, 314500, 329500];
+const LOW = [284500, 275540, 289340, 303140];
+const HIGH = [284500, 323460, 339660, 355860];
+
+// The chart is plain SVG (10 Oct 2026): it used to load a 349 KB chart
+// library for this one picture, a large part of the home page's weight on a
+// phone. Same picture: a smooth line (monotone, as the app's charts draw),
+// the area under it in the brand line, the forecast dashed in grey inside
+// its range. It draws itself left to right once seen (marketing.css).
+const W = 600, H = 240, PAD = 8, MIN = 178000, MAX = 365860, STEPS = 8;
+const px = (i: number) => PAD + (i * (W - PAD * 2)) / STEPS;
+const py = (v: number) => PAD + ((MAX - v) / (MAX - MIN)) * (H - PAD * 2);
+
+/** A smooth line through the points that never overshoots them (Fritsch and
+ *  Carlson's monotone curve, the shape recharts calls "monotone"). */
+function smooth(pts: [number, number][], move = true) {
+  const n = pts.length;
+  const d = pts.slice(1).map(([x, y], i) => (y - pts[i][1]) / (x - pts[i][0]));
+  const m = pts.map((_, i) => (i === 0 ? d[0] : i === n - 1 ? d[n - 2] : d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2));
+  for (let i = 0; i < n - 1; i++) {
+    if (d[i] === 0) { m[i] = 0; m[i + 1] = 0; continue; }
+    const a = m[i] / d[i], b = m[i + 1] / d[i], h = a * a + b * b;
+    if (h > 9) { const t = 3 / Math.sqrt(h); m[i] = t * a * d[i]; m[i + 1] = t * b * d[i]; }
+  }
+  let out = move ? `M${pts[0][0]},${pts[0][1]}` : `L${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < n - 1; i++) {
+    const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], dx = (x1 - x0) / 3;
+    out += ` C${x0 + dx},${y0 + m[i] * dx} ${x1 - dx},${y1 - m[i + 1] * dx} ${x1},${y1}`;
+  }
+  return out;
+}
+const histPts = HIST.map((v, i) => [px(i), py(v)] as [number, number]);
+const HIST_LINE = smooth(histPts);
+const HIST_AREA = `${HIST_LINE} L${px(5)},${H} L${px(0)},${H} Z`;
+const FCAST_LINE = smooth(FCAST.map((v, i) => [px(i + 5), py(v)]));
+const RANGE = `${smooth(HIGH.map((v, i) => [px(i + 5), py(v)]))} ${smooth(LOW.map((v, i) => [px(8 - i), py(LOW[3 - i])]), false)} Z`;
+
+function ForecastChart() {
+  return (
+    <svg className="mkt-fc" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="mkt-fc-hist" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.26} />
+          <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <g className="mkt-fc-hist">
+        <path d={HIST_AREA} fill="url(#mkt-fc-hist)" />
+        <path d={HIST_LINE} fill="none" stroke="var(--chart-1)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+      </g>
+      <g className="mkt-fc-next">
+        <path d={RANGE} fill="var(--chart-muted)" fillOpacity={0.14} />
+        <path d={FCAST_LINE} fill="none" stroke="var(--chart-muted)" strokeWidth={2} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />
+      </g>
+    </svg>
+  );
+}
 
 const CUSTOMERS = [
   { name: 'Lusaka Hotels', amount: 'K38,400', share: 100 },
@@ -34,7 +84,6 @@ const READ_OUT = [
 export default function ReportsBento() {
   // Seen once: the cards rise, the forecast line draws in, the fills grow.
   const [gridRef, seen] = useInView<HTMLDivElement>();
-  const draw = seen === 'in';
   const empty = seen === 'wait';
   return (
     <section id="reports" className="mkt-section" aria-labelledby="reports-h" style={{ paddingTop: 0 }}>
@@ -62,20 +111,7 @@ export default function ReportsBento() {
               <ChartKey items={[['var(--chart-1)', 'Your last six months'], ['var(--chart-muted)', 'The next three', true]]} />
               <div role="img" aria-label="Sales rising from K198,000 to K284,500 over six months, forecast to reach about K329,500 in three months, between K303,000 and K356,000."
                 style={{ height: 240, marginTop: 12 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart key={draw ? 'draw' : 'rest'} data={FORECAST} margin={{ top: 8, right: 4, bottom: 4, left: 4 }}>
-                    <defs>
-                      <linearGradient id="mkt-fc-hist" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.26} />
-                        <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <YAxis hide domain={['dataMin - 20000', 'dataMax + 10000']} />
-                    <Area type="monotone" dataKey="range" stroke="none" fill="var(--chart-muted)" fillOpacity={0.14} isAnimationActive={draw} animationBegin={1100} animationDuration={700} animationEasing="ease-out" connectNulls />
-                    <Area type="monotone" dataKey="hist" stroke="var(--chart-1)" strokeWidth={2} fill="url(#mkt-fc-hist)" isAnimationActive={draw} animationBegin={250} animationDuration={1100} animationEasing="ease-out" dot={false} connectNulls />
-                    <Area type="monotone" dataKey="fcast" stroke="var(--chart-muted)" strokeWidth={2} strokeDasharray="6 4" fill="none" isAnimationActive={draw} animationBegin={1100} animationDuration={700} animationEasing="ease-out" dot={false} connectNulls />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <ForecastChart />
               </div>
             </div>
           </BentoCard>

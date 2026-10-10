@@ -1,147 +1,18 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
-import { MotionConfig } from 'framer-motion';
-import Sidebar from './Sidebar';
-import MobileTabBar from './MobileTabBar';
-import DropAnywhere from './DropAnywhere';
-import RecordSheet from './RecordSheet';
-import { useStore } from '@/lib/store';
-import { useTheme } from '@/lib/theme';
-import { ProfileProvider } from '@/lib/profile';
-import { AiAssistantProvider } from '@/lib/aiAssistant';
-import { FloatingAiAssistant } from '@/components/ui/glowing-ai-chat-assistant';
-import BootSplash from '@/components/brand/BootSplash';
 import { isMarketingRoute } from '@/lib/routes';
 
-// Routes that render full-screen WITHOUT the app chrome (sidebar + padded
-// main area). The login/auth screens are standalone and must not show the
-// navigation — you aren't signed in yet.
-// '/pay' is the customer-facing invoice payment page (migration 0025). The
-// person on it has no AIBOS account and never will — showing them the product
-// sidebar would be nonsense.
-// '/checkout' is a focused payment page, like a Stripe or Linear checkout: no
-// sidebar, bottom tabs or floating assistant sitting over the card form.
-const BARE_ROUTES = ['/login', '/auth', '/onboarding', '/pay', '/checkout'];
-
-// The public website (lib/routes.ts) renders bare too.
-
-function HamburgerIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function SunIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function MoonIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
+// The app around every page (components/layout/AppFrame.tsx): the sidebar,
+// tabs, assistant, profile, toasts and offline sync. A chunk of its own, so
+// the public website, which shows none of it, never downloads or runs it
+// (10 Oct 2026: the website was loading about 1 MB of the app's code, the
+// Supabase client among it, on every phone).
+const AppFrame = dynamic(() => import('./AppFrame'));
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
-  const isBare =
-    BARE_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`)) ||
-    isMarketingRoute(pathname);
-
-  const mobileNavOpen = useStore((s) => s.mobileNavOpen);
-  const toggleMobileNav = useStore((s) => s.toggleMobileNav);
-  const setMobileNav = useStore((s) => s.setMobileNav);
-  const uiMode = useStore((s) => s.uiMode);
-  const { toggle, isDark } = useTheme();
-
-  if (isBare) {
-    // Still honour reduced-motion preference on standalone screens.
-    return (
-      <ProfileProvider>
-        <MotionConfig reducedMotion="user">{children}</MotionConfig>
-      </ProfileProvider>
-    );
-  }
-
-  return (
-    <ProfileProvider>
-    <AiAssistantProvider>
-    <MotionConfig reducedMotion="user">
-      {/* The opening screen, until the account has been read. */}
-      <BootSplash />
-      <a href="#main" className="skip-link">Skip to main content</a>
-
-      {/* data-uimode lets CSS give Simple mode its mobile tab bar clearance. */}
-      <div className="app-shell" data-uimode={uiMode}>
-        <Sidebar />
-
-        {/* Backdrop — only rendered (and visible) when the mobile drawer is open. */}
-        {mobileNavOpen && (
-          <button
-            type="button"
-            className="nav-backdrop"
-            aria-label="Close navigation menu"
-            onClick={() => setMobileNav(false)}
-          />
-        )}
-
-        <div id="main-content" className="main-content">
-          {/* Mobile top bar — CSS hides it at lg and above. */}
-          <header className="mobile-topbar">
-            <button
-              type="button"
-              className="icon-pill"
-              aria-label="Open navigation menu"
-              aria-expanded={mobileNavOpen}
-              aria-controls="primary-navigation"
-              onClick={toggleMobileNav}
-            >
-              <HamburgerIcon />
-            </button>
-
-            <span style={{
-              fontSize: 'var(--fs-body)', fontWeight: 700,
-              color: 'var(--text-1)', letterSpacing: '-0.02em',
-            }}>
-              AIBOS
-            </span>
-
-            <button
-              type="button"
-              className="icon-pill"
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              onClick={toggle}
-            >
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </button>
-          </header>
-
-          <main id="main" tabIndex={-1} style={{ outline: 'none' }}>{children}</main>
-        </div>
-
-        {/* Floating AI assistant — available across the dashboard chrome. */}
-        <FloatingAiAssistant />
-
-        {/* Simple mode: thumb-reach bottom tabs on phones (hidden at lg+). */}
-        <MobileTabBar />
-
-        {/* Drop or paste a receipt or spreadsheet on any page (C4). */}
-        <DropAnywhere />
-
-        {/* The Record form over any page (C3). */}
-        <RecordSheet />
-      </div>
-    </MotionConfig>
-    </AiAssistantProvider>
-    </ProfileProvider>
-  );
+  if (isMarketingRoute(pathname)) return <>{children}</>;
+  return <AppFrame>{children}</AppFrame>;
 }

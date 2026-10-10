@@ -1,10 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { ThemeProvider, FOUC_SCRIPT } from '@/lib/theme';
 import AppShell from '@/components/layout/AppShell';
-import { OfflineSync } from '@/components/pwa/OfflineSync';
-import AppToaster from '@/components/ui/AppToaster';
-import ConfirmSheet from '@/components/ui/ConfirmSheet';
-import TableCards from '@/components/ui/TableCards';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -41,11 +37,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ThemeProvider>
+          {/* The app's helpers (offline sync, toasts, confirm sheet) live in
+              AppFrame, so the public website does not load them. */}
           <AppShell>{children}</AppShell>
-          <OfflineSync />
-          <AppToaster />
-          <ConfirmSheet />
-          <TableCards />
         </ThemeProvider>
       </body>
     </html>

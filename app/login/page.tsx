@@ -7,6 +7,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase';
+import { NoticeArt } from '@/components/kit';
+import NavyPage from '@/components/brand/NavyPage';
+import '../navy.css';
 
 // ─── Google Icon ───────────────────────────────────────────────────
 
@@ -22,19 +25,14 @@ function GoogleIcon() {
 }
 
 // ─── Logo ──────────────────────────────────────────────────────
-// Light page, so the dark bare mark (the marketing nav's mark), no glow.
+// The navy page, so the white mark and wordmark, as on the website's menu.
 
-function LogoMark() {
+function Logo() {
   return (
-    <Image
-      src="/brand/aibos-mark.png"
-      alt=""
-      aria-hidden
-      width={72}
-      height={72}
-      style={{ width: 72, height: 'auto', objectFit: 'contain' }}
-      priority
-    />
+    <div className="login-logo">
+      <Image src="/brand/aibos-mark-white-glyph.png" alt="" aria-hidden width={34} height={34} style={{ width: 34, height: 34, objectFit: 'contain' }} priority />
+      <Image src="/brand/aibos-wordmark-white.png" alt="AIBOS" width={92} height={24} style={{ width: 92, height: 'auto', objectFit: 'contain' }} priority />
+    </div>
   );
 }
 
@@ -105,69 +103,38 @@ function LoginForm() {
     return () => window.removeEventListener('keydown', handler);
   }, [handleGoogleSignIn, loading]);
 
-  // UI/UX audit 2026-10 A19: the sign-in used to be a small dark glass card on
-  // a looping starfield, with most words at 12px and the legal line at 2.16:1,
-  // right after a cream marketing site. Now: the site's light paper, a still
-  // page, one heading, 18px words and a 52px Google button.
+  // UI/UX audit 2026-10 A19 made sign-in a still page with one heading, big
+  // words and a 52px Google button. 10 Oct 2026: the same, in the website's
+  // navy (owner: "do the same navy treatment on the app login page"), on the
+  // kit's notice with the splash art strip, like the What's new screen.
   return (
-    <main
-      className={`login-card ${shaking ? 'shake' : ''}`}
-      style={{
-        position: 'relative', zIndex: 1, width: '100%', maxWidth: 460, margin: '0 16px',
-        background: '#fffdf9', border: `1px solid ${errorMsg ? '#b91c1c' : 'rgba(28,25,23,0.14)'}`,
-        borderRadius: 16, padding: '40px 32px 32px',
-        boxShadow: '0 1px 2px rgba(28,25,23,0.05), 0 12px 32px rgba(28,25,23,0.08)',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-        <LogoMark />
+    <main className={`notice notice-floating login-card${errorMsg ? ' is-error' : ''}${shaking ? ' shake' : ''}`}>
+      <NoticeArt theme="dark" />
+      <div className="login-body">
+        <h1 className="login-title">Sign in to AIBOS</h1>
+        <p className="login-text">Use your Google account. There is no password to remember.</p>
+
+        {errorMsg && <p role="alert" className="login-error">{errorMsg}</p>}
+        {redirecting && <p role="status" className="login-status">Taking you to Google…</p>}
+
+        <button
+          type="button"
+          className="login-google"
+          onClick={handleGoogleSignIn}
+          disabled={loading || redirecting}
+          aria-label="Continue with Google"
+        >
+          {loading || redirecting ? <span aria-hidden className="login-spin" /> : <GoogleIcon />}
+          <span>{redirecting ? 'Redirecting…' : loading ? 'Connecting…' : 'Continue with Google'}</span>
+        </button>
+
+        <p className="login-legal">
+          By continuing you agree to our{' '}
+          <a href="/terms" className="tap-link">Terms</a>
+          {' '}and{' '}
+          <a href="/privacy" className="tap-link">Privacy Policy</a>.
+        </p>
       </div>
-
-      <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, color: '#15110f', textAlign: 'center', margin: 0, letterSpacing: '-0.02em' }}>
-        Sign in to AIBOS
-      </h1>
-      <p style={{ fontSize: 'var(--fs-body)', color: '#4a443e', textAlign: 'center', margin: '8px 0 28px', lineHeight: 1.6 }}>
-        Use your Google account. There is no password to remember.
-      </p>
-
-      {errorMsg && (
-        <p role="alert" style={{ fontSize: 'var(--fs-body)', color: '#b91c1c', background: 'rgba(185,28,28,0.06)', border: '1px solid rgba(185,28,28,0.3)', borderRadius: 10, padding: '12px 14px', margin: '0 0 16px', lineHeight: 1.5 }}>
-          {errorMsg}
-        </p>
-      )}
-      {redirecting && (
-        <p role="status" style={{ fontSize: 'var(--fs-body)', color: '#075985', margin: '0 0 16px', textAlign: 'center' }}>
-          Taking you to Google…
-        </p>
-      )}
-
-      <button
-        type="button"
-        onClick={handleGoogleSignIn}
-        disabled={loading || redirecting}
-        aria-label="Continue with Google"
-        style={{
-          width: '100%', minHeight: 56, borderRadius: 10, border: '1px solid rgba(28,25,23,0.24)',
-          background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-          fontSize: 'var(--fs-body)', fontWeight: 600, color: '#15110f',
-          cursor: loading || redirecting ? 'default' : 'pointer',
-          boxShadow: '0 1px 2px rgba(28,25,23,0.06)',
-        }}
-      >
-        {loading || redirecting ? (
-          <span aria-hidden style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.15)', borderTop: '2px solid #075985', animation: 'spin 0.8s linear infinite' }} />
-        ) : (
-          <GoogleIcon />
-        )}
-        <span>{redirecting ? 'Redirecting…' : loading ? 'Connecting…' : 'Continue with Google'}</span>
-      </button>
-
-      <p style={{ fontSize: 'var(--fs-body)', color: '#4a443e', textAlign: 'center', margin: '24px 0 0', lineHeight: 1.6 }}>
-        By continuing you agree to our{' '}
-        <a href="/terms" className="tap-link" style={{ color: '#075985', textDecoration: 'underline', textUnderlineOffset: 3 }}>Terms</a>
-        {' '}and{' '}
-        <a href="/privacy" className="tap-link" style={{ color: '#075985', textDecoration: 'underline', textUnderlineOffset: 3 }}>Privacy Policy</a>.
-      </p>
     </main>
   );
 }
@@ -176,22 +143,14 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div
-      data-theme="light"
-      style={{
-        position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', gap: 24, padding: '32px 0',
-        background: '#f4f3ef', color: '#15110f',
-      }}
-    >
-      {/* A plain card while the form loads: the old fallback drew the white
-          logo on this light page, a blank flash. */}
-      <Suspense fallback={<div aria-busy="true" style={{ width: 'min(440px, calc(100% - 32px))', minHeight: 360, borderRadius: 16, background: '#fff', border: '1px solid #e4e0d8' }} />}>
+    <div data-navy data-theme="dark" className="login-page">
+      <NavyPage />
+      <Logo />
+      {/* A plain navy card while the form loads, the same size, so nothing jumps. */}
+      <Suspense fallback={<div aria-busy="true" className="notice login-card" style={{ minHeight: 420 }} />}>
         <LoginForm />
       </Suspense>
-      <p style={{ fontSize: 'var(--fs-caps)', color: '#5d564f', letterSpacing: '0.14em', textTransform: 'uppercase', textAlign: 'center', padding: '0 16px', margin: 0 }}>
-        Artificial Intelligence Business Operating System
-      </p>
+      <p className="login-foot">Artificial Intelligence Business Operating System</p>
     </div>
   );
 }

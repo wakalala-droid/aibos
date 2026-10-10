@@ -1,0 +1,120 @@
+/* ============================================================
+   AIBOS NAVY: the public website and the sign-in page
+   ------------------------------------------------------------
+   The owner, 10 Oct 2026: "too much white going on, add dynamic dark navy
+   blue like on the AI section" (the website), then "do the same navy
+   treatment on the app login page". A root that carries data-navy and
+   data-theme="dark" turns the kit's dark tokens (globals.css) into this
+   navy, so every kit piece arrives in navy without a one-off class. The
+   product shows light, in islands that set data-theme="light".
+
+   SPEED (owner, same day: "it's laggy on phone and PC, make sure it's
+   smooth"). Measured in Edge: the first sky, three huge lights drifting and
+   scaling on their own clocks, doubled the slow frames on a PC and made a
+   third of the slow frames on a phone, because the screen was drawn three
+   times over on every frame, even at rest. The sky is now ONE fixed layer,
+   painted once, that slides a little as you scroll (scroll-driven, so the
+   graphics card moves it and nothing runs while the page is still).
+   ============================================================ */
+
+/* The navy: the kit's dark tokens, tinted. Every text colour keeps at least
+   4.5:1 on the cards (text-3 is 8.5:1, text-4 7.0:1, the brand cyan 10.2:1). */
+[data-navy][data-theme="dark"],
+[data-navy] [data-theme="dark"] {
+  --bg-page:        #050b18;
+  --bg-card:        #0b1629;
+  --bg-card-hover:  #0f1c33;
+  --bg-input:       #0e1a30;
+  --bg-badge:       #13213b;
+  --border:         rgba(148,178,235,0.10);
+  --border-md:      rgba(148,178,235,0.15);
+  --border-strong:  rgba(148,178,235,0.26);
+  --text-2:         #e3e8f2;
+  --text-3:         #a7b3c8;
+  --text-4:         #95a2b9;
+  --pill-bg:        rgba(148,178,235,0.09);
+  --pill-bg-hover:  rgba(148,178,235,0.15);
+  --tooltip-bg:     #0f1c33;
+  --tooltip-border: rgba(148,178,235,0.16);
+  --overlay-bg:     rgba(5,11,24,0.85);
+  /* Shadows: soft and short. A long blur (60 to 140px) is slow to draw on
+     a phone and barely shows on navy. */
+  --shadow-card:    0 12px 28px rgba(1,4,12,0.4);
+  --shadow-lg:      0 18px 40px rgba(1,4,12,0.5);
+  --card-wash:      rgba(59,130,246,0.30);
+  --card-wash-opacity: 0.75;
+  --aurora:         rgba(59,130,246,0.30);
+}
+/* The light product on navy keeps the kit's light colours with the same
+   short shadows (the light theme's own are 40 to 60px blurs). */
+[data-navy] [data-theme="light"] {
+  --shadow-card:    0 8px 20px rgba(0,0,0,0.05);
+  --shadow-lg:      0 14px 32px rgba(0,0,0,0.10);
+}
+/* The page behind a phone's overscroll is navy too, never a white strip
+   (NavyPage adds the class while a navy page is open). */
+html.navy-page, html.navy-page body { background: #050b18; }
+
+/* ── The sky ─────────────────────────────────────────────────
+   One layer, fixed behind the page, half a screen taller than the screen:
+   the blue light high on the left, a little cyan on the right and indigo
+   low down, painted once. In browsers with scroll-driven animation it
+   slides up half a screen over the whole page, so the lights move as you
+   read; elsewhere it simply stays. */
+.navy-sky { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.navy-sky::before {
+  content: ''; position: absolute; left: -10%; right: -10%; top: -8%; height: 150%;
+  background:
+    radial-gradient(55% 34% at 10% 6%, rgba(37,99,235,0.42), rgba(37,99,235,0.12) 52%, transparent 76%),
+    radial-gradient(42% 26% at 94% 30%, rgba(34,211,238,0.16), rgba(34,211,238,0.04) 55%, transparent 74%),
+    radial-gradient(60% 30% at 36% 88%, rgba(79,70,229,0.28), rgba(79,70,229,0.08) 55%, transparent 76%);
+}
+@supports (animation-timeline: scroll()) {
+  .navy-sky::before {
+    will-change: transform;
+    animation: navy-sky-slide linear both;
+    animation-timeline: scroll(root);
+  }
+}
+@keyframes navy-sky-slide { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, -33%, 0); } }
+@media (prefers-reduced-motion: reduce) {
+  .navy-sky::before { animation: none; will-change: auto; }
+}
+
+/* ── The sign-in page (app/login/page.tsx) ───────────────────── */
+.login-page {
+  position: relative; isolation: isolate; min-height: 100vh; min-height: 100dvh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+  padding: 32px 16px; background: var(--bg-page); color: var(--text-2);
+}
+.login-logo { display: flex; align-items: center; gap: 10px; }
+.login-card { width: 100%; max-width: 460px; padding: 0; gap: 0; }
+/* The strip keeps its own shape, so the mark in the middle and the double
+   arrow on the right both show at any width (the kit's rule). */
+.login-card .notice-art-strip { margin: 0; height: auto; aspect-ratio: 7 / 1; }
+.login-card.is-error { border-color: color-mix(in srgb, var(--red) 55%, transparent); }
+.login-body { padding: 28px 28px 30px; text-align: center; }
+@media (max-width: 400px) { .login-body { padding: 24px 20px 26px; } }
+.login-title { margin: 0; font-size: var(--fs-h2); font-weight: 600; letter-spacing: -0.02em; line-height: 1.25; color: var(--text-1); }
+.login-text { margin: 8px 0 26px; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); }
+.login-error {
+  margin: 0 0 16px; padding: 12px 14px; border-radius: var(--radius-md); text-align: left;
+  font-size: var(--fs-body); line-height: 1.5; color: var(--red);
+  background: color-mix(in srgb, var(--red) 9%, transparent); border: 1px solid color-mix(in srgb, var(--red) 35%, transparent);
+}
+.login-status { margin: 0 0 16px; font-size: var(--fs-body); color: var(--cyan); }
+/* Google's own white button, a pill like the kit's: the one bright thing on the page. */
+.login-google {
+  width: 100%; min-height: 56px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.9);
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  background: #ffffff; color: #1f1f1f; font: inherit; font-size: var(--fs-body); font-weight: 600; cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.login-google:hover { background: #eef2f8; }
+.login-google:active { transform: scale(0.98); }
+.login-google:disabled { cursor: default; }
+.login-google:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+.login-spin { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.15); border-top-color: #075985; animation: spin 0.8s linear infinite; }
+.login-legal { margin: 22px 0 0; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); }
+.login-legal a { color: var(--cyan); text-decoration: underline; text-underline-offset: 3px; }
+.login-foot { margin: 0; padding: 0 16px; text-align: center; font-size: var(--fs-caps); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-4); }
