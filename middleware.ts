@@ -4,7 +4,10 @@
  * Protected routes → /dashboard/**, /admin/**
  * Public routes    → /login, /auth/callback, and the marketing surface
  *                    (/ home, plus /pricing, /trust, /about).
- * Root: signed-in → /dashboard; signed-out → public marketing home.
+ * Root: the public website for everyone, signed in or not (owner, 11 Oct
+ * 2026: a signed-in owner could not see the website any more, typing
+ * ai-bos.website took them back to the dashboard). The website's menu offers
+ * "Open dashboard" to anyone signed in (the SIGNED_IN hint below).
  *
  * Resilience: if the auth backend can't be reached (e.g. the public Supabase
  * env vars are missing/misconfigured), we MUST NOT 404 the public marketing
@@ -29,6 +32,12 @@ const AUTH_ROUTES   = ['/login'];          // Redirect to dashboard if already l
 // as far as "Pay" and was then refused with a raw "Unauthenticated" error.
 const PROTECTED_PREFIXES = ['/dashboard', '/checkout', '/onboarding'];
 const ADMIN_PREFIX     = '/admin';
+
+/** A plain "this browser is signed in" hint for the public website's menu, so
+ *  it can offer "Open dashboard" without loading the sign-in code (the
+ *  website is kept light for phones). It carries no session and opens
+ *  nothing: the dashboard still checks the real session here. */
+const SIGNED_IN = 'aibos-signed-in';
 
 /** Where to come back to after signing in: the page AND its query, so
  *  /checkout?plan=pro is not reduced to a checkout with no plan. */
@@ -79,6 +88,13 @@ export async function middleware(request: NextRequest) {
   // non-null for the admin query below and keeps the guarantee explicit.
   if (!supabase) return response;
 
+  // Keep the website's "Open dashboard" hint in step with the session.
+  if (session && !request.cookies.get(SIGNED_IN)) {
+    response.cookies.set(SIGNED_IN, '1', { path: '/', sameSite: 'lax', secure: request.nextUrl.protocol === 'https:', maxAge: 60 * 60 * 24 * 30 });
+  } else if (!session && request.cookies.get(SIGNED_IN)) {
+    response.cookies.delete(SIGNED_IN);
+  }
+
   // 0. Admin area — must be signed in AND on the ADMIN_EMAILS allowlist.
   //    Non-admins get a clean redirect to /dashboard, not a 404.
   //
@@ -111,11 +127,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(safeReturnPath(request.nextUrl.searchParams.get('redirectTo')), request.url));
   }
 
-  // 3. Root path — signed-in users go straight to their dashboard (preserve the
-  //    habit). Signed-out visitors fall through to the public marketing home.
-  if (pathname === '/' && session) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
+  // The root path is the public website for everyone. It used to send a
+  // signed-in owner straight to the dashboard, so they could never see the
+  // website again (removed 11 Oct 2026). The installed app still opens on
+  // /dashboard (manifest start_url).
 
   return response;
 }

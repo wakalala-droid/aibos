@@ -122,6 +122,8 @@ export function useAuth(): UseAuthReturn {
       return;
     }
 
+    // The website's "Open dashboard" hint (middleware.ts) goes at once.
+    document.cookie = 'aibos-signed-in=; Max-Age=0; path=/';
     // State will be cleared by onAuthStateChange → SIGNED_OUT
   }, [supabase]);
 

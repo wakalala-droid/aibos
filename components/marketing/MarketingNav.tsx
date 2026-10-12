@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X } from 'lucide-react';
+import { ArrowRight, Menu, X } from 'lucide-react';
 
 const LINKS = [
   { href: '/#features', label: 'Features' },
@@ -14,8 +14,18 @@ const LINKS = [
 
 const LINK_STYLE: React.CSSProperties = { fontSize: 'var(--fs-body)', fontWeight: 500, color: 'var(--text-2)', textDecoration: 'none' };
 
+// Signed in already? The middleware leaves a plain hint (middleware.ts,
+// SIGNED_IN), so the menu offers the way back to the dashboard without
+// loading the sign-in code on the website.
+function useSignedIn() {
+  const [signedIn, setSignedIn] = useState(false);
+  useEffect(() => { setSignedIn(/(?:^|;\s*)aibos-signed-in=1/.test(document.cookie)); }, []);
+  return signedIn;
+}
+
 export default function MarketingNav() {
   const [open, setOpen] = useState(false);
+  const signedIn = useSignedIn();
 
   // Close the mobile menu on resize to desktop.
   useEffect(() => {
@@ -58,8 +68,14 @@ export default function MarketingNav() {
         </div>
 
         <div className="mkt-nav-cta" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Link href="/login" className="pill pill-quiet">Sign in</Link>
-          <Link href="/login" className="pill pill-primary">Start free</Link>
+          {signedIn ? (
+            <Link href="/dashboard" className="pill pill-primary">Open dashboard <ArrowRight aria-hidden /></Link>
+          ) : (
+            <>
+              <Link href="/login" className="pill pill-quiet">Sign in</Link>
+              <Link href="/login" className="pill pill-primary">Start free</Link>
+            </>
+          )}
         </div>
 
         <button
@@ -92,12 +108,20 @@ export default function MarketingNav() {
             </Link>
           ))}
           <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-            <Link href="/login" onClick={() => setOpen(false)} className="pill pill-quiet" style={{ flex: 1 }}>
-              Sign in
-            </Link>
-            <Link href="/login" onClick={() => setOpen(false)} className="pill pill-primary" style={{ flex: 1 }}>
-              Start free
-            </Link>
+            {signedIn ? (
+              <Link href="/dashboard" onClick={() => setOpen(false)} className="pill pill-primary" style={{ flex: 1 }}>
+                Open dashboard <ArrowRight aria-hidden />
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" onClick={() => setOpen(false)} className="pill pill-quiet" style={{ flex: 1 }}>
+                  Sign in
+                </Link>
+                <Link href="/login" onClick={() => setOpen(false)} className="pill pill-primary" style={{ flex: 1 }}>
+                  Start free
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
