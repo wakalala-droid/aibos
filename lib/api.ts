@@ -379,6 +379,34 @@ export async function applyTidyUp(kinds: TidyKind[]): Promise<Partial<Record<Tid
 export interface CashByMethod {
   cash: number; mobile_money: number; bank: number; unsaid: number; opening: number; total: number;
 }
+/** One place the books and a money record disagree, in plain words. */
+export interface BooksCheckProblem {
+  kind: string;
+  message: string;
+  amount: number | null;
+  ref?: string | null;
+  link?: string | null;
+  /** False for a note that changes no figure (a fraction of a ngwee). */
+  money: boolean;
+}
+
+/** Every money record held against the books, to the ngwee (GET /books/check). */
+export interface BooksCheck {
+  ok: boolean;
+  checked_at: string;
+  checked: { entries: number; invoices: number; collections: number; stays: number; payslips: number; books: number };
+  problems: BooksCheckProblem[];
+  problem_count: number;
+  money_problem_count: number;
+  healed: string[];
+  summary: string;
+}
+
+export async function checkBooks(): Promise<BooksCheck> {
+  const data = await spineFetch('/books/check');
+  return data.check as BooksCheck;
+}
+
 export async function getCashByMethod(): Promise<CashByMethod> {
   return (await spineFetch('/twin/cash-by-method')) as unknown as CashByMethod;
 }

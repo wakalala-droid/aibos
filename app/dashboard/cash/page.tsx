@@ -1,6 +1,7 @@
 'use client';
 import { Suspense, useEffect, useState } from 'react';
 import WhereMoneyWent from '@/components/dashboard/WhereMoneyWent';
+import BooksCheckCard from '@/components/money/BooksCheck';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import MoneyHero from '@/components/home/MoneyHero';
@@ -211,6 +212,9 @@ export default function CashPage() {
 
       {/* Where the money went this month, from the recorded entries (C5). */}
       {fromBooks && <Suspense fallback={null}><WhereMoneyWent sym={sym} /></Suspense>}
+
+      {/* Every money record held against the books, to the ngwee. */}
+      {fromBooks && <Suspense fallback={null}><BooksCheckCard /></Suspense>}
 
       {/* Runway status bar */}
       <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}

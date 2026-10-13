@@ -21,6 +21,7 @@ import {
   type Invoice, type InvoiceLine, type AgingReport,
 } from '@/lib/api';
 import { useStore } from '@/lib/store';
+import { linesTotal } from '@/lib/ngwee';
 import { useProfile } from '@/lib/profile';
 import { logUsage } from '@/lib/usage';
 import { fmt } from '@/lib/utils';
@@ -108,7 +109,8 @@ export default function InvoicesPage() {
     [invoices]);
 
   const formTotal = useMemo(
-    () => lines.reduce((a, l) => a + (Number(l.qty) || 0) * (Number(l.unit_price) || 0), 0),
+    // Exact and half up to the ngwee, as the server saves it (lib/ngwee.ts).
+    () => linesTotal(lines),
     [lines]);
 
   async function submitDraft() {
