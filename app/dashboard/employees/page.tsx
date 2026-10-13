@@ -24,6 +24,7 @@ import {
   listEmployees, createEmployee, updateEmployee, deleteEmployee,
   previewPayroll, runPayroll, listPayrollRuns, getPayrollRates, deletePayrollRun,
   downloadPayslipPdf, downloadCompliancePdf, setPayrollSdl, recheckPayrollRun,
+  payPayrollWages, draftPayrollCorrections, ApiError,
   type Employee, type EmployeeInput, type EmploymentType,
   type PayrollPreview, type PayrollRun, type PayrollRates, type RemittanceDraft,
   type SdlStatus, type PayrollRecheck,
@@ -100,6 +101,9 @@ export default function EmployeesPage() {
   const [saving, setSaving] = useState(false);
 
   const [period, setPeriod] = useState(thisPeriod());
+  // The day the wages are actually paid. Left empty, the run waits for the
+  // 28th; set to today, the wages leave the money figure today.
+  const [payDate, setPayDate] = useState('');
   const [preview, setPreview] = useState<PayrollPreview | null>(null);
   const [sdlBusy, setSdlBusy] = useState(false);
   // A past run checked against today's rules, keyed by run id.
@@ -116,14 +120,29 @@ export default function EmployeesPage() {
   async function removeRun(runId: string, runPeriod: string) {
     if (!(await confirmSheet({
       title: `Delete the payroll run for ${runPeriod}?`,
-      body: 'Its wages come out of your books, tax payments it drafted that you have not paid are removed '
-        + 'and any staff loan instalment it took is given back. You can then run that month again.',
+      body: 'Only for a run made by mistake. Its wages come out of your books, tax payments it drafted that you '
+        + 'have not paid are removed and any staff loan instalment it took is given back. If the wages were '
+        + 'paid, keep the run: use Check against today\u2019s rules to put it right instead.',
       confirmLabel: 'Delete the run',
       danger: true,
     }))) return;
     setDocBusy(runId); setDocError(null); setRunOk(null);
     try {
-      const out = await deletePayrollRun(runId);
+      let out;
+      try {
+        out = await deletePayrollRun(runId);
+      } catch (e) {
+        // The wages are in the books as PAID: deleting would put that money
+        // back in the money figure as if it never left. Ask once more, plainly.
+        if (!(e instanceof ApiError) || e.code !== 'paid_wages') throw e;
+        if (!(await confirmSheet({
+          title: 'These wages were paid',
+          body: e.message,
+          confirmLabel: 'They were never paid: delete',
+          danger: true,
+        }))) return;
+        out = await deletePayrollRun(runId, true);
+      }
       setRuns(rs => rs.filter(r => r.id !== runId));
       setRunOk(`Deleted the ${out.period} run.` + (out.tax_payments_kept > 0
         ? ` ${out.tax_payments_kept} tax payment${out.tax_payments_kept === 1 ? ' was' : 's were'} already marked paid, so ${out.tax_payments_kept === 1 ? 'it stays' : 'they stay'} in your books. Void ${out.tax_payments_kept === 1 ? 'it' : 'them'} on Activity if that was a mistake too.`
@@ -223,7 +242,7 @@ export default function EmployeesPage() {
   async function doRun() {
     setBusy(true); setRunError(null); setRunOk(null);
     try {
-      const run = await runPayroll(period);
+      const run = await runPayroll(period, payDate || undefined);
       const rem = (run.remittances ?? []).filter(r => r.amount > 0);
       const remLine = rem.length
         ? ` ${rem.map(r => `${REMIT_LABEL[r.tax_type] ?? r.tax_type} ${money(r.amount)}`).join(', ')} drafted as payments waiting for you${rem[0]?.due_date ? ` (due ${fmtDue(rem[0].due_date)})` : ''}.`
@@ -246,6 +265,37 @@ export default function EmployeesPage() {
       setPreview(await previewPayroll(period));     // the figures follow the answer
     } catch (e) { setRunError((e as Error).message); }
     finally { setSdlBusy(false); }
+  }
+
+  /** A run whose wages still wait for payday (they are not in the money figure yet). */
+  const waiting = (r: PayrollRun) => !!r.pay_date && r.pay_date > new Date().toISOString().slice(0, 10);
+
+  async function payNow(r: PayrollRun) {
+    if (!(await confirmSheet({
+      title: `Mark ${periodWords(r.period)}'s wages as paid today?`,
+      body: `They are waiting for payday (${r.pay_date}). Paid today, ${money(r.totals.net)} leaves your money figure now.`,
+      confirmLabel: 'Paid today',
+    }))) return;
+    setDocBusy(`pay:${r.id}`); setDocError(null); setRunOk(null);
+    try {
+      const out = await payPayrollWages(r.id);
+      setRunOk(out.paid ? `${money(out.amount)} of wages for ${periodWords(r.period)} are in your books as paid on ${out.paid_on}.`
+        : 'Those wages were already in your books as paid.');
+      void useStore.getState().refreshTwin();
+      await load();
+    } catch (e) { setDocError((e as Error).message || 'Could not mark those wages paid.'); }
+    finally { setDocBusy(null); }
+  }
+
+  async function draftFixes(runId: string) {
+    setDocBusy(`fix:${runId}`); setDocError(null);
+    try {
+      const out = await draftPayrollCorrections(runId);
+      setRunOk(out.summary);
+      setRecheck(rc => rc[runId] ? { ...rc, [runId]: { ...rc[runId], to_settle: (rc[runId].to_settle ?? []).map(row =>
+        ({ ...row, drafted: row.drafted || out.drafted.some(d => d.tax_type === row.tax_type) })) } } : rc);
+    } catch (e) { setDocError((e as Error).message || 'Could not draft the corrections.'); }
+    finally { setDocBusy(null); }
   }
 
   async function doRecheck(runId: string) {
@@ -408,6 +458,11 @@ export default function EmployeesPage() {
             <div>
               <label className="field-label">Pay period</label>
               <input type="month" value={period} onChange={e => { setPeriod(e.target.value); setPreview(null); setRunOk(null); setRunError(null); }} className="field" style={{ width: 'auto' }} />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="pay-date">Paid on</label>
+              <input id="pay-date" type="date" value={payDate} max={new Date().toISOString().slice(0, 10)}
+                onChange={e => setPayDate(e.target.value)} className="field" style={{ width: 'auto' }} />
             </div>
             <button type="button" onClick={doPreview} disabled={busy || active.length === 0} className="pill">
               <Eye aria-hidden="true" />{busy ? 'Working it out…' : 'Preview'}
@@ -593,11 +648,17 @@ export default function EmployeesPage() {
                   <span className="avatar avatar-out" aria-hidden="true"><FileText /></span>
                   <span className="row-main">
                     <span className="row-title">{periodWords(r.period)}</span>
-                    <span className="row-sub">{r.totals.headcount} paid, {money(r.totals.net)} take-home</span>
+                    <span className="row-sub">{r.totals.headcount} paid, {money(r.totals.net)} take-home{waiting(r) ? ` · waiting for payday, ${r.pay_date}` : ""}</span>
                   </span>
                   <span className="row-actions">
                     {/* Audit #66 — the statutory pack the server has always been
                         able to render, now actually reachable. */}
+                    {/* Paid before payday: the wages leave the money figure now. */}
+                    {waiting(r) && (
+                      <button type="button" onClick={() => void payNow(r)} disabled={docBusy === `pay:${r.id}`} className="pill pill-primary">
+                        {docBusy === `pay:${r.id}` ? "Saving…" : "Paid them today"}
+                      </button>
+                    )}
                     <button type="button" onClick={() => void getDoc(r.id, r.period)} disabled={docBusy === r.id} className="pill pill-quiet">
                       <FileText aria-hidden="true" />{docBusy === r.id ? 'Preparing…' : 'Tax pack PDF'}
                     </button>
@@ -632,7 +693,22 @@ export default function EmployeesPage() {
                       )}
                       {recheck[r.id].changed && (
                         <p style={{ margin: '8px 0 0', color: 'var(--text-3)', fontSize: 'var(--fs-label)' }}>
-                          Nothing has been changed. If this month is not yet paid to ZRA, delete the run and run it again. If it is, ask your accountant how to settle the difference.
+                          Nothing has been changed. Keep this run: it is the record of what was paid. Draft the
+                          corrections to add what is still owed as payments waiting for you, and ask your
+                          accountant about any penalty. Delete a run only if it was made by mistake and its
+                          wages were never paid.
+                        </p>
+                      )}
+                      {(recheck[r.id].to_settle ?? []).some(row => row.owed && !row.drafted) && (
+                        <button type="button" onClick={() => void draftFixes(r.id)} disabled={docBusy === `fix:${r.id}`}
+                          className="pill pill-primary" style={{ marginTop: 8 }}>
+                          {docBusy === `fix:${r.id}` ? 'Drafting…' : 'Draft the corrections'}
+                        </button>
+                      )}
+                      {(recheck[r.id].to_settle ?? []).some(row => row.owed && row.drafted) && (
+                        <p style={{ margin: '8px 0 0', color: 'var(--text-3)', fontSize: 'var(--fs-label)' }}>
+                          Drafted: {(recheck[r.id].to_settle ?? []).filter(row => row.owed && row.drafted)
+                            .map(row => `${row.tax_type} ${money(row.amount)} to ${row.authority}`).join(', ')}. Confirm each on Activity when you pay it.
                         </p>
                       )}
                     </div>

@@ -734,10 +734,24 @@ async function spineFetchOnce(path: string, init: RequestInit = {}): Promise<Rec
   let data: Record<string, unknown> = {};
   try { data = raw ? JSON.parse(raw) : {}; } catch { /* non-JSON */ }
   if (!res.ok) {
-    const detail = typeof data.detail === 'string' ? data.detail : `Request failed (${res.status})`;
-    throw new Error(detail);
+    // A reason the server sends as { code, message } keeps both: the words
+    // for the owner, the code for the screen to act on (paid_wages and the like).
+    const raw = data.detail;
+    const obj = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : null;
+    const message = typeof raw === 'string' ? raw
+      : obj && typeof obj.message === 'string' ? obj.message
+      : `Request failed (${res.status})`;
+    throw new ApiError(message, res.status, typeof obj?.code === 'string' ? obj.code : undefined, raw);
   }
   return data;
+}
+
+/** An API refusal: the server's own words, its status and, when it sent one, its code. */
+export class ApiError extends Error {
+  constructor(message: string, public status: number, public code?: string, public detail?: unknown) {
+    super(message);
+    this.name = 'ApiError';
+  }
 }
 
 // ── Invoices: the get-paid loop (audit #7) ────────────────────────────────────
@@ -1538,6 +1552,29 @@ export async function updateScheduleItem(
 /** Resolve an item. Recurring items materialise the finished occurrence as its
  *  own row and roll the template forward — the RESOLVED row is returned, so
  *  record-bridge callers must link events to the returned id, not the input id. */
+/** How a ticked-off PAYE, NAPSA, NHIMA or levy reminder went into the books. */
+export interface ScheduleSettled {
+  outcome: 'already_paid' | 'confirmed' | 'waiting_for_owner' | 'recorded' | 'nothing_to_record';
+  message: string;
+}
+
+/** A ticked-off statutory reminder, into the books once: it confirms the
+ *  payment payroll drafted, or says it is already paid, never a second one. */
+export async function settleScheduleItem(id: string): Promise<ScheduleSettled> {
+  const data = await spineFetch(`/schedule/${encodeURIComponent(id)}/settle`, { method: 'POST' });
+  return data as unknown as ScheduleSettled;
+}
+
+/** Is this reminder a statutory payment (the server decides the same way)? */
+export function statutoryTax(title: string | null | undefined): 'PAYE' | 'NAPSA' | 'NHIMA' | 'SDL' | null {
+  const t = String(title ?? '').toLowerCase();
+  if (t.includes('paye')) return 'PAYE';
+  if (t.includes('napsa')) return 'NAPSA';
+  if (t.includes('nhima')) return 'NHIMA';
+  if (t.includes('skills development levy') || /\bsdl\b/.test(t)) return 'SDL';
+  return null;
+}
+
 export async function setScheduleStatus(
   id: string, status: ScheduleStatus, linkedEventId?: string,
 ): Promise<ScheduleItem> {
@@ -1695,6 +1732,8 @@ export interface PayrollRecheck {
   owed_to_staff: number;
   under_deducted_from_staff: number;
   difference: Record<'paye' | 'napsa_employee' | 'napsa_employer' | 'nhima_employee' | 'nhima_employer' | 'sdl' | 'net', number>;
+  /** What each authority is still owed or was paid too much, and whether it is drafted. */
+  to_settle?: PayrollCorrectionRow[];
   people: Array<{
     employee_id?: string | null;
     employee_name?: string | null;
@@ -1800,9 +1839,50 @@ export interface PayrollRunDeleted {
 
 /** Undo a run made by mistake: wages voided in the books, unpaid tax drafts
  *  voided, loan instalments given back, the month free to run again. */
-export async function deletePayrollRun(id: string): Promise<PayrollRunDeleted> {
-  const data = await spineFetch(`/payroll/runs/${encodeURIComponent(id)}`, { method: 'DELETE' });
+export async function deletePayrollRun(id: string, wagesNeverPaid = false): Promise<PayrollRunDeleted> {
+  // A run whose wages are in the books as paid is refused (ApiError code
+  // 'paid_wages') unless the owner says they were never paid.
+  const q = wagesNeverPaid ? '?wages_never_paid=true' : '';
+  const data = await spineFetch(`/payroll/runs/${encodeURIComponent(id)}${q}`, { method: 'DELETE' });
   return data as unknown as PayrollRunDeleted;
+}
+
+/** Wages that wait for payday, paid now: into the books as paid on that day. */
+export async function payPayrollWages(id: string, paidOn?: string): Promise<{ paid: number; amount: number; paid_on: string }> {
+  const data = await spineFetch(`/payroll/runs/${encodeURIComponent(id)}/pay`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paid_on: paidOn ?? null }),
+  });
+  return data as unknown as { paid: number; amount: number; paid_on: string };
+}
+
+/** One authority's part of a past run's corrections. */
+export interface PayrollCorrectionRow {
+  tax_type: 'PAYE' | 'SDL' | 'NAPSA' | 'NHIMA';
+  authority: string;
+  owed: boolean;
+  amount: number;
+  employee_share: number;
+  employer_share: number;
+  was: number;
+  now: number;
+  drafted?: boolean;
+  draft_status?: string | null;
+}
+
+export interface PayrollCorrections {
+  run_id: string;
+  period: string;
+  drafted: PayrollCorrectionRow[];
+  already: PayrollCorrectionRow[];
+  overpaid: PayrollCorrectionRow[];
+  summary: string;
+}
+
+/** What a past run still owes ZRA, NAPSA and NHIMA, drafted for the owner to confirm. */
+export async function draftPayrollCorrections(id: string): Promise<PayrollCorrections> {
+  const data = await spineFetch(`/payroll/runs/${encodeURIComponent(id)}/corrections`, { method: 'POST' });
+  return data.corrections as PayrollCorrections;
 }
 
 /** Commit a pay period — posts a Salary event per employee (Pro). */

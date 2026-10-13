@@ -30,6 +30,7 @@ import PageHeader from '@/components/ui/PageHeader';
 import {
   listSchedule, createScheduleItem, updateScheduleItem, setScheduleStatus,
   deleteScheduleItem, createEvent, seedStatutorySchedule, getPushDevices,
+  settleScheduleItem, statutoryTax,
   type ScheduleItem, type ScheduleKind, type PushDevice,
   type Recurrence, type EventType,
 } from '@/lib/api';
@@ -160,6 +161,8 @@ export default function SchedulePage() {
   const [items, setItems] = useState<ScheduleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // What a ticked-off PAYE, NAPSA, NHIMA or levy reminder did in the books.
+  const [settled, setSettled] = useState<string | null>(null);
   const [view, setView] = useState<'agenda' | 'month'>('agenda');
   const [monthCursor, setMonthCursor] = useState(() => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), 1); });
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -253,12 +256,20 @@ export default function SchedulePage() {
   }
 
   async function markDone(it: ScheduleItem) {
-    setError(null);
+    setError(null); setSettled(null);
     try {
       // For recurring items the backend returns the materialised occurrence,
       // not the template — the record bridge must link the event to THAT row.
       const resolved = await setScheduleStatus(it.id, 'done');
-      if (BRIDGE_TYPES[resolved.kind] && (resolved.amount ?? 0) > 0) {
+      if (resolved.kind === 'payment_due' && statutoryTax(resolved.title)) {
+        // PAYE, NAPSA, NHIMA and the levy: payroll already drafted this
+        // payment. The server confirms that one, or says it is already paid;
+        // it never records the money a second time. Recording it here as a
+        // new expense counted a live account's September taxes twice.
+        const out = await settleScheduleItem(resolved.id);
+        setSettled(out.message);
+        void useStore.getState().refreshTwin();
+      } else if (BRIDGE_TYPES[resolved.kind] && (resolved.amount ?? 0) > 0) {
         setBridge(resolved); setBridgeType(BRIDGE_TYPES[resolved.kind]!);
       }
       await load();
@@ -279,6 +290,8 @@ export default function SchedulePage() {
       });
       logUsage('event_recorded', { meta: { event_type: bridgeType, via: 'schedule_bridge' } });
       await updateScheduleItem(bridge.id, { linked_event_id: ev.id });
+      // The money figure follows at once, not on the next page load.
+      void useStore.getState().refreshTwin();
       setBridge(null); await load();
     } catch (e) { setError((e as Error).message); }
     finally { setBridgeBusy(false); }
@@ -465,6 +478,7 @@ export default function SchedulePage() {
           }
         >
           {error && <div role="alert" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>{error}</div>}
+          {settled && <div role="status" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--green-dim)', color: 'var(--green)', fontSize: 'var(--fs-body)' }}>{settled}</div>}
 
           {/* Record bridge — the just-completed commitment can land in the books. */}
           {bridge && (
