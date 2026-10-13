@@ -14,11 +14,11 @@
  * extra step from the owner. "Payment link" copies it for SMS, email or a QR.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { confirmSheet, showCopyText } from '@/lib/confirm';
+import { confirmSheet, chooseSheet, showCopyText } from '@/lib/confirm';
 import {
   listInvoices, createInvoice, sendInvoice, markInvoicePaid, cancelInvoice,
   deleteInvoice, invoiceShareText, invoicePayLink, getDebtors,
-  type Invoice, type InvoiceLine, type AgingReport,
+  type Invoice, type InvoiceLine, type AgingReport, type SayHow,
 } from '@/lib/api';
 import { useStore } from '@/lib/store';
 import { linesTotal } from '@/lib/ngwee';
@@ -98,7 +98,10 @@ export default function InvoicesPage() {
     // invoice list stands on its own.
     getDebtors(profile?.business_name as string | null).then(setAging).catch(() => {});
   }, [profile?.business_name]);
-  useEffect(() => { void load(); }, [load]);
+  // Read again whenever the books change anywhere: a payment link paid by the
+  // customer, a fix on Activity, another tab.
+  const version = useStore((s) => s.booksVersion);
+  useEffect(() => { void load(); }, [load, version]);
 
   const outstanding = useMemo(
     () => invoices.filter(i => i.status === 'sent').reduce((a, i) => a + i.total, 0),
@@ -139,6 +142,25 @@ export default function InvoicesPage() {
     try { await fn(id); onDone?.(); await load(); }
     catch (e) { setError((e as Error).message); }
     finally { setBusyId(null); }
+  }
+
+  /** Paid some other way than the link: how the customer paid decides where
+   *  the money shows on the Money page (it used to be saved as "manual",
+   *  which landed every paid invoice in "Not said how"). */
+  async function markPaid(inv: Invoice) {
+    const how = await chooseSheet({
+      title: `Mark ${inv.number} as paid?`,
+      body: `${fmt(inv.total, false, sym)} from ${inv.customer_name} is recorded as money received today.`,
+      choiceLabel: 'How did they pay?',
+      choices: [
+        { value: 'cash', label: 'Cash' }, { value: 'mobile_money', label: 'Mobile money' },
+        { value: 'bank', label: 'Bank' }, { value: 'card', label: 'Card' },
+      ],
+      confirmLabel: 'Mark paid',
+    });
+    if (!how) return;
+    await act(inv.id, (id) => markInvoicePaid(id, how as SayHow), undefined,
+      () => logUsage('event_recorded', { meta: { event_type: 'CustomerPayment', via: 'invoice_paid' } }));
   }
 
   async function share(inv: Invoice) {
@@ -229,9 +251,7 @@ export default function InvoicesPage() {
                   {copiedId === i.id ? 'Link copied' : 'Payment link'}
                 </button>
                 <button type="button" className="pill" style={{ color: 'var(--good)' }} disabled={busy}
-                  onClick={() => void act(i.id, markInvoicePaid,
-                    { title: `Mark ${i.number} as paid?`, body: `${fmt(i.total, false, sym)} from ${i.customer_name} is recorded as money received today.`, label: 'Mark paid' },
-                    () => logUsage('event_recorded', { meta: { event_type: 'CustomerPayment', via: 'invoice_paid' } }))}>
+                  onClick={() => void markPaid(i)}>
                   Mark paid
                 </button>
                 <button type="button" className="pill pill-quiet" disabled={busy}

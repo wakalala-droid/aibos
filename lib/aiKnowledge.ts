@@ -289,7 +289,8 @@ const METRIC_RESOLVERS = {
   churn: (lv: LiveMetrics) => (lv.highChurn !== undefined ? `You have ${lv.highChurn} customer${lv.highChurn === 1 ? '' : 's'} at high churn risk.` : null),
   attach: (lv: LiveMetrics) => (lv.drinkAttach !== undefined ? `Your drink attach is ${pct(lv.drinkAttach)}.` : null),
   cash: (lv: LiveMetrics) => (lv.cash ? `Your cash right now is ${lv.cash.fmt}.` : null),
-  inventoryValue: (lv: LiveMetrics) => (lv.inventoryValue ? `Your stock on hand is worth ${lv.inventoryValue.fmt}.` : null),
+  // Worked out from the products when asked (lib/stock.ts); never the books' inventory_value.
+  inventoryValue: (lv: LiveMetrics) => (lv.inventoryValue ? `Your stock on hand is worth ${lv.inventoryValue.fmt} at what you paid for it.` : null),
   receivables: (lv: LiveMetrics) => (lv.receivables ? `Customers currently owe you ${lv.receivables.fmt}.` : null),
   payables: (lv: LiveMetrics) => (lv.payables ? `You currently owe suppliers ${lv.payables.fmt}.` : null),
 } satisfies Record<string, (lv: LiveMetrics) => string | null>;

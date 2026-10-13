@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CalendarClock, Truck, Users, Landmark, Bell, Package } from 'lucide-react';
 import { listSchedule, type ScheduleItem, type ScheduleKind } from '@/lib/api';
+import { useStore } from '@/lib/store';
 import Panel from './Panel';
 
 const KIND_ICON: Record<ScheduleKind, React.ReactNode> = {
@@ -28,11 +29,13 @@ function whenWords(d: Date): string {
 
 export default function ComingUp() {
   const [items, setItems] = useState<ScheduleItem[] | null>(null);
+  // Read again whenever the books change (a reminder paid from the Schedule).
+  const booksVersion = useStore((s) => s.booksVersion);
   useEffect(() => {
     let alive = true;
     listSchedule(14).then((l) => { if (alive) setItems(l); }).catch(() => { if (alive) setItems([]); });
     return () => { alive = false; };
-  }, []);
+  }, [booksVersion]);
 
   const now = Date.now();
   const rows = (items ?? [])

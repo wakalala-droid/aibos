@@ -12,13 +12,15 @@ import BorderGlow from './BorderGlow';
 
 export default function ConfirmSheet() {
   const ref = useRef<HTMLDialogElement>(null);
-  const resolver = useRef<((ok: boolean) => void) | null>(null);
+  const resolver = useRef<((ok: boolean, choice?: string) => void) | null>(null);
   const [req, setReq] = useState<ConfirmRequest | null>(null);
+  const [pick, setPick] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     registerConfirmSheet((r, resolve) => {
       resolver.current?.(false);
       resolver.current = resolve;
+      setPick(r.choice);
       setReq(r);
     });
     return () => registerConfirmSheet(null);
@@ -33,10 +35,11 @@ export default function ConfirmSheet() {
   const finish = (ok: boolean) => {
     const d = ref.current;
     if (d?.open) d.close();
-    resolver.current?.(ok);
+    resolver.current?.(ok, ok ? pick : undefined);
     resolver.current = null;
     setReq(null);
   };
+  const waitingForPick = !!req?.choices?.length && !pick;
 
   return (
     <dialog
@@ -65,6 +68,22 @@ export default function ConfirmSheet() {
             {req.body && (
               <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.6, margin: '10px 0 0' }}>{req.body}</p>
             )}
+            {req.choices && req.choices.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                {req.choiceLabel && (
+                  <p id="confirm-sheet-choice" style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 8px' }}>{req.choiceLabel}</p>
+                )}
+                <div role="radiogroup" aria-labelledby={req.choiceLabel ? 'confirm-sheet-choice' : 'confirm-sheet-title'}
+                  className="chips">
+                  {req.choices.map((c) => (
+                    <button key={c.value} type="button" role="radio" aria-checked={pick === c.value}
+                      className="chip" onClick={() => setPick(c.value)}>
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {req.copyText && (
               <input
                 readOnly
@@ -88,8 +107,10 @@ export default function ConfirmSheet() {
               <button
                 type="button"
                 autoFocus={req.cancelLabel === ''}
+                disabled={waitingForPick}
                 onClick={() => finish(true)}
                 style={{
+                  opacity: waitingForPick ? 0.5 : 1,
                   padding: '0 18px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer',
                   border: req.danger ? '1px solid var(--red)' : 'none',
                   background: req.danger ? 'var(--red-dim)' : 'var(--cyan)',

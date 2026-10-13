@@ -7,6 +7,7 @@
 
 import { createClient } from '@/lib/supabase';
 import type { PaidTier } from '@/lib/tiers';
+import { booksChanged } from '@/lib/booksSignal';
 
 const PROXY = '/api/proxy';
 
@@ -411,6 +412,98 @@ export async function getCashByMethod(): Promise<CashByMethod> {
   return (await spineFetch('/twin/cash-by-method')) as unknown as CashByMethod;
 }
 
+// ── The money views (aibos-api books_views.py): every money figure, one read ──
+
+/** Where money sits, as "Where it is" splits it. */
+export type HowPaid = 'cash' | 'mobile_money' | 'bank' | 'unsaid';
+/** What an owner may say an entry was paid by. Card settles into the bank. */
+export type SayHow = 'cash' | 'mobile_money' | 'bank' | 'card';
+
+export interface MoneyPoint { day: string; balance: number; in: number; out: number }
+export interface MoneyMonth { month: string; in: number; out: number; net: number; trading_in: number; trading_out: number }
+export interface MoneyLasts {
+  ok: boolean;
+  months: number;
+  reason?: string;
+  from?: string;
+  to?: string;
+  out_a_month?: number;
+  in_a_month?: number;
+  shrinks_a_month?: number;
+  shrinking?: boolean;
+  months_left?: number;
+}
+
+/** GET /books/money: the money right now and everything said about it. */
+export interface MoneyView {
+  cash: number;
+  opening: number;
+  split: CashByMethod;
+  line: { days: number; points: MoneyPoint[]; in: number; out: number; active_days: number };
+  months: MoneyMonth[];
+  lasts: MoneyLasts;
+  /** Entries still waiting for the owner that would move money: in no figure yet. */
+  waiting: { count: number; in: number; out: number };
+  entries: number;
+}
+
+/** The owner's minutes from UTC, so days are the owner's own days. */
+export function tzMinutes(): number {
+  return -new Date().getTimezoneOffset();
+}
+
+export async function getMoney(days = 30): Promise<MoneyView> {
+  return (await spineFetch(`/books/money?days=${days}&tz=${tzMinutes()}`)) as unknown as MoneyView;
+}
+
+/** One entry behind a "Where it is" figure, with what it adds to that figure. */
+export interface HowPaidEntry { event: BusinessEvent; amount: number; fix: 'method' | 'transfer' }
+export interface HowPaidList { how: HowPaid; entries: HowPaidEntry[]; count: number; total: number; figure: number }
+
+export async function getHowPaid(how: HowPaid): Promise<HowPaidList> {
+  return (await spineFetch(`/books/how-paid?how=${how}`)) as unknown as HowPaidList;
+}
+
+/** Say how an entry's money moved; for a transfer, where from and where to. */
+export async function sayHowPaid(eventId: string, said: { how: SayHow } | { from: SayHow; to: SayHow }):
+  Promise<{ event: BusinessEvent; split: CashByMethod }> {
+  const data = await spineFetch(`/books/how-paid/${encodeURIComponent(eventId)}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(said),
+  });
+  return data as unknown as { event: BusinessEvent; split: CashByMethod };
+}
+
+export interface MoneyOutPart { event_type: EventType; category: string | null; total: number; count: number }
+
+/** Where the money went between two moments (confirmed entries, every one). */
+export async function getMoneyOut(start?: Date, end?: Date): Promise<{ parts: MoneyOutPart[]; total: number; count: number }> {
+  const q = new URLSearchParams();
+  if (start) q.set('start', start.toISOString());
+  if (end) q.set('end', end.toISOString());
+  const qs = q.toString();
+  return (await spineFetch(`/books/money-out${qs ? `?${qs}` : ''}`)) as unknown as { parts: MoneyOutPart[]; total: number; count: number };
+}
+
+/** What a month costs whatever is sold, and what grows with sales (the breakeven). */
+export interface CostSplit {
+  ok: boolean;
+  months: number;
+  reason?: string;
+  from?: string;
+  to?: string;
+  sales_a_month?: number;
+  fixed_a_month?: number;
+  variable_a_month?: number;
+  variable_share?: number | null;
+  breakeven_a_month?: number;
+  fixed_named?: string[];
+}
+
+export async function getCosts(): Promise<CostSplit> {
+  const data = await spineFetch(`/books/costs?tz=${tzMinutes()}`);
+  return data.costs as CostSplit;
+}
+
 // ── Plan & billing (upgrades 1 and 2) ─────────────────────────────────────────
 export type PlanState = 'free' | 'included' | 'active' | 'grace' | 'expired';
 
@@ -745,6 +838,8 @@ async function spineFetchOnce(path: string, init: RequestInit = {}): Promise<Rec
       : `Request failed (${res.status})`;
     throw new ApiError(message, res.status, typeof obj?.code === 'string' ? obj.code : undefined, raw);
   }
+  // Every page hears that the books changed (lib/booksSignal.ts).
+  if ((init.method ?? 'GET').toUpperCase() !== 'GET') booksChanged(path);
   return data;
 }
 
@@ -797,8 +892,13 @@ export async function sendInvoice(id: string): Promise<Invoice> {
   return data.invoice as Invoice;
 }
 
-export async function markInvoicePaid(id: string): Promise<Invoice> {
-  const data = await spineFetch(`/invoices/${id}/mark-paid`, { method: 'POST' });
+/** The owner saw the money arrive: how the customer paid (cash, mobile money,
+ *  bank or card) puts it in the right place on the Money page. */
+export async function markInvoicePaid(id: string, paymentMethod?: SayHow): Promise<Invoice> {
+  const data = await spineFetch(`/invoices/${id}/mark-paid`, {
+    method: 'POST',
+    ...(paymentMethod ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ payment_method: paymentMethod }) } : {}),
+  });
   return data.invoice as Invoice;
 }
 
@@ -1257,6 +1357,7 @@ export async function excelCommitFile(
   if (!res.ok) {
     throw new Error(typeof data.detail === 'string' ? data.detail : `Import failed (${res.status})`);
   }
+  booksChanged();
   return data as unknown as BulkResult & { row_count: number };
 }
 
@@ -1416,6 +1517,7 @@ export async function documentImport(
   if (!res.ok) {
     throw new Error(typeof data.detail === 'string' ? data.detail : `Import failed (${res.status})`);
   }
+  booksChanged();
   return data as unknown as DocImportResult;
 }
 

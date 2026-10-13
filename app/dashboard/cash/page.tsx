@@ -3,6 +3,7 @@ import { Suspense, useEffect, useState } from 'react';
 import WhereMoneyWent from '@/components/dashboard/WhereMoneyWent';
 import BooksCheckCard from '@/components/money/BooksCheck';
 import OpeningBalance from '@/components/money/OpeningBalance';
+import HowPaidPanel from '@/components/money/HowPaid';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import MoneyHero from '@/components/home/MoneyHero';
@@ -10,7 +11,8 @@ import WhereItIs from '@/components/home/WhereItIs';
 import Panel from '@/components/home/Panel';
 import BigMoney from '@/components/home/BigMoney';
 import { useStore } from '@/lib/store';
-import { authHeaders, getCashByMethod, type CashByMethod } from '@/lib/api';
+import { authHeaders } from '@/lib/api';
+import { useMoney } from '@/hooks/useMoney';
 import CashForecastFan from '@/components/dashboard/CashForecastFan';
 import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
@@ -38,18 +40,20 @@ interface Outlook { ok: boolean; reason?: string; bands?: { month_ahead: number;
 
 export default function CashPage() {
   const { cashflow, monthly, kpi, currencySymbol, dataShape, twin, uploadedFile } = useStore();
+  const version = useStore((s) => s.booksVersion);
   const sym = currencySymbol || 'K';
 
+  // When the figures come from recorded books, every money figure on this page
+  // comes from one read of the confirmed entries (GET /books/money): the same
+  // read as the money figure, its line and where it is.
+  const fromBooks = !uploadedFile && !!twin && Number(twin.event_count) > 0;
+  const money = useMoney(30);
+  const lasts = fromBooks ? money?.lasts ?? null : null;
+
   // The honest forecast from the recorded books (the same one the AI uses). It
-  // declines until there are four completed months, and says so.
+  // declines until there are four completed months, and says so. Read again
+  // whenever the books change.
   const [outlook, setOutlook] = useState<Outlook | null>(null);
-  // Where the cash sits: the drawer, the mobile money wallet, the bank.
-  const [split, setSplit] = useState<CashByMethod | null>(null);
-  useEffect(() => {
-    let alive = true;
-    getCashByMethod().then((d) => { if (alive) setSplit(d); }).catch(() => { /* optional */ });
-    return () => { alive = false; };
-  }, []);
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -60,15 +64,15 @@ export default function CashPage() {
       } catch { /* the page stands without it */ }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [version]);
 
   if (dataShape === 'cross_sectional') {
     return <TimeSeriesUnavailable title="Cash Position" feature="Cash flow projection" />;
   }
 
-  // ── Null-safe: derive values from real data ──────────────────────────────
+  // ── An uploaded money file: its own figures, as before ────────────────────
   const months      = Math.max(monthly.length, 1);
-  const monthlyBurn = kpi.totalCosts / months;
+  const fileBurn    = kpi.totalCosts / months;
   // Runway is how long cash lasts at the rate it SHRINKS: spending beyond
   // income over the last three months. Cash over gross spend ignored sales.
   const recentMonths = monthly.slice(-3);
@@ -83,16 +87,25 @@ export default function CashPage() {
   // ignores the opening balance, stock bought, loans and money still owed), and
   // this card showed it anyway, so a live account read K30,871 here while the
   // summary above it said the business was holding K17.9K.
-  const fromBooks = !uploadedFile && !!twin && Number(twin.event_count) > 0;
   const currentCash = fromBooks
-    ? Number(twin?.cash) || 0
+    ? money?.cash ?? (Number(twin?.cash) || 0)
     : cashflow?.currentCash ??
       cashflow?.ending_cash ??
       (typeof kpi.totalProfit === 'number' ? kpi.totalProfit : 0);
+
+  // ── Recorded books: from money that moved, not from profit ─────────────────
+  // "Spending a month" and "How long it lasts" read the profit and loss: a
+  // stay booked on credit counted as money in hand, and stock, equipment and
+  // a loan repaid never counted as money out. They now read the money that
+  // actually came in and went out from trading (books_views.how_long).
+  const runwayKnown = fromBooks ? !!lasts?.ok : true;
   // With cash not shrinking there is no runway to run out, so no number is
   // invented for it: the card says so and the bar reads full.
-  const notShrinking = cashflow?.runway == null && netBurn <= 0;
-  const runway      = cashflow?.runway      ?? (netBurn > 0 ? Math.round(Math.max(currentCash, 0) / netBurn) : 18);
+  const notShrinking = fromBooks ? !!lasts?.ok && !lasts.shrinking : cashflow?.runway == null && netBurn <= 0;
+  const runway = fromBooks
+    ? (lasts?.ok && lasts.shrinking ? lasts.months_left ?? 0 : 0)
+    : cashflow?.runway ?? (netBurn > 0 ? Math.round(Math.max(currentCash, 0) / netBurn) : 18);
+  const monthlyBurn = fromBooks ? lasts?.out_a_month ?? 0 : fileBurn;
   const projections = cashflow?.projections ?? [];
   // Real cumulative-cash trajectory for the sparkline, when available.
   const cashSpark = (cashflow?.monthly ?? [])
@@ -111,17 +124,25 @@ export default function CashPage() {
     outflow: Math.round(Number(p.outflow) || 0),
   }));
   // What was recorded, month by month: nothing projected, nothing invented.
-  const history = monthly.slice(-12).map((m) => {
-    const income = Number(m.Revenue) || 0;
-    const costs = Number(m.Costs) || 0;
-    return { label: monthName(m.Month), income, costs, profit: income - costs };
-  });
+  // From the books, the money that came in and went out each month, as a
+  // bank statement shows it; from a file, the file's income and costs.
+  const history = fromBooks
+    ? (money?.months ?? []).slice(-12).map((m) => ({ label: monthName(m.month), income: m.in, costs: m.out, profit: m.net }))
+    : monthly.slice(-12).map((m) => {
+      const income = Number(m.Revenue) || 0;
+      const costs = Number(m.Costs) || 0;
+      return { label: monthName(m.Month), income, costs, profit: income - costs };
+    });
   const lastBand = outlook?.ok ? outlook.bands?.[outlook.bands.length - 1] : undefined;
 
   // Runway bar config
   const runwayTarget = 18;
-  const runwayPct    = Math.min((runway / runwayTarget) * 100, 100);
-  const runwayColor  = runway >= 12 ? 'var(--good)' : runway >= 6 ? 'var(--warn)' : 'var(--crit)';
+  const runwayPct    = notShrinking ? 100 : Math.min((runway / runwayTarget) * 100, 100);
+  const runwayColor  = notShrinking || runway >= 12 ? 'var(--good)' : runway >= 6 ? 'var(--warn)' : 'var(--crit)';
+  const lastsWords = !runwayKnown ? 'Not yet'
+    : notShrinking ? 'Not shrinking'
+    : runway < 1 ? 'Under a month'
+    : `${runway} month${runway === 1 ? '' : 's'}`;
 
   // The outlook card: a real projection or an honest "not yet".
   const outlookCard = chartData.length > 0
@@ -129,6 +150,11 @@ export default function CashPage() {
     : lastBand
       ? { label: `${lastBand.month_ahead}-MONTH OUTLOOK`, value: fmt(lastBand.p50, false, sym), sub: 'middle path, from your own history' }
       : { label: 'CASH OUTLOOK', value: 'Not yet', sub: 'needs 4 full months of records' };
+
+  const split = fromBooks ? money?.split ?? null : null;
+  const spanWords = lasts?.ok
+    ? `${lasts.months === 1 ? 'your last full month' : `your last ${lasts.months} full months`}`
+    : '';
 
   return (
     <>
@@ -147,18 +173,24 @@ export default function CashPage() {
             <MoneyHero />
             <WhereItIs />
           </div>
+          {/* The entries behind a "Where it is" figure, opened from its row. */}
+          <Suspense fallback={null}><HowPaidPanel /></Suspense>
           <div className="home-trio">
-            <Panel title="Spending a month" labelledBy="money-burn-title"
+            <Panel title="Money out a month" labelledBy="money-burn-title"
               action={<Link href="/dashboard/timeline?type=Expense" className="icon-pill" aria-label="See expenses"><ArrowUpRight aria-hidden="true" /></Link>}>
-              <BigMoney value={monthlyBurn} sym={sym} size="lg" />
-              <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>On average, from your records</p>
+              {lasts?.ok
+                ? <BigMoney value={monthlyBurn} sym={sym} size="lg" />
+                : <span className="money money-lg">Not yet</span>}
+              <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                {lasts?.ok ? `On average over ${spanWords}, from trading` : 'Shows after your first full month of records'}
+              </p>
             </Panel>
             <Panel title="How long it lasts" labelledBy="money-runway-title">
-              <span className="money money-lg">
-                {notShrinking ? 'Not shrinking' : `${runway} months`}
-              </span>
+              <span className="money money-lg">{lastsWords}</span>
               <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-                {notShrinking ? 'Money coming in covers your spending' : `At this spending, against a ${runwayTarget}-month target`}
+                {!runwayKnown ? 'Shows after your first full month of records'
+                  : notShrinking ? 'Money coming in covers money going out'
+                  : `It shrinks by ${fmt(lasts?.shrinks_a_month ?? 0, false, sym)} a month, against an ${runwayTarget}-month target`}
               </p>
             </Panel>
             <Panel title={outlookCard.label.charAt(0) + outlookCard.label.slice(1).toLowerCase()} labelledBy="money-outlook-title">
@@ -170,7 +202,7 @@ export default function CashPage() {
             <p style={{ fontSize: 'var(--fs-label)', lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
               A figure below zero means more was recorded going out that way than coming in. Record money you move
               between them (for example, cash taken to the bank) and say how each payment was made and these even out.
-              Together they always add up to your {fmt(split.total, false, sym)}.
+              Tap a place in Where it is to see the entries behind it. Together they always add up to your {fmt(split.total, false, sym)}.
             </p>
           )}
         </div>
@@ -218,9 +250,10 @@ export default function CashPage() {
       {fromBooks && <Suspense fallback={null}><BooksCheckCard /></Suspense>}
 
       {/* The one figure AIBOS cannot work out: what was held before recording began. */}
-      {fromBooks && <OpeningBalance />}
+      {fromBooks && <div id="what-you-hold" style={{ scrollMarginTop: 80 }}><OpeningBalance /></div>}
 
       {/* Runway status bar */}
+      {runwayKnown && (
       <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         style={{ background: 'var(--bg-card)', border: `1px solid var(--border)`, borderRadius: 'var(--radius-md)', padding: '20px 24px', marginBottom: 20, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -255,6 +288,7 @@ export default function CashPage() {
           ))}
         </div>
       </motion.div>
+      )}
 
       {/* Projected cash chart */}
       {chartData.length > 0 && (
@@ -283,10 +317,19 @@ export default function CashPage() {
 
       {/* Month by month, as recorded */}
       {chartData.length === 0 && history.length > 0 && (
-        <SectionCard title="Month by month" subtitle="Income, costs and profit as recorded in your books" delay={0.22}>
+        <SectionCard title="Month by month"
+          subtitle={fromBooks ? 'Money that came in and went out each month, as recorded in your books' : 'Income, costs and profit as recorded in your books'}
+          delay={0.22}>
           <div style={{ overflowX: 'auto' }}>
             <table className="data-table">
-              <thead><tr><th>Month</th><th>Income</th><th>Costs</th><th>Profit</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>{fromBooks ? 'Money in' : 'Income'}</th>
+                  <th>{fromBooks ? 'Money out' : 'Costs'}</th>
+                  <th>{fromBooks ? 'Change' : 'Profit'}</th>
+                </tr>
+              </thead>
               <tbody>
                 {history.map((row) => (
                   <tr key={row.label}>
@@ -302,33 +345,10 @@ export default function CashPage() {
             </table>
           </div>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '10px 0 0', lineHeight: 1.5 }}>
-            Months with nothing recorded are left out. A booking or invoice counts as income in the month it was made and as cash when it is paid.
+            {fromBooks
+              ? <>Months with nothing recorded are left out. A sale on credit counts when it is paid. Money moved between your cash, mobile money and bank is in neither column. For profit month by month, see <Link href="/dashboard/variance" className="tap-link" style={{ color: 'var(--cyan)' }}>Month by month</Link> in Reports.</>
+              : 'Months with nothing recorded are left out. A booking or invoice counts as income in the month it was made and as cash when it is paid.'}
           </p>
-        </SectionCard>
-      )}
-
-      {/* Projected inflow/outflow table */}
-      {chartData.length > 0 && (
-        <SectionCard title="Cash Flow Details" subtitle="Monthly inflow, outflow and net position" delay={0.22}>
-          <table className="data-table">
-            <thead><tr><th>Period</th><th>Inflow</th><th>Outflow</th><th>Net</th><th>Cash Position</th></tr></thead>
-            <tbody>
-              {chartData.map((row, i) => {
-                const net = row.inflow - row.outflow;
-                return (
-                  <tr key={i}>
-                    <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{row.label}</td>
-                    <td style={{ color: 'var(--text-1)' }}>{fmt(row.inflow, false, sym)}</td>
-                    <td style={{ color: 'var(--text-1)' }}>{fmt(row.outflow, false, sym)}</td>
-                    <td style={{ color: 'var(--text-1)', fontWeight: 700 }}>
-                      {net >= 0 ? '+' : ''}{fmt(net, false, sym)}
-                    </td>
-                    <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{fmt(row.cash, false, sym)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
         </SectionCard>
       )}
     </>

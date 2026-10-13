@@ -1,5 +1,7 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
+import { getCosts, type CostSplit } from '@/lib/api';
 import { monthName, monthTick } from '@/lib/change';
 import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
@@ -55,10 +57,25 @@ function CvpTooltip({ active, payload, sym }: { active?: boolean; payload?: { pa
 }
 
 export default function BreakevenPage() {
-  const { breakeven, monthly, currencySymbol, dataShape, twinLoading, twinChecked, uploadedFile } = useStore();
+  const { breakeven, monthly, currencySymbol, dataShape, twinLoading, twinChecked, uploadedFile, twin } = useStore();
   // Wait for the recorded books before calling the page empty (see forecast).
   const figuresLoading = twinLoading || (!twinChecked && !uploadedFile);
   const sym = currencySymbol || 'K';
+
+  // From recorded books, the fixed costs are the ones the entries say are
+  // fixed (wages, the tax on them, rent and expenses marked fixed), averaged
+  // over the last full months (GET /books/costs). It used to take 40% of all
+  // costs as fixed for every business and call that "rent, wages and the like".
+  const fromBooks = !uploadedFile && Number(twin?.event_count) > 0;
+  const version = useStore((s) => s.booksVersion);
+  const [costs, setCosts] = useState<CostSplit | null>(null);
+  useEffect(() => {
+    if (!fromBooks || version === 0) return;
+    let alive = true;
+    getCosts().then((c) => { if (alive) setCosts(c); }).catch(() => { if (alive) setCosts(null); });
+    return () => { alive = false; };
+  }, [fromBooks, version]);
+  const real = fromBooks && costs?.ok ? costs : null;
 
   if (dataShape === 'cross_sectional') {
     return <TimeSeriesUnavailable title="Breakeven" feature="Breakeven analysis" />;
@@ -75,15 +92,30 @@ export default function BreakevenPage() {
   // ── No data uploaded: don't fabricate a 28% margin or K0 KPIs ─────────────
   const hasData = monthly.length > 0 && (totalRevenue > 0 || totalCosts > 0);
 
-  // Use breakeven data if available, otherwise derive from monthly
-  const fixedCostPct     = 0.40;
-  const fixedCosts       = breakeven?.fixedCosts       ?? (avgMonthlyCosts * fixedCostPct);
-  const variableCosts    = breakeven?.variableCosts    ?? (avgMonthlyCosts * (1 - fixedCostPct));
-  const contribMargin    = breakeven?.contributionMargin ?? (avgMonthlyRevenue > 0 ? ((avgMonthlyRevenue - variableCosts) / avgMonthlyRevenue) : 0.28);
-  const bepRevenue       = breakeven?.breakevenRevenue ?? (contribMargin > 0 ? fixedCosts / contribMargin : 0);
-  const currentRevenue   = breakeven?.currentRevenue   ?? avgMonthlyRevenue;
+  // From the books: what the entries say. From a file that does not say
+  // which costs are fixed: an estimate, said to be one (40% taken as fixed).
+  const estimated        = !real;
+  const realFixed        = real?.fixed_a_month ?? 0;
+  const realVariable     = real?.variable_a_month ?? 0;
+  const fixedCostPct     = real ? (realFixed + realVariable > 0 ? realFixed / (realFixed + realVariable) : 0) : 0.40;
+  const fixedCosts       = real ? realFixed : breakeven?.fixedCosts ?? (avgMonthlyCosts * fixedCostPct);
+  const variableCosts    = real ? realVariable : breakeven?.variableCosts ?? (avgMonthlyCosts * (1 - fixedCostPct));
+  const currentRevenue   = real ? real.sales_a_month ?? 0 : breakeven?.currentRevenue ?? avgMonthlyRevenue;
+  const contribMargin    = real
+    ? (currentRevenue > 0 ? 1 - (real.variable_share ?? 0) : 0)
+    : breakeven?.contributionMargin ?? (avgMonthlyRevenue > 0 ? ((avgMonthlyRevenue - variableCosts) / avgMonthlyRevenue) : 0.28);
+  const bepRevenue       = real ? real.breakeven_a_month ?? 0 : breakeven?.breakevenRevenue ?? (contribMargin > 0 ? fixedCosts / contribMargin : 0);
+  // Each sale costing more than it brings in: no level of sales covers the rest.
+  const impossible       = !!real && currentRevenue > 0 && real.breakeven_a_month === undefined;
   const gap              = currentRevenue - bepRevenue;
-  const status: 'safe' | 'tight' | 'short' = gap >= 0 ? (bepRevenue > 0 && gap / bepRevenue > 0.2 ? 'safe' : 'tight') : 'short';
+  const status: 'safe' | 'tight' | 'short' = impossible ? 'short'
+    : gap >= 0 ? (bepRevenue > 0 && gap / bepRevenue > 0.2 ? 'safe' : 'tight') : 'short';
+  const fixedWords = real?.fixed_named?.length ? real.fixed_named.join(', ') : 'rent, wages and the like';
+  const basisNote = real
+    ? `From your entries over ${real.months === 1 ? 'your last full month' : `your last ${real.months} full months`}. Counted as fixed: ${fixedWords}. Everything else is counted as growing with sales. Mark an expense as fixed when you record it.`
+    : fromBooks
+      ? 'An estimate until your first full month is recorded: 40% of your costs are taken as fixed.'
+      : 'Your file does not say which costs are fixed, so 40% of your costs are taken as fixed. Record your costs in AIBOS to use your real ones.';
   const roomPct = currentRevenue > 0 ? (gap / currentRevenue) * 100 : 0;
 
   // ── The breakeven chart: spend = fixed costs + the share of each sale that
@@ -118,7 +150,9 @@ export default function BreakevenPage() {
 
   const standTitle = status === 'safe' ? 'Above the line' : status === 'tight' ? 'Just above the line' : 'Below the line';
   const standTag = status === 'safe' ? 'Safe' : status === 'tight' ? 'Tight' : 'Short';
-  const standText = status === 'short'
+  const standText = impossible
+    ? <>Your sales average <strong>{fmt(currentRevenue, false, sym)}</strong> a month, and what grows with sales costs <strong style={{ color: BAD }}>{fmt(variableCosts, false, sym)}</strong> of it. Each sale costs more than it brings in, so no level of sales covers your fixed costs. Look at your prices and what you pay for stock first.</>
+    : status === 'short'
     ? <>Your sales average <strong>{fmt(currentRevenue, false, sym)}</strong> a month. You need <strong>{fmt(bepRevenue, false, sym)}</strong> to cover your costs, so each month runs <strong style={{ color: BAD }}>{fmt(Math.abs(gap), false, sym)}</strong> short.</>
     : <>Your sales average <strong>{fmt(currentRevenue, false, sym)}</strong> a month. You need <strong>{fmt(bepRevenue, false, sym)}</strong> to cover your costs, so <strong>{fmt(gap, false, sym)}</strong> a month is room to spare.</>;
 
@@ -127,7 +161,9 @@ export default function BreakevenPage() {
       feature="breakeven"
       title="Breakeven"
       colour="var(--cyan)"
-      headline={currentRevenue > 0
+      headline={impossible
+        ? 'Each sale costs more than it brings in, so no level of sales breaks even yet.'
+        : currentRevenue > 0
         ? `You're ${fmt(Math.abs(gap), true, sym)} ${gap >= 0 ? 'above' : 'below'} a breakeven of ${fmt(bepRevenue, true, sym)}/month.`
         : 'Upload revenue and cost data to find your breakeven point.'}
       detail="See which costs stay fixed and which grow with sales, what each sale leaves you, how far above the line you are and the exact sales you need each month to cover your costs."
@@ -160,7 +196,7 @@ export default function BreakevenPage() {
         <KPICard label="Sales to cover costs" value={fmt(bepRevenue, false, sym)} sub="each month" />
         <KPICard label="Your sales" value={fmt(currentRevenue, false, sym)} sub="monthly average"
           sparkData={monthly.slice(-6).map(m => Number(m.Revenue) || 0)} />
-        <KPICard label="Fixed costs" value={fmt(fixedCosts, false, sym)} sub="rent, wages and the like, each month" />
+        <KPICard label="Fixed costs" value={fmt(fixedCosts, false, sym)} sub={estimated ? 'an estimate, each month' : `${fixedWords}, each month`} />
         <KPICard label="Left from each sale" value={`${(contribMargin * 100).toFixed(1)}%`} sub="after the cost of making it" />
       </div>
 
@@ -276,7 +312,7 @@ export default function BreakevenPage() {
       <SectionCard title="Where your costs sit" subtitle="Costs that stay the same each month, and costs that grow with sales" delay={0.2}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 16 }}>
           {[
-            { label: 'Fixed costs', value: fixedCosts, pct: fixedCostPct * 100, fill: 'var(--chart-line)', desc: 'Rent, wages and insurance: the same whatever you sell.' },
+            { label: 'Fixed costs', value: fixedCosts, pct: fixedCostPct * 100, fill: 'var(--chart-line)', desc: estimated ? 'Rent, wages and insurance: the same whatever you sell.' : `${fixedWords.charAt(0).toUpperCase()}${fixedWords.slice(1)}: the same whatever you sell.` },
             { label: 'Costs that grow with sales', value: variableCosts, pct: (1 - fixedCostPct) * 100, fill: 'var(--chart-muted)', desc: 'Stock you sell, commission and packaging: they rise with every sale.' },
           ].map(item => (
             <div key={item.label} className="mini-stat" style={{ padding: '16px 20px', gap: 8 }}>
@@ -289,6 +325,7 @@ export default function BreakevenPage() {
             </div>
           ))}
         </div>
+        <p className="bento-note" style={{ marginTop: 12 }}>{basisNote}</p>
       </SectionCard>
       </>
       )}

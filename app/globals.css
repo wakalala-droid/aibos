@@ -1184,7 +1184,7 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
 }
 .chip:hover { background: var(--pill-bg-hover); color: var(--text-1); }
 .chip:active { transform: scale(0.97); }
-.chip[aria-pressed="true"], .chip[aria-current="page"], .chip[aria-selected="true"] { background: var(--text-1); color: var(--bg-card); }
+.chip[aria-pressed="true"], .chip[aria-current="page"], .chip[aria-selected="true"], .chip[aria-checked="true"] { background: var(--text-1); color: var(--bg-card); }
 .chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .chip-count { opacity: 0.7; font-variant-numeric: tabular-nums; }
 

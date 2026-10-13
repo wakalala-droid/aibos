@@ -176,7 +176,9 @@ export default function EmployeesPage() {
     } catch (e) { setError((e as Error).message); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { load(); }, [load]);
+  // Read again whenever the books change anywhere (lib/booksSignal.ts).
+  const booksVersion = useStore((s) => s.booksVersion);
+  useEffect(() => { load(); }, [load, booksVersion]);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm(p => ({ ...p, [k]: v }));
 

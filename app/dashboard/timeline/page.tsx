@@ -21,14 +21,20 @@ import PeriodChips from '@/components/ui/PeriodChips';
 import { usePeriod, periodRange, inPeriod } from '@/lib/period';
 import { undoable } from '@/lib/toast';
 import { amountOf, cashSign } from '@/components/spine/eventMeta';
+import { sumMoney } from '@/lib/ngwee';
+import { fmt } from '@/lib/utils';
 import {
   listEvents, confirmEvent, voidEvent,
   type BusinessEvent, type EventStatus, type EventType,
 } from '@/lib/api';
 
+/** How many entries one read brings; past this the owner narrows the list. */
+const LIMIT = 1000;
+
 function TimelineInner() {
   const params = useSearchParams();
   const refreshTwin = useStore(s => s.refreshTwin);
+  const version = useStore(s => s.booksVersion);
   const sym = useStore(s => s.currencySymbol) || 'K';
   const [events, setEvents] = useState<BusinessEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,9 +44,10 @@ function TimelineInner() {
   // so "the events behind this number" is one click from wherever it's shown.
   const initType = params.get('type');
   const initStatus = params.get('status');
-  // 'active' (the default) is everything still in the books: confirmed and
-  // pending. Removed records are kept for the audit trail but no longer fill
-  // the list; the Removed chip shows them.
+  // 'active' (the default) is everything recorded and not removed: confirmed
+  // and waiting for the owner. Only confirmed entries count in any figure.
+  // Removed records are kept for the audit trail but no longer fill the
+  // list; the Removed chip shows them.
   const [status, setStatus] = useState<EventStatus | 'all' | 'active'>(
     (['confirmed', 'pending', 'void', 'all'] as string[]).includes(initStatus ?? '') ? (initStatus as EventStatus | 'all') : 'active');
   const [type, setType] = useState<EventType | 'all'>(
@@ -71,14 +78,24 @@ function TimelineInner() {
   }, [events, q, status, period, onlyIds]);
 
   // Money in and out across what is on screen, the way a bank sums a statement.
+  // Confirmed entries only, to the ngwee, like the money figure: entries that
+  // wait for the owner are added up apart and said so. They used to be in
+  // these totals although no figure anywhere counts them.
   const totals = useMemo(() => {
-    let moneyIn = 0, moneyOut = 0;
+    const ins: number[] = [], outs: number[] = [], waitIn: number[] = [], waitOut: number[] = [];
+    let waiting = 0;
     for (const e of shown) {
       if (e.status === 'void') continue;
       const sign = cashSign(e);
-      if (sign > 0) moneyIn += amountOf(e); else if (sign < 0) moneyOut += amountOf(e);
+      if (e.status === 'pending') {
+        if (sign) waiting += 1;
+        if (sign > 0) waitIn.push(amountOf(e)); else if (sign < 0) waitOut.push(amountOf(e));
+        continue;
+      }
+      if (sign > 0) ins.push(amountOf(e)); else if (sign < 0) outs.push(amountOf(e));
     }
-    return { moneyIn, moneyOut };
+    return { moneyIn: sumMoney(ins), moneyOut: sumMoney(outs), waiting,
+             waitingIn: sumMoney(waitIn), waitingOut: sumMoney(waitOut) };
   }, [shown]);
 
   const load = useCallback(async () => {
@@ -87,7 +104,7 @@ function TimelineInner() {
       setEvents(await listEvents({
         status: status === 'all' || status === 'active' ? undefined : status,
         event_type: type === 'all' ? undefined : type,
-        limit: 500,
+        limit: LIMIT,
       }));
     } catch (e) {
       setError((e as Error).message || 'Could not load the timeline.');
@@ -96,7 +113,9 @@ function TimelineInner() {
     }
   }, [status, type]);
 
-  useEffect(() => { load(); }, [load]);
+  // Read again whenever the books change anywhere (a fix on the Money page,
+  // a payment that arrived, another tab).
+  useEffect(() => { load(); }, [load, version]);
 
   async function handleConfirm(id: string) {
     setBusyId(id);
@@ -147,6 +166,27 @@ function TimelineInner() {
             </div>
           </div>
         )}
+        {!loading && totals.waiting > 0 && status !== 'pending' && (
+          <p style={{ margin: '-4px 0 16px', fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
+            {totals.waiting} {totals.waiting === 1 ? 'entry here waits' : 'entries here wait'} for you
+            ({fmt(totals.waitingIn, false, sym)} in, {fmt(totals.waitingOut, false, sym)} out) and {totals.waiting === 1 ? 'is' : 'are'} not
+            in these totals or your money figure until you confirm {totals.waiting === 1 ? 'it' : 'them'}.{' '}
+            <button type="button" className="tap-link" style={{ background: 'none', border: 'none', padding: 0, color: 'var(--cyan)', fontWeight: 600, cursor: 'pointer', fontSize: 'inherit' }}
+              onClick={() => setStatus('pending')}>
+              Show them
+            </button>
+          </p>
+        )}
+        {!loading && status === 'pending' && totals.waiting > 0 && (
+          <p style={{ margin: '-4px 0 16px', fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
+            Waiting for you: {fmt(totals.waitingIn, false, sym)} in and {fmt(totals.waitingOut, false, sym)} out, in no figure until you confirm each.
+          </p>
+        )}
+        {!loading && events.length >= LIMIT && (
+          <p style={{ margin: '-4px 0 16px', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+            Showing the newest {LIMIT}. Pick a type or a status to see older ones.
+          </p>
+        )}
 
         {/* Search (audit #38) */}
         <label style={{ position: 'relative', display: 'block', marginBottom: 12 }}>
@@ -175,7 +215,7 @@ function TimelineInner() {
         <div className="chips" role="group" aria-label="Which records" style={{ marginBottom: 12 }}>
           {(['active', 'confirmed', 'pending', 'void', 'all'] as const).map(s => (
             <button key={s} type="button" className="chip" aria-pressed={status === s} onClick={() => setStatus(s)}>
-              {s === 'active' ? 'In your books' : s === 'all' ? 'Everything' : s === 'void' ? 'Removed' : s === 'pending' ? 'Waiting for you' : 'Confirmed'}
+              {s === 'active' ? 'Recorded' : s === 'all' ? 'Everything' : s === 'void' ? 'Removed' : s === 'pending' ? 'Waiting for you' : 'Confirmed'}
             </button>
           ))}
         </div>

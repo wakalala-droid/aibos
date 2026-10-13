@@ -18,6 +18,7 @@ import {
   type EventType, type EventProposal, type EventSource,
 } from '@/lib/api';
 import { createEventOrQueue } from '@/lib/outbox';
+import { typeLabel } from './eventMeta';
 import QrScanner from './QrScanner';
 import FileDrop from '@/components/ui/FileDrop';
 import { takePendingFile } from '@/lib/pendingFile';
@@ -30,23 +31,57 @@ const TYPES: EventType[] = [
 
 type Field = { key: string; label: string; kind: 'number' | 'text' | 'select'; options?: string[]; placeholder?: string };
 
+// How the money moved. EVERY type that moves money asks (13 Oct 2026): only a
+// sale, a purchase and an expense used to, so a loan repaid, wages, tax, a
+// supplier or customer payment, a refund, equipment and stock all landed in
+// "Not said how" on the Money page, with nothing saying where the money went.
+const PAID_ONLY = ['cash', 'mobile_money', 'bank', 'card'];
+const PAID_OR_CREDIT = [...PAID_ONLY, 'credit'];
+const PLACES = ['cash', 'mobile_money', 'bank'];
+const paidBy = (options = PAID_ONLY, label = 'Paid by'): Field => ({ key: 'payment_method', label, kind: 'select', options });
+
 // Which payload fields each type surfaces for review (RFC-001 §5). `amount` is
 // rendered separately (every money type needs it).
 const TYPE_FIELDS: Record<EventType, Field[]> = {
-  Sale:               [{ key: 'customer', label: 'Customer', kind: 'text' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank', 'credit'] }],
-  Purchase:           [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank', 'credit'] }],
-  Expense:            [{ key: 'category', label: 'Category', kind: 'text', placeholder: 'rent, fuel, utilities…' }, { key: 'payment_method', label: 'Paid by', kind: 'select', options: ['cash', 'mobile_money', 'card', 'bank'] }, { key: 'is_fixed', label: 'Fixed cost?', kind: 'select', options: ['no', 'yes'] }],
-  InventoryReceipt:   [{ key: 'supplier', label: 'Supplier', kind: 'text' }],
+  Sale:               [{ key: 'customer', label: 'Customer', kind: 'text' }, paidBy(PAID_OR_CREDIT)],
+  Purchase:           [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }, paidBy(PAID_OR_CREDIT)],
+  Expense:            [{ key: 'category', label: 'Category', kind: 'text', placeholder: 'rent, fuel, utilities…' }, paidBy(), { key: 'is_fixed', label: 'Fixed cost?', kind: 'select', options: ['no', 'yes'] }],
+  InventoryReceipt:   [{ key: 'supplier', label: 'Supplier', kind: 'text' }, paidBy(PAID_OR_CREDIT)],
   InventoryAdjustment: [{ key: 'item', label: 'Item', kind: 'text' }, { key: 'delta_qty', label: 'Qty change (+/-)', kind: 'number' }, { key: 'reason', label: 'Reason', kind: 'select', options: ['recount', 'shrinkage', 'damage'] }],
-  Salary:             [{ key: 'employee', label: 'Employee', kind: 'text' }, { key: 'period', label: 'Period', kind: 'text', placeholder: 'e.g. June 2026' }],
-  SupplierPayment:    [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'invoice_ref', label: 'Invoice ref', kind: 'text' }],
-  CustomerPayment:    [{ key: 'customer', label: 'Customer', kind: 'text' }, { key: 'invoice_ref', label: 'Invoice ref', kind: 'text' }],
-  AssetPurchase:      [{ key: 'asset_name', label: 'Asset', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }],
-  TaxPayment:         [{ key: 'tax_type', label: 'Tax type', kind: 'text', placeholder: 'VAT, PAYE…' }, { key: 'authority', label: 'Authority', kind: 'text', placeholder: 'ZRA' }],
-  Loan:               [{ key: 'direction', label: 'Direction', kind: 'select', options: ['received', 'repayment'] }, { key: 'lender', label: 'Lender', kind: 'text' }],
-  Refund:             [{ key: 'direction', label: 'Direction', kind: 'select', options: ['to_customer', 'from_supplier'] }, { key: 'reason', label: 'Reason', kind: 'text' }],
-  Transfer:           [{ key: 'from', label: 'From', kind: 'text', placeholder: 'cash' }, { key: 'to', label: 'To', kind: 'text', placeholder: 'bank' }],
+  Salary:             [{ key: 'employee', label: 'Employee', kind: 'text' }, { key: 'period', label: 'Period', kind: 'text', placeholder: 'e.g. June 2026' }, paidBy()],
+  SupplierPayment:    [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'invoice_ref', label: 'Invoice ref', kind: 'text' }, paidBy()],
+  CustomerPayment:    [{ key: 'customer', label: 'Customer', kind: 'text' }, { key: 'invoice_ref', label: 'Invoice ref', kind: 'text' }, paidBy(PAID_ONLY, 'Paid to you by')],
+  AssetPurchase:      [{ key: 'asset_name', label: 'Asset', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }, paidBy()],
+  TaxPayment:         [{ key: 'tax_type', label: 'Tax type', kind: 'text', placeholder: 'VAT, PAYE…' }, { key: 'authority', label: 'Authority', kind: 'text', placeholder: 'ZRA' }, paidBy()],
+  Loan:               [{ key: 'direction', label: 'Direction', kind: 'select', options: ['received', 'repayment'] }, { key: 'lender', label: 'Lender', kind: 'text' }, paidBy(PAID_ONLY, 'Paid or received by')],
+  Refund:             [{ key: 'direction', label: 'Direction', kind: 'select', options: ['to_customer', 'from_supplier'] }, { key: 'reason', label: 'Reason', kind: 'text' }, paidBy(PAID_ONLY, 'Refunded by')],
+  Transfer:           [{ key: 'from', label: 'Moved from', kind: 'select', options: PLACES }, { key: 'to', label: 'Moved to', kind: 'select', options: PLACES }],
 };
+
+/** The words an owner reads for each choice (the saved value stays the same). */
+const OPTION_LABEL: Record<string, string> = {
+  cash: 'Cash', mobile_money: 'Mobile money', bank: 'Bank', card: 'Card', credit: 'On credit, paid later',
+  received: 'Received', repayment: 'Repayment', to_customer: 'To a customer', from_supplier: 'From a supplier',
+  recount: 'Recount', shrinkage: 'Shrinkage', damage: 'Damage', no: 'No', yes: 'Yes',
+};
+
+/** The method words the AI and receipts use, as the form's own choices. */
+function methodChoice(v: unknown): string {
+  const k = String(v ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+  if (['mobile_money', 'momo', 'mobile', 'mtn', 'airtel', 'zamtel', 'airtel_money', 'mtn_money', 'mtn_momo', 'zamtel_kwacha'].includes(k)) return 'mobile_money';
+  if (['bank', 'bank_transfer', 'transfer', 'eft', 'rtgs', 'cheque', 'check', 'bank_deposit', 'direct_deposit'].includes(k)) return 'bank';
+  if (['card', 'visa', 'mastercard', 'pos', 'swipe', 'debit_card', 'credit_card'].includes(k)) return 'card';
+  if (['cash', 'petty_cash', 'till'].includes(k)) return 'cash';
+  if (k === 'credit') return 'credit';
+  return '';
+}
+
+/** Does this entry, as filled in, move money (so it must say how)? */
+function movesMoney(t: EventType, f: Record<string, string>): boolean {
+  if (t === 'InventoryAdjustment' || t === 'Transfer') return false;
+  if (['Sale', 'Purchase', 'InventoryReceipt'].includes(t) && f.payment_method === 'credit') return false;
+  return true;
+}
 
 const NO_AMOUNT: EventType[] = ['InventoryReceipt', 'InventoryAdjustment']; // amount optional
 
@@ -195,7 +230,13 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     const f: Record<string, string> = {};
     for (const fld of TYPE_FIELDS[t]) {
       const v = pl[fld.key];
-      if (v != null) f[fld.key] = String(v);
+      if (v == null) continue;
+      if (fld.key === 'payment_method' || (t === 'Transfer' && (fld.key === 'from' || fld.key === 'to'))) {
+        const choice = methodChoice(v);
+        if (choice && fld.options?.includes(choice)) f[fld.key] = choice;
+        continue;
+      }
+      f[fld.key] = String(v);
     }
     setFields(f);
     const names = Array.isArray(pl.items) ? pl.items : [];
@@ -303,7 +344,10 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     // Drop fields that don't belong to the new type.
     setFields(prev => {
       const keep: Record<string, string> = {};
-      for (const fld of TYPE_FIELDS[t]) if (prev[fld.key]) keep[fld.key] = prev[fld.key];
+      for (const fld of TYPE_FIELDS[t]) {
+        // A choice the new type does not offer (wages are never on credit) is dropped.
+        if (prev[fld.key] && (!fld.options || fld.options.includes(prev[fld.key]))) keep[fld.key] = prev[fld.key];
+      }
       return keep;
     });
   }
@@ -324,6 +368,16 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
     }
     if (ITEMS_REQUIRED.includes(etype) && filled.length === 0) {
       setError('Add at least one item and how many arrived.');
+      return;
+    }
+    // Every entry that moves money says how, so it lands in the cash, the
+    // wallet or the bank on the Money page and never in "Not said how".
+    if (movesMoney(etype, fields) && !fields.payment_method) {
+      setError('Say how the money moved: cash, mobile money, bank or card.');
+      return;
+    }
+    if (etype === 'Transfer' && (!fields.from || !fields.to || fields.from === fields.to)) {
+      setError('Say where the money moved from and where it went: two different places.');
       return;
     }
     const payload: Record<string, unknown> = { ...carry };
@@ -349,11 +403,11 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
       if (result.queued) {
         // Network down — the outbox holds it and posts when signal returns.
         // The habit must survive the connection (Proposal risk: connectivity).
-        setSuccess(`${etype} saved on your device: it will post automatically when you're back online.`);
+        setSuccess(`${typeLabel(etype)} saved on your device: it will post automatically when you're back online.`);
         setText(''); setAmount(''); setFields({}); setLines([]); setCarry({}); setPhase('idle');
         return;
       }
-      setSuccess(`${etype} recorded.`);
+      setSuccess(`${typeLabel(etype)} recorded.`);
       setText(''); setAmount(''); setFields({}); setLines([]); setCarry({}); setPhase('idle');
       // Refresh the twin (lights up dashboards) and recent events.
       refreshTwin();
@@ -506,7 +560,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                 <div>
                   <label className="field-label">Type</label>
                   <select value={etype} onChange={e => changeType(e.target.value as EventType)} className="field">
-                    {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    {TYPES.map(t => <option key={t} value={t}>{typeLabel(t)}</option>)}
                   </select>
                 </div>
 
@@ -532,7 +586,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                         className="field"
                       >
                         <option value="">Choose…</option>
-                        {fld.options!.map(o => <option key={o} value={o}>{o}</option>)}
+                        {fld.options!.map(o => <option key={o} value={o}>{OPTION_LABEL[o] ?? o}</option>)}
                       </select>
                     ) : (
                       <input

@@ -44,19 +44,29 @@ function dayLabel(d: Date): string {
   return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
-/** Split a Sale list into [today, yesterday] buckets by occurred_at. */
-export function bucketSales(sales: BusinessEvent[]): { today: BusinessEvent[]; yesterday: BusinessEvent[] } {
+/** Split a Sale list into [today, yesterday] buckets by occurred_at.
+ *  Confirmed sales only, like every figure: a sale a member of staff typed,
+ *  or a spreadsheet row, is not in the books until the owner confirms it.
+ *  Those are counted apart (waitingToday), to say so beside the figure. */
+export function bucketSales(sales: BusinessEvent[]): {
+  today: BusinessEvent[]; yesterday: BusinessEvent[]; waitingToday: BusinessEvent[];
+} {
   const startToday = new Date(); startToday.setHours(0, 0, 0, 0);
   const startYesterday = new Date(startToday.getTime() - 24 * 60 * 60 * 1000);
   const today: BusinessEvent[] = [];
   const yesterday: BusinessEvent[] = [];
+  const waitingToday: BusinessEvent[] = [];
   for (const e of sales) {
     if (e.status === 'void') continue;
     const at = new Date(e.occurred_at);
+    if (e.status === 'pending') {
+      if (at >= startToday) waitingToday.push(e);
+      continue;
+    }
     if (at >= startToday) today.push(e);
     else if (at >= startYesterday) yesterday.push(e);
   }
-  return { today, yesterday };
+  return { today, yesterday, waitingToday };
 }
 
 /** Pending receipts dated today or later — the deliveries the owner expects. */

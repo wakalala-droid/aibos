@@ -11,6 +11,7 @@ import WhatsNew from '@/components/pwa/WhatsNew';
 import WelcomeTour from '@/components/onboarding/WelcomeTour';
 import DashboardTour from '@/components/onboarding/DashboardTour';
 import { logUsage, type UsageEngine } from '@/lib/usage';
+import { onBooksChanged } from '@/lib/booksSignal';
 
 // Map a dashboard path to the engine it belongs to, for usage tracking.
 function engineForPath(path: string): UsageEngine | undefined {
@@ -30,6 +31,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // dashboards from events (Initiative 9). Safe no-op if the spine is
   // unconfigured or a file is already loaded (guarded inside refreshTwin).
   useEffect(() => { refreshTwin(); }, [refreshTwin]);
+
+  // Every page works off the same books. Count them again whenever they
+  // change anywhere (lib/booksSignal.ts: any page here, another tab), when
+  // the owner comes back to AIBOS after a minute away, and every few minutes
+  // while it is open, so money that arrives by itself (a guest paying a link,
+  // a staff member's entry, the phone) shows without a reload.
+  useEffect(() => {
+    let last = Date.now();
+    const count = () => { last = Date.now(); void refreshTwin(); };
+    const off = onBooksChanged(count);
+    const back = () => {
+      if (document.visibilityState === 'visible' && Date.now() - last > 60_000) count();
+    };
+    const tick = window.setInterval(() => {
+      if (document.visibilityState === 'visible' && Date.now() - last > 180_000) count();
+    }, 60_000);
+    document.addEventListener('visibilitychange', back);
+    window.addEventListener('focus', back);
+    return () => {
+      off();
+      window.clearInterval(tick);
+      document.removeEventListener('visibilitychange', back);
+      window.removeEventListener('focus', back);
+    };
+  }, [refreshTwin]);
 
   useEffect(() => {
     const el = document.getElementById('main-content');

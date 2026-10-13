@@ -5,17 +5,25 @@
 // One bar that splits a month's money out by what it was for, with each part
 // named in words and amounts underneath, so colour is never the only signal
 // and there is no legend to decode. Each line opens Activity on the entries
-// behind it, for the same period. Read from the recorded entries, for the
-// period picked on the chips (C6), this month unless the owner picks another.
+// behind it, for the same period. For the period picked on the chips (C6),
+// this month unless the owner picks another.
+//
+// Added up on the server from every confirmed entry (GET /books/money-out),
+// with the money figure's own rule, and read again whenever the books change.
+// It used to be added up here from the newest 1,000 entries, counting entries
+// still waiting for the owner, and it never refreshed.
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import SectionCard from '@/components/ui/SectionCard';
-import { listEvents, type BusinessEvent } from '@/lib/api';
-import { cashSign, amountOf, typeLabel } from '@/components/spine/eventMeta';
+import { getMoneyOut, type MoneyOutPart } from '@/lib/api';
+import { typeLabel } from '@/components/spine/eventMeta';
 import { monthName } from '@/lib/change';
 import { fmt } from '@/lib/utils';
-import { usePeriod, periodRange, inPeriod, periodLabel } from '@/lib/period';
+import { sumMoney } from '@/lib/ngwee';
+import { useStore } from '@/lib/store';
+import { useMoney } from '@/hooks/useMoney';
+import { usePeriod, periodRange, periodLabel } from '@/lib/period';
 import PeriodChips from '@/components/ui/PeriodChips';
 
 // Five distinct hues (--e2 is the same orange as --orange); the rest is grey.
@@ -31,54 +39,60 @@ function monthKey(iso: string): string {
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** What it was for, as the owner would say it, and where its entries are. */
-function partOf(ev: BusinessEvent): { name: string; href: string } {
-  const category = String(ev.payload?.category ?? '').trim();
-  if (ev.event_type === 'Expense' && category) {
-    return { name: title(category), href: `/dashboard/timeline?type=Expense&q=${encodeURIComponent(category)}` };
+function partOf(p: MoneyOutPart): { name: string; href: string } {
+  const category = String(p.category ?? '').trim();
+  if (p.event_type === 'Expense' && category) {
+    return { name: title(category), href: `/dashboard/timeline?type=Expense&status=confirmed&q=${encodeURIComponent(category)}` };
   }
-  return { name: typeLabel(ev.event_type), href: `/dashboard/timeline?type=${ev.event_type}` };
+  return { name: typeLabel(p.event_type), href: `/dashboard/timeline?type=${p.event_type}&status=confirmed` };
 }
 
 export default function WhereMoneyWent({ sym }: { sym: string }) {
-  const [events, setEvents] = useState<BusinessEvent[] | null>(null);
   const [period, setPeriod] = usePeriod('this-month');
+  const version = useStore((s) => s.booksVersion);
+  const [parts, setParts] = useState<MoneyOutPart[] | null>(null);
+  // Has anything ever gone out? With nothing spent, there is no card at all.
+  // From the same read as the money figure (hooks/useMoney).
+  const money = useMoney(30);
+  const ever = money ? money.months.some((m) => m.out > 0) : null;
 
   useEffect(() => {
+    if (version === 0) return;
     let alive = true;
-    listEvents({ limit: 1000 })
-      .then((evs) => { if (alive) setEvents(evs); })
-      .catch(() => { if (alive) setEvents([]); });
+    const range = periodRange(period);
+    getMoneyOut(range?.[0], range?.[1])
+      .then((out) => { if (alive) setParts(out.parts); })
+      .catch(() => { if (alive) setParts([]); });
     return () => { alive = false; };
-  }, []);
+  }, [period, version]);
 
   const view = useMemo(() => {
-    const out = (events ?? []).filter((e) => e.status !== 'void' && cashSign(e) < 0 && amountOf(e) > 0);
-    if (!out.length) return null;   // nothing ever spent: no card at all
+    if (!ever || parts === null) return null;
     const range = periodRange(period);
     // "This month" and "Last month" read as the month's name.
     const label = range && (period === 'this-month' || period === 'last-month')
       ? monthName(monthKey(range[0].toISOString()))
       : periodLabel(period);
+    // Two kinds the server keeps apart can share a name here: one line each.
     const byPart = new Map<string, { name: string; href: string; total: number; count: number }>();
-    for (const e of out) {
-      if (!inPeriod(e.occurred_at, range)) continue;
-      const p = partOf(e);
-      const cur = byPart.get(p.name) ?? { ...p, total: 0, count: 0 };
-      cur.total += amountOf(e); cur.count += 1;
-      byPart.set(p.name, cur);
+    for (const p of parts) {
+      const named = partOf(p);
+      const cur = byPart.get(named.name) ?? { ...named, total: 0, count: 0 };
+      cur.total = sumMoney([cur.total, p.total]); cur.count += p.count;
+      byPart.set(named.name, cur);
     }
-    const parts = [...byPart.values()].sort((a, b) => b.total - a.total);
-    const total = parts.reduce((t, p) => t + p.total, 0);
-    const shown = parts.slice(0, MAX_PARTS);
-    const rest = parts.slice(MAX_PARTS);
+    const all = [...byPart.values()].sort((a, b) => b.total - a.total);
+    const total = sumMoney(all.map((p) => p.total));
+    const shown = all.slice(0, MAX_PARTS);
+    const rest = all.slice(MAX_PARTS);
     if (rest.length) {
       shown.push({
-        name: 'Everything else', href: '/dashboard/timeline',
-        total: rest.reduce((t, p) => t + p.total, 0), count: rest.reduce((t, p) => t + p.count, 0),
+        name: 'Everything else', href: '/dashboard/timeline?status=confirmed',
+        total: sumMoney(rest.map((p) => p.total)), count: rest.reduce((t, p) => t + p.count, 0),
       });
     }
     return { label, total, parts: shown };
-  }, [events, period]);
+  }, [ever, parts, period]);
 
   if (!view) return null;
 

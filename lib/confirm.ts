@@ -19,9 +19,16 @@ export interface ConfirmRequest {
   danger?: boolean;
   /** Show a read-only text (a link to copy) instead of asking a question. */
   copyText?: string;
+  /** Ask the owner to pick one before going ahead (how a customer paid). The
+   *  confirm button waits for a pick; chooseSheet() resolves with it. */
+  choices?: { value: string; label: string }[];
+  /** The question over the choices: "How did they pay?" */
+  choiceLabel?: string;
+  /** A choice picked already (what the guest said they would pay by). */
+  choice?: string;
 }
 
-type Listener = (req: ConfirmRequest, resolve: (ok: boolean) => void) => void;
+type Listener = (req: ConfirmRequest, resolve: (ok: boolean, choice?: string) => void) => void;
 let listener: Listener | null = null;
 
 /** Called by the mounted sheet. */
@@ -37,6 +44,17 @@ export function confirmSheet(req: ConfirmRequest): Promise<boolean> {
       return;
     }
     listener(req, resolve);
+  });
+}
+
+/** Ask the owner to pick one of `choices` and go ahead: the pick, or null if they backed out. */
+export function chooseSheet(req: ConfirmRequest & { choices: { value: string; label: string }[] }): Promise<string | null> {
+  return new Promise((resolve) => {
+    if (!listener) {
+      resolve(null);
+      return;
+    }
+    listener(req, (ok, choice) => resolve(ok && choice ? choice : null));
   });
 }
 

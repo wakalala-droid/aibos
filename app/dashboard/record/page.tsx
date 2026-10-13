@@ -29,7 +29,10 @@ export default function RecordPage() {
     listEvents({ limit: 8 }).then(setRecent).catch(() => setRecent([]));
   }, []);
 
-  useEffect(() => { refreshTwin(); loadRecent(); }, [refreshTwin, loadRecent]);
+  useEffect(() => { refreshTwin(); }, [refreshTwin]);
+  // Read again whenever the books change anywhere (lib/booksSignal.ts).
+  const booksVersion = useStore((s) => s.booksVersion);
+  useEffect(() => { loadRecent(); }, [loadRecent, booksVersion]);
 
   const snapshot = [
     { label: 'Cash', value: twin?.cash ?? 0 },

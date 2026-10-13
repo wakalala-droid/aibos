@@ -23,7 +23,7 @@
  * New booking, Find a guest and the units in a panel beside it.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { confirmSheet } from '@/lib/confirm';
+import { confirmSheet, chooseSheet } from '@/lib/confirm';
 import { CalendarDays, CalendarPlus, Check, Copy, Link2, Mail, MapPin, MessageCircle, Phone, Plus, UserRound, X } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
 import KPICard from '@/components/ui/KPICard';
@@ -198,7 +198,9 @@ export default function HospitalityPage() {
     }
   }, [monthStart, monthEnd, weekStart, calMonth]);
 
-  useEffect(() => { if (entitled) load(); }, [entitled, load]);
+  // Read again whenever the books change anywhere (lib/booksSignal.ts).
+  const booksVersion = useStore((s) => s.booksVersion);
+  useEffect(() => { if (entitled) load(); }, [entitled, load, booksVersion]);
 
   /** Put a day's week on screen, with its month beside it. */
   const goTo = (d: Date) => { setWeekStart(weekStartOf(d)); setCalMonth(monthOf(d)); };
@@ -378,13 +380,17 @@ export default function HospitalityPage() {
 
   /** Say what the guest has paid. Until then the stay is money owed to the
    *  owner, not money in their bank, so this is what moves it into cash. */
-  const doPayment = async (b: Booking, status: PaymentStatus, deposit?: number) => {
+  const doPayment = async (b: Booking, status: PaymentStatus, deposit?: number, method?: StayPaymentMethod) => {
     if (status === 'refunded' && !(await confirmSheet({ title: `Mark ${guestName(b)}'s stay as refunded?`, body: 'The money from it comes out of your books.', confirmLabel: 'Mark as refunded', danger: true }))) return false;
     setBusy(true); setPanelNote(''); setEmailNote(null); setError('');
     try {
-      applyUpdate(await updateBooking(b.id, deposit === undefined
-        ? { payment_status: status }
-        : { payment_status: status, deposit_amount: deposit }));
+      applyUpdate(await updateBooking(b.id, {
+        payment_status: status,
+        ...(deposit === undefined ? {} : { deposit_amount: deposit }),
+        // How the guest paid: the payment lands in the cash, the wallet or the
+        // bank on the Money page. Without it the books used to guess cash.
+        ...(method ? { payment_method: method } : {}),
+      }));
       await load();
       return true;
     } catch (e) {
@@ -490,7 +496,10 @@ export default function HospitalityPage() {
           {/* KPI row */}
           <div className="grid-kpi" style={{ marginBottom: 18 }}>
             <KPICard label="Occupancy" sublabel="this month" value={`${Math.round(occupancy * 100)}%`} sub={`${units.length} unit${units.length === 1 ? '' : 's'}`} sparkColor="#34d399" />
-            <KPICard label="Revenue booked" sublabel="this month" value={fmt(revenueThisMonth, false, sym)} sub="posts to your books" sparkColor="#60a5fa" />
+            {/* By the night the stay starts. The books count a stay's income on the day
+                it is booked, so this is not the month's income in Reports and no
+                longer says it is ("posts to your books" sat under a different figure). */}
+            <KPICard label="Stays this month" sublabel="arriving this month" value={fmt(revenueThisMonth, false, sym)} sub="confirmed stays, at their price" sparkColor="#60a5fa" />
             <KPICard label="Check-ins" sublabel="next 7 days" value={String(checkinsNext7)} sub="arrivals to prep" sparkColor="#fbbf24" />
             <KPICard label="Properties" sublabel="portfolio" value={String(properties.length)} sub={`${units.length} unit${units.length === 1 ? '' : 's'} total`} sparkColor="#a78bfa" />
           </div>
@@ -586,7 +595,7 @@ export default function HospitalityPage() {
                 onConfirm={() => doConfirm(selected)}
                 onDecline={() => doDecline(selected)}
                 onCancel={(refund) => doCancel(selected, refund)}
-                onPayment={(status, deposit) => doPayment(selected, status, deposit)}
+                onPayment={(status, deposit, method) => doPayment(selected, status, deposit, method)}
                 onSaved={(b) => { applyUpdate(b); void load(); }}
                 onClose={closeBooking}
               />
@@ -619,7 +628,7 @@ interface PanelProps {
   onConfirm: () => void;
   onDecline: () => void;
   onCancel: (refund?: boolean) => void;
-  onPayment: (status: PaymentStatus, deposit?: number) => Promise<boolean>;
+  onPayment: (status: PaymentStatus, deposit?: number, method?: StayPaymentMethod) => Promise<boolean>;
   onSaved: (b: Booking) => void;
   onClose: () => void;
 }
@@ -670,14 +679,33 @@ function BookingPanel({
       : payment === 'partial'
         ? `${fmt(paidSoFar, false, symbol)} paid. ${fmt(total - paidSoFar, false, symbol)} is still owed to you.`
         : `Not paid yet. ${fmt(total, false, symbol)} is owed to you and is not in your cash until you mark it paid.`;
+  /** How the guest paid, asked whenever money comes in: what they said they
+   *  would pay by is picked already. */
+  const askHow = (amount: number) => chooseSheet({
+    title: `How did ${name} pay?`,
+    body: `${fmt(amount, false, symbol)} goes into your books as money received.`,
+    choiceLabel: 'Paid by',
+    choices: (Object.keys(METHOD_LABEL) as StayPaymentMethod[]).map((m) => ({ value: m, label: METHOD_LABEL[m] })),
+    choice: (Object.keys(METHOD_LABEL) as string[]).includes(String(b.payment_method)) ? String(b.payment_method) : undefined,
+    confirmLabel: 'Save',
+  }) as Promise<StayPaymentMethod | null>;
   const choose = async (status: PaymentStatus) => {
     if (status === 'partial') { setTakingDeposit(true); return; }
     setTakingDeposit(false);
+    if (status === 'paid') {
+      const how = await askHow(total - paidSoFar);
+      if (!how) return;
+      await onPayment(status, undefined, how);
+      return;
+    }
     await onPayment(status);
   };
   const saveDeposit = async () => {
     if (!depositOk) return;
-    if (await onPayment('partial', Math.round(depositValue * 100) / 100)) setTakingDeposit(false);
+    const value = Math.round(depositValue * 100) / 100;
+    const how = value > paidSoFar ? await askHow(value - paidSoFar) : undefined;
+    if (how === null) return;
+    if (await onPayment('partial', value, how)) setTakingDeposit(false);
   };
 
   // Everything that has happened to the booking, oldest first: the decision
@@ -1025,7 +1053,7 @@ function Instalments({ booking: b, symbol, owed, onSaved }: {
               <DayBadge date={p.date} small />
               <div className="rs-row-main">
                 <span className="rs-row-title">{fmt(p.amount, false, symbol)}</span>
-                <span className="rs-row-line">{shortDate(p.date)} · {METHOD_LABEL[p.method] ?? p.method}</span>
+                <span className="rs-row-line">{shortDate(p.date)} · {p.method ? METHOD_LABEL[p.method] ?? p.method : 'Not said how'}</span>
               </div>
               <button type="button" className="rs-btn is-quiet is-sm" onClick={() => remove(p)} disabled={busy}>
                 Remove

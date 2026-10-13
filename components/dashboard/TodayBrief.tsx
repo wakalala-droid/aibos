@@ -13,7 +13,8 @@ import { useProfile } from '@/lib/profile';
 import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
 import { Wallet, TrendingUp, CalendarDays, Clock, Package, Truck, Target } from 'lucide-react';
 import { briefLines, type BriefLine, type BriefKind } from '@/lib/brief';
-import { fetchBriefExtras, type BriefExtras } from '@/lib/briefData';
+import { type BriefExtras } from '@/lib/briefData';
+import { useBriefExtras } from '@/hooks/useBriefExtras';
 import { logUsage } from '@/lib/usage';
 import SectionCard from '@/components/ui/SectionCard';
 
@@ -64,13 +65,10 @@ export default function TodayBrief() {
   const { profile } = useProfile();
   const full = canAccess(tier, 'morning_brief');
 
-  const [extras, setExtras] = useState<BriefExtras | null>(null);
-  useEffect(() => {
-    if (!full) return;                       // Free renders from the twin alone
-    let alive = true;
-    fetchBriefExtras().then((x) => { if (alive) setExtras(x); }).catch(() => {});
-    return () => { alive = false; };
-  }, [full]);
+  // The same inputs as Home's cards (hooks/useBriefExtras), read again
+  // whenever the books change. Free renders from the twin alone.
+  const shared = useBriefExtras();
+  const extras: BriefExtras | null = full ? shared : null;
 
   const twinActive = !!twin && (Number(twin.event_count) > 0 || Number(twin.cash) !== 0);
 

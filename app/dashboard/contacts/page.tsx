@@ -41,7 +41,9 @@ export default function ContactsPage() {
     catch (e) { setError((e as Error).message); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  // Read again whenever the books change anywhere (lib/booksSignal.ts).
+  const booksVersion = useStore((s) => s.booksVersion);
+  useEffect(() => { void load(); }, [load, booksVersion]);
 
   function toggle(id: string) {
     setSelected((s) => s.includes(id) ? s.filter((x) => x !== id) : s.length < 2 ? [...s, id] : [s[1], id]);

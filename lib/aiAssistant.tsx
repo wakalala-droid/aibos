@@ -28,6 +28,7 @@ import {
 } from '@/lib/api';
 import { canAccess } from '@/lib/tiers';
 import { composeMorningBrief, bucketSales, expectedOf, deliveryName } from '@/lib/brief';
+import { stockValue } from '@/lib/stock';
 import { reorderProposals, followUpProposals } from '@/lib/automation';
 import { industryOf } from '@/lib/industries';
 import { matchBenchmark, referenceContext } from '@/lib/industryIntel';
@@ -282,7 +283,9 @@ function buildLiveMetrics(s: StoreState): LiveMetrics {
     hasTwin: twinActive,
     eventCount: twin ? Number(twin.event_count) || 0 : undefined,
     cash: twinActive ? money(Number(twin!.cash) || 0) : undefined,
-    inventoryValue: twinActive && Number(twin!.inventory_value) > 0 ? money(Number(twin!.inventory_value)) : undefined,
+    // No stock value here: the books' inventory_value adds up every delivery
+    // ever received and never comes down when stock is sold. A stock question
+    // is answered from the products (lib/stock.ts), as the Stock page shows it.
     receivables: twinActive && Number(twin!.receivables) > 0 ? money(Number(twin!.receivables)) : undefined,
     payables: twinActive && Number(twin!.payables) > 0 ? money(Number(twin!.payables)) : undefined,
     suppliersCount: twinActive ? Number(twin!.suppliers) || 0 : undefined,
@@ -363,7 +366,6 @@ function buildContext(
       cash: s.twin.cash,
       receivables: s.twin.receivables,
       payables: s.twin.payables,
-      inventory_value: s.twin.inventory_value,
       suppliers: s.twin.suppliers,
       employees: s.twin.employees,
       customers: s.twin.customers,
@@ -530,11 +532,10 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
   if (intent === 'inventory') {
     let products: Product[] = [];
     try { products = await listProducts(); } catch { products = []; }
-    const invValue = Number(s.twin?.inventory_value) || 0;
+    // What the Stock page shows: each count at its buy price (lib/stock.ts).
+    // Not the books' inventory_value, which never comes down when stock sells.
+    const invValue = stockValue(products);
     if (!products.length) {
-      if (invValue > 0) {
-        return `Your stock on hand is worth **${money(invValue)}**, based on what you have recorded.\n\nAdd your products on the **Stock** page and I'll track item-by-item levels: what's running low, what's overstocked, what to reorder.`;
-      }
       return "You haven't added any stock yet, so there's nothing to count and I won't guess.\n\nOpen **Stock** to add your products, or record a delivery on **Record** (e.g. “received 50 bags of sugar at K85 each”). From then on I can tell you exactly what's on hand and what's running low.";
     }
     const low = products.filter((p) => Number(p.reorder_level) > 0 && Number(p.on_hand ?? 0) <= Number(p.reorder_level));

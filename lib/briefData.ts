@@ -9,8 +9,11 @@ import { bucketSales, expectedOf } from './brief';
 
 export interface BriefExtras {
   products: Product[];
+  /** Confirmed sales today and yesterday (the books' own). */
   salesToday: BusinessEvent[];
   salesYesterday: BusinessEvent[];
+  /** Sales recorded today that wait for the owner: in no figure yet. */
+  salesWaitingToday: BusinessEvent[];
   expectedDeliveries: BusinessEvent[];
   commitmentsToday: string[];
   overdueInvoices: { count: number; total: number } | null;
@@ -32,7 +35,7 @@ export async function fetchBriefExtras(): Promise<BriefExtras> {
     listInvoices('sent'),
   ]);
 
-  const { today, yesterday } = bucketSales(e.status === 'fulfilled' ? e.value : []);
+  const { today, yesterday, waitingToday } = bucketSales(e.status === 'fulfilled' ? e.value : []);
 
   // Today's commitments: scheduled items starting before local midnight.
   const endToday = new Date(); endToday.setHours(24, 0, 0, 0);
@@ -56,6 +59,7 @@ export async function fetchBriefExtras(): Promise<BriefExtras> {
     products: p.status === 'fulfilled' ? p.value : [],
     salesToday: today,
     salesYesterday: yesterday,
+    salesWaitingToday: waitingToday,
     expectedDeliveries: expectedOf(r.status === 'fulfilled' ? r.value : []),
     commitmentsToday: commitments,
     overdueInvoices: overdue.length > 0

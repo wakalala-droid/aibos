@@ -39,3 +39,16 @@ export function linesTotal(lines: Array<{ qty: unknown; unit_price: unknown }>):
   const rest = sum - whole * per;
   return (rest * 2 >= per ? whole + 1 : whole) / 100;
 }
+
+/** One figure in whole ngwee, half up (what the server keeps it as). */
+export function toNgwee(value: unknown): number {
+  return Math.round(linesTotal([{ qty: 1, unit_price: Number(value) || 0 }]) * 100);
+}
+
+/** The exact sum of money figures, each first rounded to the ngwee, as the
+ *  server adds them up (money.total): a float sum of many entries drifts. */
+export function sumMoney(values: Iterable<unknown>): number {
+  let ngwee = 0;
+  for (const v of values) ngwee += toNgwee(v);
+  return ngwee / 100;
+}

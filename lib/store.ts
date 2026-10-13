@@ -336,6 +336,10 @@ export interface FinancialState {
   /** The books have been asked at least once this visit (whatever the answer).
    *  Until then an empty chart means "not loaded yet", not "no data". */
   twinChecked: boolean;
+  /** Goes up by one every time the books have been counted again (after any
+   *  change anywhere, lib/booksSignal.ts). A card that reads its own figures
+   *  reads them again when this moves, so every page shows the same books. */
+  booksVersion: number;
   /** The money figures (monthly) came from an uploaded file, so the books
    *  must not replace them. A till or customer file never sets this. */
   e1FromFile: boolean;
@@ -460,6 +464,7 @@ const INITIAL: FinancialState = {
   recentEvents: [],
   twinLoading: false,
   twinChecked: false,
+  booksVersion: 0,
   e1FromFile: false,
 };
 
@@ -653,6 +658,10 @@ function e3Slices(result: Record<string, unknown>, prev: FinancialState): Partia
 }
 
 // ── Store ─────────────────────────────────────────────────────────────────────
+
+// refreshTwin's one-at-a-time count (see refreshTwin).
+let twinInflight: Promise<void> | null = null;
+let twinAgain = false;
 
 const _store = create<FinancialState & FinancialActions>()(
   persist(
@@ -911,27 +920,37 @@ const _store = create<FinancialState & FinancialActions>()(
       // the twin via setUploadResult (Initiative 9 — feed richer data, no redesign).
       // Guarded by `uploadedFile` so a real upload is never clobbered.
       refreshTwin: async () => {
-        set({ twinLoading: true });
-        void get().restoreLatestAnalysis();
-        try {
-          const [twin, fin] = await Promise.all([
-            getTwin().catch(() => null),
-            getTwinFinancials().catch(() => null),
-          ]);
-          if (twin) set({ twin });
-          const hasEvents = !!twin && Number(twin.event_count) > 0;
-          const monthly = fin && Array.isArray(fin.monthly) ? (fin.monthly as unknown[]) : [];
-          // Only a money file uploaded this session outranks the books. A till
-          // or customer file used to block this too, so after importing a till
-          // file the money reports kept their old figures until a reload.
-          if (hasEvents && monthly.length && !get().e1FromFile) {
-            get().setUploadResult({ ...(fin as Record<string, unknown>), engine: "engine1" });
-          }
-        } catch {
-          // Spine may be unconfigured (503) or the user signed out — stay silent.
-        } finally {
-          set({ twinLoading: false, twinChecked: true });
-        }
+        // One count at a time. A change that lands while the books are being
+        // counted asks for one more count after, never a pile of them.
+        if (twinInflight) { twinAgain = true; return twinInflight; }
+        const run = async () => {
+          do {
+            twinAgain = false;
+            set({ twinLoading: true });
+            void get().restoreLatestAnalysis();
+            try {
+              const [twin, fin] = await Promise.all([
+                getTwin().catch(() => null),
+                getTwinFinancials().catch(() => null),
+              ]);
+              if (twin) set({ twin });
+              const hasEvents = !!twin && Number(twin.event_count) > 0;
+              const monthly = fin && Array.isArray(fin.monthly) ? (fin.monthly as unknown[]) : [];
+              // Only a money file uploaded this session outranks the books. A till
+              // or customer file used to block this too, so after importing a till
+              // file the money reports kept their old figures until a reload.
+              if (hasEvents && monthly.length && !get().e1FromFile) {
+                get().setUploadResult({ ...(fin as Record<string, unknown>), engine: "engine1" });
+              }
+            } catch {
+              // Spine may be unconfigured (503) or the user signed out — stay silent.
+            } finally {
+              set({ twinLoading: false, twinChecked: true, booksVersion: get().booksVersion + 1 });
+            }
+          } while (twinAgain);
+        };
+        twinInflight = run().finally(() => { twinInflight = null; });
+        return twinInflight;
       },
 
       applySavedAnalysis: (result) => {

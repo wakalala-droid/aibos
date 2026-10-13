@@ -29,6 +29,7 @@ import { followUpProposals, dismissedFollowUps } from '@/lib/automation';
 import { openRecordSheet } from '@/lib/recordSheet';
 import { setPendingFile } from '@/lib/pendingFile';
 import { fmt } from '@/lib/utils';
+import { sumMoney } from '@/lib/ngwee';
 import { useBriefExtras } from '@/hooks/useBriefExtras';
 import FileDrop from '@/components/ui/FileDrop';
 import { OutboxChip } from '@/components/pwa/OfflineSync';
@@ -94,9 +95,11 @@ export default function HomeTop() {
     });
   }, [canBrief, twinActive, extras, sym, twin, followUps]);
 
-  const sum = (xs: { payload?: Record<string, unknown> }[]) => xs.reduce((t, e) => t + (Number(e.payload?.amount) || 0), 0);
+  // Confirmed sales only, to the ngwee, as the books count them (lib/brief bucketSales).
+  const sum = (xs: { payload?: Record<string, unknown> }[]) => sumMoney(xs.map((e) => e.payload?.amount));
   const todayTotal = extras ? sum(extras.salesToday) : 0;
   const yesterdayTotal = extras ? sum(extras.salesYesterday) : 0;
+  const waitingToday = extras?.salesWaitingToday?.length ?? 0;
   const lowStock = (extras?.products ?? []).filter((p) => Number(p.reorder_level) > 0 && Number(p.on_hand ?? 0) <= Number(p.reorder_level));
   const receivables = Number(twin?.receivables) || 0;
 
@@ -200,6 +203,14 @@ export default function HomeTop() {
                   : `${extras.salesToday.length} sale${extras.salesToday.length === 1 ? '' : 's'}`
                     + (yesterdayTotal > 0 ? `, ${fmt(Math.abs(todayTotal - yesterdayTotal), false, sym)} ${todayTotal >= yesterdayTotal ? 'more' : 'less'} than yesterday` : '')}
               </p>
+              {waitingToday > 0 && (
+                <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-label)' }}>
+                  <Link href="/dashboard/timeline?type=Sale&status=pending" className="tap-link" style={{ color: 'var(--amber)', fontWeight: 600 }}>
+                    {waitingToday} more waiting for you
+                  </Link>
+                  <span style={{ color: 'var(--text-3)' }}>, not counted yet</span>
+                </p>
+              )}
             </>
           )}
         </Panel>

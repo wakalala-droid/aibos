@@ -5,8 +5,9 @@
  * The server could always correct an entry (PATCH /events/{id}: it keeps the
  * edit history, rebuilds the books and teaches Business Memory the correction)
  * but no screen offered it, so a typo meant voiding and typing the sale again.
- * This is the screen side: the amount, who or what it was, the date and the
- * note, saved through correctEvent. Only changed fields are sent.
+ * This is the screen side: the amount, who or what it was, how the money
+ * moved, the date and the note, saved through correctEvent. Only changed
+ * fields are sent.
  */
 import { useState } from 'react';
 import { correctEvent, type BusinessEvent } from '@/lib/api';
@@ -27,6 +28,12 @@ function localDay(iso: string): string {
   return `${d.getFullYear()}-${m}-${day}`;
 }
 
+// How the money moved, as the Money page splits it (cash, the wallet, the bank).
+const METHODS: [string, string][] = [['cash', 'Cash'], ['mobile_money', 'Mobile money'], ['bank', 'Bank'], ['card', 'Card']];
+const PLACES: [string, string][] = METHODS.filter(([k]) => k !== 'card');
+/** Entries that can be on credit: owed, not paid yet. */
+const CAN_BE_CREDIT = ['Sale', 'Purchase', 'InventoryReceipt'];
+
 const label: React.CSSProperties = { display: 'block', fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 };
 const input: React.CSSProperties = {
   width: '100%', minHeight: 44, padding: '8px 12px', borderRadius: 'var(--radius-md)',
@@ -44,6 +51,19 @@ export default function EntryEditor({ ev, onDone, onCancel }: { ev: BusinessEven
   const [who, setWho] = useState(whoField ? String(p[whoField[0]] ?? '') : '');
   const [day, setDay] = useState(localDay(ev.occurred_at));
   const [note, setNote] = useState(String(p.note ?? ''));
+  const isTransfer = ev.event_type === 'Transfer';
+  const movesMoney = !isTransfer && ev.event_type !== 'InventoryAdjustment';
+  const savedMethod = String(p.payment_method ?? '');
+  const [method, setMethod] = useState(savedMethod);
+  const [from, setFrom] = useState(String(p.from ?? ''));
+  const [to, setTo] = useState(String(p.to ?? ''));
+  const methodOptions: [string, string][] = [
+    ...METHODS,
+    ...(CAN_BE_CREDIT.includes(ev.event_type) ? [['credit', 'On credit, paid later'] as [string, string]] : []),
+  ];
+  // A word saved before these choices existed ("manual", "my drawer") stays
+  // until the owner picks one; it shows as "Not said how" on the Money page.
+  const unusual = savedMethod && !methodOptions.some(([k]) => k === savedMethod) ? savedMethod : '';
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,6 +76,11 @@ export default function EntryEditor({ ev, onDone, onCancel }: { ev: BusinessEven
     }
     if (whoField && who.trim() !== String(p[whoField[0]] ?? '')) payload[whoField[0]] = who.trim();
     if (note.trim() !== String(p.note ?? '')) payload.note = note.trim();
+    if (movesMoney && method && method !== savedMethod) payload.payment_method = method;
+    if (isTransfer && (from !== String(p.from ?? '') || to !== String(p.to ?? ''))) {
+      if (!from || !to || from === to) { setError('Say where the money moved from and where it went: two different places.'); return; }
+      payload.from = from; payload.to = to;
+    }
     const dayChanged = day && day !== localDay(ev.occurred_at);
     if (!Object.keys(payload).length && !dayChanged) { onCancel(); return; }
 
@@ -93,6 +118,28 @@ export default function EntryEditor({ ev, onDone, onCancel }: { ev: BusinessEven
             <input id={`fix-who-${ev.id}`} value={who} onChange={(e) => setWho(e.target.value)} style={input} />
           </div>
         )}
+        {movesMoney && (
+          <div>
+            <label htmlFor={`fix-how-${ev.id}`} style={label}>How the money moved</label>
+            <select id={`fix-how-${ev.id}`} value={method} onChange={(e) => setMethod(e.target.value)} style={input}>
+              {!savedMethod && <option value="">Not said</option>}
+              {unusual && <option value={unusual}>As saved: {unusual}</option>}
+              {methodOptions.map(([k, words]) => <option key={k} value={k}>{words}</option>)}
+            </select>
+          </div>
+        )}
+        {isTransfer && (['from', 'to'] as const).map((side) => (
+          <div key={side}>
+            <label htmlFor={`fix-${side}-${ev.id}`} style={label}>{side === 'from' ? 'Moved from' : 'Moved to'}</label>
+            <select id={`fix-${side}-${ev.id}`} value={side === 'from' ? from : to}
+              onChange={(e) => (side === 'from' ? setFrom : setTo)(e.target.value)} style={input}>
+              {!PLACES.some(([k]) => k === (side === 'from' ? from : to)) && (
+                <option value={side === 'from' ? from : to}>{(side === 'from' ? from : to) || 'Not said'}</option>
+              )}
+              {PLACES.map(([k, words]) => <option key={k} value={k}>{words}</option>)}
+            </select>
+          </div>
+        ))}
         <div>
           <label htmlFor={`fix-day-${ev.id}`} style={label}>Date</label>
           <input id={`fix-day-${ev.id}`} type="date" value={day} onChange={(e) => setDay(e.target.value)} style={input} />

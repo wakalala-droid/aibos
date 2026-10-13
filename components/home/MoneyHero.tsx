@@ -8,13 +8,17 @@
 // balance, with the day's money in and out beside it; let go and it rolls
 // back to now. The period control redraws the line (that redraw is the only
 // time it animates: cause and effect). Every point is worked back from the
-// books (lib/moneyLine.ts), never smoothed or estimated.
+// confirmed entries on the server (GET /books/money, hooks/useMoney), the
+// same read as "Where it is", never smoothed or estimated. It used to be
+// drawn here from the newest 1,000 entries, counting entries still waiting
+// for the owner that the money figure ignores.
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useStore } from '@/lib/store';
-import { useBooksEvents } from '@/hooks/useBooksEvents';
-import { moneyLine, dayWords } from '@/lib/moneyLine';
+import { useMoney } from '@/hooks/useMoney';
+import { dayWords } from '@/lib/moneyLine';
 import { openRecordSheet } from '@/lib/recordSheet';
 import { fmt } from '@/lib/utils';
 import BigMoney from './BigMoney';
@@ -30,8 +34,8 @@ const PERIODS = [
 export default function MoneyHero({ title = 'Money right now', initialDays = 30 }: { title?: string; initialDays?: number }) {
   const sym = useStore((s) => s.currencySymbol) || 'K';
   const twin = useStore((s) => s.twin);
-  const events = useBooksEvents();
   const [days, setDays] = useState<number>(initialDays);
+  const money = useMoney(days);
   const [scrub, setScrub] = useState<number | null>(null);
   const gradId = `mh-${useId().replace(/:/g, '')}`;
   const headingId = `${gradId}-title`;
@@ -42,13 +46,14 @@ export default function MoneyHero({ title = 'Money right now', initialDays = 30 
   const [animate, setAnimate] = useState(false);
   useEffect(() => { if (changed.current) setAnimate(true); }, [days]);
 
-  const cash = Number(twin?.cash) || 0;
-  const line = useMemo(() => (events ? moneyLine(events, cash, days) : null), [events, cash, days]);
+  // The figure from the same read as its line, so the two always meet.
+  const cash = money ? money.cash : Number(twin?.cash) || 0;
+  const line = useMemo(() => (money && money.line.days === days ? money.line : null), [money, days]);
   const point = scrub !== null && line ? line.points[scrub] : null;
   const shown = point ? point.balance : cash;
-  const moneyIn = point ? point.moneyIn : line?.moneyIn ?? 0;
-  const moneyOut = point ? point.moneyOut : line?.moneyOut ?? 0;
-  const empty = !!line && line.activeDays === 0 && cash === 0;
+  const moneyIn = point ? point.in : line?.in ?? 0;
+  const moneyOut = point ? point.out : line?.out ?? 0;
+  const empty = !!line && line.active_days === 0 && cash === 0;
 
   const values = line?.points.map((p) => p.balance) ?? [];
   const lo = values.length ? Math.min(...values) : 0;
@@ -75,6 +80,15 @@ export default function MoneyHero({ title = 'Money right now', initialDays = 30 
             <span style={{ color: 'var(--text-1)', fontWeight: 600 }}><span aria-hidden="true">↘ </span>{fmt(moneyOut, false, sym)} out</span>
             <span>{point ? 'that day' : `last ${periodLabel.toLowerCase() === 'year' ? 'year' : periodLabel}`}</span>
           </p>
+          {/* Recorded but not confirmed: in no figure until the owner says so. */}
+          {!point && money && money.waiting.count > 0 && (
+            <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+              <Link href="/dashboard/timeline?status=pending" className="tap-link" style={{ color: 'var(--amber)', fontWeight: 600 }}>
+                {money.waiting.count} {money.waiting.count === 1 ? 'entry is' : 'entries are'} waiting for you
+              </Link>
+              {' '}and not counted yet.
+            </p>
+          )}
         </div>
         <div className="seg" role="group" aria-label="Period for the money line">
           {PERIODS.map((p) => (

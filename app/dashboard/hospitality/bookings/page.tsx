@@ -22,6 +22,7 @@ import {
   nights, bookingSymbol, SOURCE_LABEL,
   type Booking, type BookingStatus, type BookingSource, type Unit,
 } from '@/lib/hospitality';
+import { useStore } from '@/lib/store';
 
 /** The server also answers 'declined' for a request that was never agreed to
  *  (hospitality.py BOOKING_STATUSES). The shared BookingStatus union has not
@@ -150,7 +151,9 @@ export default function BookingsPage() {
     }
   }, [view, source, search, order]);
 
-  useEffect(() => { load(); }, [load]);
+  // Read again whenever the books change anywhere (lib/booksSignal.ts).
+  const booksVersion = useStore((s) => s.booksVersion);
+  useEffect(() => { load(); }, [load, booksVersion]);
 
   const unitName = useCallback(
     (id: string) => units.find(u => u.id === id)?.unit_name ?? 'Unit removed',

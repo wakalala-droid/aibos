@@ -20,6 +20,7 @@ import {
   listProducts, createProduct, updateProduct, deleteProduct, importLoyverseItems, stockTake,
   type Product, type ProductInput,
 } from '@/lib/api';
+import { stockValue as stockValueOf } from '@/lib/stock';
 
 const EMPTY: ProductInput = { name: '', category: '', unit: 'unit', buy_price: 0, sell_price: 0, opening_stock: 0, reorder_level: 0, supplier: '' };
 
@@ -40,7 +41,9 @@ export default function InventoryPage() {
     catch (e) { setError((e as Error).message); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { load(); }, [load]);
+  // Read again whenever the books change anywhere (lib/booksSignal.ts).
+  const booksVersion = useStore((s) => s.booksVersion);
+  useEffect(() => { load(); }, [load, booksVersion]);
 
   const set = (k: keyof ProductInput, v: string) =>
     setForm(p => ({ ...p, [k]: ['buy_price', 'sell_price', 'opening_stock', 'reorder_level'].includes(k) ? Number(v) : v }));
@@ -127,7 +130,8 @@ export default function InventoryPage() {
 
   const isLow = (p: Product) => p.reorder_level > 0 && (p.on_hand ?? p.opening_stock) <= p.reorder_level;
   const low = items.filter(isLow);
-  const stockValue = items.reduce((a, p) => a + Math.max(0, p.on_hand ?? p.opening_stock ?? 0) * (p.buy_price || 0), 0);
+  // To the ngwee, line by line, as the server and the assistant work it out (lib/stock.ts).
+  const stockValue = stockValueOf(items);
 
   return (
     <>

@@ -194,7 +194,9 @@ export default function SchedulePage() {
     catch (e) { setError((e as Error).message); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { load(); }, [load]);
+  // Read again whenever the books change anywhere (lib/booksSignal.ts).
+  const booksVersion = useStore((s) => s.booksVersion);
+  useEffect(() => { load(); }, [load, booksVersion]);
 
   async function seedStatutory() {
     setStatutoryBusy(true); setError(null);

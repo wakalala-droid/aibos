@@ -12,6 +12,7 @@
  */
 
 import { authHeaders } from '@/lib/api';
+import { booksChanged } from '@/lib/booksSignal';
 
 const PROXY = '/api/proxy';
 
@@ -25,6 +26,8 @@ async function hfetch(path: string, init: RequestInit = {}): Promise<Record<stri
     const detail = typeof data.detail === 'string' ? data.detail : `Request failed (${res.status})`;
     throw new HospitalityError(detail, res.status);
   }
+  // A stay confirmed, paid or cancelled moves the money on every page.
+  if ((init.method ?? 'GET').toUpperCase() !== 'GET') booksChanged(path);
   return data;
 }
 
@@ -479,7 +482,9 @@ export async function createStayPayLink(id: string, amount?: number | null):
 }
 // ── Instalments (upgrades 4 and 9): each payment with its own day and method ──
 export type StayPaymentMethod = 'cash' | 'mobile_money' | 'card' | 'bank';
-export interface StayPayment { id: string; date: string; amount: number; method: StayPaymentMethod }
+/** One payment on a stay. `method` is null when the payment does not say how
+ *  it was paid (shown as "Not said how", never guessed as cash). */
+export interface StayPayment { id: string; date: string; amount: number; method: StayPaymentMethod | null }
 
 export async function listStayPayments(id: string): Promise<StayPayment[]> {
   return ((await hfetch(`/hospitality/bookings/${id}/payments`)).payments as StayPayment[]) ?? [];
