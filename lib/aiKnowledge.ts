@@ -246,17 +246,17 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
   'employees.register': {
     id: 'employees.register',
     title: 'Your People',
-    what: 'The register of everyone the company pays: their role, monthly pay, pay day, staff loan balance and, for fixed-term staff, gratuity terms.',
+    what: 'The register of everyone the company pays: their role, basic pay, allowances, pay day, staff loan balance and, for fixed-term staff, gratuity terms.',
     why: 'Payroll can only be as right as the register behind it. Keeping people here means PAYE, NAPSA and net pay are worked out from real details, not guessed each month.',
-    how: 'Add a person with just a name and monthly pay to start; open "Loan, gratuity & IDs" for staff loans (deducted automatically each run), gratuity accrual on contracts and their NAPSA number / TPIN. The register is free: running payroll is the Pro step.',
+    how: 'Add a person with a name and basic pay to start, and their allowances (housing, transport and other cash paid every month) if they have any: PAYE and NAPSA count allowances, NHIMA does not. Open "Loan, gratuity & IDs" for staff loans (deducted automatically each run), gratuity accrual on contracts, their NAPSA number and TPIN, and to mark someone aged 60 or over, who no longer pays NAPSA. The register is free: running payroll is the Pro step.',
     followups: ['How is a staff loan deducted?', 'Who accrues gratuity?'],
   },
   'payroll.run': {
     id: 'payroll.run',
     title: 'Run Payroll',
-    what: 'Pick a month and AIBOS computes each active employee’s payslip (gross, NAPSA, NHIMA, PAYE and net pay) using current Zambian statutory rates it keeps up to date for you.',
+    what: 'Pick a month and AIBOS computes each active employee’s payslip (gross, NAPSA, NHIMA, PAYE and take-home pay) and what you pay on top as the employer (your own 5% NAPSA, 1% NHIMA and, if your business pays it, the 0.5% Skills Development Levy), using the Zambian statutory rates it keeps up to date for you.',
     why: 'Payroll is monthly, error-prone hard maths with real penalties for getting NAPSA or PAYE wrong. Doing it for you (and posting each salary into your books) keeps the numbers and the law in one place.',
-    how: 'Preview is free and shows the full table with totals. Running it (Pro) posts one confirmed Salary event per employee (at their NET pay) into your P&L and cashflow, decrements staff loans and records the run. It also auto-drafts the PAYE (to ZRA), NAPSA and NHIMA remittances as pending payments due the 10th of next month; you confirm each when you actually pay, so the withheld money is never counted twice. Each month can only be run once, so nothing is paid twice.',
+    how: 'Preview is free and shows the full table with totals. Running it (Pro) posts one confirmed Salary event per employee (at their NET pay) into your P&L and cashflow, decrements staff loans and records the run. It also drafts what goes to each authority by the 10th of next month: PAYE (and the levy) to ZRA, NAPSA (your staff 5% plus your 5%) and NHIMA (their 1% plus your 1%), as payments waiting for you; you confirm each when you actually pay, so the money is never counted twice. Each month can only be run once, so nothing is paid twice.',
     followups: ['What rates is AIBOS using?', 'How does NAPSA get calculated?', 'Where do the salaries and remittances show in my books?'],
   },
   'dash.upcoming': {

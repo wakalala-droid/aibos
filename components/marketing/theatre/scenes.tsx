@@ -9,8 +9,8 @@
  *
  * Every figure is the product's own:
  *   - Payroll: aibos-api/payroll.py at the 2026 ZMW rates. K8,500.00 gross
- *     pays NAPSA K425.00, PAYE K692.50 and NHIMA K85.00, so K7,297.50 home.
- *     The three staff (K8,500, K4,800, K6,200) make PAYE K850.50, NAPSA
+ *     pays NAPSA K425.00, PAYE K820.00 and NHIMA K85.00, so K7,170.00 home.
+ *     The three staff (K8,500, K4,800, K6,200) make PAYE K1,040.00, NAPSA
  *     K1,950.00 and NHIMA K390.00 with both sides, due the 10th of next month.
  *   - Stock: lib/automation.ts tops up to twice the reorder level, so 2 left
  *     with a level of 6 drafts 10.
@@ -35,7 +35,7 @@ const PAYROLL_BEATS = [500, 750, 1250, 1650, 2050, 2450, 2950, 4300] as const;
 
 export function PayrollScene({ playing, still }: SceneProps) {
   const b = useBeats(PAYROLL_BEATS, playing, still);
-  const takeHome = b >= 6 ? 7297.5 : b >= 5 ? 7382.5 : b >= 4 ? 8075 : 8500;
+  const takeHome = b >= 6 ? 7170 : b >= 5 ? 7255 : b >= 4 ? 8075 : 8500;
   return (
     <div className="scn">
       <Panel title="Payroll · October" action={<span className={`pill pill-primary sc-pill${press(b === 1)}`}>Run payroll</span>}>
@@ -53,7 +53,7 @@ export function PayrollScene({ playing, still }: SceneProps) {
           <div className="sc-lines">
             <p className={at(b, 3, 'sc-in sc-line')}><span>Pay</span><span>K8,500.00</span></p>
             <p className={at(b, 4, 'sc-in sc-line')}><span>NAPSA, 5%</span><span>−K425.00</span></p>
-            <p className={at(b, 5, 'sc-in sc-line')}><span>PAYE</span><span>−K692.50</span></p>
+            <p className={at(b, 5, 'sc-in sc-line')}><span>PAYE</span><span>−K820.00</span></p>
             <p className={at(b, 6, 'sc-in sc-line')}><span>NHIMA, 1%</span><span>−K85.00</span></p>
             <p className="sc-line sc-total"><span>Take-home</span><BigMoney value={takeHome} sym="K" size="md" roll /></p>
           </div>
@@ -63,7 +63,7 @@ export function PayrollScene({ playing, still }: SceneProps) {
 
       <div className={at(b, 8, 'sc-in sc-toast sc-from-right')}>
         <Notice floating icon={CalendarClock} title="On your schedule" tag="Due 10 Nov" role="region">
-          PAYE <strong>K850.50</strong> to ZRA, NAPSA <strong>K1,950.00</strong> and NHIMA <strong>K390.00</strong>.
+          PAYE <strong>K1,040.00</strong> to ZRA, NAPSA <strong>K1,950.00</strong> and NHIMA <strong>K390.00</strong>.
         </Notice>
       </div>
     </div>
@@ -121,7 +121,7 @@ export function GetPaidScene({ playing, still }: SceneProps) {
 const DUE = [
   { mon: 'Nov', day: 8, title: 'Supplier pick-up', sub: 'Kasama Traders at 07:30', amount: '' },
   { mon: 'Nov', day: 10, title: 'NAPSA for October', sub: 'Both sides, 3 staff', amount: 'K1,950.00', napsa: true },
-  { mon: 'Nov', day: 10, title: 'PAYE to ZRA', sub: 'October', amount: 'K850.50' },
+  { mon: 'Nov', day: 10, title: 'PAYE to ZRA', sub: 'October', amount: 'K1,040.00' },
   { mon: 'Dec', day: 1, title: 'Rent', sub: 'East Park shop', amount: 'K6,500.00' },
 ];
 const DUE_BEATS = [300, 550, 800, 1050, 2000, 3600, 3850, 4200] as const;

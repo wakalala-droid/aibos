@@ -34,7 +34,7 @@ interface KPICardProps {
 // Labels read like a sentence, the way Home's cards do (redesign 2026-10).
 // Older callers pass shouted labels ("NET PROFIT"); those are brought down to
 // "Net profit", keeping short initialisms such as VAT and PAYE as they are.
-const KEEP_UPPER = new Set(['VAT', 'PAYE', 'NAPSA', 'NHIMA', 'ZRA', 'AI', 'POS', 'CLV', 'QOQ']);
+const KEEP_UPPER = new Set(['VAT', 'PAYE', 'NAPSA', 'NHIMA', 'SDL', 'ZRA', 'AI', 'POS', 'CLV', 'QOQ']);
 export function sentenceCase(label: string): string {
   if (!/[A-Z]/.test(label) || label !== label.toUpperCase()) return label;
   const words = label.split(' ').map((w) => (KEEP_UPPER.has(w.replace(/[^A-Z]/g, '')) ? w : w.toLowerCase()));

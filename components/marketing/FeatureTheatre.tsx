@@ -39,7 +39,7 @@ const STORIES: Story[] = [
     goal: 'Pay your people right, without the tax tables.',
     text: 'Add your staff once. Each month AIBOS works out PAYE, NAPSA and NHIMA at this year’s Zambian rates and shows every take-home figure. The payments to ZRA and NAPSA go straight on your schedule.',
     values: ['The 2026 ZRA bands and NAPSA ceiling, kept current for you', 'Wages posted to your books in one tap'],
-    alt: 'Payroll for October: Mwila Banda’s payslip of K8,500.00 less NAPSA K425.00, PAYE K692.50 and NHIMA K85.00 leaves K7,297.50 take-home. PAYE, NAPSA and NHIMA due 10 November are added to the schedule.',
+    alt: 'Payroll for October: Mwila Banda’s payslip of K8,500.00 less NAPSA K425.00, PAYE K820.00 and NHIMA K85.00 leaves K7,170.00 take-home. PAYE, NAPSA and NHIMA due 10 November are added to the schedule.',
     ms: 7600, Scene: PayrollScene,
   },
   {
@@ -55,7 +55,7 @@ const STORIES: Story[] = [
     goal: 'No more penalties. No more “I forgot”.',
     text: 'NAPSA, PAYE, rent and supplier pick-ups sit in one list. A reminder reaches your phone days before each one is due, even with AIBOS closed.',
     values: ['ZRA and NAPSA dates added for you when you run payroll', 'Mark it paid straight from the reminder'],
-    alt: 'The coming up list with a supplier pick-up, NAPSA K1,950.00 and PAYE K850.50 due 10 November and rent. A reminder arrives that NAPSA is due on Tuesday and it is marked paid.',
+    alt: 'The coming up list with a supplier pick-up, NAPSA K1,950.00 and PAYE K1,040.00 due 10 November and rent. A reminder arrives that NAPSA is due on Tuesday and it is marked paid.',
     ms: 7000, Scene: DeadlinesScene,
   },
   {

@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { confirmSheet } from '@/lib/confirm';
 import Link from 'next/link';
-import { Pencil, Trash2, FileText, Play, Eye } from 'lucide-react';
+import { Pencil, Trash2, FileText, Play, Eye, ShieldCheck } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
 import Stat from '@/components/ui/Stat';
 import { useStore } from '@/lib/store';
@@ -23,10 +23,19 @@ import PageHeader from '@/components/ui/PageHeader';
 import {
   listEmployees, createEmployee, updateEmployee, deleteEmployee,
   previewPayroll, runPayroll, listPayrollRuns, getPayrollRates, deletePayrollRun,
-  downloadPayslipPdf, downloadCompliancePdf,
+  downloadPayslipPdf, downloadCompliancePdf, setPayrollSdl, recheckPayrollRun,
   type Employee, type EmployeeInput, type EmploymentType,
   type PayrollPreview, type PayrollRun, type PayrollRates, type RemittanceDraft,
+  type SdlStatus, type PayrollRecheck,
 } from '@/lib/api';
+
+/** What each payment to the authorities is, in words. */
+const REMIT_LABEL: Record<RemittanceDraft['tax_type'], string> = {
+  PAYE: 'PAYE to ZRA',
+  SDL: 'Skills Development Levy to ZRA',
+  NAPSA: 'NAPSA',
+  NHIMA: 'NHIMA',
+};
 
 // ── Shared field styles (mirrors the Scheduler's form vocabulary) ────────────
 // Table heads in the quiet sentence case every table now uses (redesign 2026-10).
@@ -45,14 +54,18 @@ function periodWords(period: string): string {
 
 interface FormState {
   name: string; position: string; employment_type: EmploymentType;
-  basic_pay: string; pay_day: string; gratuity_eligible: boolean; gratuity_rate: string;
+  basic_pay: string; allowances: string; pay_day: string; gratuity_eligible: boolean; gratuity_rate: string;
   loan_balance: string; loan_monthly: string; napsa_number: string; tpin: string; notes: string;
+  napsa_exempt: boolean;
 }
 const EMPTY: FormState = {
   name: '', position: '', employment_type: 'permanent',
-  basic_pay: '', pay_day: '28', gratuity_eligible: false, gratuity_rate: '25',
-  loan_balance: '', loan_monthly: '', napsa_number: '', tpin: '', notes: '',
+  basic_pay: '', allowances: '', pay_day: '28', gratuity_eligible: false, gratuity_rate: '25',
+  loan_balance: '', loan_monthly: '', napsa_number: '', tpin: '', notes: '', napsa_exempt: false,
 };
+
+/** A person's pay before deductions: basic plus allowances. */
+const grossOf = (e: Employee) => (e.basic_pay || 0) + (e.allowances || 0);
 
 // 'YYYY-MM' on the owner's own calendar: in UTC the first two hours of a month
 // in Lusaka still belong to the month before.
@@ -88,6 +101,9 @@ export default function EmployeesPage() {
 
   const [period, setPeriod] = useState(thisPeriod());
   const [preview, setPreview] = useState<PayrollPreview | null>(null);
+  const [sdlBusy, setSdlBusy] = useState(false);
+  // A past run checked against today's rules, keyed by run id.
+  const [recheck, setRecheck] = useState<Record<string, PayrollRecheck>>({});
   const [busy, setBusy] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
   const [runOk, setRunOk] = useState<string | null>(null);
@@ -149,7 +165,8 @@ export default function EmployeesPage() {
     setEditId(e.id); setMoreOpen(true);
     setForm({
       name: e.name, position: e.position ?? '', employment_type: e.employment_type,
-      basic_pay: String(e.basic_pay ?? ''), pay_day: String(e.pay_day ?? 28),
+      basic_pay: String(e.basic_pay ?? ''), allowances: e.allowances ? String(e.allowances) : '',
+      napsa_exempt: !!e.napsa_exempt, pay_day: String(e.pay_day ?? 28),
       gratuity_eligible: e.gratuity_eligible, gratuity_rate: String(Math.round((e.gratuity_rate ?? 0.25) * 100)),
       loan_balance: e.loan_balance ? String(e.loan_balance) : '',
       loan_monthly: e.loan_monthly ? String(e.loan_monthly) : '',
@@ -167,6 +184,10 @@ export default function EmployeesPage() {
         position: form.position.trim() || null,
         employment_type: form.employment_type,
         basic_pay: form.basic_pay ? Number(form.basic_pay) : 0,
+        // Sent only when there is something to say, so a database that has
+        // not had migration 0039 yet still saves everyone without allowances.
+        ...(form.allowances || editId ? { allowances: form.allowances ? Number(form.allowances) : 0 } : {}),
+        ...(form.napsa_exempt || editId ? { napsa_exempt: form.napsa_exempt } : {}),
         pay_day: Number(form.pay_day) || 28,
         gratuity_eligible: form.employment_type === 'contract' && form.gratuity_eligible,
         gratuity_rate: form.gratuity_rate ? Number(form.gratuity_rate) / 100 : 0.25,
@@ -205,7 +226,7 @@ export default function EmployeesPage() {
       const run = await runPayroll(period);
       const rem = (run.remittances ?? []).filter(r => r.amount > 0);
       const remLine = rem.length
-        ? ` ${rem.map(r => `${r.tax_type} ${money(r.amount)}`).join(', ')} drafted as pending remittances${rem[0]?.due_date ? ` (due ${fmtDue(rem[0].due_date)})` : ''}.`
+        ? ` ${rem.map(r => `${REMIT_LABEL[r.tax_type] ?? r.tax_type} ${money(r.amount)}`).join(', ')} drafted as payments waiting for you${rem[0]?.due_date ? ` (due ${fmtDue(rem[0].due_date)})` : ''}.`
         : '';
       // Run before payday, the wages wait for it (payroll.confirm_due_wages).
       const payday = run.pay_date ? new Date(`${run.pay_date}T00:00:00`) : null;
@@ -218,10 +239,28 @@ export default function EmployeesPage() {
     finally { setBusy(false); }
   }
 
+  async function changeSdl(setting: SdlStatus['setting']) {
+    setSdlBusy(true); setRunError(null);
+    try {
+      await setPayrollSdl(setting);
+      setPreview(await previewPayroll(period));     // the figures follow the answer
+    } catch (e) { setRunError((e as Error).message); }
+    finally { setSdlBusy(false); }
+  }
+
+  async function doRecheck(runId: string) {
+    setDocBusy(`check:${runId}`); setDocError(null);
+    try {
+      const out = await recheckPayrollRun(runId);
+      setRecheck(r => ({ ...r, [runId]: out }));
+    } catch (e) { setDocError((e as Error).message || 'Could not check that run.'); }
+    finally { setDocBusy(null); }
+  }
+
   const active = useMemo(() => employees.filter(e => e.status === 'active'), [employees]);
   const periodRun = useMemo(() => runs.find(r => r.period === period), [runs, period]);
   const alreadyRun = !!periodRun;
-  const monthlyWages = active.reduce((a, e) => a + (e.basic_pay || 0), 0);
+  const monthlyWages = active.reduce((a, e) => a + grossOf(e), 0);
   // The next payday anyone on staff is due, on the owner's own calendar.
   const nextPayday = useMemo(() => {
     if (!active.length) return null;
@@ -278,11 +317,13 @@ export default function EmployeesPage() {
                       Paid on the {e.pay_day}{e.pay_day === 1 ? 'st' : e.pay_day === 2 ? 'nd' : e.pay_day === 3 ? 'rd' : 'th'}
                       {e.employment_type === 'contract' ? ' · contract' : ''}
                       {e.gratuity_eligible ? ` · gratuity ${Math.round(e.gratuity_rate * 100)}%` : ''}
+                      {(e.allowances || 0) > 0 ? ` · ${money(e.basic_pay)} basic + ${money(e.allowances)} allowances` : ''}
+                      {e.napsa_exempt ? ' · no NAPSA (60 or over)' : ''}
                       {e.loan_balance > 0 ? ` · owes ${money(e.loan_balance)} on a loan` : ''}
                       {e.status === 'left' ? ' · has left' : ''}
                     </span>
                   </span>
-                  <span className="row-amount">{money(e.basic_pay)}<span style={{ color: 'var(--text-3)', fontWeight: 400 }}> a month</span></span>
+                  <span className="row-amount">{money(grossOf(e))}<span style={{ color: 'var(--text-3)', fontWeight: 400 }}> a month</span></span>
                   <span className="row-actions">
                     <button type="button" className="icon-pill" onClick={() => editEmployee(e)} aria-label={`Change ${e.name}`}><Pencil aria-hidden="true" /></button>
                     <button type="button" className="icon-pill danger" onClick={() => removeEmployee(e.id)} aria-label={`Remove ${e.name}`}><Trash2 aria-hidden="true" /></button>
@@ -300,7 +341,14 @@ export default function EmployeesPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
               <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Name</label><input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Grace Banda" className="field" /></div>
               <div><label className="field-label">Role</label><input value={form.position} onChange={e => set('position', e.target.value)} placeholder="Cashier" className="field" /></div>
-              <div><label className="field-label">Monthly pay ({sym})</label><input type="number" min="0" value={form.basic_pay} onChange={e => set('basic_pay', e.target.value)} placeholder="8000" className="field" /></div>
+              <div><label className="field-label">Basic pay a month ({sym})</label><input type="number" min="0" step="0.01" value={form.basic_pay} onChange={e => set('basic_pay', e.target.value)} placeholder="8000" className="field" /></div>
+              <div>
+                <label className="field-label">Allowances a month ({sym})</label>
+                <input type="number" min="0" step="0.01" value={form.allowances} onChange={e => set('allowances', e.target.value)} placeholder="0" className="field" />
+              </div>
+              <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
+                Allowances are housing, transport and any other cash paid on top every month. PAYE and NAPSA count them; NHIMA is 1% of basic pay only.
+              </p>
               <div>
                 <label className="field-label">Type</label>
                 <select value={form.employment_type} onChange={e => set('employment_type', e.target.value as EmploymentType)} className="field">
@@ -330,6 +378,10 @@ export default function EmployeesPage() {
                     </>
                   )}
                   <div><label className="field-label">NAPSA number</label><input value={form.napsa_number} onChange={e => set('napsa_number', e.target.value)} className="field" /></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'end', paddingBottom: 8 }}>
+                    <input id="emp-napsa-exempt" type="checkbox" checked={form.napsa_exempt} onChange={e => set('napsa_exempt', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
+                    <label htmlFor="emp-napsa-exempt" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>Aged 60 or over: no NAPSA</label>
+                  </div>
                   <div><label className="field-label">TPIN</label><input value={form.tpin} onChange={e => set('tpin', e.target.value)} className="field" /></div>
                   <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Notes</label><input value={form.notes} onChange={e => set('notes', e.target.value)} className="field" /></div>
                 </>
@@ -368,57 +420,122 @@ export default function EmployeesPage() {
           {runError && <div role="alert" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>{runError}</div>}
           {runOk && <div role="status" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--green-dim)', color: 'var(--green)', fontSize: 'var(--fs-body)' }}>{runOk}</div>}
 
-          {/* Preview table */}
+          {/* A pay date in a year whose rates nobody has checked yet. */}
+          {preview?.rates_note && (
+            <div role="alert" style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--amber-dim)', color: 'var(--amber)', fontSize: 'var(--fs-body)' }}>{preview.rates_note}</div>
+          )}
+
+          {/* Preview: what comes out of the pay, then what the employer adds.
+              The NAPSA column used to be the staff 5% alone with nothing
+              beside it, so its total read as the NAPSA bill when that bill is
+              twice it. Both halves now stand side by side. */}
           {preview && preview.payslips.length > 0 && (
-            <div style={{ overflowX: 'auto', marginBottom: 12 }}>
-              <table className="card-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: 460 }}>
-                <thead>
-                  <tr>
-                    <th style={{ ...th, textAlign: 'left' }}>Employee</th>
-                    <th style={th}>Gross</th><th style={th}>NAPSA</th><th style={th}>NHIMA</th>
-                    <th style={th}>PAYE</th><th style={th}>Loan</th><th style={{ ...th, color: 'var(--text-2)' }}>Net</th>
-                    {periodRun && <th style={th} aria-label="Payslip" />}
-                  </tr>
-                </thead>
-                <tbody>
-                  {preview.payslips.map((s, i) => (
-                    <tr key={i} style={{ borderTop: '1px solid var(--border)' }}>
-                      <td style={{ ...td, textAlign: 'left', color: 'var(--text-1)', fontWeight: 600 }}>{s.employee_name}</td>
-                      <td style={td}>{money(s.gross)}</td>
-                      <td style={td}>{money(s.napsa_employee)}</td>
-                      <td style={td}>{money(s.nhima_employee)}</td>
-                      <td style={td}>{money(s.paye)}</td>
-                      <td style={td}>{money(s.loan_deduction)}</td>
-                      <td style={{ ...td, color: 'var(--text-1)', fontWeight: 700 }}>{money(s.net)}</td>
-                      {/* Payslip PDF (audit #26) — only once the period has
-                          actually been run, because a payslip is a record of
-                          payment, not of a preview. */}
-                      {periodRun && (
-                        <td style={td}>
-                          {s.employee_id && (
-                            <button type="button" onClick={() => void getDoc(periodRun.id, periodRun.period, s.employee_id!)}
-                              disabled={docBusy === `${periodRun.id}:${s.employee_id}`} className="pill pill-quiet">
-                              <FileText aria-hidden="true" />{docBusy === `${periodRun.id}:${s.employee_id}` ? 'Preparing…' : 'Payslip'}
-                            </button>
-                          )}
-                        </td>
-                      )}
+            <div style={{ marginBottom: 12 }}>
+              <p className="day-label">Taken from their pay</p>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="card-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: 520 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ ...th, textAlign: 'left' }}>Employee</th>
+                      <th style={th}>Gross</th><th style={th}>NAPSA 5%</th><th style={th}>NHIMA 1%</th>
+                      <th style={th}>PAYE</th><th style={th}>Loan</th><th style={{ ...th, color: 'var(--text-2)' }}>Take-home</th>
+                      {periodRun && <th style={th} aria-label="Payslip" />}
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr style={{ borderTop: '1px solid var(--border-md)' }}>
-                    <td style={{ ...td, textAlign: 'left', fontWeight: 700, color: 'var(--text-2)' }}>Total for {preview.totals.headcount}</td>
-                    <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.gross)}</td>
-                    <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.napsa_employee)}</td>
-                    <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.nhima_employee)}</td>
-                    <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.paye)}</td>
-                    <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.loan_deduction)}</td>
-                    <td style={{ ...td, fontWeight: 600, color: 'var(--text-1)' }}>{money(preview.totals.net)}</td>
-                    {periodRun && <td style={td} />}
-                  </tr>
-                </tfoot>
-              </table>
+                  </thead>
+                  <tbody>
+                    {preview.payslips.map((s, i) => (
+                      <tr key={i} style={{ borderTop: '1px solid var(--border)' }}>
+                        <td style={{ ...td, textAlign: 'left', color: 'var(--text-1)', fontWeight: 600 }}>{s.employee_name}</td>
+                        <td style={td}>{money(s.gross)}</td>
+                        <td style={td}>{s.napsa_exempt ? 'none' : money(s.napsa_employee)}</td>
+                        <td style={td}>{money(s.nhima_employee)}</td>
+                        <td style={td}>{money(s.paye)}</td>
+                        <td style={td}>{money(s.loan_deduction)}</td>
+                        <td style={{ ...td, color: 'var(--text-1)', fontWeight: 700 }}>{money(s.net)}</td>
+                        {/* Payslip PDF (audit #26) — only once the period has
+                            actually been run, because a payslip is a record of
+                            payment, not of a preview. */}
+                        {periodRun && (
+                          <td style={td}>
+                            {s.employee_id && (
+                              <button type="button" onClick={() => void getDoc(periodRun.id, periodRun.period, s.employee_id!)}
+                                disabled={docBusy === `${periodRun.id}:${s.employee_id}`} className="pill pill-quiet">
+                                <FileText aria-hidden="true" />{docBusy === `${periodRun.id}:${s.employee_id}` ? 'Preparing…' : 'Payslip'}
+                              </button>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ borderTop: '1px solid var(--border-md)' }}>
+                      <td style={{ ...td, textAlign: 'left', fontWeight: 700, color: 'var(--text-2)' }}>Total for {preview.totals.headcount}</td>
+                      <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.gross)}</td>
+                      <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.napsa_employee)}</td>
+                      <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.nhima_employee)}</td>
+                      <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.paye)}</td>
+                      <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.loan_deduction)}</td>
+                      <td style={{ ...td, fontWeight: 600, color: 'var(--text-1)' }}>{money(preview.totals.net)}</td>
+                      {periodRun && <td style={td} />}
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              <p className="day-label" style={{ marginTop: 16 }}>Paid by you on top of their pay</p>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="card-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: 420 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ ...th, textAlign: 'left' }}>Employee</th>
+                      <th style={th}>NAPSA 5%</th><th style={th}>NHIMA 1%</th>
+                      {preview.sdl?.due && <th style={th}>Levy 0.5%</th>}
+                      <th style={{ ...th, color: 'var(--text-2)' }}>Cost to you</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preview.payslips.map((s, i) => (
+                      <tr key={i} style={{ borderTop: '1px solid var(--border)' }}>
+                        <td style={{ ...td, textAlign: 'left', color: 'var(--text-1)', fontWeight: 600 }}>{s.employee_name}</td>
+                        <td style={td}>{s.napsa_exempt ? 'none' : money(s.napsa_employer)}</td>
+                        <td style={td}>{money(s.nhima_employer ?? s.nhima_employee)}</td>
+                        {preview.sdl?.due && <td style={td}>{money(s.sdl ?? 0)}</td>}
+                        <td style={{ ...td, color: 'var(--text-1)', fontWeight: 700 }}>{money(s.employer_cost ?? s.gross)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ borderTop: '1px solid var(--border-md)' }}>
+                      <td style={{ ...td, textAlign: 'left', fontWeight: 700, color: 'var(--text-2)' }}>Total</td>
+                      <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.napsa_employer)}</td>
+                      <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.nhima_employer ?? preview.totals.nhima_employee)}</td>
+                      {preview.sdl?.due && <td style={{ ...td, fontWeight: 700 }}>{money(preview.totals.sdl ?? 0)}</td>}
+                      <td style={{ ...td, fontWeight: 600, color: 'var(--text-1)' }}>{money(preview.totals.employer_cost ?? preview.totals.gross)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {/* Skills Development Levy: whether it is due, why, and the owner's own say. */}
+              {preview.sdl && (
+                <div style={{ marginTop: 12, padding: '12px 16px', borderRadius: 'var(--radius-md)', background: 'var(--bg-input)', fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55 }}>
+                  <strong style={{ color: 'var(--text-1)' }}>Skills Development Levy</strong>{' '}
+                  {preview.sdl.due
+                    ? <>is 0.5% of gross pay, paid by you and never taken from staff: {money(preview.totals.sdl ?? 0)} this month.</>
+                    : <>is not added this month.</>}{' '}
+                  {preview.sdl.why}
+                  <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <label htmlFor="sdl-setting" className="field-label" style={{ margin: 0 }}>Does your business pay it?</label>
+                    <select id="sdl-setting" value={preview.sdl.setting} disabled={sdlBusy}
+                      onChange={e => void changeSdl(e.target.value as SdlStatus['setting'])} className="field" style={{ width: 'auto' }}>
+                      <option value="auto">Work it out from my sales</option>
+                      <option value="pays">Yes, we pay it</option>
+                      <option value="exempt">No, we are exempt</option>
+                    </select>
+                  </div>
+                </div>
+              )}
 
               <div style={{ marginTop: 12, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 {alreadyRun ? (
@@ -439,22 +556,28 @@ export default function EmployeesPage() {
                 )}
               </div>
 
-              {/* Statutory remittances that running will draft (pending, due next month). */}
+              {/* What goes to each authority by the 10th: the whole amount, and
+                  how much of it came from the pay and how much from you. */}
               {preview.remittances.length > 0 && (
                 <div style={{ marginTop: 16 }}>
                   <h3 className="panel-title" style={{ marginBottom: 8 }}>
-                    Also drafted for you{preview.remittances[0]?.due_date ? `, due ${fmtDue(preview.remittances[0].due_date)}` : ''}
+                    To pay{preview.remittances[0]?.due_date ? ` by ${fmtDue(preview.remittances[0].due_date)}` : ''}: {money(preview.remittances.reduce((a, r) => a + r.amount, 0))}
                   </h3>
                   <div className="mini-stats">
                     {preview.remittances.map((r: RemittanceDraft) => (
                       <div key={r.tax_type} className="mini-stat">
-                        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{r.tax_type} to {r.authority}</span>
+                        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{REMIT_LABEL[r.tax_type] ?? `${r.tax_type} to ${r.authority}`}</span>
                         <span className="money money-md">{money(r.amount)}</span>
+                        <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                          {(r.employee_share ?? 0) > 0 && (r.employer_share ?? 0) > 0
+                            ? `${money(r.employee_share)} from their pay + ${money(r.employer_share)} from you`
+                            : (r.employer_share ?? 0) > 0 ? 'Paid by you' : 'Taken from their pay'}
+                        </span>
                       </div>
                     ))}
                   </div>
                   <div style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 8 }}>
-                    Posted as pending payments: confirm each when you pay ZRA / NAPSA / NHIMA.
+                    Running payroll posts these as payments waiting for you: confirm each when you pay ZRA, NAPSA and NHIMA.
                   </div>
                 </div>
               )}
@@ -478,6 +601,11 @@ export default function EmployeesPage() {
                     <button type="button" onClick={() => void getDoc(r.id, r.period)} disabled={docBusy === r.id} className="pill pill-quiet">
                       <FileText aria-hidden="true" />{docBusy === r.id ? 'Preparing…' : 'Tax pack PDF'}
                     </button>
+                    {/* A run is a record of what was paid. This works it out again
+                        with today's rules and says what, if anything, to put right. */}
+                    <button type="button" onClick={() => void doRecheck(r.id)} disabled={docBusy === `check:${r.id}`} className="pill pill-quiet">
+                      <ShieldCheck aria-hidden="true" />{docBusy === `check:${r.id}` ? 'Checking…' : 'Check against today’s rules'}
+                    </button>
                     {/* A run can only be made once a month, so one made by
                         mistake (the wrong month, a test) used to stay for good
                         with its wages in the books. */}
@@ -485,6 +613,30 @@ export default function EmployeesPage() {
                       <Trash2 aria-hidden="true" />{docBusy === r.id ? 'Working…' : 'Delete run'}
                     </button>
                   </span>
+                  {recheck[r.id] && (
+                    <div role="status" style={{ flexBasis: '100%', marginTop: 8, padding: '12px 16px', borderRadius: 'var(--radius-md)',
+                      background: recheck[r.id].changed ? 'var(--amber-dim)' : 'var(--green-dim)',
+                      color: recheck[r.id].changed ? 'var(--amber)' : 'var(--green)', fontSize: 'var(--fs-body)', lineHeight: 1.55 }}>
+                      {recheck[r.id].summary}
+                      {recheck[r.id].changed && (
+                        <ul style={{ margin: '8px 0 0', paddingLeft: 18, color: 'var(--text-2)', fontSize: 'var(--fs-data)' }}>
+                          {recheck[r.id].people.filter(p => p.changed).map((p, i) => (
+                            <li key={p.employee_id ?? i}>
+                              {p.employee_name}: PAYE {money(p.was.paye)} → {money(p.now.paye)}, take-home {money(p.was.net)} → {money(p.now.net)}
+                              {Math.abs(p.difference.net) >= 0.005 && (p.difference.net < 0
+                                ? ` (${money(-p.difference.net)} too little deducted)`
+                                : ` (${money(p.difference.net)} owed back to them)`)}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {recheck[r.id].changed && (
+                        <p style={{ margin: '8px 0 0', color: 'var(--text-3)', fontSize: 'var(--fs-label)' }}>
+                          Nothing has been changed. If this month is not yet paid to ZRA, delete the run and run it again. If it is, ask your accountant how to settle the difference.
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
               {docError && (
@@ -496,7 +648,7 @@ export default function EmployeesPage() {
           {/* Rate transparency — AIBOS-maintained, the owner never edits these. */}
           {rates && (
             <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 16, lineHeight: 1.6 }}>
-              Using {rates.currency} statutory rates effective {rates.effective_from}: NAPSA {Math.round(rates.napsa_rate * 100)}% (ceiling {money(rates.napsa_ceiling)}), NHIMA {Math.round(rates.nhima_rate * 100)}%, PAYE up to {Math.round((rates.paye_bands.at(-1)?.rate ?? 0) * 100)}%. Kept current for you: no tax tables to manage.
+              Using {rates.currency} statutory rates effective {rates.effective_from}: PAYE on gross pay, up to {Math.round((rates.paye_bands.at(-1)?.rate ?? 0) * 100)}%; NAPSA {Math.round(rates.napsa_rate * 100)}% from staff and {Math.round(rates.napsa_rate * 100)}% from you, on gross pay up to {money(rates.napsa_ceiling)}; NHIMA {Math.round(rates.nhima_rate * 100)}% from staff and {Math.round(rates.nhima_rate * 100)}% from you, on basic pay{rates.sdl_rate ? `; Skills Development Levy ${(rates.sdl_rate * 100).toFixed(1)}% from you` : ''}. Kept current for you: no tax tables to manage.
             </p>
           )}
         </SectionCard>

@@ -1538,7 +1538,13 @@ export interface Employee {
   status: EmployeeStatus;
   start_date?: string | null;
   end_date?: string | null;
+  /** Basic salary. NHIMA is 1% of this. */
   basic_pay: number;
+  /** Regular cash allowances on top (housing, transport...). PAYE and NAPSA
+   *  count them; NHIMA does not. Absent before migration 0039. */
+  allowances?: number;
+  /** Aged 60 or over: no NAPSA either side. */
+  napsa_exempt?: boolean;
   currency: string;
   pay_day: number;
   napsa_number?: string | null;
@@ -1561,10 +1567,18 @@ export interface Payslip {
   employee_id?: string | null;
   period: string;
   employee_name?: string | null;
+  basic?: number;
+  allowances?: number;
   gross: number;
   napsa_employee: number;
   napsa_employer: number;
   nhima_employee: number;
+  nhima_employer?: number;
+  /** Skills Development Levy: the employer's own 0.5%, never from the pay. */
+  sdl?: number;
+  /** Gross plus the employer's NAPSA, NHIMA and levy: what this person costs. */
+  employer_cost?: number;
+  napsa_exempt?: boolean;
   taxable: number;
   paye: number;
   loan_deduction: number;
@@ -1576,10 +1590,18 @@ export interface Payslip {
 }
 
 export interface PayrollTotals {
+  basic?: number;
+  allowances?: number;
   gross: number;
   napsa_employee: number;
   napsa_employer: number;
+  /** Both halves: what NAPSA is actually owed. */
+  napsa_total?: number;
   nhima_employee: number;
+  nhima_employer?: number;
+  nhima_total?: number;
+  sdl?: number;
+  employer_cost?: number;
   paye: number;
   loan_deduction: number;
   net: number;
@@ -1589,9 +1611,12 @@ export interface PayrollTotals {
 
 /** A statutory remittance (PAYE→ZRA, NAPSA, NHIMA) drafted as a pending TaxPayment. */
 export interface RemittanceDraft {
-  tax_type: 'PAYE' | 'NAPSA' | 'NHIMA';
+  tax_type: 'PAYE' | 'SDL' | 'NAPSA' | 'NHIMA';
   authority: string;
   amount: number;
+  /** How much of `amount` came out of staff pay, and how much the employer adds. */
+  employee_share?: number;
+  employer_share?: number;
   period: string;
   currency?: string;
   due_date: string;
@@ -1607,6 +1632,8 @@ export interface PayrollRun {
   status: 'completed' | 'void';
   payslips?: Payslip[];
   remittances?: RemittanceDraft[];
+  sdl?: SdlStatus;
+  rates_note?: string | null;
 }
 
 export interface PayrollPreview {
@@ -1615,6 +1642,40 @@ export interface PayrollPreview {
   totals: PayrollTotals;
   remittances: RemittanceDraft[];
   rates: PayrollRates | null;
+  sdl?: SdlStatus;
+  /** Set when the pay date is in a year whose rates AIBOS has not checked. */
+  rates_note?: string | null;
+}
+
+/** Whether the business pays the Skills Development Levy, and why. */
+export interface SdlStatus {
+  setting: 'auto' | 'pays' | 'exempt';
+  due: boolean;
+  why: string;
+  rate: number;
+  threshold: number;
+  turnover_12m: number | null;
+}
+
+/** A past run worked out again with today's rules (changes nothing). */
+export interface PayrollRecheck {
+  run_id: string;
+  period: string;
+  pay_date: string;
+  changed: boolean;
+  summary: string;
+  owed_to_staff: number;
+  under_deducted_from_staff: number;
+  difference: Record<'paye' | 'napsa_employee' | 'napsa_employer' | 'nhima_employee' | 'nhima_employer' | 'sdl' | 'net', number>;
+  people: Array<{
+    employee_id?: string | null;
+    employee_name?: string | null;
+    gross: number;
+    changed: boolean;
+    was: Record<string, number>;
+    now: Record<string, number>;
+    difference: Record<string, number>;
+  }>;
 }
 
 export interface PayrollRates {
@@ -1624,6 +1685,13 @@ export interface PayrollRates {
   napsa_rate: number;
   napsa_ceiling: number;
   nhima_rate: number;
+  napsa_on?: string;
+  nhima_on?: string;
+  paye_on?: string;
+  sdl_rate?: number;
+  sdl_turnover_threshold?: number;
+  napsa_retirement_age?: number;
+  verified_through?: number;
   source: string;
 }
 
@@ -1648,6 +1716,26 @@ export async function updateEmployee(id: string, patch: Partial<EmployeeInput>):
 
 export async function deleteEmployee(id: string): Promise<void> {
   await spineFetch(`/employees/${id}`, { method: 'DELETE' });
+}
+
+/** Whether this business pays the Skills Development Levy (owner). */
+export async function getPayrollSettings(period?: string): Promise<SdlStatus> {
+  const q = period ? `?period=${encodeURIComponent(period)}` : '';
+  const data = await spineFetch(`/payroll/settings${q}`);
+  return data.sdl as SdlStatus;
+}
+
+export async function setPayrollSdl(sdl: SdlStatus['setting']): Promise<SdlStatus> {
+  const data = await spineFetch('/payroll/settings', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sdl }),
+  });
+  return data.sdl as SdlStatus;
+}
+
+/** A past run against today's rules: what was deducted too much or too little. */
+export async function recheckPayrollRun(runId: string): Promise<PayrollRecheck> {
+  const data = await spineFetch(`/payroll/runs/${encodeURIComponent(runId)}/recheck`);
+  return data.recheck as PayrollRecheck;
 }
 
 export async function getPayrollRates(): Promise<PayrollRates | null> {
