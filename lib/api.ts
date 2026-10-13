@@ -687,6 +687,8 @@ export interface EventProposal {
 export interface Twin {
   currency: string;
   cash: number;
+  /** What the business held when it started recording (the books start from it). */
+  opening_cash?: number;
   total_revenue: number;
   total_costs: number;
   total_profit: number;

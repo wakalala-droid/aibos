@@ -2,6 +2,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import WhereMoneyWent from '@/components/dashboard/WhereMoneyWent';
 import BooksCheckCard from '@/components/money/BooksCheck';
+import OpeningBalance from '@/components/money/OpeningBalance';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import MoneyHero from '@/components/home/MoneyHero';
@@ -215,6 +216,9 @@ export default function CashPage() {
 
       {/* Every money record held against the books, to the ngwee. */}
       {fromBooks && <Suspense fallback={null}><BooksCheckCard /></Suspense>}
+
+      {/* The one figure AIBOS cannot work out: what was held before recording began. */}
+      {fromBooks && <OpeningBalance />}
 
       {/* Runway status bar */}
       <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
