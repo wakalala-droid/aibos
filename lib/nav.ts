@@ -14,7 +14,7 @@ export type NavIcon =
   | 'overview' | 'record' | 'cash' | 'invoice' | 'customers' | 'rooms' | 'inventory'
   | 'people' | 'schedule' | 'timeline' | 'import' | 'brief' | 'variance' | 'forecast'
   | 'anomaly' | 'breakeven' | 'simulate' | 'churn' | 'products' | 'market' | 'pos'
-  | 'benchmarks';
+  | 'benchmarks' | 'cashplan';
 
 export interface NavDoor {
   href: string;
@@ -46,6 +46,7 @@ export const DOORS: NavDoor[] = [
 
   { href: '/dashboard/brief',       label: 'Briefs',              icon: 'brief',      group: 'reports', keywords: ['brief', 'summary', 'recommendations', 'advice', 'advisor'] },
   { href: '/dashboard/variance',    label: 'Month by month',      icon: 'variance',   group: 'reports', keywords: ['variance', 'changes', 'compare months', 'cost spike'] },
+  { href: '/dashboard/cash-plan',   label: 'Cash plan',           icon: 'cashplan',   group: 'reports', keywords: ['13 weeks', 'cash flow', 'run short', 'shortfall', 'safe to spend', 'afford', 'bills coming', 'group', 'all businesses'] },
   { href: '/dashboard/forecast',    label: 'Forecast',            icon: 'forecast',   group: 'reports', keywords: ['projection', 'future', 'predict', 'next month'] },
   { href: '/dashboard/anomaly',     label: 'Unusual spending',    icon: 'anomaly',    group: 'reports', keywords: ['anomaly', 'anomalies', 'spike', 'outlier', 'strange'] },
   { href: '/dashboard/breakeven',   label: 'Breakeven',           icon: 'breakeven',  group: 'reports', keywords: ['break even', 'cover costs', 'minimum sales'] },

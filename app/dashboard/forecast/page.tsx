@@ -1,284 +1,212 @@
 'use client';
 
+// Forecast (rebuilt on the forecast engine, 16 October 2026).
+//
+// Sales, costs and profit for this month and the three after it, each with
+// its cautious and hopeful ends, from aibos-api forecast_engine.py: several
+// methods tested on the owner's own months, the best blended, one-off months
+// softened, seasons used once two years are in. This month is judged on what
+// is in so far against how a month usually fills up.
+//
+// It replaces a straight line fitted in the browser whose "How sure" figure
+// was the line's fit to the past (R squared), not how often it had been right:
+// a line can fit well and still miss every month. "How accurate" here is the
+// forecast's real average miss on the owner's past months, beside what simply
+// repeating last month would have missed.
+
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { ShieldCheck } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { monthName, monthTick } from '@/lib/change';
 import { fmt, formatAxis } from '@/lib/utils';
-import KPICard from '@/components/ui/KPICard';
-import SectionCard from '@/components/ui/SectionCard';
+import Stat from '@/components/ui/Stat';
+import Panel from '@/components/home/Panel';
+import BentoCard from '@/components/ui/BentoCard';
+import ChartKey from '@/components/ui/ChartKey';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import PageHeader from '@/components/ui/PageHeader';
 import CashForecastFan from '@/components/dashboard/CashForecastFan';
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer,
-} from 'recharts';
+import { getOutlook, getSeriesOutlook, type Outlook } from '@/lib/api';
+import { canAccess } from '@/lib/tiers';
+import { signTone, trendTone } from '@/lib/tone';
+import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-// Safe number coercion — never returns NaN or Infinity
 function n(v: unknown): number {
   const x = Number(v);
-  return isFinite(x) ? x : 0;
+  return Number.isFinite(x) ? x : 0;
 }
-
-// Real forecast confidence = R-squared of a linear fit on historical revenue,
-// expressed as a 0-100 percentage. Falls back to 0 when there isn't enough data.
-function forecastConfidence(monthly: Array<Record<string, unknown>>): number {
-  const ys = (Array.isArray(monthly) ? monthly : []).map(m => n(m?.Revenue));
-  const len = ys.length;
-  if (len < 3) return 0;
-
-  const xs = ys.map((_, i) => i);
-  const meanX = xs.reduce((s, v) => s + v, 0) / len;
-  const meanY = ys.reduce((s, v) => s + v, 0) / len;
-
-  let sxx = 0, sxy = 0, syy = 0;
-  for (let i = 0; i < len; i++) {
-    const dx = xs[i] - meanX;
-    const dy = ys[i] - meanY;
-    sxx += dx * dx;
-    sxy += dx * dy;
-    syy += dy * dy;
-  }
-
-  if (sxx === 0 || syy === 0) return 0;
-
-  const r2 = (sxy * sxy) / (sxx * syy);
-  const pct = Math.round(r2 * 1000) / 10;
-  return Math.min(Math.max(pct, 0), 99.9);
-}
-
-// Least-squares linear fit over the revenue series → {slope, intercept, band}.
-// Used to project the trend forward instead of compounding a single (noisy)
-// last month, so the forecast reflects the whole historical dataset.
-// `band(x)` is the 95% prediction-interval half-width at future index x,
-// derived from the fit's residual error on the owner's own history — never a
-// hardcoded percentage (SAFEGUARD §0.1: no fabricated precision). Null when
-// there are fewer than 3 points, because no honest band exists yet.
-function trendModel(ys: number[]): {
-  slope: number; intercept: number; band: ((x: number) => number) | null;
-} {
-  const len = ys.length;
-  if (len < 2) return { slope: 0, intercept: ys[0] ?? 0, band: null };
-  const meanX = (len - 1) / 2;
-  const meanY = ys.reduce((s, v) => s + v, 0) / len;
-  let sxx = 0, sxy = 0;
-  for (let i = 0; i < len; i++) {
-    const dx = i - meanX;
-    sxx += dx * dx;
-    sxy += dx * (ys[i] - meanY);
-  }
-  const slope = sxx ? sxy / sxx : 0;
-  const intercept = meanY - slope * meanX;
-  if (len < 3 || sxx === 0) return { slope, intercept, band: null };
-  let sse = 0;
-  for (let i = 0; i < len; i++) {
-    const resid = ys[i] - (intercept + slope * i);
-    sse += resid * resid;
-  }
-  const sigma2 = sse / (len - 2);
-  if (!isFinite(sigma2) || sigma2 < 0) return { slope, intercept, band: null };
-  // 95% prediction interval at x: ±1.96·σ·√(1 + 1/n + (x−x̄)²/Sxx)
-  const band = (x: number) =>
-    1.96 * Math.sqrt(sigma2 * (1 + 1 / len + ((x - meanX) ** 2) / sxx));
-  return { slope, intercept, band };
-}
-
-interface Row { month: string; hist?: number; fcast?: number; lower?: number; upper?: number; }
 
 export default function ForecastPage() {
-  const { monthly, kpi, currencySymbol, dataShape, twinLoading, twinChecked, uploadedFile } = useStore();
-  // For the first seconds of every visit the recorded books are still on their
-  // way, and this page said "Upload a financial file" to owners who record
-  // every day. It waits for the books before calling anything empty.
-  const figuresLoading = twinLoading || (!twinChecked && !uploadedFile);
+  const { monthly, currencySymbol, dataShape, twin, uploadedFile, twinLoading, twinChecked, tier } = useStore();
+  const version = useStore((s) => s.booksVersion);
   const sym = currencySymbol || 'K';
+  const fromBooks = !uploadedFile && !!twin && Number(twin.event_count) > 0;
+  const waiting = twinLoading || (!twinChecked && !uploadedFile);
+  const [outlook, setOutlook] = useState<Outlook | null>(null);
+  const [failed, setFailed] = useState(false);
 
-  // No time axis → never fabricate a forecast over item rows (SAFEGUARD).
+  // An uploaded file's periods, as they were read.
+  const fileRows = useMemo(() => (Array.isArray(monthly) ? monthly : []).map((m) => {
+    const r = m as unknown as Record<string, unknown>;
+    return { month: String(r.Month ?? r.month ?? ''), revenue: n(r.Revenue ?? r.revenue), costs: n(r.Costs ?? r.costs) };
+  }), [monthly]);
+
+  useEffect(() => {
+    if (waiting || dataShape === 'cross_sectional') return;
+    let alive = true;
+    const read = fromBooks ? getOutlook() : fileRows.length ? getSeriesOutlook(fileRows) : null;
+    if (!read) { setOutlook(null); return; }
+    setFailed(false);
+    read.then((o) => { if (alive) setOutlook(o); }).catch(() => { if (alive) setFailed(true); });
+    return () => { alive = false; };
+  }, [fromBooks, fileRows, waiting, dataShape, version]);
+
   if (dataShape === 'cross_sectional') {
     return <TimeSeriesUnavailable title="Forecast" feature="Forecasting" />;
   }
 
-  const safeMonthly: Array<Record<string, unknown>> =
-    Array.isArray(monthly) ? (monthly as Array<Record<string, unknown>>) : [];
+  const ok = !!outlook?.ok;
+  const ahead = outlook?.ahead ?? [];
+  const now = outlook?.this_month ?? null;
+  // From the recorded books the first month ahead is this one; the rest follow.
+  const later = now ? ahead.slice(1) : ahead;
+  const next = later[0];
+  const threeTotal = later.slice(0, 3).reduce((t, a) => t + a.revenue.p50, 0);
+  const acc = outlook?.accuracy;
+  const lastActual = outlook?.history?.length ? outlook.history[outlook.history.length - 1].revenue : 0;
+  const change = next && lastActual > 0 ? ((next.revenue.p50 - lastActual) / lastActual) * 100 : 0;
 
-  const months   = Math.max(safeMonthly.length, 1);
-  const avgRev   = n(kpi?.totalRevenue) / months;
-  const lastRev  = safeMonthly.length > 0 ? n(safeMonthly[safeMonthly.length - 1]?.Revenue) : avgRev;
+  // The last twelve months as recorded, then the months ahead; the likely line
+  // starts from the last real month so the two join.
+  const hist = (outlook?.history ?? []).slice(-12);
+  const chart: { month: string; sales?: number; likely?: number; range?: [number, number] }[] = [
+    ...hist.map((h, i) => ({
+      month: h.month, sales: h.revenue,
+      likely: i === hist.length - 1 && ahead.length ? h.revenue : undefined,
+    })),
+    ...ahead.map((a) => ({ month: a.month, likely: a.revenue.p50, range: [a.revenue.p10, a.revenue.p90] as [number, number] })),
+  ];
 
-  // Historical revenue series (real data, in order)
-  const revSeries = safeMonthly.map(m => n(m?.Revenue));
-
-  // Historical chart rows
-  const historical: Row[] = safeMonthly.map(m => ({
-    month: String(m?.Month ?? ''),
-    hist: n(m?.Revenue),
-  }));
-
-  // Projection rows — anchor at the most recent actual and extend by the
-  // least-squares trend slope (Holt-style). Uses the whole series for the slope
-  // while staying tied to reality, instead of compounding one noisy month.
-  const { slope, band } = trendModel(revSeries);
-  const anchor = lastRev > 0 ? lastRev : Math.max(avgRev, 0);
-  const projections: Row[] = [1, 2, 3].map(i => {
-    const fcast = Math.max(0, Math.round(anchor + slope * i));
-    const half = band ? band(revSeries.length - 1 + i) : null;
-    return {
-      month: `Forecast +${i}mo`,
-      fcast,
-      lower: half != null ? Math.max(0, Math.round(fcast - half)) : undefined,
-      upper: half != null ? Math.round(fcast + half) : undefined,
-    };
-  });
-  const hasBand = band != null;
-  const bandLabel = hasBand
-    ? 'The shaded band is where sales should land, judging by your history.'
-    : 'The likely range appears once you have 3 months recorded.';
-
-  const chart: Row[] = [...historical, ...projections];
-  const hasData = safeMonthly.length > 0;
-
-  // KPI values — all safe
-  const firstFcast  = projections[0]?.fcast ?? 0;
-  const threeTotal  = projections.reduce((s, p) => s + (p.fcast ?? 0), 0);
-  const growthPct   = lastRev > 0 ? ((firstFcast - lastRev) / lastRev) * 100 : 0;
-  const confidence  = forecastConfidence(safeMonthly);
-  const revSpark    = safeMonthly.slice(-6).map(m => n(m?.Revenue));
+  const headline = !ok
+    ? (outlook?.reason || 'Record your sales and costs and your forecast appears here.')
+    : now
+      ? `This month is on pace for ${fmt(now.revenue.estimate, true, sym)}; ${next ? `${monthName(next.month)} looks like ${fmt(next.revenue.p50, true, sym)}` : ''}.`
+      : `Your next period looks like ${fmt(next?.revenue.p50 ?? 0, true, sym)}.`;
 
   return (
     <FeatureGate
       feature="forecast"
-      title="The year ahead"
+      title="Forecast"
       colour="var(--cyan)"
-      headline={hasData
-        ? `Your revenue trend points to ${fmt(firstFcast, true, sym)} next month (${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%).`
-        : 'Upload data to project your next quarter.'}
-      detail="See the next 3 months with how sure AIBOS is, how strong the trend is and what drives each month, with tables you can download."
+      headline={headline}
+      detail="Sales, costs and profit for the months ahead with the range they should fall in, this month's pace, and how accurate the forecast has been on your own months."
     >
-    <>
       <PageHeader
-        eyebrow="Reports"
-        eyebrowColour="var(--cyan)"
         title="Forecast"
-        subtitle={<>What your sales are likely to be next, {hasBand ? 'with the range they should fall in' : 'from the trend so far'}.</>}
+        subtitle="What your sales, costs and profit are likely to be, with the range they should fall in."
+        actions={canAccess(tier, 'cash_plan')
+          ? <Link className="pill" href="/dashboard/cash-plan">13-week cash plan</Link>
+          : <Link className="pill pill-quiet" href="/dashboard/cash-plan">Cash plan with Growth</Link>}
       />
 
-      {/* P10/P50/P90 cash bands from recorded events (audit #19) — silent
-          under 4 completed months of history. */}
-      <CashForecastFan />
+      {/* P10/P50/P90 cash months from recorded money (audit #19), silent under 4 months. */}
+      {fromBooks && <CashForecastFan />}
 
-      <div className="grid-kpi" style={{ marginBottom: 24 }}>
-        <KPICard label="Next month" value={fmt(firstFcast, false, sym)} sub="vs prior period" growth={growthPct}
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 12l4-4 4 4 4-6 4 4" stroke="var(--chart-line)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
-          iconBg="rgba(0,212,255,0.12)" sparkColor="var(--cyan)" delay={0} />
-        <KPICard label="Next 3 months" value={fmt(threeTotal, true, sym)} sub="expected sales, added up"
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="var(--blue)" strokeWidth="1.5" fill="none"/><path d="M16 2v4M8 2v4M3 10h18" stroke="var(--blue)" strokeWidth="1.4" strokeLinecap="round"/></svg>}
-          iconBg="rgba(96,165,250,0.15)" sparkData={projections.map(p => p.fcast ?? 0)} sparkColor="var(--blue)" delay={0.06} />
-        <KPICard label="Against the last 3 months" value={`${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%`} sub="vs prior period" growth={growthPct}
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(52,211,153,0.15)" sparkData={revSpark} sparkColor="var(--good)" delay={0.12} />
-        <KPICard label="How sure" value={`${confidence}%`} sub="how well the trend fits your months"
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--purple)" strokeWidth="1.5" fill="none"/><path d="M9 12l2 2 4-4" stroke="var(--purple)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          iconBg="rgba(167,139,250,0.15)" sparkColor="var(--purple)" delay={0.18} />
-      </div>
+      {failed && <p className="rs-text is-quiet">The forecast could not be worked out just now. Try again in a moment.</p>}
+      {!outlook && !failed && <div className="skeleton" style={{ height: 240, borderRadius: 'var(--radius-lg)' }} />}
 
-      {/* Live: the forecast redraws as you record. A dot and words, no pulse. */}
-      <p style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '0 0 16px', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-        <span className="badge" style={{ border: '1px solid var(--border-md)', color: 'var(--text-1)' }}>
-          <span className="live-dot" aria-hidden="true" style={{ marginRight: 4 }} />Updates as you record
-        </span>
-        <span>Your sales so far and the next {projections.length} months. {bandLabel}</span>
-      </p>
+      {outlook && !ok && (
+        <Panel title="Not enough history yet">
+          <p className="rs-text">{outlook.reason}</p>
+        </Panel>
+      )}
 
-      {/* Chart */}
-      {!hasData ? (
-        <SectionCard title="Sales ahead" subtitle={`Your sales so far, then what AIBOS expects. ${bandLabel}`} delay={0.1} style={{ marginBottom: 20 }}>
-          <div style={{
-            height: 260, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center',
-          }}>
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
-              <path d="M3 17l5-5 4 4 8-9" stroke="var(--text-4)" strokeWidth="1.6"
-                strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 4" fill="none" />
-            </svg>
-            <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-2)', margin: 0 }}>
-              {figuresLoading ? 'Loading your figures…' : 'No history yet'}
-            </p>
-            {!figuresLoading && (
-              <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
-                Record your sales and costs as they happen, or upload a financial file on the dashboard and a forecast appears here.
-              </p>
+      {ok && (
+        <>
+          <div className="grid-kpi" style={{ marginBottom: 20 }}>
+            {now ? (
+              <Stat label={`${monthName(now.month)}, on pace for`} money={now.revenue.estimate} sym={sym}
+                sub={`${fmt(now.revenue.so_far, true, sym)} in so far${now.revenue.pace_pct != null
+                  ? `, ${Math.abs(Math.round(now.revenue.pace_pct))}% ${now.revenue.pace_pct >= 0 ? 'ahead of' : 'behind'} the usual pace` : ''}`}
+                tone={now.revenue.pace_pct != null && now.revenue.pace_pct < -10 ? 'bad' : undefined} />
+            ) : (
+              <Stat label="Last period" money={lastActual} sym={sym} sub="As recorded" />
             )}
+            {next && (
+              <Stat label={`${monthName(next.month)}, likely`} money={next.revenue.p50} sym={sym}
+                sub={`${fmt(next.revenue.p10, true, sym)} to ${fmt(next.revenue.p90, true, sym)}`}
+                tone={change < -5 ? 'bad' : undefined} />
+            )}
+            <Stat label={`Next ${Math.min(3, later.length)} months`} money={threeTotal} sym={sym} sub="Expected sales, added up" />
+            <Stat label="How accurate" text={acc?.avg_miss_pct != null ? `${acc.avg_miss_pct}%` : 'New'}
+              sub={acc?.avg_miss_pct != null
+                ? `Average miss on your last ${acc.tested} months${acc.naive_miss_pct != null ? ` (repeating last month: ${acc.naive_miss_pct}%)` : ''}`
+                : 'Tested as your months come in'} />
           </div>
-        </SectionCard>
-      ) : (
-        <SectionCard title="Sales ahead" subtitle={`Your sales so far, then what AIBOS expects. ${bandLabel}`} delay={0.1} style={{ marginBottom: 20 }}>
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={chart}>
-              <defs>
-                <linearGradient id="histG" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--brand-fill)"   stopOpacity={0.20} />
-                  <stop offset="100%" stopColor="var(--brand-fill)" stopOpacity={0}    />
-                </linearGradient>
-                <linearGradient id="foreG" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--chart-line)"   stopOpacity={0.10} />
-                  <stop offset="100%" stopColor="var(--chart-line)" stopOpacity={0}    />
-                </linearGradient>
-              </defs>
-              <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis tickMargin={8} minTickGap={16} dataKey="month" tickFormatter={monthTick} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} />
-              <YAxis width={84} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false}
-                tickFormatter={(v) => formatAxis(n(v))} />
-              <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
-              <Area type="monotone" dataKey={(d: Row) => (d.lower != null && d.upper != null ? [d.lower, d.upper] : null)} stroke="none" fill="var(--chart-line)" fillOpacity={0.12} dot={false} legendType="none" name="Likely range" connectNulls isAnimationActive={false} />
-              <Area type="monotone" dataKey="hist"  stroke="var(--chart-line)"   strokeWidth={2.2} fill="url(#histG)" dot={{ r: 3.5, fill: 'var(--chart-line)',   strokeWidth: 0 }} connectNulls name="Historical" />
-              <Area type="monotone" dataKey="fcast" stroke="var(--chart-line)" strokeWidth={2} strokeDasharray="6 4" fill="url(#foreG)" dot={{ r: 4, fill: 'var(--bg-card)', stroke: 'var(--chart-line)', strokeWidth: 2 }} connectNulls name="Forecast" />
-            </AreaChart>
-          </ResponsiveContainer>
-          <div style={{ display: 'flex', gap: 20, marginTop: 14 }}>
-            {[{ color: 'var(--chart-line)', label: 'So far', dashed: false }, { color: 'var(--chart-line)', label: 'Forecast', dashed: true }].map(item => (
-              <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                <svg width="24" height="4">
-                  {item.dashed
-                    ? <line x1="0" y1="2" x2="24" y2="2" stroke={item.color} strokeWidth="2" strokeDasharray="5 3" />
-                    : <line x1="0" y1="2" x2="24" y2="2" stroke={item.color} strokeWidth="2.2" />
-                  }
-                </svg>
-                <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>{item.label}</span>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
-      )}
 
-      {/* Table */}
-      {hasData && (
-      <SectionCard title="Month by month" subtitle="Month-by-month predictions with confidence range" delay={0.18}>
-        <table className="data-table">
-          <thead>
-            <tr><th>Period</th><th>Forecast Revenue</th><th>Lower (95% PI)</th><th>Upper (95% PI)</th><th>vs Last Month</th></tr>
-          </thead>
-          <tbody>
-            {projections.map((row, i) => {
-              const fv = row.fcast ?? 0;
-              const vs = lastRev > 0 ? ((fv - lastRev) / lastRev * 100) : 0;
-              return (
-                <tr key={`p${i}`}>
-                  <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{monthName(row.month)}</td>
-                  <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>{fmt(fv, false, sym)}</td>
-                  <td style={{ color: 'var(--text-3)' }}>{row.lower != null ? fmt(row.lower, false, sym) : 'None'}</td>
-                  <td style={{ color: 'var(--text-3)' }}>{row.upper != null ? fmt(row.upper, false, sym) : 'None'}</td>
-                  <td style={{ color: 'var(--text-1)', fontWeight: 600 }}>
-                    {vs >= 0 ? '+' : ''}{vs.toFixed(1)}%
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </SectionCard>
+          <Panel title="Sales ahead">
+            <ChartKey items={[['var(--chart-line)', 'So far'], ['var(--chart-line)', 'Likely', true],
+              ['color-mix(in srgb, var(--chart-line) 30%, transparent)', 'Cautious to hopeful']]} />
+            <div role="img" style={{ marginTop: 12 }}
+              aria-label={`Sales so far and the next months: ${ahead.map((a) => `${monthName(a.month)} ${fmt(a.revenue.p50, true, sym)}`).join(', ')}`}>
+              <ResponsiveContainer width="100%" height={260}>
+                <ComposedChart data={chart} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                  <CartesianGrid stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="month" tickFormatter={monthTick} minTickGap={16} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickMargin={8} />
+                  <YAxis width={84} tick={{ fontSize: 13, fill: 'var(--text-3)' }} axisLine={false} tickLine={false} tickFormatter={(v) => formatAxis(n(v))} />
+                  <Tooltip content={<ChartTooltip sym={sym} />} cursor={{ stroke: 'var(--border-md)', strokeWidth: 1 }} />
+                  <Area dataKey="range" stroke="none" fill="var(--chart-line)" fillOpacity={0.14} isAnimationActive={false} name="Range" legendType="none" />
+                  <Line dataKey="sales" stroke="var(--chart-line)" strokeWidth={2.4} dot={{ r: 3, fill: 'var(--chart-line)', strokeWidth: 0 }} isAnimationActive={false} name="So far" connectNulls={false} />
+                  <Line dataKey="likely" stroke="var(--chart-line)" strokeWidth={2} strokeDasharray="6 4" dot={{ r: 3.5, fill: 'var(--bg-card)', stroke: 'var(--chart-line)', strokeWidth: 2 }} isAnimationActive={false} name="Likely" />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+            {outlook?.accuracy_words && <p className="bento-note" style={{ marginTop: 12 }}>{outlook.accuracy_words}</p>}
+          </Panel>
+
+          <div style={{ marginTop: 20 }}>
+            <Panel title="Month by month">
+              <div style={{ overflowX: 'auto' }}>
+                <table className="data-table">
+                  <thead>
+                    <tr><th>Month</th><th>Sales, likely</th><th>Sales range</th><th>Costs, likely</th><th>Profit, likely</th><th>Profit range</th></tr>
+                  </thead>
+                  <tbody>
+                    {ahead.map((a) => (
+                      <tr key={a.month}>
+                        <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>{monthName(a.month)}{now && a.month === now.month ? ' (so far ' + fmt(now.revenue.so_far, true, sym) + ')' : ''}</td>
+                        <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>{fmt(a.revenue.p50, false, sym)}</td>
+                        <td style={{ color: 'var(--text-3)' }}>{fmt(a.revenue.p10, true, sym)} to {fmt(a.revenue.p90, true, sym)}</td>
+                        <td style={{ color: 'var(--text-1)' }}>{fmt(a.costs.p50, false, sym)}</td>
+                        <td style={{ fontWeight: 600, color: signTone(a.profit.p50) }}>{fmt(a.profit.p50, false, sym)}</td>
+                        <td style={{ color: a.profit.p10 < 0 ? 'var(--red)' : 'var(--text-3)' }}>{fmt(a.profit.p10, true, sym)} to {fmt(a.profit.p90, true, sym)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+          </div>
+
+          <div className="bento-grid" style={{ marginTop: 20 }}>
+            <BentoCard className="span-6" icon={<ShieldCheck />} title="How AIBOS worked this out" tag="Your months only"
+              text={[
+                outlook?.methods?.length
+                  ? `Several methods were tested on your own past months; the best ${outlook.methods.length === 1 ? 'one is' : `${outlook.methods.length} are`} blended: ${outlook.methods.map((m) => `${m.label} (${Math.round(m.weight * 100)}%)`).join(', ')}.`
+                  : '',
+                outlook?.softened?.length ? `One-off month${outlook.softened.length > 1 ? 's' : ''} softened so ${outlook.softened.length > 1 ? 'they do' : 'it does'} not drive the forecast: ${outlook.softened.map((m) => monthName(m)).join(', ')}.` : '',
+                outlook?.seasonal ? 'Your seasons are used: two full years are recorded.' : 'No seasons are assumed until two full years are recorded.',
+                outlook?.trend ? `Sales are ${outlook.trend.direction === 'steady' ? 'holding steady' : outlook.trend.direction}${outlook.trend.direction !== 'steady' ? `, about ${fmt(Math.abs(outlook.trend.revenue_per_month), true, sym)} a month` : ''}.` : '',
+                'The range is where sales should land 8 times in 10, from simulating your own past surprises.',
+              ].filter(Boolean).join(' ')}
+              foot={next ? <span className="tnum" style={{ color: trendTone(change), fontWeight: 600 }}>{change >= 0 ? '+' : ''}{change.toFixed(1)}% next month against the last one recorded</span> : undefined}
+            />
+          </div>
+        </>
       )}
-    </>
     </FeatureGate>
   );
 }

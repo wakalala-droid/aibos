@@ -31,6 +31,7 @@ export type Feature =
   // Growth — every venture, one brain.
   | 'cross_engine'
   | 'multi_business'   // run several businesses under one login (audit #16)
+  | 'cash_plan'        // the 13-week cash plan, the cash watch and the group view (16 Oct 2026)
   | 'multi_location'   // UNBUILT: flag reserved; never list as a live inclusion (audit 2026-07)
   | 'api_access';      // UNBUILT: flag reserved; never list as a live inclusion (audit 2026-07)
 
@@ -117,16 +118,21 @@ export const TIERS: Record<Tier, TierMeta> = {
   growth: {
     id: 'growth',
     name: 'Growth',
-    tagline: 'Every business you run, one command centre',
+    tagline: 'Your money 13 weeks ahead, every business in one place',
     priceMonthly: 79,
     priceAnnual: 790,
     accent: 'var(--e3)',
+    // The 13-week cash plan (16 Oct 2026): every line below is live and
+    // matches 'cash_plan' in ACCESS and entitlements.py.
     inclusions: [
       'Everything in Pro+',
-      'Run several businesses under one login, each with its own books',
+      'A 13-week cash plan from your own books: wages, ZRA, rent and what customers owe',
+      'The chance you run short each week, and what is safe to spend today',
+      'A warning on your phone weeks before money runs short, with what fixes it',
+      'Try a purchase, a hire or a price change on the plan before you decide',
+      'Run several businesses under one login, with one cash plan across them',
       'One health score across money, customers and operations',
       'Priority support',
-      'First in line to connect your other software (in development)',
     ],
   },
 };
@@ -176,6 +182,8 @@ const GROWTH: Feature[] = [
   // it — omitting it here locked paying Growth owners out of the business
   // switcher the backend would have allowed. Lock-step is the whole point.
   'cross_engine', 'multi_business', 'multi_location', 'api_access',
+  // The 13-week cash plan: lock-step with entitlements.py _GROWTH.
+  'cash_plan',
 ];
 
 const ACCESS: Record<Tier, Feature[]> = {

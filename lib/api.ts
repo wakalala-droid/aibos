@@ -2069,6 +2069,189 @@ export async function simulate(scenario: {
   return data as unknown as SimResult;
 }
 
+// ── The forecast engine and the 13-week cash plan (16 Oct 2026) ──────────────
+// aibos-api forecast_engine.py tests several methods on the owner's own months
+// and blends the best; outlook.py is the Forecast page; cash_plan.py is
+// Growth's day-by-day plan of the next 91 days.
+
+/** The cautious (P10), likely (P50) and hopeful (P90) ends of a range. */
+export interface Band { p10: number; p50: number; p90: number }
+
+export interface ForecastMethod { name: string; label: string; weight: number; score: number }
+
+export interface ForecastAccuracy {
+  tested: number;
+  avg_miss: number;
+  naive_miss: number;
+  avg_miss_pct?: number;
+  naive_miss_pct?: number;
+  better_than_naive_pct?: number;
+}
+
+export interface Outlook {
+  ok: boolean;
+  reason?: string;
+  points?: number;
+  history?: { month: string; revenue: number; costs: number; profit: number }[];
+  this_month?: {
+    month: string;
+    costs_so_far: number;
+    shape_learned: boolean;
+    revenue: { so_far: number; expected_by_now: number; pace_pct: number | null; estimate: number; p10: number; p90: number; share_in: number };
+  } | null;
+  ahead?: { month: string; revenue: Band; costs: Band; profit: Band }[];
+  methods?: ForecastMethod[];
+  accuracy?: ForecastAccuracy;
+  accuracy_words?: string;
+  softened?: string[];
+  seasonal?: boolean;
+  trend?: { revenue_per_month: number; direction: 'growing' | 'slowing' | 'steady' };
+}
+
+/** Sales, costs and profit ahead from the recorded books. */
+export async function getOutlook(): Promise<Outlook> {
+  const data = await spineFetch(`/forecast/outlook?tz=${tzMinutes()}`);
+  return data.outlook as Outlook;
+}
+
+/** The same outlook for an uploaded file's periods (every one finished). */
+export async function getSeriesOutlook(rows: { month: string; revenue: number; costs: number }[]): Promise<Outlook> {
+  const data = await spineFetch('/forecast/series', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rows }),
+  });
+  return data.outlook as Outlook;
+}
+
+export interface PlanItem {
+  id: string;
+  day: string;
+  label: string;
+  amount: number;
+  dir: 'in' | 'out';
+  source: 'waiting' | 'schedule' | 'regular';
+  key?: string;
+  /** For a regular payment: how sure AIBOS is that it comes round, in percent. */
+  chance?: number;
+}
+
+export interface PlanWeek {
+  week: number;
+  start: string;
+  end: string;
+  in: number;
+  out: number;
+  close_p10: number;
+  close_p50: number;
+  close_p90: number;
+  low_p10: number;
+  chance_short_pct: number;
+  items: PlanItem[];
+}
+
+export interface PlanLever {
+  key: 'collect' | 'spend' | 'faster' | 'move';
+  title: string;
+  detail: string;
+  chance_short_pct: number;
+  better_by_pct: number;
+  lowest_p10: number;
+}
+
+export interface PlanDebt {
+  ref: string;
+  customer: string;
+  label: string;
+  amount: number;
+  owed: string;
+  age: number;
+  kind: 'invoice' | 'credit' | 'stay';
+  chance_in_plan_pct: number;
+  likely_by: string | null;
+}
+
+export interface PlanCore {
+  ok: boolean;
+  today: string;
+  until: string;
+  cash_now: number;
+  floor: number;
+  chance_short_pct: number;
+  chance_words: string;
+  lowest: { p50: number; day: string; p10: number };
+  close: Band;
+  first_risk_week: number | null;
+  first_risk_date: string | null;
+  weeks: PlanWeek[];
+  daily: ({ day: string } & Band)[];
+  drivers: Record<'sales' | 'debts_collected' | 'new_credit_collected' | 'known_in' | 'spending' | 'regular_bills' | 'known_out', number>;
+  safe_to_spend?: number;
+  cash_needed?: number;
+  headline: string;
+}
+
+export interface CashPlan extends Partial<PlanCore> {
+  ok: boolean;
+  reason?: string;
+  /** Below Growth: the headline risk only. */
+  preview?: boolean;
+  at_risk?: boolean;
+  sym?: string;
+  levers?: PlanLever[];
+  debts?: PlanDebt[];
+  regular?: { key: string; label: string; cadence: string; amount: number; prob: number; count: number; last: string; next: string[] }[];
+  known?: PlanItem[];
+  accuracy?: Record<string, ForecastAccuracy>;
+  assumptions?: string[];
+  scenario?: {
+    words: string[];
+    plan: PlanCore;
+    change: { chance_short_pct: number; close_p50: number; lowest_p10: number };
+  };
+}
+
+export type PlanDecision =
+  | { type: 'one_off'; direction: 'in' | 'out'; amount: number; date?: string; label?: string }
+  | { type: 'recurring'; direction: 'in' | 'out'; amount: number; every: 'month' | 'week'; start?: string; label?: string }
+  | { type: 'hire'; count: number; monthly_salary: number; allowances?: number; start?: string }
+  | { type: 'sales_change'; pct: number; start?: string }
+  | { type: 'cost_change'; pct: number; start?: string }
+  | { type: 'collect_faster'; days: number }
+  | { type: 'move'; id: string; days: number };
+
+export async function getCashPlan(floor = 0): Promise<CashPlan> {
+  const data = await spineFetch(`/forecast/cash-plan?floor=${Math.max(0, floor)}&tz=${tzMinutes()}`);
+  return data.plan as CashPlan;
+}
+
+/** The plan with decisions tried on it, on the same futures as the plan. */
+export async function decideCashPlan(scenarios: PlanDecision[], floor = 0): Promise<CashPlan> {
+  const data = await spineFetch('/forecast/cash-plan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scenarios, floor: Math.max(0, floor), tz: tzMinutes() }),
+  });
+  return data.plan as CashPlan;
+}
+
+export interface CashGroup {
+  ok: boolean;
+  reason?: string;
+  businesses?: { business_id: string; name: string; cash_now: number; close_p50: number; chance_short_pct: number; first_risk_week: number | null; lowest_p10: number; spare_p10: number }[];
+  cash_now?: number;
+  chance_short_pct?: number;
+  any_short_pct?: number;
+  weeks?: { week: number; close_p10: number; close_p50: number; close_p90: number }[];
+  moves?: { from: string; to: string; amount: number; by_week: number | null; words: string }[];
+  without_plan?: { business_id: string; name: string; cash_now: number; reason: string }[];
+}
+
+export async function getCashGroup(floor = 0): Promise<CashGroup> {
+  const data = await spineFetch(`/forecast/group?floor=${Math.max(0, floor)}&tz=${tzMinutes()}`);
+  return data.group as CashGroup;
+}
+
 /** Seed the twin's opening cash + currency (Setup Wizard). */
 /** opening_cash null leaves the recorded starting cash as it is. */
 export async function seedTwin(opening_cash: number | null, currency = 'ZMW'): Promise<Twin> {

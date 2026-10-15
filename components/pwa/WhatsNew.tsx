@@ -20,8 +20,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
-  Archive, Hash, LayoutGrid, MessageSquareText, PanelLeft, Scale, Sparkles, TrendingUp, X,
-  type LucideIcon,
+  Archive, BellRing, Building2, CalendarRange, FlaskConical, Hash, LayoutGrid, MessageSquareText,
+  PanelLeft, Scale, ShieldCheck, Sparkles, TrendingUp, X, type LucideIcon,
 } from 'lucide-react';
 import { useProfile } from '@/lib/profile';
 import { useTheme } from '@/lib/theme';
@@ -38,6 +38,11 @@ const ICONS: Record<ReleaseIcon, LucideIcon> = {
   menu: PanelLeft,
   line: TrendingUp,
   studio: Archive,
+  plan: CalendarRange,
+  warn: BellRing,
+  decide: FlaskConical,
+  group: Building2,
+  accuracy: ShieldCheck,
 };
 
 /** "New this morning", "New since yesterday" or "New since 5 October". */

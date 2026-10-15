@@ -8,7 +8,8 @@
 // line to one plain sentence about what the owner will notice.
 
 export type ReleaseIcon =
-  | 'bento' | 'ink' | 'breakeven' | 'words' | 'assistant' | 'menu' | 'line' | 'studio';
+  | 'bento' | 'ink' | 'breakeven' | 'words' | 'assistant' | 'menu' | 'line' | 'studio'
+  | 'plan' | 'warn' | 'decide' | 'group' | 'accuracy';
 
 export interface Release {
   /** Unique; seen once per device. */
@@ -21,6 +22,20 @@ export interface Release {
 }
 
 export const RELEASES: Release[] = [
+  {
+    id: '2026-10-16-cash-plan',
+    date: '2026-10-16',
+    title: 'See your money 13 weeks ahead',
+    intro: 'A smarter forecast on every paid plan, and a cash plan on Growth that warns you before money runs short.',
+    items: [
+      { icon: 'line', title: 'A smarter forecast', text: 'Several methods are tested on your own months and the best are blended, with the range your sales should land in.' },
+      { icon: 'accuracy', title: 'It says how accurate it is', text: 'The Forecast page shows how far off it has been on your past months, beside simply repeating last month.' },
+      { icon: 'plan', title: 'The 13-week cash plan (Growth)', text: 'Wages, ZRA, rent and what customers owe, day by day, with the chance you run short and what is safe to spend today.' },
+      { icon: 'warn', title: 'A warning before money runs short', text: 'Growth owners get a notification on their phone weeks ahead, with the move that fixes it.' },
+      { icon: 'decide', title: 'Try a decision first', text: 'See what a purchase, a hire or a price change does to the next 13 weeks before you make it.' },
+      { icon: 'group', title: 'All your businesses together', text: 'One cash plan across every business you run, and when one can cover another.' },
+    ],
+  },
   {
     id: '2026-10-05-bento',
     date: '2026-10-05',

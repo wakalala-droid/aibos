@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   LayoutGrid, MessageCircle, Sunrise, Building2, LockKeyhole,
-  RefreshCw, RotateCcw, Download, ReceiptText, BellRing,
+  RefreshCw, RotateCcw, Download, ReceiptText, BellRing, CalendarRange,
 } from 'lucide-react';
 import { BentoCard } from '@/components/kit';
 import HowItWorks from '@/components/marketing/HowItWorks';
@@ -31,6 +31,7 @@ const FEATURE_GLOSSARY: { icon: React.ReactNode; term: string; plain: string }[]
   { icon: <MessageCircle />, term: 'Ask AIBOS', plain: 'Ask your business anything in plain words. It answers from your own records in Kwacha and remembers the conversation. Free gets 3 questions a day and Pro has no limit.' },
   { icon: <Sunrise />, term: 'The morning brief', plain: 'Your cash, yesterday’s sales, stock to reorder and the one thing to do, every morning at 06:30. Pro sends it by email and to your phone. Pro+ puts it on Home and sends it to WhatsApp (rolling out).' },
   { icon: <Building2 />, term: 'A business', plain: 'One venture with its own books. Every plan runs one. Growth runs several (a shop, a salon, a lodge) under one login, each with its own books.' },
+  { icon: <CalendarRange />, term: 'The 13-week cash plan', plain: 'Growth works out your money day by day for the next 13 weeks from your own books: wages on payday, ZRA on the 10th, rent, and what customers owe and when they usually pay. It shows the chance you run short, what is safe to spend today and what fixes a shortfall, and warns your phone weeks ahead.' },
 ];
 
 const TRUST: { icon: React.ReactNode; title: string; body: string }[] = [
@@ -79,8 +80,11 @@ export default async function PricingPage() {
             </div>
           </div>
           <div className="bento-grid">
-            {FEATURE_GLOSSARY.map((f) => (
-              <BentoCard key={f.term} className="span-3" icon={f.icon} title={f.term} text={f.plain} />
+            {/* Pairs, and an odd last card across the row so the grid has no hole. */}
+            {FEATURE_GLOSSARY.map((f, i) => (
+              <BentoCard key={f.term}
+                className={i === FEATURE_GLOSSARY.length - 1 && FEATURE_GLOSSARY.length % 2 === 1 ? 'span-6' : 'span-3'}
+                icon={f.icon} title={f.term} text={f.plain} />
             ))}
           </div>
         </div>

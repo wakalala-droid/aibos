@@ -184,6 +184,7 @@ const TOOL_STATUS: Record<string, string> = {
   list_invoices: 'Checking your invoices…',
   simulate_scenario: 'Working out the numbers…',
   cash_forecast: 'Working out your cash ahead…',
+  cash_plan: 'Reading your 13-week cash plan…',
   who_owes_me: 'Checking who owes you…',
   investigate_month: 'Finding what changed…',
   customer_summary: 'Looking at your customers…',
