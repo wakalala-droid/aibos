@@ -316,6 +316,11 @@ export async function unsubscribePush(endpoint: string): Promise<void> {
 export async function sendTestPush(): Promise<{ sent?: number }> {
   return (await spineFetch('/push/test', { method: 'POST' })) as unknown as { sent?: number };
 }
+/** The owner's own Morning Brief to their own WhatsApp, now. `to` is the
+ *  number's last three digits. A refusal throws in Meta's own words. */
+export async function sendTestWhatsAppBrief(): Promise<{ ok?: boolean; to?: string }> {
+  return (await spineFetch('/notify/test-whatsapp', { method: 'POST' })) as unknown as { ok?: boolean; to?: string };
+}
 /** What one announcement did, or would do (dry_run). Admin only: the API
  *  checks the caller against an address Google has proven they own. */
 export interface AnnounceResult {

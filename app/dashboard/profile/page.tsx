@@ -14,7 +14,7 @@ import { TIERS, canAccess, type Tier } from '@/lib/tiers';
 import { useStore } from '@/lib/store';
 import { CURRENCIES } from '@/lib/currency';
 import {
-  briefDeliveryConfig, listMembers, inviteMember, updateMemberRole, revokeMember,
+  briefDeliveryConfig, sendTestWhatsAppBrief, listMembers, inviteMember, updateMemberRole, revokeMember,
   getMemorySummary, getMemoryMappings, forgetMapping, exportEventsCsv, exportPnlCsv,
   getPaymentAccount, connectPaymentAccount, disconnectPaymentAccount,
   type TeamMember, type TeamMemberRole, type PaymentAccount,
@@ -786,6 +786,8 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+  const [testNote, setTestNote] = useState<string | null>(null);
 
   useEffect(() => { setEmailOn(emailEnabled); }, [emailEnabled]);
   useEffect(() => { setWaNumber(whatsappNumber); }, [whatsappNumber]);
@@ -817,6 +819,20 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
       setError((e as Error).message);
     } finally {
       setSaving(false);
+    }
+  }
+
+  // The brief that goes out at 06:30, to the saved number, now: the one way
+  // to see it arrive without waiting for tomorrow.
+  async function sendTest() {
+    setTesting(true); setTestNote(null);
+    try {
+      const r = await sendTestWhatsAppBrief();
+      setTestNote(`On its way to your WhatsApp ending ${r.to ?? ''}. It should arrive within a minute.`);
+    } catch (e) {
+      setTestNote((e as Error).message);
+    } finally {
+      setTesting(false);
     }
   }
 
@@ -891,10 +907,21 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
           >
             {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save delivery settings'}
           </button>
+          {canWa && channels?.whatsapp && whatsappNumber && (
+            <button type="button" className="pill pill-quiet" onClick={() => void sendTest()} disabled={testing}>
+              {testing ? 'Sending…' : 'Send me one on WhatsApp now'}
+            </button>
+          )}
           {error && (
             <span role="alert" style={{ fontSize: 'var(--fs-data)', color: 'var(--crit)' }}>{error}</span>
           )}
         </div>
+
+        {testNote && (
+          <p role="status" style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>
+            {testNote}
+          </p>
+        )}
 
         {channels && (!channels.email || !channels.whatsapp) && (
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0, lineHeight: 1.5 }}>
