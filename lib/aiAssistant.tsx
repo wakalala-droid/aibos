@@ -807,6 +807,10 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         }
       };
       let stopped: string | null = null;
+      // retry:false: the API knows the buffered path would fail the same way
+      // (an allowance spent, or the AI not answering at all), so its words
+      // are shown at once instead of being tried again.
+      let final = false;
       const reads: ChatRead[] = [];   // what each lookup read (C8)
       // A refusal (no plan, no AI key, a bad request) now arrives as a frame,
       // because the API opens the answer before it checks anything.
@@ -835,7 +839,10 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
             else if (msg.status === 'thinking') setStatus((s) => s ?? 'Thinking…');
             // retry:false is a spent allowance: the buffered path would only
             // spend another request against the same limit.
-            else if (msg.error && (msg.retry === false || bubble.id)) stopped = msg.error;
+            else if (msg.error && (msg.retry === false || bubble.id)) {
+              stopped = msg.error;
+              final = final || msg.retry === false;
+            }
             else if (msg.error) stopped = stopped ?? msg.error;
           } catch { /* ignore a malformed frame rather than kill the answer */ }
         }
@@ -854,7 +861,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         setOnline(true);
         return 'answered';
       }
-      if (stopped && (/limit|allowance|resting/i.test(stopped) || slow())) {
+      if (stopped && (final || /limit|allowance|resting/i.test(stopped) || slow())) {
         pushAssistant(stopped, true);
         setOnline(true);
         return 'failed';
