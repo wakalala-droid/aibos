@@ -13,6 +13,10 @@
 // a line can fit well and still miss every month. "How accurate" here is the
 // forecast's real average miss on the owner's past months, beside what simply
 // repeating last month would have missed.
+//
+// Beside it, the track record: what AIBOS said before each month happened,
+// kept once a month and checked against the books once the month has closed.
+// The first is a backtest; the second is earned.
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -29,7 +33,9 @@ import FeatureGate from '@/components/ui/FeatureGate';
 import TimeSeriesUnavailable from '@/components/ui/TimeSeriesUnavailable';
 import PageHeader from '@/components/ui/PageHeader';
 import CashForecastFan from '@/components/dashboard/CashForecastFan';
-import { getOutlook, getSeriesOutlook, type Outlook } from '@/lib/api';
+import ForecastTrackRecord from '@/components/dashboard/ForecastTrackRecord';
+import { bentoSpans } from '@/components/kit';
+import { getOutlook, getSeriesOutlook, getTrackRecord, type Outlook, type TrackRecord } from '@/lib/api';
 import { canAccess } from '@/lib/tiers';
 import { signTone, trendTone } from '@/lib/tone';
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -47,6 +53,7 @@ export default function ForecastPage() {
   const waiting = twinLoading || (!twinChecked && !uploadedFile);
   const [outlook, setOutlook] = useState<Outlook | null>(null);
   const [failed, setFailed] = useState(false);
+  const [record, setRecord] = useState<TrackRecord | null>(null);
 
   // An uploaded file's periods, as they were read.
   const fileRows = useMemo(() => (Array.isArray(monthly) ? monthly : []).map((m) => {
@@ -64,6 +71,17 @@ export default function ForecastPage() {
     return () => { alive = false; };
   }, [fromBooks, fileRows, waiting, dataShape, version]);
 
+  // The track record is kept for recorded books only; before its migration
+  // has been run the card is simply not there.
+  useEffect(() => {
+    if (waiting || !fromBooks) { setRecord(null); return; }
+    let alive = true;
+    getTrackRecord()
+      .then((r) => { if (alive) setRecord(r?.available ? r : null); })
+      .catch(() => { if (alive) setRecord(null); });
+    return () => { alive = false; };
+  }, [fromBooks, waiting, version]);
+
   if (dataShape === 'cross_sectional') {
     return <TimeSeriesUnavailable title="Forecast" feature="Forecasting" />;
   }
@@ -78,6 +96,7 @@ export default function ForecastPage() {
   const acc = outlook?.accuracy;
   const lastActual = outlook?.history?.length ? outlook.history[outlook.history.length - 1].revenue : 0;
   const change = next && lastActual > 0 ? ((next.revenue.p50 - lastActual) / lastActual) * 100 : 0;
+  const spans = bentoSpans(record ? 2 : 1);
 
   // The last twelve months as recorded, then the months ahead; the likely line
   // starts from the last real month so the two join.
@@ -192,7 +211,7 @@ export default function ForecastPage() {
           </div>
 
           <div className="bento-grid" style={{ marginTop: 20 }}>
-            <BentoCard className="span-6" icon={<ShieldCheck />} title="How AIBOS worked this out" tag="Your months only"
+            <BentoCard className={spans[0]} icon={<ShieldCheck />} title="How AIBOS worked this out" tag="Your months only"
               text={[
                 outlook?.methods?.length
                   ? `Several methods were tested on your own past months; the best ${outlook.methods.length === 1 ? 'one is' : `${outlook.methods.length} are`} blended: ${outlook.methods.map((m) => `${m.label} (${Math.round(m.weight * 100)}%)`).join(', ')}.`
@@ -204,6 +223,7 @@ export default function ForecastPage() {
               ].filter(Boolean).join(' ')}
               foot={next ? <span className="tnum" style={{ color: trendTone(change), fontWeight: 600 }}>{change >= 0 ? '+' : ''}{change.toFixed(1)}% next month against the last one recorded</span> : undefined}
             />
+            {record && <ForecastTrackRecord record={record} sym={sym} className={spans[1]} />}
           </div>
         </>
       )}

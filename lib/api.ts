@@ -2114,6 +2114,48 @@ export async function getOutlook(): Promise<Outlook> {
   return data.outlook as Outlook;
 }
 
+/** One forecast AIBOS kept before its month (or day) happened, and how it did. */
+export interface TrackRow {
+  target: string;            // 'YYYY-MM' for sales, 'YYYY-MM-DD' for the cash plan's week 4
+  kept_on: string | null;
+  p10: number;
+  p50: number;
+  p90: number;
+  status: 'judged' | 'waiting' | 'unrecorded';
+  actual?: number;
+  side?: 'inside' | 'above' | 'below';
+  inside?: boolean;
+  miss_pct?: number;
+  hit_rate_pct?: number;     // the running hit rate up to this one
+  judged_from?: string;
+  reason?: string;
+}
+
+export interface TrackSummary {
+  rows: TrackRow[];          // oldest first
+  judged: number;
+  inside: number;
+  hit_rate_pct: number | null;
+  recent: { count: number; inside: number };
+  expected_pct: number;
+  words: string;
+  next: TrackRow | null;
+}
+
+export interface TrackRecord {
+  available: boolean;
+  reason?: string;
+  sym?: string;
+  sales: TrackSummary | null;
+  cash: TrackSummary | null; // Growth, owner and accountant
+}
+
+/** What the forecast said before each month, against the confirmed books. */
+export async function getTrackRecord(): Promise<TrackRecord> {
+  const data = await spineFetch('/forecast/track-record');
+  return data.record as TrackRecord;
+}
+
 /** The same outlook for an uploaded file's periods (every one finished). */
 export async function getSeriesOutlook(rows: { month: string; revenue: number; costs: number }[]): Promise<Outlook> {
   const data = await spineFetch('/forecast/series', {
