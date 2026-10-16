@@ -7,6 +7,7 @@
 //   greeting · the day · "updated just now"
 //   action pills: Record, Scan a receipt, New invoice, Ask AIBOS
 //   the money hero with its living line   |  where the money is
+//   the next 13 weeks (the cash watch: Growth, or at risk)
 //   AIBOS's read of the day, with the ask bar
 //   today's sales · getting paid · stock
 //   recent activity                        |  coming up (the schedule)
@@ -37,6 +38,7 @@ import MoneyHero from './MoneyHero';
 import WhereItIs from './WhereItIs';
 import ActivityFeed from './ActivityFeed';
 import ComingUp from './ComingUp';
+import CashWatch from './CashWatch';
 import BigMoney from './BigMoney';
 import Panel from './Panel';
 
@@ -159,6 +161,9 @@ export default function HomeTop() {
           <WhereItIs />
         </div>
       )}
+
+      {/* The next 13 weeks in a glance (Growth); below Growth only when at risk. */}
+      {seesMoney && <CashWatch />}
 
       {/* AIBOS's read of the day, and the ask bar */}
       <Panel labelledBy="aibos-read-title" title={

@@ -14,6 +14,7 @@ import BentoCard from '@/components/ui/BentoCard';
 import { DayBadge, Note } from '@/components/hospitality/kit';
 import PlanChart, { dayWords } from '@/components/cashplan/PlanChart';
 import DecisionPanel from '@/components/cashplan/DecisionPanel';
+import ChaseList from '@/components/cashplan/ChaseList';
 import type { CashGroup, CashPlan, PlanWeek } from '@/lib/api';
 import { fmt } from '@/lib/utils';
 import { BAD, signTone } from '@/lib/tone';
@@ -197,7 +198,9 @@ export default function PlanBody({ plan, sym, floor, floorText, setFloorText, se
             <p className="bento-note" style={{ marginTop: 8 }}>On the average future, added up over the 13 weeks.</p>
           </Panel>
 
-          {(p.debts ?? []).length > 0 && (
+          {(p.chase ?? []).length > 0 ? (
+            <ChaseList rows={p.chase ?? []} sym={sym} />
+          ) : (p.debts ?? []).length > 0 && (
             <Panel title="Money owed to you">
               <ul style={{ margin: 0, padding: 0 }}>
                 {(p.debts ?? []).slice(0, 8).map((d) => (

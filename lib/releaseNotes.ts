@@ -23,6 +23,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: '2026-10-16-chase-and-pace',
+    date: '2026-10-16',
+    title: 'Who to ask for money first',
+    intro: 'Your plan now acts: on Home, in your pocket every Monday, and on your monthly targets.',
+    items: [
+      { icon: 'plan', title: 'The next 13 weeks on Home (Growth)', text: 'What is safe to spend today, the chance of running short and what is due out in the next two weeks, the moment you open AIBOS.' },
+      { icon: 'assistant', title: 'Ask for money first (Growth)', text: 'Debts in the order that helps your money most, each with the reminder and your payment link ready to send on WhatsApp.' },
+      { icon: 'warn', title: 'Your week ahead (Growth)', text: 'Every Monday morning on your phone: what goes out and when, what is likely to come in, and who to ask first.' },
+      { icon: 'line', title: 'Targets judged on pace', text: 'Halfway through the month your plan no longer reads red for half a month of sales: it says what the month is on pace for and the chance you hit it.' },
+    ],
+  },
+  {
     id: '2026-10-16-cash-plan',
     date: '2026-10-16',
     title: 'See your money 13 weeks ahead',

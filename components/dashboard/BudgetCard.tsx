@@ -3,6 +3,11 @@
 // BudgetCard — actuals vs the owner's plan (audit #37). Set a monthly target
 // for revenue, costs and profit; AIBOS shows where you are against intent, not
 // just last month. Actuals are derived from recorded data (never invented).
+//
+// The month still running is judged on PACE (16 Oct 2026): half a month of
+// sales always read red against a whole month's plan. Each line now says what
+// the month is on pace for (the forecast engine and how a month usually
+// fills up), the chance of meeting the plan, and what it takes a day from here.
 // Silent gracefully before migration 0024 exists (fetch just fails quietly).
 
 import { useCallback, useEffect, useState } from 'react';
@@ -101,8 +106,11 @@ export default function BudgetCard() {
           {report!.lines.map((l) => {
             const pct = l.pct_of_target ?? 0;
             const barPct = Math.max(0, Math.min(pct, 100));
-            const off = !l.on_track;
+            const paced = typeof l.projected === 'number';
+            const off = paced ? !l.on_pace : !l.on_track;
             const word = METRICS.find((m) => m.key === l.metric)?.label ?? l.metric;
+            const costs = l.metric === 'costs';
+            const days = l.days_left ?? 0;
             return (
               <div key={l.metric}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
@@ -115,6 +123,19 @@ export default function BudgetCard() {
                 <div className="meter" style={{ height: 8 }}>
                   <div className={`meter-fill${off ? ' bad' : ''}`} style={{ width: `${barPct}%` }} />
                 </div>
+                {paced && (
+                  <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', lineHeight: 1.5, color: off ? BAD : 'var(--text-3)' }}>
+                    On pace for <strong style={{ color: off ? BAD : INK }}>{fmt(l.projected!, false, sym)}</strong>,
+                    {' '}{l.chance_pct}% chance of {costs ? 'staying within' : 'reaching'} your plan.
+                    {days > 0 && typeof l.per_day === 'number' && (
+                      costs
+                        ? ` Room for ${fmt(l.per_day, false, sym)} a day for the ${days} day${days === 1 ? '' : 's'} left.`
+                        : l.per_day > 0
+                          ? ` ${fmt(l.per_day, false, sym)} a day for the ${days} day${days === 1 ? '' : 's'} left gets you there.`
+                          : ' Already there.'
+                    )}
+                  </p>
+                )}
               </div>
             );
           })}

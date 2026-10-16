@@ -712,15 +712,25 @@ export interface BudgetLine {
   delta: number;
   pct_of_target: number | null;
   on_track: boolean;
+  /** The month still running (16 Oct 2026): what it is on pace for, the
+   *  chance of meeting the plan, and a day's worth from here (still to make
+   *  for sales and profit, room left for costs). */
+  projected?: number;
+  chance_pct?: number;
+  on_pace?: boolean;
+  per_day?: number;
+  days_left?: number;
 }
 export interface BudgetReport {
   month: string;
   actuals: { revenue: number; costs: number; profit: number };
   lines: BudgetLine[];
+  /** True when the lines carry the month-still-running pace. */
+  pace?: boolean;
 }
 
 export async function getBudgets(month: string): Promise<BudgetReport> {
-  const data = await spineFetch(`/budgets?month=${encodeURIComponent(month)}`);
+  const data = await spineFetch(`/budgets?month=${encodeURIComponent(month)}&tz=${tzMinutes()}`);
   return data as unknown as BudgetReport;
 }
 
@@ -2213,6 +2223,51 @@ export interface PlanDebt {
   likely_by: string | null;
 }
 
+/** Who to ask for money first, with why and the reminder ready to send. */
+export interface PlanChase extends PlanDebt {
+  why: string;
+  /** How much collecting it this week lowers the chance of running short (points), when at risk. */
+  cuts_risk_pct?: number;
+  chance_short_after_pct?: number;
+  /** For wa.me: digits with the country code, or null when no number is known. */
+  phone?: string | null;
+  pay_url?: string | null;
+  pay_urls?: string[];
+  message?: string;
+  /** How many amounts this customer owes (one row, one reminder, per customer). */
+  count?: number;
+  numbers?: string[];
+}
+
+/** The plan in a sentence, for Home (GET /forecast/cash-watch). */
+export interface CashWatch {
+  ok: boolean;
+  reason?: string;
+  preview?: boolean;
+  at_risk?: boolean;
+  headline?: string;
+  chance_short_pct?: number;
+  chance_words?: string;
+  first_risk_date?: string | null;
+  safe_to_spend?: number;
+  cash_needed?: number;
+  lowest?: { p50: number; day: string; p10: number };
+  cash_now?: number;
+  sym?: string;
+  coming?: { day: string; label: string; amount: number; source: string }[];
+  chase_first?: { customer: string; amount: number; why: string; phone?: string | null; message?: string } | null;
+}
+
+export async function getCashWatch(): Promise<CashWatch> {
+  const data = await spineFetch(`/forecast/cash-watch?tz=${tzMinutes()}`);
+  return data.watch as CashWatch;
+}
+
+/** A WhatsApp link with the message ready; the owner sends it from their own phone. */
+export function whatsAppLink(message: string, phone?: string | null): string {
+  return `https://wa.me/${phone ?? ''}?text=${encodeURIComponent(message)}`;
+}
+
 export interface PlanCore {
   ok: boolean;
   today: string;
@@ -2242,6 +2297,7 @@ export interface CashPlan extends Partial<PlanCore> {
   sym?: string;
   levers?: PlanLever[];
   debts?: PlanDebt[];
+  chase?: PlanChase[];
   regular?: { key: string; label: string; cadence: string; amount: number; prob: number; count: number; last: string; next: string[] }[];
   known?: PlanItem[];
   accuracy?: Record<string, ForecastAccuracy>;
