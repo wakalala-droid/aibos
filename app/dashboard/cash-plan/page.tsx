@@ -8,17 +8,20 @@
  * chance the money goes short each week, the lowest point, what is safe to
  * spend today and what fixes a shortfall, with any decision tried on the
  * same futures. Below Growth the page shows the owner's own headline risk,
- * locked but visible.
+ * locked but visible. "Download for the bank" hands Growth the cash flow
+ * projection a bank asks for with a loan application, a PDF the server
+ * builds from the same read of the books (aibos-api bank_pack.py).
  */
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Download } from 'lucide-react';
 import PageHeader from '@/components/ui/PageHeader';
 import FeatureGate from '@/components/ui/FeatureGate';
 import Panel from '@/components/home/Panel';
 import { DayBadge, Note } from '@/components/hospitality/kit';
 import PlanBody, { teaser } from '@/components/cashplan/PlanBody';
-import { ApiError, getCashGroup, getCashPlan, type CashGroup, type CashPlan } from '@/lib/api';
+import { ApiError, downloadBankProjection, getCashGroup, getCashPlan, type CashGroup, type CashPlan } from '@/lib/api';
 import { useStore } from '@/lib/store';
 import { canAccess } from '@/lib/tiers';
 import { fmt } from '@/lib/utils';
@@ -35,6 +38,19 @@ export default function CashPlanPage() {
   const [tried, setTried] = useState<CashPlan | null>(null);
   const [open, setOpen] = useState<number | null>(null);
   const [group, setGroup] = useState<CashGroup | null>(null);
+  const [bankBusy, setBankBusy] = useState(false);
+  const [bankError, setBankError] = useState<string | null>(null);
+
+  async function forTheBank() {
+    setBankBusy(true); setBankError(null);
+    try {
+      await downloadBankProjection(floor);
+    } catch (e) {
+      setBankError((e as Error).message || 'The projection could not be made just now. Try again in a moment.');
+    } finally {
+      setBankBusy(false);
+    }
+  }
 
   const load = useCallback(async (f: number) => {
     try {
@@ -65,9 +81,21 @@ export default function CashPlanPage() {
       <PageHeader
         title="Cash plan"
         subtitle="Your money day by day for the next 13 weeks, from your own books."
-        actions={<Link className="pill" href="/dashboard/forecast">Sales forecast</Link>}
+        actions={
+          <>
+            <Link className="pill" href="/dashboard/forecast">Sales forecast</Link>
+            {growth && plan?.ok && !plan.preview && (
+              <button type="button" className="pill pill-primary" onClick={() => void forTheBank()}
+                disabled={bankBusy} aria-busy={bankBusy}
+                title="The cash flow projection a bank asks for with a loan application, as a PDF">
+                <Download aria-hidden="true" />{bankBusy ? 'Preparing the PDF' : 'Download for the bank'}
+              </button>
+            )}
+          </>
+        }
       />
       {failed && <Note tone="bad">{failed}</Note>}
+      {bankError && <Note tone="bad">{bankError}</Note>}
       {!plan && !failed && <div className="skeleton" style={{ height: 320, borderRadius: 'var(--radius-lg)' }} />}
 
       {plan && (

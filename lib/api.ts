@@ -2277,6 +2277,17 @@ export async function decideCashPlan(scenarios: PlanDecision[], floor = 0): Prom
   return data.plan as CashPlan;
 }
 
+/** The cash flow projection a bank asks for with a loan application
+ *  (Growth): the money now, 12 months ahead, the 13 weeks, money owed, the
+ *  regular payments and the assumptions. Built on the server from the same
+ *  read of the books as the plan, so every figure is the books' own. */
+export async function downloadBankProjection(floor = 0): Promise<void> {
+  const d = new Date();
+  const day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  await downloadFile(`/forecast/cash-plan/bank.pdf?floor=${Math.max(0, floor)}&tz=${tzMinutes()}`,
+    `cash_flow_projection_${day}.pdf`);
+}
+
 export interface CashGroup {
   ok: boolean;
   reason?: string;
