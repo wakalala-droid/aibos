@@ -266,8 +266,10 @@
   --card-wash-opacity: 0.7;
   --aurora:         rgba(59,130,246,0.12);
   --card-top:       rgba(255,255,255,0.8);
-  --band:           #151413;
-  --band-line:      #151413;
+  /* The letterhead band is the ink of the If unpaid blocks (--text-1), not a deeper black
+     (owner, 18 Oct 2026: "you made the black on the header too dark"). */
+  --band:           #1c1917;
+  --band-line:      #1c1917;
   --gold:           #D3BD90;
 
   /* Bento dots — warm ink on the off-white surface. Cranked up a touch
@@ -1927,9 +1929,11 @@ html, body {
   min-height: 168px; padding: 22px 24px; background: var(--band); color: #ffffff;
   border-bottom: 1px solid color-mix(in srgb, var(--gold) 70%, transparent);
 }
+/* The light in the top-left corner: the corner wash every kit card has, strong enough to see on
+   the ink (owner, 18 Oct 2026: "you forgot to add the light in the corner"). */
 .doc-band::before {
   content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background: radial-gradient(ellipse 55% 130% at 10% 0%, rgba(59,130,246,0.22), transparent 70%);
+  background: radial-gradient(ellipse 60% 140% at 12% 0%, rgba(59,130,246,0.34), transparent 70%);
 }
 /* Back layer: faint chart hairlines and the trend line across the whole band, behind the words. */
 .doc-trend { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
@@ -1966,7 +1970,7 @@ html, body {
 @media print {
   .doc-head {
     --bg-card: #ffffff; --border: rgba(28,25,23,0.08); --text-1: #1c1917; --text-3: #5d5954;
-    --band: #151413; --band-line: #151413;
+    --band: #1c1917; --band-line: #1c1917;
     box-shadow: none; break-inside: avoid;
   }
   .doc-head, .doc-head * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
