@@ -1926,14 +1926,13 @@ html, body {
   --doc-art-room: 190px;
   position: relative; isolation: isolate; overflow: hidden;
   display: flex; flex-direction: column; justify-content: space-between; gap: 28px;
-  min-height: 168px; padding: 22px 24px; background: var(--band); color: #ffffff;
+  min-height: 168px; padding: 22px 24px; color: #ffffff;
+  /* The light in the top-left corner: the corner wash every kit card has, strong enough to see on
+     the ink (owner, 18 Oct 2026: "you forgot to add the light in the corner"). Painted in solid
+     colours on the band itself: a see-through gradient prints as a soft mask, which many PDF
+     viewers drop, and the light vanished from the PDFs. */
+  background: radial-gradient(ellipse 60% 140% at 12% 0%, color-mix(in srgb, #3b82f6 34%, var(--band)), var(--band) 70%);
   border-bottom: 1px solid color-mix(in srgb, var(--gold) 70%, transparent);
-}
-/* The light in the top-left corner: the corner wash every kit card has, strong enough to see on
-   the ink (owner, 18 Oct 2026: "you forgot to add the light in the corner"). */
-.doc-band::before {
-  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background: radial-gradient(ellipse 60% 140% at 12% 0%, rgba(59,130,246,0.34), transparent 70%);
 }
 /* Back layer: faint chart hairlines and the trend line across the whole band, behind the words. */
 .doc-trend { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
