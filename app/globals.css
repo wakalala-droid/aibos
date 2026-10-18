@@ -1919,8 +1919,9 @@ html, body {
    the back, the hairlines and the cyan trend line across the whole band,
    behind the words; in front on the right, the emblem. Under it, the facts
    every document carries. The PDF twin is aibos-api/pdfdoc.py. */
-.doc-head { border-radius: var(--radius-card); border: 1px solid var(--band-line); overflow: hidden; background: var(--bg-card); box-shadow: var(--shadow-card); }
+.doc-head { container: doc / inline-size; border-radius: var(--radius-card); border: 1px solid var(--band-line); overflow: hidden; background: var(--bg-card); box-shadow: var(--shadow-card); }
 .doc-band {
+  --doc-art-room: 190px;
   position: relative; isolation: isolate; overflow: hidden;
   display: flex; flex-direction: column; justify-content: space-between; gap: 28px;
   min-height: 168px; padding: 22px 24px; background: var(--band); color: #ffffff;
@@ -1935,8 +1936,11 @@ html, body {
 .doc-trend .gl { stroke: rgba(255,255,255,0.05); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .doc-trend .ln { fill: none; stroke: #22d3ee; stroke-width: 1.5; stroke-linecap: round; opacity: 0.38; vector-effect: non-scaling-stroke; }
 /* Front: the emblem on the right. The mark on a white disc inside a dashed ring, a faint outer ring,
-   the cyan point and the rising double arrow. No tiles. */
-.doc-art { position: absolute; z-index: -1; right: 8px; top: 0; width: 260px; height: 100%; pointer-events: none; }
+   the cyan point and the rising double arrow. No tiles. Always in front at full strength, at every
+   width: the words keep clear of it (--doc-art-room) instead of the emblem fading behind them
+   (owner, 18 Oct 2026: "the logo on the right side of the letter head is behind"). */
+.doc-art { position: absolute; z-index: 1; right: 8px; top: 0; width: 260px; height: 100%; pointer-events: none; }
+.doc-brand, .doc-name { padding-right: var(--doc-art-room); }
 .doc-art .r { fill: none; stroke: rgba(255,255,255,0.24); stroke-width: 1; }
 .doc-art .r.dashed { stroke-dasharray: 2 6; }
 .doc-art .r.outer { stroke: rgba(255,255,255,0.08); }
@@ -1969,9 +1973,11 @@ html, body {
   .doc-band { min-height: 128px; padding: 16px 22px; gap: 16px; }
   .doc-meta div { padding: 10px 20px; }
 }
-@media (max-width: 640px) {
-  .doc-band { min-height: 0; padding: 18px 20px; gap: 22px; }
-  .doc-art { width: 200px; right: 0; opacity: 0.45; }
+/* A narrow header (a phone, or a page beside the side menu): measured on the header itself, not
+   the screen. The emblem shrinks but stays in front at full strength, never faded. */
+@container doc (max-width: 680px) {
+  .doc-band { --doc-art-room: 100px; min-height: 0; padding: 18px 20px; gap: 22px; }
+  .doc-art { width: 132px; right: 4px; }
   .doc-brand .rule, .doc-brand .line { display: none; }
   .doc-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .doc-meta dd { white-space: normal; overflow-wrap: anywhere; }

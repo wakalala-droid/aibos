@@ -11,7 +11,9 @@
  *   - the back layer: faint hairlines and the cyan trend line with its
  *     shading, across the whole band and behind the words
  *   - the emblem on the right: the navy mark on a white disc inside a dashed
- *     ring and a fainter outer ring, the cyan point and the rising double arrow
+ *     ring and a fainter outer ring, the cyan point and the rising double arrow,
+ *     always in front at full strength with the words kept clear of it, at
+ *     every width (owner, 18 Oct 2026)
  *   - under the band, the facts the document carries (Prepared for, Date,
  *     From), two columns on a phone
  * The PDF twin is aibos-api/pdfdoc.py (_letterhead). Classes in globals.css.
