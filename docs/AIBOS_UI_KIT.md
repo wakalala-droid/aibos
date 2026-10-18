@@ -2,17 +2,20 @@
 
 The AIBOS x Mercury look, as one pack. Every page, notice, reminder, alert, toast, email and PDF is built from these pieces. Never a stock or library look.
 
-Import: `import { Notice, BentoCard, NoticeArt, BrandMark } from '@/components/kit';`
+Import: `import { Notice, BentoCard, NoticeArt, BrandMark, DocHeader } from '@/components/kit';`
 
 ## Brand elements
 - **The mark** (`BrandMark`): white glyph on dark, navy on light. Files in `public/brand/`.
 - **The splash art strip** (`NoticeArt`, `.notice-art-strip`): hairline tiles, the rising cyan money line with soft shading, the AIBOS mark in a white disc inside a dashed ring in the middle, a cyan point on the ring, and the rising double arrow at the top right in ink.
+- **The document header** (`DocHeader`, `.doc-head`): the letterhead every document opens with: reminders, statements, notices and PDFs (owner, 18 Oct 2026). An ink band (`--band`) ending on the logo's gold rule (`--gold` at 70%, the rule in `aibos-lockup.png`). Top left: the white glyph, the white wordmark cropped to its bounds (`aibos-wordmark-white-tight.png`), a short gold rule and "Business operating system" in spaced capitals. Bottom left: the document name (22px, white) and a brand-cyan tag. At the back, one layer across the whole band and behind the words: three faint hairlines and the cyan trend line with its shading fading down. In front on the right, the emblem: the navy mark on a white disc inside a dashed ring and a fainter outer ring, the cyan point on the dashed ring and the white rising double arrow. No tiles. Under the band, the facts row: 12px spaced-capital labels and 15px values on one line each, two columns on a phone.
+  `<DocHeader name="Payment reminder" tag="Past due" facts={[{ label: 'Prepared for', value: 'Dunslim Apartments' }, { label: 'Date', value: '18 October 2026' }, { label: 'From', value: 'AI-BOS' }]} />`
 - **The corner wash**: one faint light from the top-left corner of every card (`--card-wash`).
-- **Emails** use `public/brand/email-art.png` (the same strip as an image) and the grey mark in the footer. **PDFs** put the grey mark beside the footer words on every page.
+- **Emails** use `public/brand/email-art.png` (the same strip as an image) and the grey mark in the footer. **PDFs** open with the same document header drawn in reportlab (`_letterhead` in `aibos-api/pdfdoc.py`, for `render()` and `report()`) and put the grey mark beside the footer words on every page.
 
 ## Pieces
 | Piece | Use it for | Classes |
 | --- | --- | --- |
+| `DocHeader` | the top of every document: reminders, statements, notices and PDFs open with it | `.doc-head`, `.doc-band`, `.doc-meta`, `.doc-tag` |
 | `Notice` | updates, payment and meeting reminders, low money, plan, install, offline | `.notice`, `.notice-floating`, `.notice-bad` |
 | `BentoCard` + `bentoSpans` | findings, briefs, small cards, locked previews | `.bento`, `.bento-grid`, `.span-*` |
 | `Panel`, `SectionCard` | report panels with a title and one action | `.panel`, `.panel-head` |

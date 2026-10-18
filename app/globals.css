@@ -169,6 +169,10 @@
   /* The page's own light, high on the left (the aurora). */
   --aurora:         rgba(59,130,246,0.26);
   --card-top:       rgba(255,255,255,0.06);
+  /* The document header's ink band (DocHeader) and the logo's gold rule. */
+  --band:           #161617;
+  --band-line:      rgba(255,255,255,0.18);
+  --gold:           #D3BD90;
 
   /* ── BENTO DOT TEXTURE ─────────────────────────────────────────
      A fine dot grid that sits behind a card's content and lights up
@@ -262,6 +266,9 @@
   --card-wash-opacity: 0.7;
   --aurora:         rgba(59,130,246,0.12);
   --card-top:       rgba(255,255,255,0.8);
+  --band:           #151413;
+  --band-line:      #151413;
+  --gold:           #D3BD90;
 
   /* Bento dots — warm ink on the off-white surface. Cranked up a touch
      vs dark mode so the dots read like texture on warm paper. */
@@ -1904,6 +1911,73 @@ html, body {
 .notice-art-strip .art-arrow { fill: var(--text-1); }
 .notice-art-line { fill: none; stroke: var(--chart-line); stroke-width: 2; stroke-linecap: round; }
 .notice-art-under { fill: var(--chart-line); opacity: 0.10; }
+
+/* ── DOCUMENT HEADER (components/ui/DocHeader.tsx) ─────────────────────────
+   The AI-BOS letterhead every reminder, statement, notice and PDF opens with
+   (owner, 18 Oct 2026). An ink band (like the If unpaid blocks) with the white
+   mark and wordmark, the logo's gold rule, the document name and its tag. At
+   the back, the hairlines and the cyan trend line across the whole band,
+   behind the words; in front on the right, the emblem. Under it, the facts
+   every document carries. The PDF twin is aibos-api/pdfdoc.py. */
+.doc-head { border-radius: var(--radius-card); border: 1px solid var(--band-line); overflow: hidden; background: var(--bg-card); box-shadow: var(--shadow-card); }
+.doc-band {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 28px;
+  min-height: 168px; padding: 22px 24px; background: var(--band); color: #ffffff;
+  border-bottom: 1px solid color-mix(in srgb, var(--gold) 70%, transparent);
+}
+.doc-band::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 55% 130% at 10% 0%, rgba(59,130,246,0.22), transparent 70%);
+}
+/* Back layer: faint chart hairlines and the trend line across the whole band, behind the words. */
+.doc-trend { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
+.doc-trend .gl { stroke: rgba(255,255,255,0.05); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.doc-trend .ln { fill: none; stroke: #22d3ee; stroke-width: 1.5; stroke-linecap: round; opacity: 0.38; vector-effect: non-scaling-stroke; }
+/* Front: the emblem on the right. The mark on a white disc inside a dashed ring, a faint outer ring,
+   the cyan point and the rising double arrow. No tiles. */
+.doc-art { position: absolute; z-index: -1; right: 8px; top: 0; width: 260px; height: 100%; pointer-events: none; }
+.doc-art .r { fill: none; stroke: rgba(255,255,255,0.24); stroke-width: 1; }
+.doc-art .r.dashed { stroke-dasharray: 2 6; }
+.doc-art .r.outer { stroke: rgba(255,255,255,0.08); }
+.doc-art .disc { fill: #ffffff; }
+.doc-art .cy { fill: #22d3ee; }
+.doc-art .ar { fill: rgba(255,255,255,0.88); }
+.doc-brand { display: flex; align-items: center; gap: 12px; }
+.doc-brand .glyph { width: 30px; height: 30px; object-fit: contain; }
+.doc-brand .word { height: 15px; width: auto; }
+.doc-brand .rule { width: 28px; height: 1px; background: var(--gold); }
+.doc-brand .line { font-size: var(--fs-caps); font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.62); }
+.doc-name { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; }
+.doc-name h2 { margin: 0; font-size: var(--fs-h2); font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; color: #ffffff; }
+.doc-tag {
+  padding: 3px 12px; border-radius: 999px; background: var(--brand-fill); color: var(--on-brand);
+  font-size: var(--fs-caps); font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; line-height: 1.6;
+}
+.doc-meta { display: grid; grid-template-columns: repeat(var(--doc-facts, 4), auto); margin: 0; }
+.doc-meta div { display: flex; flex-direction: column; gap: 2px; padding: 14px 20px; border-left: 1px solid var(--border); min-width: 0; }
+.doc-meta div:first-child { border-left: 0; }
+.doc-meta dt { font-size: var(--fs-caps); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; line-height: 1.6; color: var(--text-3); }
+.doc-meta dd { margin: 0; font-size: var(--fs-body); font-weight: 600; line-height: 1.6; color: var(--text-1); white-space: nowrap; }
+@media print {
+  .doc-head {
+    --bg-card: #ffffff; --border: rgba(28,25,23,0.08); --text-1: #1c1917; --text-3: #5d5954;
+    --band: #151413; --band-line: #151413;
+    box-shadow: none; break-inside: avoid;
+  }
+  .doc-head, .doc-head * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .doc-band { min-height: 128px; padding: 16px 22px; gap: 16px; }
+  .doc-meta div { padding: 10px 20px; }
+}
+@media (max-width: 640px) {
+  .doc-band { min-height: 0; padding: 18px 20px; gap: 22px; }
+  .doc-art { width: 200px; right: 0; opacity: 0.45; }
+  .doc-brand .rule, .doc-brand .line { display: none; }
+  .doc-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .doc-meta dd { white-space: normal; overflow-wrap: anywhere; }
+  .doc-meta div:nth-child(2n+1) { border-left: 0; }
+  .doc-meta div:nth-child(n+3) { border-top: 1px solid var(--border); }
+}
 /* A row of notices in a list (the bell): the same pieces, no card around each. */
 .notice-row { display: flex; gap: 14px; align-items: flex-start; padding: 16px; text-align: left; }
 .notice-row + .notice-row { border-top: 1px solid var(--border); }

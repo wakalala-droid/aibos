@@ -8,6 +8,11 @@
 // its rings in the middle, the rising double arrow on the right).
 export { BrandMark, NoticeArt } from '@/components/ui/Notice';
 
+// Documents: the letterhead every reminder, statement, notice and PDF opens
+// with (the ink band, the gold rule, the emblem, the facts row).
+export { default as DocHeader } from '@/components/ui/DocHeader';
+export type { DocFact, DocHeaderProps } from '@/components/ui/DocHeader';
+
 // Anything that interrupts the owner: updates, reminders, low money, plan.
 export { default as Notice } from '@/components/ui/Notice';
 
