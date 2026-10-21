@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "website.aibos.app",
+      "sha256_cert_fingerprints": [
+        "5F:33:CB:93:36:D7:3F:CC:B1:D3:EE:F9:D7:EB:01:4F:BF:B0:A2:C4:85:1F:61:AE:23:B4:B7:D9:11:61:9B:71"
+      ]
+    }
+  }
+]
