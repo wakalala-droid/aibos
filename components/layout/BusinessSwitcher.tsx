@@ -22,6 +22,7 @@ import { listBusinesses, createBusiness, ACTIVE_BUSINESS_KEY, ACTING_AS_KEY, typ
 import { useProfile, type Workspace } from '@/lib/profile';
 import { canAccess, requiredTier, TIERS, type Tier } from '@/lib/tiers';
 import { useStore } from '@/lib/store';
+import { useIosApp } from '@/lib/iosApp';
 
 const ROLE_LABEL: Record<Workspace['role'], string> = {
   owner: 'Owner',
@@ -32,6 +33,7 @@ const ROLE_LABEL: Record<Workspace['role'], string> = {
 export default function BusinessSwitcher() {
   const { teamRole, workspaces } = useProfile();
   const tier = useStore((s) => s.tier);
+  const ios = useIosApp();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -163,6 +165,11 @@ export default function BusinessSwitcher() {
                   style={{ width: '100%', minHeight: 44, borderRadius: 'var(--radius-md)', border: '1px dashed var(--border-md)', background: 'transparent', color: 'var(--cyan)', fontWeight: 600, cursor: 'pointer', fontSize: 'var(--fs-data)' }}>
                   + Add a business
                 </button>
+              ) : ios ? (
+                // The iPhone app sells nothing (lib/iosApp.ts).
+                <span style={{ display: 'block', textAlign: 'center', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                  Several businesses under one login are not part of your plan.
+                </span>
               ) : (
                 <a href={`/checkout?plan=${requiredTier('multi_business')}`}
                   style={{ display: 'block', textAlign: 'center', fontSize: 'var(--fs-label)', color: 'var(--text-3)', textDecoration: 'none' }}>

@@ -26,6 +26,7 @@ import { fmt } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import { logUsage } from '@/lib/usage';
 import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
+import { useIosApp } from '@/lib/iosApp';
 import PageHeader from '@/components/ui/PageHeader';
 import {
   listSchedule, createScheduleItem, updateScheduleItem, setScheduleStatus,
@@ -157,6 +158,8 @@ export default function SchedulePage() {
   const tier = useStore(s => s.tier);
   const pro = canAccess(tier, 'schedule');
   const needTier = TIERS[requiredTier('schedule')].name;
+  // The iPhone app sells nothing (lib/iosApp.ts): locked options say so and link nowhere.
+  const ios = useIosApp();
 
   const [items, setItems] = useState<ScheduleItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -515,7 +518,7 @@ export default function SchedulePage() {
                 ))}
               </div>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', marginTop: 12 }}>
-                {pro ? 'One tap: each repeats monthly.' : `One tap adds the next due date. On ${needTier} they repeat monthly on their own.`}
+                {pro ? 'One tap: each repeats monthly.' : ios ? 'One tap adds the next due date.' : `One tap adds the next due date. On ${needTier} they repeat monthly on their own.`}
               </p>
             </div>
           ) : view === 'agenda' ? (
@@ -608,13 +611,15 @@ export default function SchedulePage() {
             {/* When the reminder goes out. In the main form, not under More
                 options: a reminder nobody knew they could set never arrives. */}
             <div style={{ gridColumn: '1 / -1' }}>
-              <label htmlFor="sched-remind" className="field-label">Remind me {pro ? '' : `· ${needTier}`}</label>
+              <label htmlFor="sched-remind" className="field-label">Remind me {pro || ios ? '' : `· ${needTier}`}</label>
               {pro ? (
                 <select id="sched-remind" value={form.remind}
                   onChange={e => setForm(p => ({ ...p, remind: Number(e.target.value), remindTouched: true }))}
                   className="field">
                   {remindChoices(form.allDay).map(([m, label]) => <option key={m} value={m}>{label}</option>)}
                 </select>
+              ) : ios ? (
+                <div className="field" style={lockedField}>Reminders on your phone are not part of your plan.</div>
               ) : (
                 <Link href="/pricing" className="field" style={lockedField}>
                   Reminders on your phone come with {needTier}. See plans
@@ -628,7 +633,7 @@ export default function SchedulePage() {
                 <div><label className="field-label">Where</label><input value={form.location} onChange={e => set('location', e.target.value)} className="field" /></div>
                 <div><label className="field-label">Amount ({sym})</label><input type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="Powers one-tap recording" className="field" /></div>
                 <div>
-                  <label className="field-label">Repeats {pro ? '' : `· ${needTier}`}</label>
+                  <label className="field-label">Repeats {pro || ios ? '' : `· ${needTier}`}</label>
                   {pro ? (
                     <select value={form.repeat} onChange={e => set('repeat', e.target.value as RepeatChoice)} className="field">
                       <option value="none">Does not repeat</option>
@@ -637,6 +642,8 @@ export default function SchedulePage() {
                       <option value="biweekly">Every 2 weeks</option>
                       <option value="monthly">Monthly</option>
                     </select>
+                  ) : ios ? (
+                    <div className="field" style={lockedField}>Repeating dates are not part of your plan.</div>
                   ) : (
                     <Link href="/pricing" className="field" style={lockedField}>
                       Repeats monthly and more: upgrade

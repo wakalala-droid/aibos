@@ -29,6 +29,7 @@ import { CreditCard } from 'lucide-react';
 import Notice from '@/components/ui/Notice';
 import { useProfile } from '@/lib/profile';
 import { TIERS } from '@/lib/tiers';
+import { useIosApp } from '@/lib/iosApp';
 
 /** Warn this many days before a paid period ends. */
 const WARN_DAYS = 5;
@@ -43,6 +44,9 @@ function longDate(iso: string): string {
 export default function PlanNotice() {
   const { planConfirmed, planNote, loading, refresh, planExpired, paidTier, paidUntil, renewsAutomatically, ownPlan, serverTier } = useProfile();
   const [retrying, setRetrying] = useState(false);
+  // The iPhone app sells nothing (lib/iosApp.ts): the strip still says where the
+  // plan stands, but never asks for card payment.
+  const ios = useIosApp();
 
   if (loading) return null;
 
@@ -73,8 +77,10 @@ export default function PlanNotice() {
       <Strip
         ended
         title={`Your ${name} plan has ended`}
-        body={`${paidUntil ? `It ran until ${longDate(paidUntil)}. ` : ''}Your records are all still here. Set up card payment to switch ${name} back on. It then renews automatically.`}
-        action={<Link href={`/checkout?plan=${paidTier}`} className="pill pill-primary" style={actionStyle}>Set up card payment</Link>}
+        body={ios
+          ? `${paidUntil ? `It ran until ${longDate(paidUntil)}. ` : ''}Your records are all still here.`
+          : `${paidUntil ? `It ran until ${longDate(paidUntil)}. ` : ''}Your records are all still here. Set up card payment to switch ${name} back on. It then renews automatically.`}
+        action={ios ? undefined : <Link href={`/checkout?plan=${paidTier}`} className="pill pill-primary" style={actionStyle}>Set up card payment</Link>}
       />
     ) : (
       <Strip
@@ -97,9 +103,9 @@ export default function PlanNotice() {
           ended={ended}
           title={ended ? `Your ${name} plan ended on ${longDate(paidUntil)}` : `Your ${name} plan is paid up to ${longDate(paidUntil)}`}
           body={ended
-            ? `Everything stays on until ${off}. Set up card payment before then to keep ${name} without a break. It then renews automatically.`
-            : `To keep ${name} on after that, set up card payment on or just before that day. It then renews automatically until you cancel.`}
-          action={<Link href={`/checkout?plan=${serverTier}`} className="pill pill-primary" style={actionStyle}>Set up card payment</Link>}
+            ? (ios ? `Everything stays on until ${off}.` : `Everything stays on until ${off}. Set up card payment before then to keep ${name} without a break. It then renews automatically.`)
+            : (ios ? 'Your records stay here whatever happens to the plan.' : `To keep ${name} on after that, set up card payment on or just before that day. It then renews automatically until you cancel.`)}
+          action={ios ? undefined : <Link href={`/checkout?plan=${serverTier}`} className="pill pill-primary" style={actionStyle}>Set up card payment</Link>}
         />
       );
     }

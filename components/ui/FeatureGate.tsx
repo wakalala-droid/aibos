@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { canAccess, requiredTier, tasterLimit, TIERS, type Feature } from '@/lib/tiers';
 import { usePlanPricing } from '@/lib/planPrice';
+import { useIosApp } from '@/lib/iosApp';
 import LockedPreviewCard, { type PreviewState } from './LockedPreviewCard';
 
 interface FeatureGateProps {
@@ -27,6 +28,8 @@ export default function FeatureGate({
   const tier = useStore((s) => s.tier);
   // In US dollars, or in Kwacha if the owner chose that on the pricing page.
   const { perMonth } = usePlanPricing(undefined, false);
+  // The iPhone app sells nothing (lib/iosApp.ts): no price and no button to buy.
+  const ios = useIosApp();
 
   if (canAccess(tier, feature)) return <>{children}</>;
 
@@ -51,9 +54,11 @@ export default function FeatureGate({
           <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>
             {taster.perDay} {taster.noun}s a day, included.
           </span>
-          <Link className="pill pill-quiet" href={`/checkout?plan=${need}`} style={{ marginLeft: 'auto' }}>
-            Unlimited with {meta.name}: {perMonth(meta.priceMonthly)}
-          </Link>
+          {!ios && (
+            <Link className="pill pill-quiet" href={`/checkout?plan=${need}`} style={{ marginLeft: 'auto' }}>
+              Unlimited with {meta.name}: {perMonth(meta.priceMonthly)}
+            </Link>
+          )}
         </div>
         {children}
       </>

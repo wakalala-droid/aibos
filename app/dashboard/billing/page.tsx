@@ -28,6 +28,7 @@ import {
   type MyBilling, type PlanPayment, type PlanState,
 } from '@/lib/api';
 import { formatMoney } from '@/lib/paddle';
+import { useIosApp, withoutSales } from '@/lib/iosApp';
 
 const STATE: Record<PlanState, { label: string; colour: string }> = {
   active:   { label: 'Paid up',          colour: 'var(--good)' },
@@ -55,6 +56,10 @@ const receiptNumber = (id: string) => `AIBOS-${id.replace(/[^a-z0-9]/gi, '').toU
 
 
 export default function BillingPage() {
+  // The iPhone app sells nothing (lib/iosApp.ts): the page still shows the plan,
+  // its dates and receipts, and still lets a card renewal be cancelled or kept,
+  // but no price, no way to change the plan and no way to pay.
+  const ios = useIosApp();
   const [data, setData] = useState<MyBilling | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
@@ -173,13 +178,13 @@ export default function BillingPage() {
             style={{ marginBottom: 20 }}
           >
             <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.7, color: 'var(--text-1)', margin: '0 0 16px' }}>
-              {data.sentence}
+              {ios ? withoutSales(data.sentence ?? '') : data.sentence}
             </p>
 
             {card ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: 12, marginBottom: 18 }}>
-                <Fact label="Price" value={price ? `${price} a ${cardPeriod}` : ''} />
-                <Fact label="Paid by" value="Card, through Paddle" />
+                {!ios && <Fact label="Price" value={price ? `${price} a ${cardPeriod}` : ''} />}
+                {!ios && <Fact label="Paid by" value="Card, through Paddle" />}
                 {card.cancel_at
                   ? <Fact label="Ends on" value={day(card.cancel_at)} />
                   : card.status === 'past_due'
@@ -188,9 +193,9 @@ export default function BillingPage() {
               </div>
             ) : (data.state === 'active' || data.state === 'grace' || data.state === 'expired') && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: 12, marginBottom: 18 }}>
-                <Fact label="Price by card" value={price ? `${price} a ${period}` : ''} />
+                {!ios && <Fact label="Price by card" value={price ? `${price} a ${period}` : ''} />}
                 <Fact label={data.state === 'active' ? 'Paid up to' : 'Was due on'} value={day(data.renews_on)} />
-                <Fact label={data.state === 'expired' ? 'Switched off on' : 'Switches off without a card'} value={day(data.switches_off_on)} />
+                <Fact label={data.state === 'expired' ? 'Switched off on' : ios ? 'Switches off on' : 'Switches off without a card'} value={day(data.switches_off_on)} />
               </div>
             )}
 
@@ -218,7 +223,7 @@ export default function BillingPage() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               {card ? (
                 <>
-                  {card.status === 'past_due' && data.card_manageable && (
+                  {!ios && card.status === 'past_due' && data.card_manageable && (
                     <button type="button" onClick={() => void cardAction('portal')} disabled={cardBusy !== null} className="pill pill-primary">
                       {cardBusy === 'portal' ? 'Opening…' : 'Update your card'}
                     </button>
@@ -227,10 +232,10 @@ export default function BillingPage() {
                     <button type="button" onClick={() => void cardAction('keep')} disabled={cardBusy !== null} className="pill pill-primary">
                       {cardBusy === 'keep' ? 'Keeping it…' : `Keep ${data.plan_name}`}
                     </button>
-                  ) : (
+                  ) : !ios && (
                     <Link href="/pricing" className={card.status === 'past_due' ? 'pill pill-quiet' : 'pill pill-primary'}>Change plan</Link>
                   )}
-                  {data.card_manageable && card.status !== 'past_due' && (
+                  {!ios && data.card_manageable && card.status !== 'past_due' && (
                     <button type="button" onClick={() => void cardAction('portal')} disabled={cardBusy !== null} className="pill pill-quiet">
                       {cardBusy === 'portal' ? 'Opening…' : 'Manage card and invoices'}
                     </button>
@@ -241,7 +246,7 @@ export default function BillingPage() {
                     </button>
                   )}
                 </>
-              ) : data.state === 'free' ? (
+              ) : ios ? null : data.state === 'free' ? (
                 <Link href="/pricing" className="pill pill-primary">See the plans</Link>
               ) : data.state === 'included' ? (
                 <Link href="/pricing" className="pill pill-quiet">See the plans</Link>
@@ -255,7 +260,7 @@ export default function BillingPage() {
               )}
             </div>
 
-            {card ? (
+            {ios ? null : card ? (
               <p style={{ fontSize: 'var(--fs-label)', lineHeight: 1.6, color: 'var(--text-4)', margin: '14px 0 0' }}>
                 Paddle, our online reseller, charges your card and emails the receipt. Your statement shows PADDLE.NET. Every card payment has a <Link href="/refunds" style={{ color: 'var(--text-3)' }}>30-day money-back guarantee</Link>.
               </p>
@@ -274,7 +279,7 @@ export default function BillingPage() {
             )}
             {payments.length === 0 ? (
               <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
-                No payments yet. When you pay for a plan it appears here with a receipt.
+                {ios ? 'No payments yet.' : 'No payments yet. When you pay for a plan it appears here with a receipt.'}
               </p>
             ) : (
               <div style={{ overflowX: 'auto' }}>

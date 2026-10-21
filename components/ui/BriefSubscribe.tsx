@@ -20,6 +20,7 @@ import { useProfile } from '@/lib/profile';
 import { useStore } from '@/lib/store';
 import { briefDeliveryConfig } from '@/lib/api';
 import { canAccess, requiredTier, TIERS, type Tier } from '@/lib/tiers';
+import { NOT_ON_PLAN, useIosApp } from '@/lib/iosApp';
 
 type Status = 'idle' | 'saving' | 'error';
 
@@ -28,6 +29,8 @@ export default function BriefSubscribe() {
   const tier = useStore((s) => s.tier) as Tier;
   const [status, setStatus] = useState<Status>('idle');
   const [emailLive, setEmailLive] = useState<boolean | null>(null);
+  // The iPhone app sells nothing (lib/iosApp.ts): a locked brief says so and stops.
+  const ios = useIosApp();
 
   useEffect(() => {
     let alive = true;
@@ -67,7 +70,7 @@ export default function BriefSubscribe() {
       text={!allowed ? (
         <>Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today,
           by email and as a notification on any phone or computer where you turned them on.
-          {ownPlan ? ` It comes with ${needed}.` : ' It comes with a paid plan, which the business owner manages.'}</>
+          {ios ? ` ${NOT_ON_PLAN}` : ownPlan ? ` It comes with ${needed}.` : ' It comes with a paid plan, which the business owner manages.'}</>
       ) : on ? (
         <span role="status"><strong style={{ color: 'var(--text-1)' }}>On.</strong> Your brief goes to {where} every morning at 06:30
           and to every phone or computer where you turned notifications on.</span>
@@ -76,7 +79,7 @@ export default function BriefSubscribe() {
           sent to {where} and to your phone if notifications are on there.</>
       )}
       foot={!allowed ? (
-        ownPlan ? <Link className="pill pill-primary" href={`/checkout?plan=${requiredTier('scheduled_brief')}`}>See {needed}</Link> : null
+        ownPlan && !ios ? <Link className="pill pill-primary" href={`/checkout?plan=${requiredTier('scheduled_brief')}`}>See {needed}</Link> : null
       ) : on ? (
         <>
           <button type="button" className="pill pill-quiet" onClick={() => void setOn(false)} disabled={saving}>

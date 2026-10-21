@@ -23,6 +23,7 @@ import { TOUR_RESTART_EVENT } from '@/components/onboarding/DashboardTour';
 import { fmt } from '@/lib/utils';
 import { MIN_MONTHS } from '@/lib/change';
 import { canAccess } from '@/lib/tiers';
+import { NOT_ON_PLAN_SHORT, useIosApp } from '@/lib/iosApp';
 import {
   reorderProposals, draftReorder, followUpProposals, dismissedFollowUps, dismissFollowUp,
   type ReorderProposal,
@@ -52,6 +53,7 @@ export default function SimpleHome() {
   const ind = industryOf(profile?.business_type, profile?.industry);
   const money = useCallback((n: number) => fmt(n, true, sym), [sym]);
   const canAutomate = canAccess(tier, 'automation');
+  const ios = useIosApp();
   const products = extras?.products ?? null;
   const eventCount = Number(twin?.event_count) || 0;
 
@@ -123,7 +125,7 @@ export default function SimpleHome() {
       {/* Work AIBOS prepared: reorders and check-ins, one tap each. */}
       {(proposals.length > 0 || followUps.length > 0) && (
         <Panel title="AIBOS prepared this" labelledBy="prepared-title"
-          action={!canAutomate ? <Link href="/checkout?plan=proplus" className="pill pill-quiet">Pro+</Link> : undefined}>
+          action={!canAutomate && !ios ? <Link href="/checkout?plan=proplus" className="pill pill-quiet">Pro+</Link> : undefined}>
           <div style={{ display: 'grid', gap: 4 }}>
             {proposals.slice(0, 4).map((p) => {
               const st = draftState[p.productId];
@@ -141,6 +143,8 @@ export default function SimpleHome() {
                     <button type="button" className="pill pill-primary" onClick={() => void onDraft(p)} disabled={st === 'drafting'}>
                       {st === 'drafting' ? 'Drafting…' : st === 'error' ? 'Try again' : 'Draft reorder'}
                     </button>
+                  ) : ios ? (
+                    <span style={sub}>{NOT_ON_PLAN_SHORT}</span>
                   ) : (
                     <Link href="/checkout?plan=proplus" className="pill pill-quiet">Unlock one-tap reorders</Link>
                   )}
@@ -159,6 +163,8 @@ export default function SimpleHome() {
                     <a href={f.waLink} target="_blank" rel="noopener noreferrer" className="pill pill-primary">Send on WhatsApp</a>
                     <button type="button" className="pill pill-quiet" onClick={() => onFollowUpDone(f.customerId)}>Done</button>
                   </span>
+                ) : ios ? (
+                  <span style={sub}>{NOT_ON_PLAN_SHORT}</span>
                 ) : (
                   <Link href="/checkout?plan=proplus" className="pill pill-quiet">Unlock check-in drafts</Link>
                 )}

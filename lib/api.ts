@@ -8,6 +8,7 @@
 import { createClient } from '@/lib/supabase';
 import type { PaidTier } from '@/lib/tiers';
 import { booksChanged } from '@/lib/booksSignal';
+import { inIosApp, withoutSales } from '@/lib/iosApp';
 
 const PROXY = '/api/proxy';
 
@@ -861,9 +862,12 @@ async function spineFetchOnce(path: string, init: RequestInit = {}): Promise<Rec
     // for the owner, the code for the screen to act on (paid_wages and the like).
     const raw = data.detail;
     const obj = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : null;
-    const message = typeof raw === 'string' ? raw
+    const said = typeof raw === 'string' ? raw
       : obj && typeof obj.message === 'string' ? obj.message
       : `Request failed (${res.status})`;
+    // The iPhone app sells nothing (lib/iosApp.ts): a refusal that tells the
+    // owner to upgrade keeps its reason and loses the selling.
+    const message = inIosApp() ? withoutSales(said) || `Request failed (${res.status})` : said;
     throw new ApiError(message, res.status, typeof obj?.code === 'string' ? obj.code : undefined, raw);
   }
   // Every page hears that the books changed (lib/booksSignal.ts).

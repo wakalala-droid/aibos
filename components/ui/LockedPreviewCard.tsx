@@ -10,6 +10,7 @@
 
 import Link from 'next/link';
 import { Lock, AlertTriangle, Lightbulb } from 'lucide-react';
+import { NOT_ON_PLAN, useIosApp } from '@/lib/iosApp';
 
 export type PreviewState = 'success' | 'loading' | 'error' | 'empty' | 'disabled';
 
@@ -55,6 +56,9 @@ export default function LockedPreviewCard({
   errorMessage = 'Could not load this preview. Try again shortly.',
   emptyMessage = 'Upload more data and this insight will appear here.',
 }: LockedPreviewCardProps) {
+  // The iPhone app sells nothing (lib/iosApp.ts): the card says the feature is
+  // not on the plan, with no button, no price and no way to buy.
+  const ios = useIosApp();
 
   if (state === 'loading') {
     return (
@@ -111,7 +115,9 @@ export default function LockedPreviewCard({
       </div>
 
       <div className="bento-foot">
-        {disabled ? (
+        {ios ? (
+          <span className="bento-text" style={{ margin: 0 }}>{NOT_ON_PLAN}</span>
+        ) : disabled ? (
           <span className="pill pill-quiet" aria-disabled="true" style={{ cursor: 'default', color: 'var(--text-3)' }}>{ctaLabel}</span>
         ) : (
           <Link href={ctaHref} className="pill pill-primary"><LockIcon />{ctaLabel}</Link>

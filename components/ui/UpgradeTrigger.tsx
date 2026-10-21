@@ -8,6 +8,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Sparkles, X } from 'lucide-react';
 import { useStore } from '@/lib/store';
+import { useIosApp } from '@/lib/iosApp';
 
 interface Trigger {
   id: string;
@@ -21,6 +22,8 @@ interface Trigger {
 export default function UpgradeTrigger() {
   const { tier, monthly, anomalies, alerts, locations } = useStore();
   const [dismissed, setDismissed] = useState<string[]>([]);
+  // The iPhone app sells nothing (lib/iosApp.ts): no upgrade suggestion at all.
+  const ios = useIosApp();
 
   const anomalyCount =
     (Array.isArray(anomalies) ? anomalies.length : 0) +
@@ -65,7 +68,7 @@ export default function UpgradeTrigger() {
   }
 
   const active = triggers.find((t) => !dismissed.includes(t.id));
-  if (!active) return null;
+  if (!active || ios) return null;
 
   // A bento card (5 Oct 2026), monochrome: round mark, spaced-capital title,
   // the plan as its tag, one plain sentence and one button.

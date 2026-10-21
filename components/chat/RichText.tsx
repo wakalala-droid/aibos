@@ -10,6 +10,7 @@
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { useIosApp, withoutSales } from '@/lib/iosApp';
 
 const INLINE = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)\s]+\)|\*[^*\s][^*]*\*)/g;
 
@@ -42,9 +43,14 @@ function inline(text: string, key: string): ReactNode[] {
 }
 
 export default function RichText({ text, color = 'var(--text-2)' }: { text: string; color?: string }) {
+  // The iPhone app sells nothing (lib/iosApp.ts): whatever the server or the AI
+  // wrote, no link to the plans or a checkout and no sentence about upgrading
+  // reaches the screen there.
+  const ios = useIosApp();
+  const shown = ios ? withoutSales(text) : text;
   return (
     <>
-      {text.split('\n').map((raw, i) => {
+      {shown.split('\n').map((raw, i) => {
         const line = raw.replace(/\s+$/, '');
         if (line.trim() === '') return <div key={i} style={{ height: 6 }} />;
 

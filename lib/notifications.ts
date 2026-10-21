@@ -28,6 +28,7 @@
 import type { Twin, Product } from './api';
 import { authHeaders, getDebtors, listProducts } from './api';
 import { fmt } from './utils';
+import { inIosApp, isSalesHref, withoutSales } from './iosApp';
 
 const PROXY = '/api/proxy';
 
@@ -177,6 +178,18 @@ function toNotification(row: FeedRow): Notification {
   };
 }
 
+/** The iPhone app sells nothing (lib/iosApp.ts): a plan's renewal reminder or
+ *  request to put it on a card never reaches the bell there, and nothing else
+ *  in it sells either. */
+const SELLING_KINDS = new Set(['plan_card_reminder', 'plan_renews_soon', 'plan_renews_today', 'plan_renewal_last_call']);
+
+function withoutSelling(n: Notification): Notification[] {
+  if ((n.kind && SELLING_KINDS.has(n.kind)) || (n.href && isSalesHref(n.href))) return [];
+  const title = withoutSales(n.title);
+  if (!title) return [];
+  return [{ ...n, title, description: withoutSales(n.description) }];
+}
+
 /** Unread things that happened, newest first.
  *
  *  Returns null, never an empty array, when the feed could not be read. The
@@ -194,7 +207,8 @@ export async function fetchHappenedNotifications(limit = 20): Promise<Notificati
     if (!res.ok) return null;
     const data = (await res.json()) as { notifications?: FeedRow[]; note?: string };
     if (typeof data.note === 'string') return null;
-    return (data.notifications ?? []).map(toNotification);
+    const rows = (data.notifications ?? []).map(toNotification);
+    return inIosApp() ? rows.flatMap(withoutSelling) : rows;
   } catch {
     // Offline, no session, or an HTML error page from the proxy. All of them
     // mean the same thing to the bell: show the derived half and say nothing.

@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
+import { useIosApp } from '@/lib/iosApp';
 import { Wallet, TrendingUp, CalendarDays, Clock, Package, Truck, Target } from 'lucide-react';
 import { briefLines, type BriefLine, type BriefKind } from '@/lib/brief';
 import { type BriefExtras } from '@/lib/briefData';
@@ -64,6 +65,8 @@ export default function TodayBrief() {
   const tier = useStore((s) => s.tier);
   const { profile } = useProfile();
   const full = canAccess(tier, 'morning_brief');
+  // The iPhone app sells nothing (lib/iosApp.ts): no note about which plan brings the full brief.
+  const ios = useIosApp();
 
   // The same inputs as Home's cards (hooks/useBriefExtras), read again
   // whenever the books change. Free renders from the twin alone.
@@ -102,7 +105,7 @@ export default function TodayBrief() {
       <div>
         {lines.map((l, i) => <Row key={i} line={l} index={i} />)}
       </div>
-      {!full && (
+      {!full && !ios && (
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '12px 0 0' }}>
           The full brief (sales, stock, deliveries, one thing to do) comes with{' '}
           <Link href={`/checkout?plan=${requiredTier('morning_brief')}`} style={{ color: 'var(--cyan)', fontWeight: 600 }}>

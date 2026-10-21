@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import Notice from '@/components/ui/Notice';
 import { authHeaders } from '@/lib/api';
 import { markNotificationRead } from '@/lib/notifications';
+import { useIosApp } from '@/lib/iosApp';
 
 const KIND = 'plan_card_reminder';
 const LATER_KEY = 'aibos-card-reminder-later';
@@ -26,8 +27,11 @@ interface Row { id: string; kind: string; title: string; body: string | null; li
 export default function CardReminderPrompt() {
   const router = useRouter();
   const [row, setRow] = useState<Row | null>(null);
+  // The iPhone app sells nothing (lib/iosApp.ts): a request to pay never floats up there.
+  const ios = useIosApp();
 
   const check = useCallback(async () => {
+    if (ios) return;
     try {
       const res = await fetch('/api/proxy/notifications?unread_only=true&limit=50', { headers: await authHeaders() });
       if (!res.ok) return;
@@ -37,7 +41,7 @@ export default function CardReminderPrompt() {
       try { later = window.sessionStorage.getItem(LATER_KEY) ?? ''; } catch { /* private mode */ }
       setRow(found && found.id !== later ? found : null);
     } catch { /* offline: the bell still has it */ }
-  }, []);
+  }, [ios]);
 
   useEffect(() => {
     void check();
@@ -46,7 +50,7 @@ export default function CardReminderPrompt() {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, [check]);
 
-  if (!row) return null;
+  if (!row || ios) return null;
 
   const later = () => {
     try { window.sessionStorage.setItem(LATER_KEY, row.id); } catch { /* private mode */ }

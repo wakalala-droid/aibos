@@ -19,6 +19,7 @@ import Stat from '@/components/ui/Stat';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
+import { NOT_ON_PLAN_SHORT, useIosApp } from '@/lib/iosApp';
 import PageHeader from '@/components/ui/PageHeader';
 import {
   listEmployees, createEmployee, updateEmployee, deleteEmployee,
@@ -84,6 +85,8 @@ export default function EmployeesPage() {
   const businessName = profile?.business_name || undefined;
   const pro = canAccess(tier, 'payroll');
   const needTier = TIERS[requiredTier('payroll')].name;
+  // The iPhone app sells nothing (lib/iosApp.ts): a locked payroll says so and stops.
+  const ios = useIosApp();
 
   // Full-precision money (payroll needs the cents PAYE/NAPSA produce).
   const money = (v: number | null | undefined) =>
@@ -453,7 +456,7 @@ export default function EmployeesPage() {
         <SectionCard title="Run payroll" explainId="payroll.run"
           subtitle="Preview is free. Running records each salary; the wages leave your cash on payday."
           action={pro ? undefined : (
-            <span className="badge" style={{ background: 'color-mix(in srgb, var(--cyan) 12%, transparent)', color: 'var(--cyan)' }}>{needTier}</span>
+            <span className="badge" style={{ background: 'color-mix(in srgb, var(--cyan) 12%, transparent)', color: 'var(--cyan)' }}>{ios ? NOT_ON_PLAN_SHORT : needTier}</span>
           )}>
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 16 }}>
@@ -601,6 +604,8 @@ export default function EmployeesPage() {
                   <button type="button" onClick={doRun} disabled={busy} className="pill pill-primary">
                     <Play aria-hidden="true" />{busy ? 'Running…' : 'Run payroll and record the wages'}
                   </button>
+                ) : ios ? (
+                  <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>Running payroll is not part of your plan.</span>
                 ) : (
                   <Link href="/pricing" className="pill pill-primary">
                     Unlock payroll: upgrade to {needTier}

@@ -9,6 +9,7 @@ import { useTheme } from '@/lib/theme';
 import { useProfile } from '@/lib/profile';
 import { useAiAssistant } from '@/lib/aiAssistant';
 import { TIERS, type Tier } from '@/lib/tiers';
+import { useIosApp } from '@/lib/iosApp';
 import { visibleDoors, isDoorActive, type NavDoor } from '@/lib/nav';
 
 import { IC } from './navIcons';
@@ -28,6 +29,7 @@ export default function Sidebar() {
   } = useStore();
   const { toggle, isDark } = useTheme();
   const { isAdmin, teamRole, loading: planLoading } = useProfile();
+  const ios = useIosApp();
   const { setOpen: setAssistantOpen } = useAiAssistant();
   const col = sidebarCollapsed;
   const simple = uiMode === 'simple';
@@ -265,38 +267,49 @@ export default function Sidebar() {
         )}
       </nav>
 
-      {/* Plan chip — current tier + upgrade CTA (expanded rail only) */}
-      {!col && (
-        <Link
-          // A paid plan opens Plan & billing: when it renews, what it costs,
-          // every payment and its receipt. Free still goes to the plans.
-          href={tier === 'free' ? '/pricing' : '/dashboard/billing'}
-          onClick={() => setMobileNav(false)}
-          aria-label={tier === 'free' ? 'Free plan. See the plans' : `${TIERS[tier].name} plan. Open plan and billing`}
-          style={{
-            margin: '4px 12px 8px', padding: '10px 12px', borderRadius: 'var(--radius-md)',
-            background: 'var(--pill-bg)',
-            textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-          }}
-        >
-          <span style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-              Your plan
+      {/* Plan chip — current tier + upgrade CTA (expanded rail only). The iPhone
+          app sells nothing (lib/iosApp.ts): there it names the plan, offers no
+          upgrade, and a Free plan is not a link at all. */}
+      {!col && (() => {
+        const chipStyle: React.CSSProperties = {
+          margin: '4px 12px 8px', padding: '10px 12px', borderRadius: 'var(--radius-md)',
+          background: 'var(--pill-bg)',
+          textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+        };
+        const chipBody = (
+          <>
+            <span style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                Your plan
+              </span>
+              {/* Signing in on a new device starts from a blank cache, which reads
+                  as Free, so a Growth owner was shown "Free" and "Upgrade" until the
+                  plan loaded. Nothing is named until it is known. */}
+              <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: planLoading ? 'var(--text-4)' : 'var(--text-1)' }}>
+                {planLoading ? 'Checking…' : TIERS[tier].name}
+              </span>
             </span>
-            {/* Signing in on a new device starts from a blank cache, which reads
-                as Free, so a Growth owner was shown "Free" and "Upgrade" until the
-                plan loaded. Nothing is named until it is known. */}
-            <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: planLoading ? 'var(--text-4)' : 'var(--text-1)' }}>
-              {planLoading ? 'Checking…' : TIERS[tier].name}
-            </span>
-          </span>
-          {!planLoading && tier !== 'growth' && (
-            <span style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--on-brand)', background: 'var(--brand-fill)', padding: '6px 14px', borderRadius: 999, whiteSpace: 'nowrap' }}>
-              Upgrade
-            </span>
-          )}
-        </Link>
-      )}
+            {!ios && !planLoading && tier !== 'growth' && (
+              <span style={{ fontSize: 'var(--fs-label)', fontWeight: 600, color: 'var(--on-brand)', background: 'var(--brand-fill)', padding: '6px 14px', borderRadius: 999, whiteSpace: 'nowrap' }}>
+                Upgrade
+              </span>
+            )}
+          </>
+        );
+        if (ios && tier === 'free') return <div style={chipStyle}>{chipBody}</div>;
+        return (
+          <Link
+            // A paid plan opens Plan & billing: when it renews, what it costs,
+            // every payment and its receipt. Free still goes to the plans.
+            href={tier === 'free' ? '/pricing' : '/dashboard/billing'}
+            onClick={() => setMobileNav(false)}
+            aria-label={tier === 'free' ? 'Free plan. See the plans' : `${TIERS[tier].name} plan. Open plan and billing`}
+            style={chipStyle}
+          >
+            {chipBody}
+          </Link>
+        );
+      })()}
 
       {/* Footer */}
       {/* Collapsed, the rail is one button wide, so the controls stack. */}

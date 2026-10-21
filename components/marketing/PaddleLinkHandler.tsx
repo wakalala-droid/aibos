@@ -15,12 +15,14 @@
 import { useEffect } from 'react';
 import { getCardConfig } from '@/lib/api';
 import { ensurePaddle } from '@/lib/paddle';
+import { inIosApp } from '@/lib/iosApp';
 
 export default function PaddleLinkHandler() {
   useEffect(() => {
     let txn: string | null = null;
     try { txn = new URL(window.location.href).searchParams.get('_ptxn'); } catch { /* no URL */ }
-    if (!txn) return;
+    // The iPhone app sells nothing (lib/iosApp.ts): no card checkout ever opens there.
+    if (!txn || inIosApp()) return;
     void (async () => {
       const cfg = await getCardConfig();
       if (!cfg.enabled || !cfg.client_token) return;

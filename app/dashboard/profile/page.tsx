@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { TIERS, canAccess, type Tier } from '@/lib/tiers';
+import { NOT_ON_PLAN_SHORT, useIosApp } from '@/lib/iosApp';
 import { useStore } from '@/lib/store';
 import { CURRENCIES } from '@/lib/currency';
 import {
@@ -73,6 +74,8 @@ export default function BusinessProfilePage() {
   const { user } = useAuth();
   const { profile, loading, refresh, teamRole } = useProfile();
   const setCurrency = useStore((s) => s.setCurrency);
+  // The iPhone app sells nothing (lib/iosApp.ts): the plan is named and nothing is offered.
+  const ios = useIosApp();
 
   const [form, setForm] = useState<FormState>(EMPTY);
   const [save, setSave] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -328,9 +331,15 @@ export default function BusinessProfilePage() {
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>Plan</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>{TIERS[tier].name}</span>
-                <Link className="tap-link" href="/pricing" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
-                  {tier === 'growth' ? 'Manage' : 'Upgrade'} →
-                </Link>
+                {!ios ? (
+                  <Link className="tap-link" href="/pricing" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
+                    {tier === 'growth' ? 'Manage' : 'Upgrade'} →
+                  </Link>
+                ) : tier !== 'free' && (
+                  <Link className="tap-link" href="/dashboard/billing" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
+                    Manage →
+                  </Link>
+                )}
               </div>
             </div>
             <div>
@@ -780,6 +789,7 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
   whatsappNumber: string;
   onSaved: () => void | Promise<void>;
 }) {
+  const ios = useIosApp();
   const [emailOn, setEmailOn] = useState(emailEnabled);
   const [waNumber, setWaNumber] = useState(whatsappNumber);
   const [channels, setChannels] = useState<{ email: boolean; whatsapp: boolean } | null>(null);
@@ -836,18 +846,15 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
     }
   }
 
-  const pill = (label: string) => (
-    <Link
-      href="/checkout?plan=proplus"
-      style={{
-        fontSize: 'var(--fs-label)', fontWeight: 700,
-        color: 'var(--cyan)', textDecoration: 'none', padding: '3px 9px', borderRadius: 999,
-        border: '1px solid color-mix(in srgb, var(--cyan) 40%, transparent)', background: 'var(--cyan-dim)',
-      }}
-    >
-      {label}
-    </Link>
-  );
+  const pillStyle: React.CSSProperties = {
+    fontSize: 'var(--fs-label)', fontWeight: 700,
+    color: 'var(--cyan)', textDecoration: 'none', padding: '3px 9px', borderRadius: 999,
+    border: '1px solid color-mix(in srgb, var(--cyan) 40%, transparent)', background: 'var(--cyan-dim)',
+  };
+  // In the iPhone app a locked option says so and links nowhere (lib/iosApp.ts).
+  const pill = (label: string) => ios
+    ? <span style={pillStyle}>{NOT_ON_PLAN_SHORT}</span>
+    : <Link href="/checkout?plan=proplus" style={pillStyle}>{label}</Link>;
 
   return (
     <div className="section-card">
@@ -938,6 +945,7 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
 }
 
 function InviteCard({ userId }: { userId: string }) {
+  const ios = useIosApp();
   const [copied, setCopied] = useState(false);
   const code = userId.replace(/-/g, '').slice(0, 8);
   const link = typeof window !== 'undefined' ? `${window.location.origin}/login?ref=${code}` : `/login?ref=${code}`;
@@ -957,8 +965,9 @@ function InviteCard({ userId }: { userId: string }) {
         Invite a business owner
       </p>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 14px' }}>
-        Know someone running a shop, lodge, restaurant or site? When someone you invite subscribes to any paid plan,
-        you both get a month of Pro+ free: applied by our team for now.
+        Know someone running a shop, lodge, restaurant or site?{ios
+          ? ' Send them your invite link.'
+          : ' When someone you invite subscribes to any paid plan, you both get a month of Pro+ free: applied by our team for now.'}
       </p>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <code style={{ fontSize: 'var(--fs-data)', color: 'var(--text-1)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', padding: '9px 12px', borderRadius: 'var(--radius-md)', wordBreak: 'break-all' }}>

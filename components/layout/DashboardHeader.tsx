@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { useAiAssistant } from '@/lib/aiAssistant';
 import { TIERS, type Tier } from '@/lib/tiers';
+import { useIosApp } from '@/lib/iosApp';
 import { searchPlaces } from '@/lib/nav';
 import {
   buildNotifications, fetchHappenedNotifications, markNotificationRead,
@@ -100,6 +101,7 @@ export default function DashboardHeader() {
   const { alerts, posBusinessName, tier, rfm, breakdown, twin, currencySymbol } = useStore();
   const { user, logout } = useAuth();
   const { profile, isAdmin, teamRole } = useProfile();
+  const ios = useIosApp();
   const { setOpen: setAssistantOpen, sendMessage } = useAiAssistant();
 
   const safeAlerts = Array.isArray(alerts) ? alerts : [];
@@ -563,9 +565,16 @@ export default function DashboardHeader() {
               </span>
             </div>
             <div style={{ padding: 6 }}>
-              <Link href="/pricing" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
-                {tier === 'growth' ? 'Manage plan' : 'Upgrade plan'}
-              </Link>
+              {/* The iPhone app sells nothing (lib/iosApp.ts): a paid plan is managed on Plan & billing, a Free one has nothing to open. */}
+              {!ios ? (
+                <Link href="/pricing" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
+                  {tier === 'growth' ? 'Manage plan' : 'Upgrade plan'}
+                </Link>
+              ) : tier !== 'free' && (
+                <Link href="/dashboard/billing" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
+                  Manage plan
+                </Link>
+              )}
               <Link href="/dashboard/profile" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
                 Your business data
               </Link>

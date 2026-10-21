@@ -37,6 +37,7 @@ import ForecastTrackRecord from '@/components/dashboard/ForecastTrackRecord';
 import { bentoSpans } from '@/components/kit';
 import { getOutlook, getSeriesOutlook, getTrackRecord, type Outlook, type TrackRecord } from '@/lib/api';
 import { canAccess } from '@/lib/tiers';
+import { useIosApp } from '@/lib/iosApp';
 import { signTone, trendTone } from '@/lib/tone';
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -48,6 +49,7 @@ function n(v: unknown): number {
 export default function ForecastPage() {
   const { monthly, currencySymbol, dataShape, twin, uploadedFile, twinLoading, twinChecked, tier } = useStore();
   const version = useStore((s) => s.booksVersion);
+  const ios = useIosApp(); // the iPhone app sells nothing (lib/iosApp.ts)
   const sym = currencySymbol || 'K';
   const fromBooks = !uploadedFile && !!twin && Number(twin.event_count) > 0;
   const waiting = twinLoading || (!twinChecked && !uploadedFile);
@@ -128,7 +130,7 @@ export default function ForecastPage() {
         subtitle="What your sales, costs and profit are likely to be, with the range they should fall in."
         actions={canAccess(tier, 'cash_plan')
           ? <Link className="pill" href="/dashboard/cash-plan">13-week cash plan</Link>
-          : <Link className="pill pill-quiet" href="/dashboard/cash-plan">Cash plan with Growth</Link>}
+          : <Link className="pill pill-quiet" href="/dashboard/cash-plan">{ios ? '13-week cash plan' : 'Cash plan with Growth'}</Link>}
       />
 
       {/* P10/P50/P90 cash months from recorded money (audit #19), silent under 4 months. */}

@@ -50,6 +50,17 @@ export default async function PricingPage() {
   const [cardPrices, zmwRate] = await Promise.all([getCardPricesForPage(), fetchZmwRate()]);
   return (
     <>
+      {/* The iPhone app sells nothing (lib/iosApp.ts): there the page is this
+          one sentence, and everything that sells is hidden before first paint. */}
+      <section className="mkt-section mkt-section--tight when-ios-app">
+        <div className="mkt-wrap" style={{ textAlign: 'center' }}>
+          <h1 className="mkt-h1" style={{ maxWidth: 760, marginInline: 'auto' }}>Plans are not sold in the iPhone app.</h1>
+          <p className="mkt-lead" style={{ marginTop: 18, marginInline: 'auto', maxWidth: 560 }}>
+            Your plan and everything in it work here, whichever device it was bought on.
+          </p>
+        </div>
+      </section>
+      <div className="sells-plans">
       <PaddleLinkHandler />
       <section className="mkt-section mkt-section--tight" style={{ paddingBottom: 0 }}>
         <div className="mkt-wrap" style={{ textAlign: 'center' }}>
@@ -149,6 +160,7 @@ export default async function PricingPage() {
         text="Upload your numbers, see it work and only pay when it is obvious. That is the whole pitch."
         secondary={{ label: 'Back to overview', href: '/' }}
       />
+      </div>
     </>
   );
 }

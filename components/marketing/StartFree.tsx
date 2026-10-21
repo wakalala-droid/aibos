@@ -22,7 +22,8 @@ export default function StartFree({
   note?: React.ReactNode;
 }) {
   return (
-    <section className="mkt-section" aria-labelledby={id}>
+    // Marketing for a plan: the iPhone app sells nothing, so it is hidden there (lib/iosApp.ts).
+    <section className="mkt-section sells-plans" aria-labelledby={id}>
       <div className="mkt-wrap">
         <Rise className="notice mkt-final" theme="light">
           <NoticeArt theme="light" />

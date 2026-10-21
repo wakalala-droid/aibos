@@ -27,6 +27,7 @@ import {
   type Product,
 } from '@/lib/api';
 import { canAccess } from '@/lib/tiers';
+import { ASKS_TO_BUY, NOT_SOLD_HERE, inIosApp } from '@/lib/iosApp';
 import { composeMorningBrief, bucketSales, expectedOf, deliveryName } from '@/lib/brief';
 import { stockValue } from '@/lib/stock';
 import { reorderProposals, followUpProposals } from '@/lib/automation';
@@ -449,6 +450,9 @@ function matchSpineIntent(raw: string): SpineIntent | null {
 // spine event the owner confirms with one word. Propose → confirm, always —
 // the assistant never posts to the books without an explicit yes.
 
+/** The iPhone app sells nothing (lib/iosApp.ts): a closed chat says so and sends nowhere. */
+const IOS_CHAT_LOCKED = 'Asking AIBOS is not part of your plan.';
+
 const CHAT_CONFIRM = /^(confirm|yes|yebo|yep|ok(ay)?|post it|do it)\b/i;
 const CHAT_CANCEL = /^(cancel|no|discard|void|scrap|don'?t)\b/i;
 
@@ -465,6 +469,8 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
 
   if (intent === 'brief') {
     if (!canAccess(s.tier, 'morning_brief')) {
+      // The iPhone app sells nothing (lib/iosApp.ts): the fact, no way to buy.
+      if (inIosApp()) return 'The **Morning Brief** is not part of your plan: your cash, sales, stock and expected deliveries summed up every morning, with one clear thing to do next.';
       return 'The **Morning Brief** is a **Pro+** feature: your cash, sales, stock and expected deliveries summed up every morning, with one clear thing to do next.\n\n[Upgrade to Pro+](/checkout?plan=proplus) and your day starts ready before you ask.';
     }
     const [p, sales, receipts] = await Promise.allSettled([
@@ -505,9 +511,8 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
     }
     const lines = [`**${fus.length} customer${fus.length === 1 ? '' : 's'} worth a check-in:**`];
     for (const f of fus) lines.push(`• ${f.headline}: ${f.reason}`);
-    lines.push(canAccess(s.tier, 'automation')
-      ? '\nI\'ve drafted the check-in messages on your **Home** page. One tap opens WhatsApp with the text ready to send.'
-      : '\nOn **Pro+** I draft the WhatsApp check-in for each of them. [Upgrade to Pro+](/checkout?plan=proplus)');
+    if (canAccess(s.tier, 'automation')) lines.push('\nI\'ve drafted the check-in messages on your **Home** page. One tap opens WhatsApp with the text ready to send.');
+    else if (!inIosApp()) lines.push('\nOn **Pro+** I draft the WhatsApp check-in for each of them. [Upgrade to Pro+](/checkout?plan=proplus)');
     return lines.join('\n');
   }
 
@@ -524,9 +529,8 @@ async function answerSpineIntent(intent: SpineIntent, s: StoreState, lv: LiveMet
     for (const p of props.slice(0, 5)) {
       lines.push(`• ${p.headline}: ${p.reason}${p.estimatedCost !== undefined ? ` (about ${money(p.estimatedCost)})` : ''}`);
     }
-    lines.push(canAccess(s.tier, 'automation')
-      ? '\nI\'ve prepared these as one-tap drafts on your **Home** page. Tap Draft and confirm when the stock arrives.'
-      : '\nOn **Pro+** I prepare these as one-tap drafts on your Home page. [Upgrade to Pro+](/checkout?plan=proplus)');
+    if (canAccess(s.tier, 'automation')) lines.push('\nI\'ve prepared these as one-tap drafts on your **Home** page. Tap Draft and confirm when the stock arrives.');
+    else if (!inIosApp()) lines.push('\nOn **Pro+** I prepare these as one-tap drafts on your Home page. [Upgrade to Pro+](/checkout?plan=proplus)');
     return lines.join('\n');
   }
 
@@ -771,7 +775,8 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       if (res.status === 402) {
         const d = await res.json().catch(() => ({} as Record<string, unknown>));
         setOnline(true);
-        pushAssistant(`${typeof d.detail === 'string' ? d.detail : 'Asking AIBOS is part of Pro.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AIBOS.`, true);
+        pushAssistant(inIosApp() ? IOS_CHAT_LOCKED
+          : `${typeof d.detail === 'string' ? d.detail : 'Asking AIBOS is part of Pro.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AIBOS.`, true);
         return 'answered';
       }
       // 503 = we could not establish the plan, no AI key, or the AI is
@@ -849,7 +854,8 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       }
       if (gate) {
         setOnline(true);
-        pushAssistant(gate.code === 402
+        pushAssistant(gate.code === 402 && inIosApp() ? IOS_CHAT_LOCKED
+          : gate.code === 402
           ? `${gate.detail || 'Asking AIBOS is part of Pro.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AIBOS.`
           : (gate.detail || 'The chat is unavailable right now. This is a fault on our side.'), true);
         return 'answered';
@@ -897,6 +903,10 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     const lv = buildLiveMetrics(s);
     const sym = s.currencySymbol || 'K';
 
+    // 00) The iPhone app sells nothing (lib/iosApp.ts): a question about buying a
+    //     plan or what one costs gets one plain answer and never reaches the model.
+    if (inIosApp() && ASKS_TO_BUY.test(text)) { pushAssistant(NOT_SOLD_HERE); return; }
+
     // 0) A drafted event is waiting on the owner's word — one word settles it.
     const draft = pendingChatEventRef.current;
     if (draft && CHAT_CONFIRM.test(text)) {
@@ -933,7 +943,9 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     //     PENDING event and wait for the owner's confirm. Never auto-post.
     if (looksLikeTransaction(text)) {
       if (!canAccess(s.tier, 'chat_actions')) {
-        pushAssistant('Recording straight from the chat is a **Pro+** feature: type it once, say “confirm”, done.\n\nFor now the **Record** page does the same job, or [upgrade to Pro+](/checkout?plan=proplus) and never leave this window.');
+        pushAssistant(inIosApp()
+          ? 'Recording straight from the chat is not part of your plan. The **Record** page does the same job.'
+          : 'Recording straight from the chat is a **Pro+** feature: type it once, say “confirm”, done.\n\nFor now the **Record** page does the same job, or [upgrade to Pro+](/checkout?plan=proplus) and never leave this window.');
         setSuggestions(['How do I record a sale?']);
         return;
       }
@@ -1112,7 +1124,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         const msg = typeof data.detail === 'string'
           ? data.detail
           : 'Asking AIBOS is part of Pro.';
-        pushAssistant(`${msg}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AIBOS.`, true);
+        pushAssistant(inIosApp() ? IOS_CHAT_LOCKED : `${msg}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AIBOS.`, true);
         return;
       }
       // 503 = the service is at fault (no AI key, the plan could not be read,
