@@ -297,9 +297,10 @@ function saveBlob(blob: Blob, name: string): void {
   setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 30_000);
 }
 // ── Notifications on the phone (upgrade 10) ──────────────────────────────────
-export async function getPushKey(): Promise<{ configured: boolean; key: string | null }> {
+/** `apns`: the API can also reach the iPhone app's lock screen (Apple's key is set). */
+export async function getPushKey(): Promise<{ configured: boolean; key: string | null; apns: boolean }> {
   const data = await spineFetch('/push/key');
-  return { configured: Boolean(data.configured), key: (data.key as string) ?? null };
+  return { configured: Boolean(data.configured), key: (data.key as string) ?? null, apns: Boolean(data.apns) };
 }
 export async function subscribePush(sub: PushSubscriptionJSON): Promise<void> {
   await spineFetch('/push/subscribe', {
@@ -311,6 +312,18 @@ export async function unsubscribePush(endpoint: string): Promise<void> {
   await spineFetch('/push/subscribe', {
     method: 'DELETE', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ endpoint, keys: {} }),
+  });
+}
+/** The iPhone app has no web push: its alerts go through Apple's push service,
+ *  to the token the app hands the page (aibos-ios, Push.swift). */
+export async function subscribeIosPush(token: string): Promise<void> {
+  await spineFetch('/push/apns', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }),
+  });
+}
+export async function unsubscribeIosPush(token: string): Promise<void> {
+  await spineFetch('/push/apns', {
+    method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }),
   });
 }
 export async function sendTestPush(): Promise<{ sent?: number }> {

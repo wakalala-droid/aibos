@@ -12,13 +12,23 @@
  *   · a browser that does not do this at all is told so plainly
  *   · a refused permission is the person's choice; it says how to change it
  *
+ * THE IPHONE APP. Its web view has no web push, so the app does it natively
+ * (aibos-ios, Push.swift): the page posts {type:'push-register'} over the
+ * `aibos` bridge, iOS asks the owner, and the app answers with the event
+ * 'aibos-push-token' carrying this phone's Apple token, which goes to the API
+ * (apns.py). iOS keeps the permission itself, so "Turn off here" forgets the
+ * phone on the server and remembers that on the phone.
+ *
  * Lives in the bell, where the alerts it carries already are. Also on the
  * Schedule page (`embedded`), where an owner sets the reminders it carries.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getPushKey, subscribePush, unsubscribePush, sendTestPush } from '@/lib/api';
-import { inApp } from '@/lib/nativeApp';
+import {
+  getPushKey, subscribePush, unsubscribePush, sendTestPush, subscribeIosPush, unsubscribeIosPush,
+} from '@/lib/api';
+import { inApp, iosBridge } from '@/lib/nativeApp';
 
+// 'ios_app': an iPhone app too old to answer the bridge.
 type State = 'checking' | 'unsupported' | 'needs_install' | 'ios_app' | 'off' | 'on' | 'blocked' | 'unavailable';
 
 // Once per page load, a device that has notifications on tells the server so
@@ -26,6 +36,40 @@ type State = 'checking' | 'unsupported' | 'needs_install' | 'ios_app' | 'off' | 
 // phone"), and a copy the server lost comes back instead of silently getting
 // nothing.
 let reintroduced = false;
+
+/** What the iPhone app answers: 'granted' with this phone's token, 'denied'
+ *  (off in Settings), 'not_asked', or 'error'. */
+interface IosAnswer { status: 'granted' | 'denied' | 'not_asked' | 'error'; token?: string }
+
+/** localStorage: the owner turned alerts off in this iPhone app. */
+const IOS_OFF_KEY = 'aibos-ios-alerts-off';
+
+function iosOff(): boolean {
+  try { return window.localStorage.getItem(IOS_OFF_KEY) === '1'; } catch { return false; }
+}
+function setIosOff(off: boolean) {
+  try {
+    if (off) window.localStorage.setItem(IOS_OFF_KEY, '1'); else window.localStorage.removeItem(IOS_OFF_KEY);
+  } catch { /* storage refused: the server copy still decides */ }
+}
+
+/** Ask the iPhone app for this phone's token. `ask` shows iOS's question if it
+ *  has never been asked. Null when the app does not answer in time. */
+function askIosApp(ask: boolean, waitMs: number): Promise<IosAnswer | null> {
+  const bridge = iosBridge();
+  if (!bridge) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const finish = (answer: IosAnswer | null) => {
+      window.removeEventListener('aibos-push-token', heard);
+      window.clearTimeout(timer);
+      resolve(answer);
+    };
+    const heard = (e: Event) => finish((e as CustomEvent<IosAnswer>).detail ?? null);
+    const timer = window.setTimeout(() => finish(null), waitMs);
+    window.addEventListener('aibos-push-token', heard);
+    bridge.postMessage({ type: 'push-register', ask });
+  });
+}
 
 /** base64url (what the server sends) to the bytes the browser wants. */
 function keyBytes(base64url: string): Uint8Array {
@@ -49,6 +93,18 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
 
   const check = useCallback(async () => {
     if (typeof window === 'undefined') return;
+    if (inApp() === 'ios') {
+      const answer = await askIosApp(false, 5000);
+      if (!answer) { setState('ios_app'); return; }
+      if (answer.status === 'denied') { setState('blocked'); return; }
+      const on = answer.status === 'granted' && Boolean(answer.token) && !iosOff();
+      setState(on ? 'on' : 'off');
+      if (on && answer.token && !reintroduced) {
+        reintroduced = true;
+        void subscribeIosPush(answer.token).then(() => onChangeRef.current?.(true)).catch(() => { /* next load tries again */ });
+      }
+      return;
+    }
     const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const installed = window.matchMedia?.('(display-mode: standalone)').matches
       || (window.navigator as unknown as { standalone?: boolean }).standalone === true;
@@ -74,9 +130,46 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
   }, []);
   useEffect(() => { void check(); }, [check]);
 
+  // Back from the iPhone's Settings with alerts allowed: show it straight away.
+  useEffect(() => {
+    if (state !== 'blocked' || inApp() !== 'ios') return;
+    const back = () => { if (document.visibilityState === 'visible') void check(); };
+    document.addEventListener('visibilitychange', back);
+    return () => document.removeEventListener('visibilitychange', back);
+  }, [state, check]);
+
+  const turnOnIos = async () => {
+    // Long enough for the owner to read iOS's question and answer it.
+    const answer = await askIosApp(true, 120_000);
+    if (!answer) { setNote('The app did not answer. Close AIBOS, open it again and try once more.'); return; }
+    if (answer.status === 'denied') { setState('blocked'); return; }
+    if (answer.status !== 'granted' || !answer.token) {
+      setNote('This iPhone could not sign up for alerts just now. Check your connection and try again.');
+      return;
+    }
+    await subscribeIosPush(answer.token);
+    setIosOff(false);
+    setState('on');
+    onChange?.(true);
+    const { apns } = await getPushKey();
+    if (!apns) { setNote('Turned on. Alerts will reach this iPhone as soon as AIBOS finishes setting them up.'); return; }
+    await sendTestPush();
+    setNote('Turned on. A test alert is on its way to this iPhone.');
+  };
+
+  const turnOffIos = async () => {
+    const answer = await askIosApp(false, 5000);
+    if (answer?.token) await unsubscribeIosPush(answer.token);
+    setIosOff(true);
+    setState('off');
+    onChange?.(false);
+    setNote('Off on this iPhone. The bell still shows everything.');
+  };
+
   const turnOn = async () => {
     setBusy(true); setNote('');
     try {
+      if (inApp() === 'ios') { await turnOnIos(); return; }
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') { setState(permission === 'denied' ? 'blocked' : 'off'); return; }
       const { key } = await getPushKey();
@@ -99,6 +192,7 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
   const turnOff = async () => {
     setBusy(true); setNote('');
     try {
+      if (inApp() === 'ios') { await turnOffIos(); return; }
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
       if (sub) { await unsubscribePush(sub.endpoint); await sub.unsubscribe(); }
@@ -111,13 +205,16 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
   };
 
   if (state === 'checking' || state === 'unavailable') return null;
+  const iosApp = inApp() === 'ios';
 
   const line =
     state === 'on' ? 'Alerts also come to this device.'
       : state === 'needs_install' ? 'Add AIBOS to your Home Screen first (Share, then Add to Home Screen), then turn these on.'
-        : state === 'ios_app' ? 'Lock-screen alerts are not in the iPhone app yet. Every alert still shows in the bell.'
+        : state === 'ios_app' ? 'Update the AIBOS app to get these on your lock screen. Every alert still shows in the bell.'
         : state === 'unsupported' ? 'This browser cannot show notifications. Try Chrome, Edge or Safari.'
+          : state === 'blocked' && iosApp ? 'Alerts are off for AIBOS in your iPhone settings. Turn them on there, then come back.'
           : state === 'blocked' ? 'Notifications are blocked for AIBOS in this browser. Allow them in the site settings, then come back.'
+            : iosApp ? 'Get these on your lock screen, even with AIBOS closed.'
             : 'Get these on your phone, even with AIBOS closed.';
 
   return (
@@ -128,6 +225,19 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
       <span style={{ flex: '1 1 180px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
         {note || line}
       </span>
+      {state === 'blocked' && iosApp && (
+        <button
+          type="button"
+          onClick={() => iosBridge()?.postMessage({ type: 'push-settings' })}
+          style={{
+            padding: '8px 16px', minHeight: 44, borderRadius: 10, cursor: 'pointer',
+            border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)',
+            fontSize: 'var(--fs-body)', fontWeight: 700, whiteSpace: 'nowrap',
+          }}
+        >
+          Open Settings
+        </button>
+      )}
       {(state === 'off' || state === 'on') && (
         <button
           type="button"
