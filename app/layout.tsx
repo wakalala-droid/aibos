@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { ThemeProvider, FOUC_SCRIPT } from '@/lib/theme';
+import { APP_BOOT_SCRIPT } from '@/lib/nativeApp';
 import AppShell from '@/components/layout/AppShell';
 import './globals.css';
 
@@ -32,6 +33,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" data-theme="light" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
+        {/* Marks an Android phone, an iPhone and the AIBOS apps on <html> before
+            anything paints, so "Get the app" shows only where it belongs. */}
+        <script dangerouslySetInnerHTML={{ __html: APP_BOOT_SCRIPT }} />
         {/* The opening screen's mark, fetched with the page rather than after it. */}
         <link rel="preload" as="image" href="/brand/aibos-mark-white-glyph.png" />
       </head>

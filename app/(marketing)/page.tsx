@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 const BUILT_FOR = [
-  { icon: <Smartphone />, title: 'Works on any phone', text: 'Put AIBOS on your home screen like an app, with shortcuts to record a sale, add a booking or ask a question. Reminders arrive even with it closed.' },
+  { icon: <Smartphone />, title: 'Works on any phone', text: 'Get the AIBOS app for Android straight from this website, or add AIBOS to an iPhone home screen. Shortcuts record a sale, add a booking or ask a question, and reminders arrive even with it closed.' },
   { icon: <Users />, title: 'Your team, your rules', text: 'Invite staff to record sales and your accountant to read the books. Staff never see the money pages.' },
   { icon: <Landmark />, title: 'Zambian rules built in', text: 'Kwacha first. PAYE, NAPSA and NHIMA at current rates. ZRA and NAPSA deadlines go straight on your schedule.' },
   { icon: <ShieldCheck />, title: 'Your data stays yours', text: 'Export your full history on any plan, even after you cancel. Your numbers never train anyone’s AI.' },

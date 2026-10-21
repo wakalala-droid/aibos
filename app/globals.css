@@ -2562,3 +2562,45 @@ html, body {
 }
 .rs-hero .rs-avatar { width: 64px; height: 64px; font-size: var(--fs-h3); background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.26); }
 .rs-person { display: flex; align-items: center; gap: 16px; min-width: 0; }
+
+/* ── THE PHONE APPS (lib/nativeApp.ts, components/app/) ────────────────────
+   APP_BOOT_SCRIPT marks <html> with data-device (android, ios) and data-app
+   (inside the AIBOS app) before the first paint, so "Get the app" shows only
+   on an Android phone in a browser and never inside the app, with no flash
+   and no script on the website. Each element keeps its own display. */
+html:not([data-device="android"]) .when-android,
+html[data-app] .when-android,
+html[data-app] .unless-app { display: none !important; }
+html[data-device="android"]:not([data-app]) .unless-android { display: none !important; }
+
+/* The install steps: numbered rounds down the left, the words beside them. */
+.app-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: app-step; }
+.app-steps li { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 4px 12px; align-items: start; counter-increment: app-step; }
+.app-steps li::before {
+  grid-row: 1 / span 2; content: counter(app-step); display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--bg-card);
+  font-size: var(--fs-label); font-weight: 700; color: var(--text-1); font-variant-numeric: tabular-nums;
+}
+.app-steps li.is-done::before { content: '\2713'; color: var(--on-brand); background: var(--brand-fill); border-color: transparent; }
+.app-steps .step-title, .app-steps .step-text { grid-column: 2; min-width: 0; }
+.app-steps .step-title { display: block; padding-top: 5px; font-size: var(--fs-body); font-weight: 600; color: var(--text-1); }
+.app-steps .step-text { display: block; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); }
+.app-steps .step-text strong { color: var(--text-1); font-weight: 600; }
+
+/* The old shortcut's screen: What's new's dialog with the notice's art strip. */
+.retire-shortcut .notice-art-strip { margin: 0; height: 120px; }
+.retire-shortcut .whatsnew-body { display: grid; gap: 20px; }
+.retire-shortcut .whatsnew-title { font-size: var(--fs-h2); }
+.retire-shortcut .whatsnew-sub { margin: 0; }
+.retire-shortcut .retire-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 20px; border-top: 1px solid var(--border); }
+@media (max-width: 480px) { .retire-shortcut .retire-actions .pill { flex: 1 1 100%; } }
+
+/* After "Get the app": the next steps float at the foot of the screen, the way
+   the update notice arrives (update-in, 12px over 200ms). */
+.app-sheet {
+  position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 95;
+  width: min(560px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain;
+  transform: translateX(-50%); animation: update-in 200ms ease-out both; border-radius: var(--radius-card);
+}
+.app-sheet .notice-actions { padding-left: 0; }
+@media (prefers-reduced-motion: reduce) { .app-sheet { animation: none; } }

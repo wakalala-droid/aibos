@@ -9,6 +9,8 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase';
 import { NoticeArt } from '@/components/kit';
 import NavyPage from '@/components/brand/NavyPage';
+import GetAndroidApp from '@/components/app/GetAndroidApp';
+import { iosBridge } from '@/lib/nativeApp';
 import '../navy.css';
 
 // ─── Google Icon ───────────────────────────────────────────────────
@@ -72,16 +74,22 @@ function LoginForm() {
     // Referral code rides the whole OAuth round-trip so the auth callback can
     // stamp referred_by on FIRST profile provision only (referral loop).
     const ref = searchParams.get('ref');
+    // The iPhone app: Google refuses to sign anyone in inside an app's own web
+    // view, so the app opens Google in Safari's sign-in sheet and brings the
+    // code back here (aibos-ios, SignIn.swift; app=ios in app/auth/callback).
+    const ios = iosBridge();
     const callbackUrl =
       `${window.location.origin}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}` +
-      (ref ? `&ref=${encodeURIComponent(ref)}` : '');
+      (ref ? `&ref=${encodeURIComponent(ref)}` : '') +
+      (ios ? '&app=ios' : '');
 
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: callbackUrl,
         queryParams: { access_type: 'offline', prompt: 'select_account' },
         scopes: 'email profile',
+        skipBrowserRedirect: Boolean(ios),
       },
     });
 
@@ -92,8 +100,16 @@ function LoginForm() {
       setTimeout(() => setShaking(false), 600);
       return;
     }
+    if (ios && data?.url) ios.postMessage({ type: 'signin', url: data.url });
     setRedirecting(true);
   }, [loading, supabase, searchParams]);
+
+  // The iPhone app says so when the sign-in sheet is closed without signing in.
+  useEffect(() => {
+    const cancelled = () => { setRedirecting(false); setLoading(false); };
+    window.addEventListener('aibos-signin-cancelled', cancelled);
+    return () => window.removeEventListener('aibos-signin-cancelled', cancelled);
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -150,6 +166,10 @@ export default function LoginPage() {
       <Suspense fallback={<div aria-busy="true" className="notice login-card" style={{ minHeight: 420 }} />}>
         <LoginForm />
       </Suspense>
+      {/* An Android phone in a browser: the app is one tap from here too (lib/nativeApp.ts). */}
+      <p className="login-app when-android">
+        <GetAndroidApp className="pill pill-quiet">Get the AIBOS app for Android</GetAndroidApp>
+      </p>
       <p className="login-foot">Artificial Intelligence Business Operating System</p>
     </div>
   );

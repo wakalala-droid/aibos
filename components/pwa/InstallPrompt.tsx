@@ -1,7 +1,14 @@
 'use client';
 
 /**
- * InstallPrompt — asks the owner to put AIBOS on their home screen or desktop.
+ * InstallPrompt — asks the owner to put AIBOS on their phone or computer.
+ *
+ * Android phones get the AIBOS app itself (owner, 21 Oct 2026: "make sure
+ * every user installs the APK from the website"): it downloads from here and
+ * the steps follow (components/app/). Once the app is on the phone, a browser
+ * tab offers to open it instead. The old browser shortcut has its own screen
+ * (components/app/RetireShortcut.tsx). An iPhone gets the App Store link once
+ * Apple lists the app (NEXT_PUBLIC_IOS_APP_URL), the Home Screen steps until then.
  *
  * The app has been installable for a while (manifest, icons, a service worker
  * with an offline page) and almost nobody knew: Chrome's own hint is a small
@@ -23,11 +30,16 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Notice from '@/components/ui/Notice';
+import AndroidSteps from '@/components/app/AndroidSteps';
+import { ApkLink } from '@/components/app/GetAndroidApp';
+import { ANDROID_APP, IOS_APP_URL, androidAppLink, device, hasAndroidApp, inApp } from '@/lib/nativeApp';
 
 const DISMISSED_KEY = 'aibos-install-dismissed-at';
 const INSTALLED_KEY = 'aibos-installed';
 const TOUR_DONE_KEY = 'aibos-tour-done-v1';     // components/onboarding/DashboardTour.tsx
 const QUIET_DAYS = 14;
+// The Android app matters more than a shortcut did: "Not now" holds for a day.
+const APP_QUIET_DAYS = 1;
 const DAY = 86_400_000;
 
 /** The event Chromium browsers fire when the app can be installed. */
@@ -64,7 +76,7 @@ export function captureInstallPrompt(): () => void {
   };
 }
 
-type Mode = 'native' | 'ios' | 'mac-safari' | null;
+type Mode = 'native' | 'ios' | 'mac-safari' | 'android-get' | 'android-open' | 'ios-get' | null;
 
 function read(key: string): string {
   try { return window.localStorage.getItem(key) ?? ''; } catch { return ''; }
@@ -75,12 +87,14 @@ function standalone(): boolean {
     || (navigator as Navigator & { standalone?: boolean }).standalone === true;
 }
 
-function detect(): Mode {
+async function detect(): Promise<Mode> {
+  if (inApp()) return null;
+  if (device() === 'android') return (await hasAndroidApp()) ? 'android-open' : 'android-get';
   if (window.__aibosInstall) return 'native';
   const ua = navigator.userAgent;
   // iPadOS reports itself as a Mac; the touch screen gives it away.
   const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-  if (ios) return 'ios';
+  if (ios) return IOS_APP_URL ? 'ios-get' : 'ios';
   const macSafari = /Macintosh/.test(ua) && /Version\/(\d+)/.test(ua) && /Safari/.test(ua)
     && !/Chrome|Chromium|Edg|Firefox|OPR/.test(ua) && Number(ua.match(/Version\/(\d+)/)?.[1] ?? 0) >= 17;
   return macSafari ? 'mac-safari' : null;
@@ -90,26 +104,36 @@ export default function InstallPrompt() {
   const pathname = usePathname() || '';
   const [mode, setMode] = useState<Mode>(null);
   const [busy, setBusy] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
   const phone = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|Mobile/.test(navigator.userAgent);
 
   useEffect(() => {
     let timer = 0;
-    const decide = () => {
-      if (standalone() || read(INSTALLED_KEY) === '1') { setMode(null); return; }
-      const dismissed = Number(read(DISMISSED_KEY) || 0);
-      if (dismissed && Date.now() - dismissed < QUIET_DAYS * DAY) { setMode(null); return; }
+    let live = true;
+    const decide = async () => {
+      // A home-screen shortcut has its own screen; the apps need no prompt.
+      if (standalone() || inApp()) { setMode(null); return; }
       // The first-run tours come first: they point at things on the page.
       if (pathname === '/dashboard' && read(TOUR_DONE_KEY) !== '1') { setMode(null); return; }
       if (document.body.dataset.welcomeTour === 'open') { setMode(null); return; }
-      setMode(detect());
+      const next = await detect();
+      if (!live) return;
+      const app = next === 'android-get' || next === 'ios-get';
+      // "Installed" meant the browser's shortcut: it does not count against the app.
+      if (!app && next !== 'android-open' && read(INSTALLED_KEY) === '1') { setMode(null); return; }
+      const dismissed = Number(read(DISMISSED_KEY) || 0);
+      if (dismissed && Date.now() - dismissed < (app ? APP_QUIET_DAYS : QUIET_DAYS) * DAY) { setMode(null); return; }
+      setMode(next);
     };
     // A moment after the page settles, so it never jumps in while the owner
     // is reaching for the first thing they came to do.
-    timer = window.setTimeout(decide, 2500);
-    window.addEventListener(INSTALL_READY_EVENT, decide);
+    const run = () => { void decide(); };
+    timer = window.setTimeout(run, 2500);
+    window.addEventListener(INSTALL_READY_EVENT, run);
     return () => {
+      live = false;
       window.clearTimeout(timer);
-      window.removeEventListener(INSTALL_READY_EVENT, decide);
+      window.removeEventListener(INSTALL_READY_EVENT, run);
     };
   }, [pathname]);
 
@@ -122,7 +146,7 @@ export default function InstallPrompt() {
 
   const install = async () => {
     const offer = window.__aibosInstall;
-    if (!offer) { setMode(detect()); return; }
+    if (!offer) { setMode(await detect()); return; }
     setBusy(true);
     try {
       await offer.prompt();
@@ -142,9 +166,12 @@ export default function InstallPrompt() {
     }
   };
 
-  const title = mode === 'native' && !phone
-    ? 'Install AIBOS on this computer'
+  const title = mode === 'android-get' ? (downloaded ? 'Now install AIBOS' : 'Get the AIBOS app')
+    : mode === 'android-open' ? 'Open AIBOS in the app'
+    : mode === 'ios-get' ? 'Get the AIBOS iPhone app'
+    : mode === 'native' && !phone ? 'Install AIBOS on this computer'
     : mode === 'mac-safari' ? 'Add AIBOS to your Dock' : 'Put AIBOS on your home screen';
+  const tag = mode === 'android-get' || mode === 'android-open' ? 'Android' : mode === 'ios-get' ? 'iPhone' : 'App';
 
   // The splash's pieces (the owner, 5 Oct 2026): the AIBOS mark in its
   // round, a spaced-capital title and tag, the hairline art, the brand pill.
@@ -154,10 +181,22 @@ export default function InstallPrompt() {
       role="region"
       ariaLabel="Install AIBOS as an app"
       title={title}
-      tag="App"
+      tag={tag}
       style={{ margin: '0 0 16px' }}
       actions={
         <>
+          {mode === 'android-get' && !downloaded && (
+            <ApkLink onDownload={() => setDownloaded(true)}>Download the app ({ANDROID_APP.size})</ApkLink>
+          )}
+          {mode === 'android-get' && downloaded && (
+            <ApkLink className="pill pill-quiet">Download again</ApkLink>
+          )}
+          {mode === 'android-open' && (
+            <a href={androidAppLink(pathname)} className="pill pill-primary">Open the app</a>
+          )}
+          {mode === 'ios-get' && (
+            <a href={IOS_APP_URL} className="pill pill-primary" rel="noopener">Get the iPhone app</a>
+          )}
           {mode === 'native' && (
             <button type="button" className="pill pill-primary" onClick={() => void install()} disabled={busy}
               style={{ opacity: busy ? 0.7 : 1 }}>
@@ -165,11 +204,21 @@ export default function InstallPrompt() {
             </button>
           )}
           <button type="button" className="pill pill-quiet" onClick={dismiss}>
-            {mode === 'native' ? 'Not now' : 'Got it'}
+            {mode === 'android-get' && downloaded ? 'Done'
+              : mode === 'ios' || mode === 'mac-safari' ? 'Got it' : 'Not now'}
           </button>
         </>
       }
     >
+      {mode === 'android-get' && (downloaded
+        ? <div style={{ marginTop: 8 }}><AndroidSteps downloaded /></div>
+        : <>It opens straight on your business, full screen, with alerts on your lock screen and shortcuts to record a sale or ask a question. {ANDROID_APP.size} from this website, installed once.</>)}
+      {mode === 'android-open' && (
+        <>The AIBOS app is on this phone. It opens full screen with your alerts and shortcuts.</>
+      )}
+      {mode === 'ios-get' && (
+        <>From the App Store. It opens straight on your business, full screen. Then remove any AIBOS you added to your Home Screen from Safari.</>
+      )}
       {mode === 'native' && (
         <>Open it with one {phone ? 'tap' : 'click'}, like any other app. It opens straight to your business, full screen and without the browser around it.</>
       )}

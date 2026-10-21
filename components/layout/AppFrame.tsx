@@ -16,6 +16,7 @@ import { OfflineSync } from '@/components/pwa/OfflineSync';
 import AppToaster from '@/components/ui/AppToaster';
 import ConfirmSheet from '@/components/ui/ConfirmSheet';
 import TableCards from '@/components/ui/TableCards';
+import RetireShortcut from '@/components/app/RetireShortcut';
 
 // Routes that render full-screen WITHOUT the app chrome (sidebar + padded
 // main area). The login/auth screens are standalone and must not show the
@@ -54,9 +55,10 @@ function MoonIcon() {
 
 // The app's own helpers, on every app screen (they used to load on the public
 // website too): offline sync and the service worker, toasts, the confirm
-// sheet and phone card tables.
+// sheet and phone card tables. And the old home-screen shortcut's screen,
+// which asks for the AIBOS app instead (components/app/RetireShortcut.tsx).
 function Helpers() {
-  return <><OfflineSync /><AppToaster /><ConfirmSheet /><TableCards /></>;
+  return <><OfflineSync /><AppToaster /><ConfirmSheet /><TableCards /><RetireShortcut /></>;
 }
 
 /**

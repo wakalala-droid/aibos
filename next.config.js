@@ -68,6 +68,17 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // The Android app (lib/nativeApp.ts). Said to be an Android package so
+        // the phone offers to install it, saved under its own name, and checked
+        // again on every download so a new build reaches the next visitor.
+        source: '/download/AIBOS.apk',
+        headers: [
+          { key: 'Content-Type',        value: 'application/vnd.android.package-archive' },
+          { key: 'Content-Disposition', value: 'attachment; filename="AIBOS.apk"' },
+          { key: 'Cache-Control',       value: 'public, max-age=0, must-revalidate' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           { key: 'X-Frame-Options',          value: 'DENY' },

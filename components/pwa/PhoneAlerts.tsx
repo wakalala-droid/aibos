@@ -17,8 +17,9 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getPushKey, subscribePush, unsubscribePush, sendTestPush } from '@/lib/api';
+import { inApp } from '@/lib/nativeApp';
 
-type State = 'checking' | 'unsupported' | 'needs_install' | 'off' | 'on' | 'blocked' | 'unavailable';
+type State = 'checking' | 'unsupported' | 'needs_install' | 'ios_app' | 'off' | 'on' | 'blocked' | 'unavailable';
 
 // Once per page load, a device that has notifications on tells the server so
 // again: the server names the device from that request ("Chrome on an Android
@@ -52,7 +53,8 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
     const installed = window.matchMedia?.('(display-mode: standalone)').matches
       || (window.navigator as unknown as { standalone?: boolean }).standalone === true;
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      setState(isApple && !installed ? 'needs_install' : 'unsupported');
+      // The iPhone app's web view has no web push; Home Screen steps would be wrong there.
+      setState(inApp() === 'ios' ? 'ios_app' : isApple && !installed ? 'needs_install' : 'unsupported');
       return;
     }
     if (Notification.permission === 'denied') { setState('blocked'); return; }
@@ -113,6 +115,7 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
   const line =
     state === 'on' ? 'Alerts also come to this device.'
       : state === 'needs_install' ? 'Add AIBOS to your Home Screen first (Share, then Add to Home Screen), then turn these on.'
+        : state === 'ios_app' ? 'Lock-screen alerts are not in the iPhone app yet. Every alert still shows in the bell.'
         : state === 'unsupported' ? 'This browser cannot show notifications. Try Chrome, Edge or Safari.'
           : state === 'blocked' ? 'Notifications are blocked for AIBOS in this browser. Allow them in the site settings, then come back.'
             : 'Get these on your phone, even with AIBOS closed.';

@@ -24,6 +24,18 @@ export async function GET(request: NextRequest) {
   const refRaw      = searchParams.get('ref');
   const referredBy  = refRaw && /^[a-zA-Z0-9-]{4,16}$/.test(refRaw) ? refRaw : null;
 
+  // ── The iPhone app's sign-in sheet ────────────────────────────────────────
+  // The app signs in through Safari's sign-in sheet (Google refuses sign-in
+  // inside an app's web view; app/login/page.tsx). The sheet lands here, where
+  // there is no sign-in to finish, so it hands everything back to the app,
+  // which opens this page again inside itself, where the sign-in started and
+  // its code verifier is kept (aibos-ios, SignIn.swift).
+  if (searchParams.get('app') === 'ios') {
+    const back = new URL('aibos://auth');
+    searchParams.forEach((value, key) => { if (key !== 'app') back.searchParams.set(key, value); });
+    return NextResponse.redirect(back);
+  }
+
   // ── OAuth error from Google/Supabase ──────────────────────────────────────
   if (error) {
     console.error(`[AIBOS Auth] OAuth error: ${error}: ${errorDesc}`);

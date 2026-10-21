@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Menu, X } from 'lucide-react';
+import GetAndroidApp from '@/components/app/GetAndroidApp';
 
 const LINKS = [
   { href: '/#features', label: 'Features' },
@@ -78,6 +79,9 @@ export default function MarketingNav() {
           )}
         </div>
 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* An Android phone gets the app from the bar on every page. */}
+        <GetAndroidApp className="pill pill-primary">Get the app</GetAndroidApp>
         <button
           type="button"
           className="icon-pill mkt-nav-burger"
@@ -89,6 +93,7 @@ export default function MarketingNav() {
         >
           {open ? <X aria-hidden /> : <Menu aria-hidden />}
         </button>
+        </div>
       </nav>
 
       {open && (

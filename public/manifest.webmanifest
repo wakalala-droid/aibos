@@ -6,6 +6,10 @@
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
+  "related_applications": [
+    { "platform": "play", "id": "website.aibos.app" }
+  ],
+  "prefer_related_applications": false,
   "background_color": "#f4f3ef",
   "theme_color": "#f4f3ef",
   "icons": [

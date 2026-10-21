@@ -20,6 +20,7 @@ import {
   checkoutTotals, closeCardCheckout, formatMoney, mountInlineCheckout,
   type CheckoutTotals, type PaddleEvent,
 } from '@/lib/paddle';
+import { inApp } from '@/lib/nativeApp';
 import './checkout.css';
 
 // Every plan is paid by card through Paddle, in US dollars, and renews
@@ -746,8 +747,25 @@ function CheckoutInner() {
 }
 
 export default function CheckoutPage() {
+  // The iPhone app sells nothing: Apple lets a free companion app to a paid
+  // web service in the App Store only with no purchase inside it (App Store
+  // Review Guideline 3.1.3(f)). Known after the first paint, so the card form
+  // never starts loading there.
+  const [ios, setIos] = useState<boolean | null>(null);
+  useEffect(() => setIos(inApp() === 'ios'), []);
+  const loading = <div className="co-page" style={{ padding: 48, textAlign: 'center', color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>Loading checkout…</div>;
+  if (ios === null) return loading;
+  if (ios) {
+    return (
+      <Shell>
+        <Panel>
+          <Note>Plans are not sold in the iPhone app. Your plan and everything in it work here, whichever device it was bought on.</Note>
+        </Panel>
+      </Shell>
+    );
+  }
   return (
-    <Suspense fallback={<div className="co-page" style={{ padding: 48, textAlign: 'center', color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>Loading checkout…</div>}>
+    <Suspense fallback={loading}>
       <CheckoutInner />
     </Suspense>
   );
