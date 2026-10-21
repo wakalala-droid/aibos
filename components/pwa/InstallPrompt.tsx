@@ -38,7 +38,7 @@ const DISMISSED_KEY = 'aibos-install-dismissed-at';
 const INSTALLED_KEY = 'aibos-installed';
 const TOUR_DONE_KEY = 'aibos-tour-done-v1';     // components/onboarding/DashboardTour.tsx
 const QUIET_DAYS = 14;
-// The Android app matters more than a shortcut did: "Not now" holds for a day.
+// The app matters more than a shortcut did: "Not now" holds for a day.
 const APP_QUIET_DAYS = 1;
 const DAY = 86_400_000;
 
@@ -118,9 +118,10 @@ export default function InstallPrompt() {
       if (document.body.dataset.welcomeTour === 'open') { setMode(null); return; }
       const next = await detect();
       if (!live) return;
-      const app = next === 'android-get' || next === 'ios-get';
+      // Getting people onto the app, or into it once they have it, asks daily.
+      const app = next === 'android-get' || next === 'android-open' || next === 'ios-get';
       // "Installed" meant the browser's shortcut: it does not count against the app.
-      if (!app && next !== 'android-open' && read(INSTALLED_KEY) === '1') { setMode(null); return; }
+      if (!app && read(INSTALLED_KEY) === '1') { setMode(null); return; }
       const dismissed = Number(read(DISMISSED_KEY) || 0);
       if (dismissed && Date.now() - dismissed < (app ? APP_QUIET_DAYS : QUIET_DAYS) * DAY) { setMode(null); return; }
       setMode(next);
