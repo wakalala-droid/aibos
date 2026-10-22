@@ -10,7 +10,7 @@ import { confirmSheet } from '@/lib/confirm';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
-import { TIERS, canAccess, type Tier } from '@/lib/tiers';
+import { TIERS, canAccess, requiredTier, type Tier } from '@/lib/tiers';
 import { NOT_ON_PLAN_SHORT, useIosApp } from '@/lib/iosApp';
 import { useStore } from '@/lib/store';
 import { CURRENCIES } from '@/lib/currency';
@@ -369,7 +369,7 @@ export default function BusinessProfilePage() {
         />
 
         {/* Team — owners only (audit #27/#28). */}
-        {teamRole === 'owner' && <TeamCard />}
+        {teamRole === 'owner' && <TeamCard tier={tier} />}
 
         {/* What AIBOS has learned (audit #57) — the correction loop made visible. */}
         <MemoryLearnedCard />
@@ -696,7 +696,13 @@ function ExportCard() {
   );
 }
 
-function TeamCard() {
+function TeamCard({ tier }: { tier: Tier }) {
+  // Inviting is Pro ('team'). The roster below stays open on every plan, so an
+  // owner on Free can still see who has access and take it away.
+  const canInvite = canAccess(tier, 'team');
+  const needTier = TIERS[requiredTier('team')].name;
+  // The iPhone app sells nothing (lib/iosApp.ts): a locked invite says so and stops.
+  const ios = useIosApp();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<TeamMemberRole>('staff');
@@ -739,6 +745,13 @@ function TeamCard() {
 
       {error && <p role="alert" style={{ color: 'var(--crit)', fontSize: 'var(--fs-label)', margin: '0 0 12px' }}>{error}</p>}
 
+      {!canInvite ? (
+        <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 16px' }}>
+          {ios ? 'Inviting your team is not part of your plan.' : (
+            <>Inviting your staff and your accountant comes with {needTier}. <Link href="/pricing" style={{ color: 'var(--cyan)' }}>See plans</Link></>
+          )}
+        </p>
+      ) : (
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
         <input type="email" inputMode="email" value={email} onChange={e => setEmail(e.target.value)}
           placeholder="teammate@email.com" aria-label="Invite email" style={{ ...cardInput, flex: '1 1 200px' }} />
@@ -750,6 +763,7 @@ function TeamCard() {
           {busy ? 'Inviting…' : 'Invite'}
         </button>
       </div>
+      )}
 
       {loadError && members.length === 0 ? (
         <p role="alert" style={{ fontSize: 'var(--fs-label)', color: 'var(--crit)', margin: 0 }}>

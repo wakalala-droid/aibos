@@ -18,6 +18,10 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { BedDouble, Briefcase, CalendarClock, Check, Package, ReceiptText, type LucideIcon } from 'lucide-react';
 import { DeadlinesScene, GetPaidScene, PayrollScene, RoomsScene, StockScene, type SceneProps } from './theatre/scenes';
+import { TIERS, requiredTier, type Feature } from '@/lib/tiers';
+
+/** The plan a job first comes with, read from the gates so the tag cannot drift. */
+const planFor = (f: Feature) => TIERS[requiredTier(f)].name;
 
 type Story = {
   id: string;
@@ -35,7 +39,7 @@ type Story = {
 
 const STORIES: Story[] = [
   {
-    id: 'payroll', tab: 'Payroll', icon: Briefcase, plan: 'Pro',
+    id: 'payroll', tab: 'Payroll', icon: Briefcase, plan: planFor('payroll'),
     goal: 'Pay your people right, without the tax tables.',
     text: 'Add your staff once. Each month AIBOS works out PAYE, NAPSA and NHIMA at this year’s Zambian rates and shows every take-home figure. The payments to ZRA and NAPSA go straight on your schedule.',
     values: ['The 2026 ZRA bands and NAPSA ceiling, kept current for you', 'Wages posted to your books in one tap'],
@@ -43,7 +47,7 @@ const STORIES: Story[] = [
     ms: 7600, Scene: PayrollScene,
   },
   {
-    id: 'paid', tab: 'Get paid', icon: ReceiptText, plan: 'Free',
+    id: 'paid', tab: 'Get paid', icon: ReceiptText, plan: planFor('invoices'),
     goal: 'Get paid the same day, not the same month.',
     text: 'Every invoice carries a mobile money payment link. Your customer pays from their own phone, AIBOS marks the invoice paid and your money figure moves by itself.',
     values: ['No app for your customer to install', 'See who still owes you and for how long'],
@@ -51,7 +55,7 @@ const STORIES: Story[] = [
     ms: 7000, Scene: GetPaidScene,
   },
   {
-    id: 'deadlines', tab: 'Deadlines', icon: CalendarClock, plan: 'Pro',
+    id: 'deadlines', tab: 'Deadlines', icon: CalendarClock, plan: planFor('schedule'),
     goal: 'No more penalties. No more “I forgot”.',
     text: 'NAPSA, PAYE, rent and supplier pick-ups sit in one list. A reminder reaches your phone days before each one is due, even with AIBOS closed.',
     values: ['ZRA and NAPSA dates added for you when you run payroll', 'Mark it paid straight from the reminder'],
@@ -59,7 +63,7 @@ const STORIES: Story[] = [
     ms: 7000, Scene: DeadlinesScene,
   },
   {
-    id: 'stock', tab: 'Stock', icon: Package, plan: 'Pro+',
+    id: 'stock', tab: 'Stock', icon: Package, plan: planFor('automation'),
     goal: 'Never tell a customer “we’ve run out”.',
     text: 'Set a reorder level once. When something runs low, AIBOS drafts the order with the right amount from the right supplier and you approve it in one tap.',
     values: ['Tops you back up to twice your reorder level', 'Approved orders wait under Expected deliveries until they arrive'],
@@ -67,7 +71,7 @@ const STORIES: Story[] = [
     ms: 7400, Scene: StockScene,
   },
   {
-    id: 'rooms', tab: 'Rooms & Stays', icon: BedDouble, plan: 'Pro',
+    id: 'rooms', tab: 'Rooms & Stays', icon: BedDouble, plan: planFor('hospitality'),
     goal: 'Fill your rooms with the deposit already paid.',
     text: 'The whole week of rooms at a glance. Each booking gets its own payment link, the deposit confirms the stay and AIBOS reminds you before every guest arrives.',
     values: ['Requests, stays and finished stays in one picture', 'Every deposit lands in your books'],

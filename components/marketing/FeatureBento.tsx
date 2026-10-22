@@ -79,7 +79,7 @@ export default function FeatureBento() {
             icon={<CalendarClock />}
             title="Schedule"
             tag="Free"
-            text="Meetings, pick-ups, deliveries and tax deadlines in one list. With Pro, the reminder comes to your phone."
+            text="Meetings, pick-ups, deliveries and tax deadlines in one list. With Pro+, the reminder comes to your phone."
           />
           <BentoCard
             className="span-2"

@@ -72,8 +72,10 @@ export default function PricingTiers({ cardPrices = null, zmwRate }: {
         <PriceCurrencySwitch currency={currency} onChange={choose} rate={rate} loading={loading} />
       </div>
 
+      {/* Highest value first, trickling down to Free (owner's decision, 22 Oct
+          2026). TIER_ORDER itself stays low to high: the gates read it. */}
       <div className="price-grid">
-        {TIER_ORDER.map((tier) => {
+        {[...TIER_ORDER].reverse().map((tier) => {
           const meta = TIERS[tier];
           const Icon = ICON[tier];
           // Pro+ is the flagship: "AIBOS runs your day" is the story we lead with.

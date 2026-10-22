@@ -231,7 +231,7 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     title: 'Your Schedule',
     what: 'Every commitment with a date on it: meetings, customer pick-ups, deliveries, ZRA and NAPSA deadlines, payments due: grouped into Overdue, Today, Tomorrow and beyond.',
     why: 'Missed pick-ups cost sales and missed statutory deadlines cost penalties. One glance here tells you what the day demands before it demands it.',
-    how: 'Add items with Quick add, tap Done as they happen. When a pick-up or payment with an amount is done, AIBOS offers to record it straight into your books so the schedule and the numbers stay one story. Recurring items (Pro) roll to their next date automatically.',
+    how: 'Add items with Quick add, tap Done as they happen. When a pick-up or payment with an amount is done, AIBOS offers to record it straight into your books so the schedule and the numbers stay one story. Recurring items (Pro+) roll to their next date automatically.',
     followups: ['What is overdue right now?', 'How do recurring items work?'],
   },
   'schedule.quickadd': {
@@ -239,7 +239,7 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     title: 'Quick Add',
     what: 'The fastest way to put a commitment on the books: pick a kind, a title and a date: three taps.',
     why: 'A schedule only works if adding to it is easier than forgetting. Everything beyond what/when is optional and tucked behind More options.',
-    how: 'The amount field is worth filling for pick-ups and payments: it powers the one-tap "record it in your books" step when you mark the item done. Repeats (daily to monthly) are a Pro feature, enforced by the server.',
+    how: 'The amount field is worth filling for pick-ups and payments: it powers the one-tap "record it in your books" step when you mark the item done. Repeats (daily to monthly) are a Pro+ feature, enforced by the server.',
     followups: ['What does the amount field do?', 'What repeats can I set?'],
   },
   // ── Employees & Payroll ──────────────────────────────────────────────────────
@@ -248,7 +248,7 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     title: 'Your People',
     what: 'The register of everyone the company pays: their role, basic pay, allowances, pay day, staff loan balance and, for fixed-term staff, gratuity terms.',
     why: 'Payroll can only be as right as the register behind it. Keeping people here means PAYE, NAPSA and net pay are worked out from real details, not guessed each month.',
-    how: 'Add a person with a name and basic pay to start, and their allowances (housing, transport and other cash paid every month) if they have any: PAYE and NAPSA count allowances, NHIMA does not. Open "Loan, gratuity & IDs" for staff loans (deducted automatically each run), gratuity accrual on contracts, their NAPSA number and TPIN, and to mark someone aged 60 or over, who no longer pays NAPSA. The register is free: running payroll is the Pro step.',
+    how: 'Add a person with a name and basic pay to start, and their allowances (housing, transport and other cash paid every month) if they have any: PAYE and NAPSA count allowances, NHIMA does not. Open "Loan, gratuity & IDs" for staff loans (deducted automatically each run), gratuity accrual on contracts, their NAPSA number and TPIN, and to mark someone aged 60 or over, who no longer pays NAPSA. The register is free: running payroll is the Pro+ step.',
     followups: ['How is a staff loan deducted?', 'Who accrues gratuity?'],
   },
   'payroll.run': {
@@ -256,7 +256,7 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     title: 'Run Payroll',
     what: 'Pick a month and AIBOS computes each active employee’s payslip (gross, NAPSA, NHIMA, PAYE and take-home pay) and what you pay on top as the employer (your own 5% NAPSA, 1% NHIMA and, if your business pays it, the 0.5% Skills Development Levy), using the Zambian statutory rates it keeps up to date for you.',
     why: 'Payroll is monthly, error-prone hard maths with real penalties for getting NAPSA or PAYE wrong. Doing it for you (and posting each salary into your books) keeps the numbers and the law in one place.',
-    how: 'Preview is free and shows the full table with totals. Running it (Pro) posts one confirmed Salary event per employee (at their NET pay) into your P&L and cashflow, decrements staff loans and records the run. It also drafts what goes to each authority by the 10th of next month: PAYE (and the levy) to ZRA, NAPSA (your staff 5% plus your 5%) and NHIMA (their 1% plus your 1%), as payments waiting for you; you confirm each when you actually pay, so the money is never counted twice. Each month can only be run once, so nothing is paid twice.',
+    how: 'Preview is free and shows the full table with totals. Running it (Pro+) posts one confirmed Salary event per employee (at their NET pay) into your P&L and cashflow, decrements staff loans and records the run. It also drafts what goes to each authority by the 10th of next month: PAYE (and the levy) to ZRA, NAPSA (your staff 5% plus your 5%) and NHIMA (their 1% plus your 1%), as payments waiting for you; you confirm each when you actually pay, so the money is never counted twice. Each month can only be run once, so nothing is paid twice.',
     followups: ['What rates is AIBOS using?', 'How does NAPSA get calculated?', 'Where do the salaries and remittances show in my books?'],
   },
   'dash.upcoming': {

@@ -7,7 +7,7 @@
  * Business Event so the commitment lands in the books.
  *
  * Agenda is the primary view (mobile-first — month grids are desktop thinking);
- * the month grid is secondary. Recurrence + reminders are the Pro layer; core
+ * the month grid is secondary. Recurrence + reminders are the Pro+ layer; core
  * scheduling is free, like recording.
  *
  * Reminders go out from the API (schedule_reminders.py) to the bell, an

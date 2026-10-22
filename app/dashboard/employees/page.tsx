@@ -2,7 +2,7 @@
 /**
  * AIBOS — Employees & Payroll.
  * The company's people (a free register — master data, like the product catalog)
- * and a Zambian statutory payroll engine (Pro). Running a period computes PAYE,
+ * and a Zambian statutory payroll engine (Pro+). Running a period computes PAYE,
  * NAPSA, NHIMA and net pay for each active employee, decrements staff loans, and
  * posts one confirmed Salary business-event per person — so payroll and the
  * P&L/cashflow stay one story (the same record bridge the Scheduler uses).

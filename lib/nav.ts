@@ -70,7 +70,7 @@ export const ACCOUNT_DOORS: { href: string; label: string; keywords: string[] }[
 export const ACTIONS: { href: string; label: string; keywords: string[]; feature?: Feature }[] = [
   { href: '/dashboard/record',              label: 'Record a sale',      keywords: ['sale', 'sold', 'record', 'add'] },
   { href: '/dashboard/record',              label: 'Record an expense',  keywords: ['expense', 'spent', 'paid', 'cost', 'record'] },
-  { href: '/dashboard/invoices?new=1',      label: 'New invoice',        keywords: ['invoice', 'bill', 'get paid', 'new'] },
+  { href: '/dashboard/invoices?new=1',      label: 'New invoice',        keywords: ['invoice', 'bill', 'get paid', 'new'], feature: 'invoices' },
   { href: '/dashboard/hospitality?new=1',   label: 'New booking',        keywords: ['booking', 'guest', 'stay', 'room', 'new'], feature: 'hospitality' },
   { href: '/dashboard/schedule',            label: 'Add a reminder',     keywords: ['reminder', 'schedule', 'meeting', 'deadline', 'new'] },
 ];

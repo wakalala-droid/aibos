@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 const FEATURE_GLOSSARY: { icon: React.ReactNode; term: string; plain: string }[] = [
   { icon: <LayoutGrid />, term: 'Money, customers and operations', plain: 'The three things AIBOS watches for you, each with its own pages, not just a single chart. Free covers your money. Pro adds the customer and till sales reports.' },
   { icon: <MessageCircle />, term: 'Ask AIBOS', plain: 'Ask your business anything in plain words. It answers from your own records in Kwacha and remembers the conversation. Free gets 3 questions a day and Pro has no limit.' },
-  { icon: <Sunrise />, term: 'The morning brief', plain: 'Your cash, yesterday’s sales, stock to reorder and the one thing to do, every morning at 06:30. Pro sends it by email and to your phone. Pro+ puts it on Home and sends it to WhatsApp (rolling out).' },
+  { icon: <Sunrise />, term: 'The morning brief', plain: 'Your cash, yesterday’s sales, stock to reorder and the one thing to do, every morning at 06:30. Pro+ puts it on Home, sends it by email and to your phone, and to WhatsApp (rolling out).' },
   { icon: <Building2 />, term: 'A business', plain: 'One venture with its own books. Every plan runs one. Growth runs several (a shop, a salon, a lodge) under one login, each with its own books.' },
   { icon: <CalendarRange />, term: 'The 13-week cash plan', plain: 'Growth works out your money day by day for the next 13 weeks from your own books: wages on payday, ZRA on the 10th, rent, and what customers owe and when they usually pay. It shows the chance you run short, what is safe to spend today and what fixes a shortfall, and warns your phone weeks ahead.' },
 ];

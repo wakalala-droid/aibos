@@ -9,7 +9,8 @@ export type Tier = 'free' | 'pro' | 'proplus' | 'growth';
 // Features gated across the app. Free includes Engine 1 P&L + cashflow always
 // AND the full recording spine (events, twin, Simple home, local assistant
 // answers) — recording is how AIBOS learns a business, so it is never gated.
-// Everything below is gated.
+// Everything below is gated. The ladder was re-cut on 22 Oct 2026 (owner's
+// decision) so value climbs with price: see the plan arrays further down.
 export type Feature =
   | 'forecast'
   | 'anomaly'
@@ -20,15 +21,17 @@ export type Feature =
   | 'full_history'
   | 'engine2'
   | 'engine3'
+  | 'invoices'         // create, send and mint a pay link (reading, settling and cancelling stay free)
+  | 'team'             // invite staff and the accountant (listing and removing people stay free)
+  // Pro+ — "AIBOS runs your day": the assistant acts, not just answers.
   | 'schedule'         // recurrence + reminders on the Scheduler (core CRUD is free, like recording)
   | 'payroll'          // run a pay period: PAYE/NAPSA/net-pay engine + posting Salary events (register is free)
-  | 'hospitality'      // PROVISIONAL: short-let PMS vertical (properties/units/bookings). Whole module gated: moves to its own add-on SKU later
-  // Pro+ — "AIBOS runs your day": the assistant acts, not just answers.
   | 'morning_brief'    // in-app daily digest composed from the twin
   | 'chat_actions'     // record sales/expenses straight from the chat
   | 'deliveries'       // expected-delivery tracking (pending receipts due)
   | 'automation'       // future: auto reorder drafts, churn follow-up lists
   // Growth — every venture, one brain.
+  | 'hospitality'      // PROVISIONAL: short-let PMS vertical (properties/units/bookings). Whole module gated: moves to its own add-on SKU later
   | 'cross_engine'
   | 'multi_business'   // run several businesses under one login (audit #16)
   | 'cash_plan'        // the 13-week cash plan, the cash watch and the group view (16 Oct 2026)
@@ -63,20 +66,16 @@ export const TIERS: Record<Tier, TierMeta> = {
     priceMonthly: 0,
     priceAnnual: 0,
     accent: 'var(--text-3)',
-    // What each plan unlocks today (8 Oct 2026). Every line is live and
+    // What each plan unlocks today (22 Oct 2026). Every line is live and
     // matches ACCESS below and entitlements.py: recording, uploads and
-    // receipts, invoices with payment links, customers, stock, the staff
-    // register, the schedule and team invites are never gated. Anything not
-    // live yet says so in brackets.
+    // receipts, customers, stock, the staff register and the schedule are
+    // never gated. Anything not live yet says so in brackets.
     inclusions: [
       'Record sales and expenses, or upload a spreadsheet or receipt',
-      'Profit and cash in full for your last 30 days',
-      'Invoices with a mobile money payment link',
-      'Customers, stock and a staff register',
-      'A schedule for meetings, pick-ups and deadlines',
+      'Profit and cash for your last 30 days',
+      'Customers, stock, a staff register and a schedule',
       'Ask AIBOS: 3 questions a day',
       'A preview of forecasts, warnings and breakeven',
-      'Invite your staff and your accountant',
       'Export your data any time',
     ],
   },
@@ -94,10 +93,8 @@ export const TIERS: Record<Tier, TierMeta> = {
       'Forecasts, unusual-spending warnings, breakeven and month by month',
       'Monthly targets judged on pace, with the chance you hit them',
       'Best customers, quiet customers and till sales reports',
-      'A morning brief at 06:30 by email and on your phone',
-      'Reminders on your phone for NAPSA, ZRA, rent and meetings',
-      'Payroll with PAYE, NAPSA, NHIMA and take-home pay worked out',
-      'Rooms & Stays: bookings, deposits and guest payment links',
+      'Invoices with a mobile money payment link',
+      'Invite your staff and your accountant',
     ],
   },
   proplus: {
@@ -109,8 +106,10 @@ export const TIERS: Record<Tier, TierMeta> = {
     accent: 'var(--e2)',
     inclusions: [
       'Everything in Pro',
+      'Payroll with PAYE, NAPSA, NHIMA and take-home pay worked out',
       'The Morning Brief on Home: your day, ready before you ask',
-      'The brief on WhatsApp every morning (rolling out)',
+      'The brief at 06:30 by email and on your phone, and on WhatsApp (rolling out)',
+      'Reminders on your phone for NAPSA, ZRA, rent and meetings',
       'Record sales and expenses just by telling AIBOS',
       'Expected deliveries: what is arriving and when',
       'Reorder drafts when stock runs low, approved in one tap',
@@ -127,13 +126,14 @@ export const TIERS: Record<Tier, TierMeta> = {
     // matches 'cash_plan' in ACCESS and entitlements.py.
     inclusions: [
       'Everything in Pro+',
+      'Run several businesses under one login, with one cash plan across them',
       'A 13-week cash plan from your own books: wages, ZRA, rent and what customers owe',
       'The chance you run short each week, and what is safe to spend today',
       'A warning on your phone weeks before money runs short, and your week ahead every Monday',
       'Who to ask for money first, with the reminder and your payment link ready to send',
       'Try a purchase, a hire or a price change on the plan before you decide',
       'A cash flow projection for your bank, ready to download',
-      'Run several businesses under one login, with one cash plan across them',
+      'Rooms & Stays: bookings, deposits and guest payment links',
       'One health score across money, customers and operations',
       'Priority support',
     ],
@@ -167,17 +167,18 @@ export function isPaidTier(v: unknown): v is PaidTier {
 
 // Each paid tier is a strict superset of the one below — supersets are built
 // by spreading so a feature can never accidentally vanish when upgrading.
+// Re-cut on 22 Oct 2026 so value climbs with price: invoices and team invites
+// moved Free -> Pro, payroll, the scheduled brief and reminders Pro -> Pro+,
+// Hospitality Pro -> Growth (keep in lock-step with entitlements.py).
 const PRO: Feature[] = [
   'forecast', 'anomaly', 'variance', 'breakeven',
-  'ai_chat', 'scheduled_brief', 'full_history', 'engine2', 'engine3',
-  'schedule', 'payroll',
-  // PROVISIONAL — parked in Pro so the v1 client can use it; moves to its own
-  // add-on SKU later (keep in lock-step with entitlements.py _PRO).
-  'hospitality',
+  'ai_chat', 'full_history', 'engine2', 'engine3',
+  'invoices', 'team',
 ];
 const PROPLUS: Feature[] = [
   ...PRO,
   'morning_brief', 'chat_actions', 'deliveries', 'automation',
+  'scheduled_brief', 'schedule', 'payroll',
 ];
 const GROWTH: Feature[] = [
   ...PROPLUS,
@@ -187,6 +188,8 @@ const GROWTH: Feature[] = [
   'cross_engine', 'multi_business', 'multi_location', 'api_access',
   // The 13-week cash plan: lock-step with entitlements.py _GROWTH.
   'cash_plan',
+  // PROVISIONAL — moves to its own add-on SKU later.
+  'hospitality',
 ];
 
 const ACCESS: Record<Tier, Feature[]> = {

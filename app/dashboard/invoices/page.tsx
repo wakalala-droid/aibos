@@ -3,8 +3,10 @@
  * Invoices — the get-paid loop (audit #7). Issue → share on WhatsApp (the
  * owner sends from their OWN phone — AIBOS never messages a customer) →
  * get paid. The accounting rides the spine: send posts a confirmed credit
- * Sale (+receivables), settlement posts the CustomerPayment (cash). Free on
- * every plan, like recording.
+ * Sale (+receivables), settlement posts the CustomerPayment (cash). Creating,
+ * sending and the payment link are Pro ('invoices', since 22 Oct 2026);
+ * reading, settling and cancelling stay open on every plan, so money already
+ * owed is never trapped.
  *
  * Two ways an invoice settles, one accounting path (invoices.mark_paid):
  *   · "Mark paid"    — the owner saw the money arrive some other way
@@ -14,6 +16,7 @@
  * extra step from the owner. "Payment link" copies it for SMS, email or a QR.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { confirmSheet, chooseSheet, showCopyText } from '@/lib/confirm';
 import {
   listInvoices, createInvoice, sendInvoice, markInvoicePaid, cancelInvoice,
@@ -21,6 +24,8 @@ import {
   type Invoice, type InvoiceLine, type AgingReport, type SayHow,
 } from '@/lib/api';
 import { useStore } from '@/lib/store';
+import { TIERS, canAccess, requiredTier } from '@/lib/tiers';
+import { useIosApp } from '@/lib/iosApp';
 import { linesTotal } from '@/lib/ngwee';
 import { useProfile } from '@/lib/profile';
 import { logUsage } from '@/lib/usage';
@@ -67,6 +72,13 @@ export default function InvoicesPage() {
   const currencySymbol = useStore((s) => s.currencySymbol);
   const sym = currencySymbol || 'K';
   const { profile } = useProfile();
+  // Creating, sending and the payment link are Pro. Everything that settles
+  // an invoice already sent stays open, so money owed is never trapped.
+  const tier = useStore((s) => s.tier);
+  const canIssue = canAccess(tier, 'invoices');
+  const needTier = TIERS[requiredTier('invoices')].name;
+  // The iPhone app sells nothing (lib/iosApp.ts): a locked invoice says so and stops.
+  const ios = useIosApp();
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,8 +92,8 @@ export default function InvoicesPage() {
     if (url.searchParams.get('new') !== '1') return;
     url.searchParams.delete('new');
     window.history.replaceState(null, '', url.pathname + url.search);
-    setShowForm(true);
-  }, []);
+    if (canIssue) setShowForm(true);
+  }, [canIssue]);
   const [customer, setCustomer] = useState('');
   const [dueAt, setDueAt] = useState('');
   const [lines, setLines] = useState<InvoiceLine[]>([{ ...EMPTY_LINE }]);
@@ -235,21 +247,23 @@ export default function InvoicesPage() {
           <div className="row-actions">
             {i.status === 'draft' && (
               <>
-                <button type="button" className="pill pill-primary" disabled={busy}
+                {canIssue && <button type="button" className="pill pill-primary" disabled={busy}
                   onClick={() => void act(i.id, sendInvoice,
                     { title: `Send ${i.number}?`, body: `${fmt(i.total, false, sym)} is recorded as a sale owed by ${i.customer_name} and the invoice can no longer be edited.`, label: 'Send it' },
                     () => logUsage('event_recorded', { meta: { event_type: 'Sale', via: 'invoice_send' } }))}>
                   Send
-                </button>
+                </button>}
                 <button type="button" className="pill pill-quiet" disabled={busy} onClick={() => void act(i.id, deleteInvoice, { title: `Delete draft ${i.number}?`, body: 'This cannot be undone.', label: 'Delete', danger: true })}>Delete</button>
               </>
             )}
             {i.status === 'sent' && (
               <>
                 <button type="button" className="pill" disabled={busy} onClick={() => void share(i)}><MessageCircle aria-hidden="true" />WhatsApp</button>
-                <button type="button" className="pill" disabled={busy} onClick={() => void copyLink(i)}>
-                  {copiedId === i.id ? 'Link copied' : 'Payment link'}
-                </button>
+                {canIssue && (
+                  <button type="button" className="pill" disabled={busy} onClick={() => void copyLink(i)}>
+                    {copiedId === i.id ? 'Link copied' : 'Payment link'}
+                  </button>
+                )}
                 <button type="button" className="pill" style={{ color: 'var(--good)' }} disabled={busy}
                   onClick={() => void markPaid(i)}>
                   Mark paid
@@ -273,11 +287,15 @@ export default function InvoicesPage() {
       <PageHeader
         title="Get paid"
         subtitle="Send an invoice on WhatsApp and see who still owes you."
-        actions={
+        actions={canIssue ? (
           <button type="button" className={showForm ? 'pill' : 'pill pill-primary'} aria-expanded={showForm} onClick={() => setShowForm(v => !v)}>
             {showForm ? <><X aria-hidden="true" />Close</> : <><Plus aria-hidden="true" />New invoice</>}
           </button>
-        }
+        ) : ios ? undefined : (
+          <Link href="/pricing" className="pill pill-primary">
+            Send invoices: upgrade to {needTier}
+          </Link>
+        )}
       />
 
       {error && (
@@ -383,7 +401,11 @@ export default function InvoicesPage() {
             rows={invoices}
             rowKey={i => i.id}
             defaultSort={{ key: 'number', dir: 'desc' }}
-            emptyMessage="No invoices yet: create one and share it on WhatsApp. Sent invoices appear in your receivables automatically."
+            emptyMessage={canIssue
+              ? 'No invoices yet: create one and share it on WhatsApp. Sent invoices appear in your receivables automatically.'
+              : ios
+                ? 'No invoices yet. Sending invoices is not part of your plan.'
+                : `No invoices yet. Invoices with a mobile money payment link come with ${needTier}.`}
           />
         )}
       </SectionCard>
