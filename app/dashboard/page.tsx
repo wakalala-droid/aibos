@@ -12,6 +12,7 @@ import HomeTop from '@/components/home/HomeTop';
 import { useLiveCustomerIntel } from '@/hooks/useLiveCustomerIntel';
 import MilestoneBanner from '@/components/dashboard/MilestoneBanner';
 import ActivationProgress from '@/components/dashboard/ActivationProgress';
+import TeachAibosCard from '@/components/dashboard/TeachAibosCard';
 import { RecommendationList } from '@/components/dashboard/AdvisorPanel';
 import ChartTooltip from '@/components/ui/ChartTooltip';
 import FeatureGate from '@/components/ui/FeatureGate';
@@ -221,6 +222,7 @@ function OverviewPage() {
       {/* ── The day, answered: the redesigned home top (shared with Simple
              mode), then what to decide, then the numbers behind it. ─────── */}
       <ActivationProgress />
+      <TeachAibosCard />
       <MilestoneBanner />
       <HomeTop />
       <DecisionsQueue />

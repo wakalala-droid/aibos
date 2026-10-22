@@ -31,6 +31,7 @@ import {
 import { useBriefExtras } from '@/hooks/useBriefExtras';
 import MilestoneBanner from '@/components/dashboard/MilestoneBanner';
 import ActivationProgress from '@/components/dashboard/ActivationProgress';
+import TeachAibosCard from '@/components/dashboard/TeachAibosCard';
 import HomeTop from '@/components/home/HomeTop';
 import Panel from '@/components/home/Panel';
 import type { BusinessEvent } from '@/lib/api';
@@ -118,6 +119,7 @@ export default function SimpleHome() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <ActivationProgress />
+      <TeachAibosCard />
       <MilestoneBanner />
 
       <HomeTop />

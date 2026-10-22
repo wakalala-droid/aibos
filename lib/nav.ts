@@ -57,12 +57,13 @@ export const DOORS: NavDoor[] = [
   { href: '/dashboard/market',      label: 'Market',              icon: 'market',     group: 'reports', engine: 'ci', keywords: ['market intelligence', 'segments'] },
   { href: '/dashboard/pos',         label: 'Till sales',          icon: 'pos',        group: 'reports', engine: 'ops', keywords: ['pos', 'till', 'point of sale', 'pos intelligence'] },
   { href: '/dashboard/benchmarks',  label: 'How you compare',     icon: 'benchmarks', group: 'reports', engine: 'ops', keywords: ['benchmarks', 'industry', 'compare'] },
-  { href: '/dashboard/import',      label: 'Upload a file',       icon: 'import',     group: 'reports', keywords: ['import', 'excel', 'csv', 'spreadsheet', 'upload'] },
+  { href: '/dashboard/import',      label: 'Upload a file',       icon: 'import',     group: 'reports', keywords: ['import', 'excel', 'csv', 'spreadsheet', 'upload', 'workbook', 'template'] },
 ];
 
 /** Account pages: searchable, reached from the account menu, not the side menu. */
 export const ACCOUNT_DOORS: { href: string; label: string; keywords: string[] }[] = [
   { href: '/dashboard/profile', label: 'Settings',       keywords: ['profile', 'business profile', 'logo', 'team', 'invite', 'mobile money', 'export', 'currency'] },
+  { href: '/dashboard/teach',   label: 'Teach AIBOS your business', keywords: ['interview', 'about my business', 'story', 'goals', 'targets', 'learn', 'workbook', 'template', 'set up'] },
   { href: '/dashboard/billing', label: 'Plan & billing', keywords: ['plan', 'billing', 'subscription', 'receipt', 'upgrade', 'cancel'] },
 ];
 

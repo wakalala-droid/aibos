@@ -9,11 +9,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, MessageSquare, CircleCheck, Package } from 'lucide-react';
+import { Camera, MessageSquare, CircleCheck, Package, BookOpen, FileSpreadsheet } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/lib/profile';
 import { useStore } from '@/lib/store';
-import { updateProfile, seedTwin, createProduct, lookupBusinessIdentity, type BusinessMatch } from '@/lib/api';
+import { updateProfile, seedTwin, createProduct, lookupBusinessIdentity, downloadWorkbook, type BusinessMatch } from '@/lib/api';
 import { logUsage } from '@/lib/usage';
 import { CURRENCIES } from '@/lib/currency';
 import { starterProductsFor, industryOf } from '@/lib/industries';
@@ -56,6 +56,8 @@ export default function OnboardingPage() {
   // lands on an empty product list (audit §10 fix #2).
   const [seeding, setSeeding] = useState(false);
   const [seeded, setSeeded] = useState(false);
+  const [gettingBook, setGettingBook] = useState(false);
+  const [gotBook, setGotBook] = useState(false);
 
   const [form, setForm] = useState({
     business_name: '', industry: '', currency: 'ZMW',
@@ -229,6 +231,15 @@ export default function OnboardingPage() {
     finally { setSeeding(false); }
   }
 
+  // The AIBOS workbook: a spreadsheet already laid out the way AIBOS reads,
+  // for an owner whose history lives on paper or nowhere yet.
+  async function getWorkbook() {
+    setGettingBook(true); setError(null);
+    try { await downloadWorkbook(); setGotBook(true); logUsage('workbook_downloaded'); }
+    catch (e) { setError((e as Error).message || 'Could not make your workbook.'); }
+    finally { setGettingBook(false); }
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-page)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '32px 16px' }}>
       <div style={{ width: '100%', maxWidth: 560 }}>
@@ -342,9 +353,20 @@ export default function OnboardingPage() {
                     </p>
                   </div>
 
-                  <button type="button" onClick={() => router.push('/dashboard/record?receipt=1')} className="touch-target"
+                  {/* First, let AIBOS learn the business: five minutes of
+                      questions so its first answers are about THIS business. */}
+                  <button type="button" onClick={() => router.push('/dashboard/teach')} className="touch-target"
                     style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cyan)', background: 'var(--cyan-dim)', cursor: 'pointer' }}>
-                    <span aria-hidden style={{ display: 'inline-flex', color: 'var(--cyan)' }}><Camera size={26} strokeWidth={2} /></span>
+                    <span aria-hidden style={{ display: 'inline-flex', color: 'var(--cyan)' }}><BookOpen size={26} strokeWidth={2} /></span>
+                    <span>
+                      <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>Teach AIBOS your business</span>
+                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>About five minutes of questions: your story, a normal month and your goals.</span>
+                    </span>
+                  </button>
+
+                  <button type="button" onClick={() => router.push('/dashboard/record?receipt=1')} className="touch-target"
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: 'pointer' }}>
+                    <span aria-hidden style={{ display: 'inline-flex', color: 'var(--text-2)' }}><Camera size={26} strokeWidth={2} /></span>
                     <span>
                       <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>Scan your last receipt</span>
                       <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Photograph it: AIBOS reads it and records the purchase.</span>
@@ -369,6 +391,19 @@ export default function OnboardingPage() {
                       </span>
                       <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
                         {seeded ? 'Edit prices and stock anytime on the Inventory page.' : 'A ready-made catalog you can edit: no blank page.'}
+                      </span>
+                    </span>
+                  </button>
+
+                  <button type="button" onClick={() => void getWorkbook()} disabled={gettingBook} className="touch-target"
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: gettingBook ? 'default' : 'pointer' }}>
+                    <span aria-hidden style={{ display: 'inline-flex', color: gotBook ? 'var(--good)' : 'var(--text-2)' }}>{gotBook ? <CircleCheck size={26} strokeWidth={2} /> : <FileSpreadsheet size={26} strokeWidth={2} />}</span>
+                    <span>
+                      <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
+                        {gotBook ? 'Your AIBOS workbook is downloaded' : gettingBook ? 'Making your workbook…' : 'Get your AIBOS workbook'}
+                      </span>
+                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                        {gotBook ? 'Fill it in, then upload it on the Upload a file page.' : 'A spreadsheet laid out the way AIBOS reads: fill it in and upload it.'}
                       </span>
                     </span>
                   </button>

@@ -21,7 +21,9 @@ export type UsageEvent =
   // lookup is worth what the Places calls cost.
   | 'identity_match_applied'
   // "Right" / "That's wrong" under an AI answer (UI/UX audit 2026-10 C7).
-  | 'answer_feedback';
+  | 'answer_feedback'
+  // The AIBOS workbook taken from the Setup Wizard (22 Oct 2026).
+  | 'workbook_downloaded';
 export type UsageEngine = 'engine1' | 'engine2' | 'engine3' | 'cross';
 
 interface LogOptions {

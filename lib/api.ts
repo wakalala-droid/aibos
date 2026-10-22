@@ -297,6 +297,92 @@ function saveBlob(blob: Blob, name: string): void {
   a.click();
   setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 30_000);
 }
+// ── Teach AIBOS your business: the owner interview (migration 0041) ─────────
+export type InterviewKind = 'text' | 'money' | 'number' | 'month' | 'choice' | 'multi' | 'months';
+export interface InterviewQuestion {
+  id: string;
+  chapter: string;
+  kind: InterviewKind;
+  /** Short name for the answer, as "What AIBOS knows" lists it. */
+  label: string;
+  ask: string;
+  why: string;
+  placeholder?: string;
+  options?: string[];
+}
+export interface InterviewAnswer {
+  value?: string | number | string[] | number[];
+  /** The owner's own wording, kept when it says more than the figure. */
+  text?: string;
+  skipped?: boolean;
+  at: string;
+}
+export interface InterviewState {
+  business: string | null;
+  industry: string | null;
+  currency: string;
+  symbol: string;
+  chapters: { id: string; title: string; intro: string }[];
+  questions: InterviewQuestion[];
+  answers: Record<string, InterviewAnswer>;
+  /** The first question still open, or null when every one is done. */
+  next: string | null;
+  progress: { done: number; answered: number; total: number; finished: boolean };
+  finished_at: string | null;
+  plan_applied_at: string | null;
+  /** One line back about the answer just given. */
+  said: string | null;
+}
+export interface InterviewPlan {
+  ok: boolean;
+  reason?: string;
+  months: { month: string; revenue: number | null; profit: number | null }[];
+  horizon?: number;
+  basis?: string;
+  to_write?: number;
+  /** Months that already hold a target, with what the plan would have set. */
+  kept?: { month: string; metric: string; target: number; planned: number }[];
+  /** How many of those the owner set by hand (the rest this plan wrote). */
+  own?: number;
+  applied_at?: string | null;
+}
+
+export async function getInterview(): Promise<InterviewState> {
+  return (await spineFetch('/interview')) as unknown as InterviewState;
+}
+
+/** Save, skip or clear one answer. A bad answer throws with the words to show. */
+export async function answerInterview(
+  id: string, value: unknown, opts: { skip?: boolean; clear?: boolean } = {},
+): Promise<InterviewState> {
+  const data = await spineFetch('/interview/answer', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, value, skip: !!opts.skip, clear: !!opts.clear }),
+  });
+  return data as unknown as InterviewState;
+}
+
+export async function getInterviewPlan(): Promise<InterviewPlan> {
+  return (await spineFetch('/interview/plan')) as unknown as InterviewPlan;
+}
+
+/** Write the goals as monthly targets; a target set by hand is kept. */
+export async function applyInterviewPlan(): Promise<{ written: number; kept: number; first_month?: string }> {
+  const data = await spineFetch('/interview/plan', { method: 'POST' });
+  return { written: Number(data.written ?? 0), kept: Number(data.kept ?? 0),
+           first_month: data.first_month as string | undefined };
+}
+
+/** The AIBOS workbook, made for this business and named after it. */
+export async function downloadWorkbook(): Promise<void> {
+  const res = await fetch(`${PROXY}/templates/workbook.xlsx`, { headers: await authHeaders() });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({})) as { detail?: string };
+    throw new Error(data.detail || `Download failed (${res.status})`);
+  }
+  const named = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '');
+  saveBlob(await res.blob(), named?.[1] || 'AIBOS workbook.xlsx');
+}
 // ── Notifications on the phone (upgrade 10) ──────────────────────────────────
 /** `apns`: the API can also reach the iPhone app's lock screen (Apple's key is set). */
 export async function getPushKey(): Promise<{ configured: boolean; key: string | null; apns: boolean }> {
@@ -1431,7 +1517,15 @@ export interface DocTable {
   mapping: Record<string, string>;
   confidence: number;
   counts?: Record<string, number>;
+  /** A sheet of the AIBOS workbook, known by its headings and filed exactly. */
+  workbook?: WorkbookSheet;
+  /** Products or Workers sheet: who or what is new, and how many are already on file. */
+  records?: { new: string[]; new_count: number; known_count: number };
+  /** Workbook lines already in the books from an earlier upload. */
+  already?: number;
 }
+
+export type WorkbookSheet = 'sales' | 'expenses' | 'stock' | 'wages' | 'products' | 'workers' | 'guide' | 'lists';
 
 /** One line of the owner's own book, as evidence for a question about it. */
 export interface DocQuestionLine {
@@ -1483,6 +1577,8 @@ export interface DocScan {
   ai_note: string;
   known: { employees: number; products: number; parties: number };
   event_types: EventType[];
+  /** The file is, or holds sheets from, the AIBOS workbook. */
+  workbook?: boolean;
 }
 
 export interface DocAnswer {
@@ -1506,8 +1602,10 @@ export interface DocImportResult extends BulkResult {
   skipped: Array<{ table: string; row?: number; why: string }>;
   workers_not_on_register: string[];
   products_not_on_list: string[];
-  /** What the owner's answers put on file for good. */
+  /** What the owner's answers (and the workbook's lists) put on file for good. */
   recorded: { employees: string[]; products: string[] };
+  /** Workbook lines left out because an earlier upload already brought them in. */
+  already?: number;
 }
 
 /** Read every sheet of a file and say what each table on it is. */

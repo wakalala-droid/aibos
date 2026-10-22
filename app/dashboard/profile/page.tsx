@@ -627,6 +627,8 @@ function MemoryLearnedCard() {
           <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>What AIBOS has learned</h2>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 14px' }}>
             Every correction you make teaches AIBOS, so you never enter the same thing twice.
+            {' '}What you told it about the business, your goals and your seasons is on{' '}
+            <Link href="/dashboard/teach" style={{ color: 'var(--text-1)' }}>Teach AIBOS your business</Link>.
           </p>
         </div>
         <button type="button" onClick={() => managing ? setManaging(false) : void openManage()}

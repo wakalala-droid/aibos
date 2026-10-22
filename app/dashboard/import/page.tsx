@@ -21,11 +21,26 @@ import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import PageHeader from '@/components/ui/PageHeader';
 import QuestionFlow from '@/components/import/QuestionFlow';
+import { BentoCard } from '@/components/kit';
+import { FileSpreadsheet } from 'lucide-react';
 import {
   documentScan, documentImport, uploadFile, listEmployees, listProducts, AlreadyImportedError,
+  downloadWorkbook,
   type DocScan, type DocTable, type DocAnswer, type DocImportResult,
-  type EventType, type Employee, type Product,
+  type EventType, type Employee, type Product, type WorkbookSheet,
 } from '@/lib/api';
+
+/** What each sheet of the AIBOS workbook is filed as, in owner words. */
+const WORKBOOK_FILED: Partial<Record<WorkbookSheet, string>> = {
+  sales: 'sales', expenses: 'running costs, under the category you picked',
+  stock: 'stock bought, against your products', wages: "each worker's wages",
+};
+
+/** Lines a table will really bring in: new list entries, or lines not already in the books. */
+function linesIn(t: DocTable): number {
+  if (t.records) return t.records.new_count;
+  return Math.max(0, t.nonzero_rows - (t.already ?? 0));
+}
 
 const TYPES: EventType[] = [
   'Sale', 'Purchase', 'Expense', 'InventoryReceipt', 'InventoryAdjustment',
@@ -51,7 +66,7 @@ function describeCounts(counts?: Record<string, number>): string {
   if (!counts) return '';
   const words: Record<string, string> = {
     wages: 'wages', stock: 'stock', service: 'running costs',
-    tax: 'tax', unknown: 'not recognised',
+    tax: 'tax', unknown: 'not recognised', sale: 'sales',
   };
   return Object.entries(counts)
     .filter(([, n]) => n > 0)
@@ -80,6 +95,7 @@ export default function ImportPage() {
   // answers to what AI-BOS could not work out on its own.
   const [keep, setKeep] = useState<Record<string, boolean>>({});
   const [types, setTypes] = useState<Record<string, EventType>>({});
+  const [workbookBusy, setWorkbookBusy] = useState(false);
   const [answers, setAnswers] = useState<Record<string, DocAnswer>>({});
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
@@ -169,8 +185,15 @@ export default function ImportPage() {
     setFile(null); setRepeat(null); setReports(null); setKeep({}); setTypes({}); setAnswers({}); setOpen({}); setAnalysed(false);
   }
 
+  async function getWorkbook() {
+    setWorkbookBusy(true); setError(null);
+    try { await downloadWorkbook(); }
+    catch (e) { setError((e as Error).message || 'The workbook did not download.'); }
+    finally { setWorkbookBusy(false); }
+  }
+
   const keptTables = scan?.tables.filter(t => keep[t.id]) ?? [];
-  const keptRows = keptTables.reduce((n, t) => n + t.nonzero_rows, 0);
+  const keptRows = keptTables.reduce((n, t) => n + linesIn(t), 0);
   const unanswered = (scan?.questions ?? []).filter(q => !answers[q.key]).length;
 
   return (
@@ -196,6 +219,21 @@ export default function ImportPage() {
             </p>
           )}
         </SectionCard>
+      )}
+
+      {phase === 'idle' && (
+        <div style={{ marginTop: 16 }}>
+          <BentoCard icon={<FileSpreadsheet />} title="No spreadsheet yet?" tag="AIBOS workbook" motion="tilt"
+            text="Download the AIBOS workbook: a sheet each for sales, costs, stock, wages, products and workers, with your own products and workers already in its lists. Fill it in and upload it here. Keep adding to the same file: AIBOS only brings in the lines it does not have yet."
+            foot={<>
+              <button type="button" className="pill pill-primary" onClick={() => void getWorkbook()} disabled={workbookBusy}>
+                {workbookBusy ? 'Making your workbook…' : 'Download the AIBOS workbook'}
+              </button>
+              <Link href="/dashboard/teach" className="pill pill-quiet" style={{ textDecoration: 'none' }}>
+                Teach AIBOS your business first
+              </Link>
+            </>} />
+        </div>
       )}
 
       {error && (
@@ -238,7 +276,9 @@ export default function ImportPage() {
               ))}
             </div>
             <p style={{ marginTop: 12, marginBottom: 0, color: 'var(--text-3)', fontSize: 'var(--fs-data)', lineHeight: 1.5 }}>
-              {scan.ai
+              {scan.workbook
+                ? 'This is your AIBOS workbook: each sheet is filed exactly as you laid it out, with no guessing.'
+                : scan.ai
                 ? 'The AI read the file and described each table below.'
                 : 'AIBOS read the file with its own rules.'}
               {scan.ai_note ? ` ${scan.ai_note}` : ''}
@@ -313,9 +353,22 @@ export default function ImportPage() {
                         {t.what_it_is}{t.reason ? `: ${t.reason}` : ''}
                       </p>
                     )}
-                    {t.counts && (
+                    {t.counts && !t.workbook && (
                       <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>
                         {describeCounts(t.counts)}
+                      </p>
+                    )}
+                    {t.records && (
+                      <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-data)', color: 'var(--text-2)', lineHeight: 1.5 }}>
+                        {t.records.new_count > 0
+                          ? `${t.records.new_count} new ${t.workbook === 'workers' ? 'worker' : 'product'}${t.records.new_count === 1 ? '' : 's'} go${t.records.new_count === 1 ? 'es' : ''} on your list: ${t.records.new.join(', ')}${t.records.new_count > t.records.new.length ? ' and more' : ''}.`
+                          : 'Nothing new for your list.'}
+                        {t.records.known_count > 0 && ` ${t.records.known_count} already on it stay${t.records.known_count === 1 ? 's' : ''} as ${t.records.known_count === 1 ? 'it is' : 'they are'}.`}
+                      </p>
+                    )}
+                    {(t.already ?? 0) > 0 && (
+                      <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-data)', color: 'var(--text-3)', lineHeight: 1.5 }}>
+                        {t.already} line{t.already === 1 ? ' is' : 's are'} already in your books from an earlier upload, so {t.already === 1 ? 'it is' : 'they are'} left out.
                       </p>
                     )}
                     {t.notes.map((n, i) => (
@@ -359,7 +412,18 @@ export default function ImportPage() {
                       </details>
                     )}
 
-                    {on && (
+                    {on && t.workbook && WORKBOOK_FILED[t.workbook] && (
+                      <div style={{ display: 'flex', gap: 16, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <p style={{ margin: 0, fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>
+                          Filed as <strong>{WORKBOOK_FILED[t.workbook]}</strong>.
+                        </p>
+                        <button type="button" className="pill pill-quiet" style={{ padding: '6px 12px', minHeight: 44 }}
+                          onClick={() => setOpen(o => ({ ...o, [t.id]: !o[t.id] }))}>
+                          {open[t.id] ? 'Hide rows' : 'Show rows'}
+                        </button>
+                      </div>
+                    )}
+                    {on && !t.workbook && (
                       <div style={{ display: 'flex', gap: 16, marginTop: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
                         <div>
                           <label className="field-label" htmlFor={`type-${t.id}`}>Record these as</label>
@@ -495,6 +559,13 @@ export default function ImportPage() {
               {[...(result.recorded.employees ?? []), ...(result.recorded.products ?? [])].join(', ')}.
             </div>
           ) : null}
+
+          {(result.already ?? 0) > 0 && (
+            <p style={{ margin: '0 0 16px', fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.6 }}>
+              {result.already} line{result.already === 1 ? ' was' : 's were'} already in your books from an
+              earlier upload of this workbook, so {result.already === 1 ? 'it was' : 'they were'} left out.
+            </p>
+          )}
 
           {result.workers_not_on_register.length > 0 && (
             <div style={{ ...noteBox, marginBottom: 16 }}>
