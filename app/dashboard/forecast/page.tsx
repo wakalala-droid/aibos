@@ -35,6 +35,7 @@ import PageHeader from '@/components/ui/PageHeader';
 import CashForecastFan from '@/components/dashboard/CashForecastFan';
 import ForecastTrackRecord from '@/components/dashboard/ForecastTrackRecord';
 import { bentoSpans } from '@/components/kit';
+import { Note } from '@/components/hospitality/kit';
 import { getOutlook, getSeriesOutlook, getTrackRecord, type Outlook, type TrackRecord } from '@/lib/api';
 import { canAccess } from '@/lib/tiers';
 import { useIosApp } from '@/lib/iosApp';
@@ -99,6 +100,9 @@ export default function ForecastPage() {
   const lastActual = outlook?.history?.length ? outlook.history[outlook.history.length - 1].revenue : 0;
   const change = next && lastActual > 0 ? ((next.revenue.p50 - lastActual) / lastActual) * 100 : 0;
   const spans = bentoSpans(record ? 2 : 1);
+  // A softened month the owner told AIBOS runs busy or quiet is their season,
+  // not a one-off: the note under the chart says so instead.
+  const oneOffs = (outlook?.softened ?? []).filter((m) => !(outlook?.softened_named ?? []).includes(m));
 
   // The last twelve months as recorded, then the months ahead; the likely line
   // starts from the last real month so the two join.
@@ -186,6 +190,8 @@ export default function ForecastPage() {
               </ResponsiveContainer>
             </div>
             {outlook?.accuracy_words && <p className="bento-note" style={{ marginTop: 12 }}>{outlook.accuracy_words}</p>}
+            {/* The busy and quiet months the owner told AIBOS, where they change the reading. */}
+            {(outlook?.season_notes ?? []).map((note) => <Note key={note} tone="info">{note}</Note>)}
           </Panel>
 
           <div style={{ marginTop: 20 }}>
@@ -218,7 +224,7 @@ export default function ForecastPage() {
                 outlook?.methods?.length
                   ? `Several methods were tested on your own past months; the best ${outlook.methods.length === 1 ? 'one is' : `${outlook.methods.length} are`} blended: ${outlook.methods.map((m) => `${m.label} (${Math.round(m.weight * 100)}%)`).join(', ')}.`
                   : '',
-                outlook?.softened?.length ? `One-off month${outlook.softened.length > 1 ? 's' : ''} softened so ${outlook.softened.length > 1 ? 'they do' : 'it does'} not drive the forecast: ${outlook.softened.map((m) => monthName(m)).join(', ')}.` : '',
+                oneOffs.length ? `One-off month${oneOffs.length > 1 ? 's' : ''} softened so ${oneOffs.length > 1 ? 'they do' : 'it does'} not drive the forecast: ${oneOffs.map((m) => monthName(m)).join(', ')}.` : '',
                 outlook?.seasonal ? 'Your seasons are used: two full years are recorded.' : 'No seasons are assumed until two full years are recorded.',
                 outlook?.trend ? `Sales are ${outlook.trend.direction === 'steady' ? 'holding steady' : outlook.trend.direction}${outlook.trend.direction !== 'steady' ? `, about ${fmt(Math.abs(outlook.trend.revenue_per_month), true, sym)} a month` : ''}.` : '',
                 'The range is where sales should land 8 times in 10, from simulating your own past surprises.',

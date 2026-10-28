@@ -10,7 +10,10 @@
  *
  * What the answers do (aibos-api interview.py): the AI chat reads them on every
  * question; the money goals become a target for each coming month when the
- * owner presses the button, never over one they set by hand; and the AIBOS
+ * owner presses the button, never over one they set by hand; the morning
+ * brief paces the month against it; the cash plan keeps their cushion and
+ * counts the loan repayment they named; Unusual spending, Month by month and
+ * the Forecast read their busy and quiet months (seasons.py); and the AIBOS
  * workbook offers their own ways of being paid and biggest costs first.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -213,7 +216,7 @@ export default function TeachPage() {
   const header = (
     <PageHeader
       title="Teach AIBOS your business"
-      subtitle="AIBOS asks and you answer, one question at a time. Skip any you like. The AI chat and your plan use what you say."
+      subtitle="AIBOS asks and you answer, one question at a time. Skip any you like. The AI chat, your cash plan and your reports use what you say."
       actions={
         <button type="button" className="pill pill-quiet" onClick={() => void download()} disabled={downloading}>
           <FileSpreadsheet aria-hidden="true" /> {downloading ? 'Making your workbook…' : 'Download your AIBOS workbook'}
@@ -307,7 +310,8 @@ export default function TeachPage() {
             ) : (
               <Notice brand art title={`AIBOS knows ${state.business || 'your business'}`} tag="Done">
                 The AI chat now answers with all of this in mind: your normal month, your goals,
-                your busy and quiet months and what worries you. Change any answer from the list.
+                your busy and quiet months and what worries you. Your cash plan keeps your cushion
+                and your reports know your seasons. Change any answer from the list.
               </Notice>
             )}
           </div>

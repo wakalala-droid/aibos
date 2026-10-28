@@ -12,7 +12,7 @@ import Panel from '@/components/home/Panel';
 import Stat from '@/components/ui/Stat';
 import BentoCard from '@/components/ui/BentoCard';
 import { DayBadge, Note } from '@/components/hospitality/kit';
-import PlanChart, { dayWords } from '@/components/cashplan/PlanChart';
+import PlanChart, { dayWords, floorWords } from '@/components/cashplan/PlanChart';
 import DecisionPanel from '@/components/cashplan/DecisionPanel';
 import ChaseList from '@/components/cashplan/ChaseList';
 import type { CashGroup, CashPlan, PlanWeek } from '@/lib/api';
@@ -20,9 +20,12 @@ import { fmt } from '@/lib/utils';
 import { BAD, signTone } from '@/lib/tone';
 
 const CADENCE: Record<string, string> = { monthly: 'Every month', weekly: 'Every week', fortnightly: 'Every two weeks' };
-const SOURCE: Record<string, string> = { waiting: 'Waiting to be paid', schedule: 'On your Schedule', regular: 'Usually paid' };
+const SOURCE: Record<string, string> = {
+  waiting: 'Waiting to be paid', schedule: 'On your Schedule', regular: 'Usually paid',
+  told: 'From your answers in Teach AIBOS, on the 1st',
+};
 
-export function teaser(plan: CashPlan | null): { headline: string; detail: string } {
+export function teaser(plan: CashPlan | null, sym = 'K'): { headline: string; detail: string } {
   const detail = 'Every bill AIBOS knows is coming (wages, ZRA, rent), what customers owe and when they usually pay, '
     + 'the chance you run short each week, what is safe to spend today and what fixes a shortfall.';
   if (!plan?.ok) {
@@ -31,10 +34,11 @@ export function teaser(plan: CashPlan | null): { headline: string; detail: strin
   if (plan.at_risk) {
     const sure = (plan.chance_short_pct ?? 0) >= 99.5;
     const when = plan.first_risk_date ? `, first in the week of ${dayWords(plan.first_risk_date)}` : ' in the next 13 weeks';
+    const line = floorWords(plan.floor, plan.floor_from === 'cushion', sym);
     return {
       headline: sure
-        ? `AIBOS sees your money going below zero${when}. See why and what fixes it.`
-        : `AIBOS sees a ${plan.chance_words} chance your money goes below zero${when}. See why and what fixes it.`,
+        ? `AIBOS sees your money going below ${line}${when}. See why and what fixes it.`
+        : `AIBOS sees a ${plan.chance_words} chance your money goes below ${line}${when}. See why and what fixes it.`,
       detail,
     };
   }
@@ -91,7 +95,7 @@ function WeekRow({ w, sym, open, onToggle }: { w: PlanWeek; sym: string; open: b
 
 export default function PlanBody({ plan, sym, floor, floorText, setFloorText, setFloor, tried, setTried, decisionLine, open, setOpen, group }: {
   plan: CashPlan; sym: string; floor: number; floorText: string; setFloorText: (s: string) => void;
-  setFloor: (n: number) => void; tried: CashPlan | null; setTried: (p: CashPlan | null) => void;
+  setFloor: (n: number | null) => void; tried: CashPlan | null; setTried: (p: CashPlan | null) => void;
   decisionLine: number[] | null; open: number | null; setOpen: (n: number | null) => void; group: CashGroup | null;
 }) {
   const p = plan as Required<Pick<CashPlan, 'weeks' | 'daily' | 'lowest' | 'close' | 'drivers'>> & CashPlan;
@@ -99,10 +103,16 @@ export default function PlanBody({ plan, sym, floor, floorText, setFloorText, se
   const risky = short >= 5;
   const salesAcc = p.accuracy?.sales_w;
   const spendAcc = p.accuracy?.out_w;
+  // The floor is the owner's cushion from Teach AIBOS until they type another.
+  const onCushion = p.floor_from === 'cushion';
+  const cushion = p.cushion ?? 0;
+  const line = floorWords(floor, onCushion, sym);
   const applyFloor = () => {
-    const n = Math.max(0, Number(floorText.replace(/[^0-9.]/g, '')) || 0);
-    setFloor(n);
+    const typed = floorText.replace(/[^0-9.]/g, '');
+    // Emptied: back to the cushion (or zero without one).
+    setFloor(typed ? Math.max(0, Number(typed) || 0) : null);
   };
+  const backToCushion = () => { setFloorText(''); setFloor(null); };
 
   return (
     <>
@@ -113,13 +123,14 @@ export default function PlanBody({ plan, sym, floor, floorText, setFloorText, se
           tone={p.lowest.p10 < floor ? 'bad' : undefined} />
         {typeof p.safe_to_spend === 'number' ? (
           <Stat label="Safe to spend today" money={p.safe_to_spend} sym={sym}
-            sub={`And still stay above ${floor ? fmt(floor, true, sym) : 'zero'} on 9 in 10 futures`} tone="good" />
+            sub={onCushion ? `And still keep ${line} on 9 in 10 futures` : `And still stay above ${line} on 9 in 10 futures`} tone="good" />
         ) : (
           <Stat label="Cash needed" money={p.cash_needed ?? 0} sym={sym}
-            sub="To stay above the line on 9 in 10 futures" tone="bad" />
+            sub={onCushion ? `To keep ${line} on 9 in 10 futures` : 'To stay above the line on 9 in 10 futures'} tone="bad" />
         )}
         <Stat label="Chance of running short" text={`${Math.round(short)}%`}
-          sub={risky && p.first_risk_date ? `First risk: week of ${dayWords(p.first_risk_date)}` : 'In the next 13 weeks'}
+          sub={risky && p.first_risk_date ? `First risk: week of ${dayWords(p.first_risk_date)}`
+            : onCushion ? `Below ${line}, in the next 13 weeks` : 'In the next 13 weeks'}
           tone={short >= 20 ? 'bad' : short >= 5 ? 'warn' : 'good'} />
       </div>
 
@@ -129,7 +140,7 @@ export default function PlanBody({ plan, sym, floor, floorText, setFloorText, se
         <Panel title="The next 13 weeks" action={
           <form onSubmit={(e) => { e.preventDefault(); applyFloor(); }} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <label htmlFor="cp-floor" className="quiet-label">Keep at least</label>
-            <input id="cp-floor" className="field" inputMode="decimal" placeholder="0" value={floorText}
+            <input id="cp-floor" className="field" inputMode="decimal" placeholder={onCushion ? String(cushion) : '0'} value={floorText}
               onChange={(e) => setFloorText(e.target.value)} onBlur={applyFloor} style={{ width: 120 }} />
           </form>
         }>
@@ -138,6 +149,27 @@ export default function PlanBody({ plan, sym, floor, floorText, setFloorText, se
             {p.weeks.length} weeks from {dayWords(p.today)} to {dayWords(p.until)}. Likely end: <strong>{fmt(p.close.p50, true, sym)}</strong>,
             cautious {fmt(p.close.p10, true, sym)}, hopeful {fmt(p.close.p90, true, sym)}.
           </p>
+          {/* What the owner told AIBOS in Teach AIBOS, said where it shapes the plan. */}
+          {onCushion ? (
+            <Note tone="info">
+              The line is your {fmt(cushion, true, sym)} cushion: you told AIBOS to keep that much in the business at all times,
+              so what is safe to spend keeps it. Type a figure in Keep at least to try another,
+              or change it in <Link href="/dashboard/teach" className="tap-link">Teach AIBOS</Link>.
+            </Note>
+          ) : cushion > 0 ? (
+            <Note tone="info">
+              <span style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                <span style={{ flex: 1, minWidth: 200 }}>You told AIBOS to keep a {fmt(cushion, true, sym)} cushion. This plan keeps {line} instead.</span>
+                <button type="button" className="pill pill-quiet" onClick={backToCushion}>Keep my cushion</button>
+              </span>
+            </Note>
+          ) : null}
+          {typeof p.told_loan === 'number' && (
+            <Note tone="info">
+              Your {fmt(p.told_loan, true, sym)} loan repayment from Teach AIBOS is counted on the 1st of each month:
+              your books do not show it yet. Record the repayments and the plan reads them from your books instead.
+            </Note>
+          )}
         </Panel>
       </div>
 

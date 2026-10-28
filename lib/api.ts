@@ -2224,13 +2224,59 @@ export interface Outlook {
     shape_learned: boolean;
     revenue: { so_far: number; expected_by_now: number; pace_pct: number | null; estimate: number; p10: number; p90: number; share_in: number };
   } | null;
-  ahead?: { month: string; revenue: Band; costs: Band; profit: Band }[];
+  ahead?: { month: string; revenue: Band; costs: Band; profit: Band; season?: 'busy' | 'quiet' | null }[];
   methods?: ForecastMethod[];
   accuracy?: ForecastAccuracy;
   accuracy_words?: string;
   softened?: string[];
   seasonal?: boolean;
   trend?: { revenue_per_month: number; direction: 'growing' | 'slowing' | 'steady' };
+  /** Where the busy and quiet months the owner told AIBOS change the reading. */
+  season_notes?: string[];
+  /** Softened months the owner named as busy or quiet: their season, not one-offs. */
+  softened_named?: string[];
+}
+
+// ── The owner's busy and quiet months in the reports (28 Oct 2026) ───────────
+// aibos-api seasons.py: Unusual spending and Month by month read with the
+// months the owner told AIBOS in Teach AIBOS, so a December they said runs
+// busy is not called unusual for being high.
+
+/** One month that broke the pattern, in the shape Unusual spending draws. */
+export interface MonthFlag {
+  id: string;
+  month: string;
+  field: 'Revenue' | 'Costs';
+  value: number;
+  expected: number;
+  zScore: number;
+  severity: 'critical' | 'warning';
+  direction: 'up' | 'down';
+  /** What the owner told AIBOS about this month, when they named it. */
+  told?: string;
+}
+
+export interface MonthsReading {
+  ok: boolean;
+  busy: number[];
+  quiet: number[];
+  unusual: {
+    flags: MonthFlag[];
+    /** High in a busy month or low in a quiet one: not counted as unusual. */
+    held: MonthFlag[];
+    months: { month: string; season: 'busy' | 'quiet' | null; told: string | null; status: string; revenue_z: number; costs_z: number }[];
+  };
+  changes: { month: string; season: 'busy' | 'quiet' | null; first: boolean; sales_pct: number; costs_pct: number; sales_wrong: boolean; costs_wrong: boolean; told: string | null }[];
+}
+
+/** The months a report shows, read with the owner's busy and quiet months. */
+export async function readMonths(rows: { month: string; revenue: number; costs: number }[]): Promise<MonthsReading> {
+  const data = await spineFetch('/reports/months', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rows }),
+  });
+  return data as unknown as MonthsReading;
 }
 
 /** Sales, costs and profit ahead from the recorded books. */
@@ -2369,6 +2415,9 @@ export interface CashWatch {
   lowest?: { p50: number; day: string; p10: number };
   cash_now?: number;
   sym?: string;
+  /** The line the plan keeps above; 'cushion' when it is the cash the owner told AIBOS to keep. */
+  floor?: number;
+  floor_from?: 'cushion' | null;
   coming?: { day: string; label: string; amount: number; source: string }[];
   chase_first?: { customer: string; amount: number; why: string; phone?: string | null; message?: string } | null;
 }
@@ -2389,6 +2438,8 @@ export interface PlanCore {
   until: string;
   cash_now: number;
   floor: number;
+  /** 'cushion' when the floor is the cash the owner told AIBOS to keep (Teach AIBOS). */
+  floor_from?: 'cushion' | null;
   chance_short_pct: number;
   chance_words: string;
   lowest: { p50: number; day: string; p10: number };
@@ -2410,6 +2461,10 @@ export interface CashPlan extends Partial<PlanCore> {
   preview?: boolean;
   at_risk?: boolean;
   sym?: string;
+  /** The cash cushion the owner gave AIBOS, said even when they typed another floor. */
+  cushion?: number;
+  /** A monthly loan repayment the owner told AIBOS about, counted while the books show none. */
+  told_loan?: number;
   levers?: PlanLever[];
   debts?: PlanDebt[];
   chase?: PlanChase[];
@@ -2433,17 +2488,22 @@ export type PlanDecision =
   | { type: 'collect_faster'; days: number }
   | { type: 'move'; id: string; days: number };
 
-export async function getCashPlan(floor = 0): Promise<CashPlan> {
-  const data = await spineFetch(`/forecast/cash-plan?floor=${Math.max(0, floor)}&tz=${tzMinutes()}`);
+/** `floor` null: the server keeps the cash cushion the owner gave AIBOS (zero without one). */
+function floorParam(floor: number | null): string {
+  return floor === null ? '' : `floor=${Math.max(0, floor)}&`;
+}
+
+export async function getCashPlan(floor: number | null = null): Promise<CashPlan> {
+  const data = await spineFetch(`/forecast/cash-plan?${floorParam(floor)}tz=${tzMinutes()}`);
   return data.plan as CashPlan;
 }
 
 /** The plan with decisions tried on it, on the same futures as the plan. */
-export async function decideCashPlan(scenarios: PlanDecision[], floor = 0): Promise<CashPlan> {
+export async function decideCashPlan(scenarios: PlanDecision[], floor: number | null = null): Promise<CashPlan> {
   const data = await spineFetch('/forecast/cash-plan', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ scenarios, floor: Math.max(0, floor), tz: tzMinutes() }),
+    body: JSON.stringify({ scenarios, floor: floor === null ? null : Math.max(0, floor), tz: tzMinutes() }),
   });
   return data.plan as CashPlan;
 }
@@ -2452,10 +2512,10 @@ export async function decideCashPlan(scenarios: PlanDecision[], floor = 0): Prom
  *  (Growth): the money now, 12 months ahead, the 13 weeks, money owed, the
  *  regular payments and the assumptions. Built on the server from the same
  *  read of the books as the plan, so every figure is the books' own. */
-export async function downloadBankProjection(floor = 0): Promise<void> {
+export async function downloadBankProjection(floor: number | null = null): Promise<void> {
   const d = new Date();
   const day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  await downloadFile(`/forecast/cash-plan/bank.pdf?floor=${Math.max(0, floor)}&tz=${tzMinutes()}`,
+  await downloadFile(`/forecast/cash-plan/bank.pdf?${floorParam(floor)}tz=${tzMinutes()}`,
     `cash_flow_projection_${day}.pdf`);
 }
 

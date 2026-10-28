@@ -18,6 +18,14 @@ export function dayWords(iso: string | null | undefined): string {
   return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
+/** The line the plan keeps above, as a sentence says it: "zero", "K5,000",
+ *  or "your K20,000 cushion" when it is the cash the owner told AIBOS to keep
+ *  (aibos-api cash_plan.floor_words). */
+export function floorWords(floor: number | null | undefined, fromCushion: boolean, sym: string): string {
+  if (!floor || floor <= 0) return 'zero';
+  return fromCushion ? `your ${fmt(floor, true, sym)} cushion` : fmt(floor, true, sym);
+}
+
 export default function PlanChart({ daily, floor, sym, decision, height = 280 }: {
   daily: ({ day: string } & Band)[];
   floor: number;

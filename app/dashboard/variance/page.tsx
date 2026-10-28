@@ -1,5 +1,7 @@
 'use client';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/lib/store';
+import { readMonths, type MonthsReading } from '@/lib/api';
 import { monthName, monthTick } from '@/lib/change';
 import { fmt, formatAxis } from '@/lib/utils';
 import KPICard from '@/components/ui/KPICard';
@@ -24,6 +26,28 @@ const costWentWrong = (pct: number) => pct > 5;
 export default function VariancePage() {
   const { monthly, alerts, kpi, currencySymbol, dataShape } = useStore();
   const sym = currencySymbol || 'K';
+
+  // Each month's change read with the busy and quiet months the owner told
+  // AIBOS (aibos-api seasons.py): a fall into a quiet January is not the
+  // wrong way. Until it is read, or if it cannot be, the page reads as before.
+  // Keyed by the figures, so a fresh copy of the same months is not read again.
+  const rowsKey = useMemo(() => JSON.stringify(monthly.map((m) => [String(m.Month), Number(m.Revenue) || 0, Number(m.Costs) || 0])), [monthly]);
+  // undefined while it is read: nothing turns red yet, so a season never
+  // shows red for a moment and then clears.
+  const [reading, setReading] = useState<MonthsReading | null | undefined>(undefined);
+  useEffect(() => {
+    const rows = (JSON.parse(rowsKey) as [string, number, number][]).map(([month, revenue, costs]) => ({ month, revenue, costs }));
+    if (rows.length < 2) { setReading(null); return; }
+    let alive = true;
+    setReading(undefined);
+    readMonths(rows).then((r) => { if (alive) setReading(r?.ok ? r : null); }).catch(() => { if (alive) setReading(null); });
+    return () => { alive = false; };
+  }, [rowsKey]);
+  const seasonOf = new Map((reading?.changes ?? []).map((c) => [c.month, c]));
+  const salesWrong = (month: string, pct: number) =>
+    reading === undefined ? false : seasonOf.get(month)?.sales_wrong ?? pct < 0;
+  const costsWrong = (month: string, pct: number) =>
+    reading === undefined ? false : seasonOf.get(month)?.costs_wrong ?? costWentWrong(pct);
 
   if (dataShape === 'cross_sectional') {
     return <TimeSeriesUnavailable title="Month by month" feature="Variance analysis" />;
@@ -159,12 +183,12 @@ export default function VariancePage() {
               <ReferenceLine y={0} stroke="var(--border-strong)" strokeWidth={1} />
               <Bar dataKey="RevChange" name="Sales change, %" radius={[6, 6, 0, 0]} maxBarSize={72}>
                 {chartData.slice(1).map((entry, i) => (
-                  <Cell key={i} fill={entry.RevChange < 0 ? 'var(--red)' : 'var(--chart-line)'} />
+                  <Cell key={i} fill={salesWrong(entry.month, entry.RevChange) ? 'var(--red)' : 'var(--chart-line)'} />
                 ))}
               </Bar>
               <Bar dataKey="CostChange" name="Cost change, %" radius={[6, 6, 0, 0]} maxBarSize={72}>
                 {chartData.slice(1).map((entry, i) => (
-                  <Cell key={i} fill={costWentWrong(entry.CostChange) ? 'var(--red)' : 'var(--chart-muted)'} />
+                  <Cell key={i} fill={costsWrong(entry.month, entry.CostChange) ? 'var(--red)' : 'var(--chart-muted)'} />
                 ))}
               </Bar>
             </BarChart>
@@ -187,13 +211,21 @@ export default function VariancePage() {
             <tbody>
               {variances.map((row, i) => (
                 <tr key={row.month}>
-                  <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>{monthName(row.month)}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--text-1)' }}>
+                    {monthName(row.month)}
+                    {/* Where the owner's seasons change the reading, the reason. */}
+                    {seasonOf.get(row.month)?.told && (
+                      <span style={{ display: 'block', fontWeight: 400, fontSize: 'var(--fs-label)', color: 'var(--text-3)', maxWidth: 260, whiteSpace: 'normal' }}>
+                        {seasonOf.get(row.month)?.told}
+                      </span>
+                    )}
+                  </td>
                   <td className="tnum">{fmt(row.revenue, false, sym)}</td>
-                  <td className="tnum" style={{ color: i === 0 ? 'var(--text-3)' : trendTone(row.revChange) }}>
+                  <td className="tnum" style={{ color: i === 0 ? 'var(--text-3)' : salesWrong(row.month, row.revChange) ? BAD : row.revChange < 0 ? INK : trendTone(row.revChange) }}>
                     {i === 0 ? 'First month' : `${row.revChange >= 0 ? '+' : ''}${row.revChange.toFixed(1)}%`}
                   </td>
                   <td className="tnum">{fmt(row.cost, false, sym)}</td>
-                  <td className="tnum" style={{ color: i === 0 ? 'var(--text-3)' : costWentWrong(row.costChange) ? BAD : INK }}>
+                  <td className="tnum" style={{ color: i === 0 ? 'var(--text-3)' : costsWrong(row.month, row.costChange) ? BAD : INK }}>
                     {i === 0 ? 'First month' : `${row.costChange >= 0 ? '+' : ''}${row.costChange.toFixed(1)}%`}
                   </td>
                   <td className="tnum" style={{ color: signTone(row.profit), fontWeight: 600 }}>{fmt(row.profit, false, sym)}</td>

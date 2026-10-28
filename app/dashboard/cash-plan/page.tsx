@@ -33,7 +33,9 @@ export default function CashPlanPage() {
   const growth = canAccess(tier, 'cash_plan');
   const [plan, setPlan] = useState<CashPlan | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
-  const [floor, setFloor] = useState(0);
+  // null until the owner types a floor: the server then keeps the cash cushion
+  // they gave AIBOS in Teach AIBOS (zero without one) and says so.
+  const [floor, setFloor] = useState<number | null>(null);
   const [floorText, setFloorText] = useState('');
   const [tried, setTried] = useState<CashPlan | null>(null);
   const [open, setOpen] = useState<number | null>(null);
@@ -52,7 +54,7 @@ export default function CashPlanPage() {
     }
   }
 
-  const load = useCallback(async (f: number) => {
+  const load = useCallback(async (f: number | null) => {
     try {
       setFailed(null);
       setPlan(await getCashPlan(f));
@@ -68,12 +70,13 @@ export default function CashPlanPage() {
   useEffect(() => {
     if (!growth) return;
     let alive = true;
-    getCashGroup(floor).then((g) => { if (alive) setGroup(g); }).catch(() => { /* not the owner, or one business */ });
+    // Each business has its own cushion, so the group keeps a typed floor or zero.
+    getCashGroup(floor ?? 0).then((g) => { if (alive) setGroup(g); }).catch(() => { /* not the owner, or one business */ });
     return () => { alive = false; };
   }, [growth, floor, version]);
 
   const sym = plan?.sym || storeSym;
-  const { headline, detail } = teaser(plan);
+  const { headline, detail } = teaser(plan, sym);
   const decisionLine = tried?.scenario?.plan.daily.map((d) => d.p50) ?? null;
 
   return (
@@ -125,7 +128,7 @@ export default function CashPlanPage() {
               )}
             </Panel>
           ) : (
-            <PlanBody plan={plan} sym={sym} floor={floor} floorText={floorText} setFloorText={setFloorText}
+            <PlanBody plan={plan} sym={sym} floor={plan.floor ?? floor ?? 0} floorText={floorText} setFloorText={setFloorText}
               setFloor={setFloor} tried={tried} setTried={setTried} decisionLine={decisionLine}
               open={open} setOpen={setOpen} group={group} />
           )}

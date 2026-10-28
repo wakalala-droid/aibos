@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, CalendarRange, MessageCircle } from 'lucide-react';
 import Panel from './Panel';
-import { dayWords } from '@/components/cashplan/PlanChart';
+import { dayWords, floorWords } from '@/components/cashplan/PlanChart';
 import { getCashWatch, whatsAppLink, type CashWatch as Watch } from '@/lib/api';
 import { useStore } from '@/lib/store';
 import { fmt } from '@/lib/utils';
@@ -34,6 +34,9 @@ export default function CashWatch() {
   if (!watch?.ok) return null;
   const sym = watch.sym || storeSym;
   const short = watch.chance_short_pct ?? 0;
+  // The line is the owner's cushion from Teach AIBOS when they gave one.
+  const onCushion = watch.floor_from === 'cushion';
+  const line = floorWords(watch.floor, onCushion, sym);
 
   if (watch.preview) {
     if (!watch.at_risk) return null;
@@ -43,8 +46,8 @@ export default function CashWatch() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
           <span className="bento-icon" aria-hidden="true" style={{ width: 44, height: 44 }}><CalendarRange /></span>
           <p className="rs-text" style={{ flex: 1, minWidth: 220 }}>
-            {short >= 99.5 ? `AIBOS sees your money going below zero${when}.`
-              : `AIBOS sees a ${watch.chance_words} chance your money goes below zero${when}.`}
+            {short >= 99.5 ? `AIBOS sees your money going below ${line}${when}.`
+              : `AIBOS sees a ${watch.chance_words} chance your money goes below ${line}${when}.`}
           </p>
           <Link className="pill" href="/dashboard/cash-plan">See why</Link>
         </div>
@@ -65,11 +68,13 @@ export default function CashWatch() {
           <div className="mini-stat">
             <span className="quiet-label">Safe to spend today</span>
             <span className="tnum" style={{ fontSize: 'var(--fs-h3)', fontWeight: 600 }}>{fmt(watch.safe_to_spend, true, sym)}</span>
+            {onCushion && <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>keeping {line}</span>}
           </div>
         ) : (
           <div className="mini-stat">
             <span className="quiet-label">Cash needed</span>
             <span className="tnum" style={{ fontSize: 'var(--fs-h3)', fontWeight: 600, color: BAD }}>{fmt(watch.cash_needed ?? 0, true, sym)}</span>
+            {onCushion && <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>to keep {line}</span>}
           </div>
         )}
         <div className="mini-stat">

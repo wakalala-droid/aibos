@@ -1,7 +1,11 @@
 'use client';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { monthName, monthTick } from '@/lib/change';
 import { fmt } from '@/lib/utils';
+import { readMonths, type MonthsReading } from '@/lib/api';
+import { Note } from '@/components/hospitality/kit';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import ChartTooltip from '@/components/ui/ChartTooltip';
@@ -20,14 +24,37 @@ export default function AnomalyPage() {
   const { anomalies, monthly, alerts, currencySymbol, dataShape } = useStore();
   const sym = currencySymbol || 'K';
 
+  // The months read on the server with the busy and quiet months the owner
+  // told AIBOS (aibos-api seasons.py): undefined while it is read, null when
+  // it could not be (the page then reads them itself, as it always did).
+  // Keyed by the figures, so a fresh copy of the same months is not read again.
+  const rowsKey = useMemo(() => JSON.stringify(monthly.map((m) => [String(m.Month), Number(m.Revenue) || 0, Number(m.Costs) || 0])), [monthly]);
+  const [reading, setReading] = useState<MonthsReading | null | undefined>(undefined);
+  useEffect(() => {
+    const rows = (JSON.parse(rowsKey) as [string, number, number][]).map(([month, revenue, costs]) => ({ month, revenue, costs }));
+    if (anomalies.length > 0 || rows.length < 3) { setReading(null); return; }
+    let alive = true;
+    setReading(undefined);
+    readMonths(rows).then((r) => { if (alive) setReading(r?.ok ? r : null); }).catch(() => { if (alive) setReading(null); });
+    return () => { alive = false; };
+  }, [rowsKey, anomalies.length]);
+
   if (dataShape === 'cross_sectional') {
     return <TimeSeriesUnavailable title="Unusual months" feature="Anomaly detection" />;
   }
 
+  const loading = reading === undefined;
+  const held = reading?.unusual.held ?? [];
+  const statusOf = new Map((reading?.unusual.months ?? []).map((m) => [m.month, m.status]));
+
   // ── Null-safe: derive anomalies from monthly if store.anomalies is empty ─
   const derivedAnomalies = anomalies.length > 0
     ? anomalies
-    : (() => {
+    : reading
+      ? reading.unusual.flags
+      : loading
+        ? []
+        : (() => {
         if (monthly.length < 3) return [];
         const revenues = monthly.map(m => Number(m.Revenue) || 0);
         const costs    = monthly.map(m => Number(m.Costs)   || 0);
@@ -100,7 +127,9 @@ export default function AnomalyPage() {
           there's no anomaly or under 4 months of history. */}
       <WhatChanged />
 
-      {/* KPI cards */}
+      {/* KPI cards: held back while the months are read with the owner's
+          seasons, so a busy December never shows as unusual for a moment. */}
+      {loading ? <div className="skeleton" style={{ height: 132, borderRadius: 'var(--radius-lg)', marginBottom: 24 }} /> : (
       <div className="grid-kpi" style={{ marginBottom: 24 }}>
         <KPICard
           label="Unusual months" value={String(derivedAnomalies.length)}
@@ -132,6 +161,7 @@ export default function AnomalyPage() {
           sparkColor="var(--blue)" delay={0.18}
         />
       </div>
+      )}
 
       {/* Z-score chart */}
       {scatterData.length > 0 && (
@@ -211,12 +241,17 @@ export default function AnomalyPage() {
                     <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>
                       Actual: {fmt(Number(a.value) || 0, false, sym)} · Expected: {fmt(Number(a.expected) || 0, false, sym)} · Δ {diff >= 0 ? '+' : ''}{fmt(diff, false, sym)}
                     </p>
+                    {a.told && (
+                      <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)', margin: '4px 0 0' }}>{String(a.told)}</p>
+                    )}
                   </div>
                 </motion.div>
               );
             })}
           </div>
         </SectionCard>
+      ) : loading ? (
+        <div className="skeleton" style={{ height: 160, borderRadius: 'var(--radius-lg)', marginBottom: 20 }} />
       ) : (
         // Under four months there is no baseline to be unusual against, so
         // "All clear" would be a claim the arithmetic cannot make (the API's
@@ -247,6 +282,28 @@ export default function AnomalyPage() {
         )
       )}
 
+      {/* The months the owner told AIBOS run busy or quiet, high or low the
+          way they said: not counted as unusual; the page says why. */}
+      {held.length > 0 && (
+        <SectionCard title="Your busy and quiet months" subtitle="Not counted as unusual" delay={0.2} style={{ marginBottom: 20 }}>
+          <ul style={{ margin: 0, padding: 0 }}>
+            {held.map((h) => (
+              <li key={h.id} className="row" style={{ listStyle: 'none', alignItems: 'flex-start' }}>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span className="row-title" style={{ display: 'block' }}>{monthName(h.month)}: {h.field === 'Revenue' ? 'Sales' : 'Costs'}</span>
+                  <span className="row-sub" style={{ display: 'block', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>{h.told}</span>
+                </span>
+                <span className="row-amount">{fmt(h.value, false, sym)}</span>
+              </li>
+            ))}
+          </ul>
+          <Note tone="info">
+            From your answers in <Link href="/dashboard/teach" className="tap-link">Teach AIBOS</Link>. A busy month that comes in low,
+            or a quiet one that comes in high, is still flagged above.
+          </Note>
+        </SectionCard>
+      )}
+
       {/* Monthly data table */}
       <SectionCard title="Every month" subtitle="Sales, costs and how far each month strayed" delay={0.24}>
         <div style={{ overflowX: 'auto' }}>
@@ -260,8 +317,11 @@ export default function AnomalyPage() {
             <tbody>
               {scatterData.map((row, i) => {
                 const maxZ    = Math.max(row.revZ, row.costZ);
-                const status  = maxZ > 2 ? 'Critical' : maxZ > 1.5 ? 'Warning' : 'Normal';
-                const statCol = maxZ > 2 ? 'var(--crit)' : maxZ > 1.5 ? 'var(--warn)' : 'var(--good)';
+                // The server's word when it read the owner's seasons: a busy
+                // month high only for being busy says "Busy month".
+                const status  = statusOf.get(row.month) ?? (maxZ > 2 ? 'Critical' : maxZ > 1.5 ? 'Warning' : 'Normal');
+                const statCol = status === 'Critical' ? 'var(--crit)' : status === 'Warning' ? 'var(--warn)'
+                  : status === 'Normal' ? 'var(--good)' : 'var(--text-2)';
                 return (
                   <tr key={row.month}>
                     <td style={{ fontWeight: 700, color: 'var(--text-1)' }}>{monthName(row.month)}</td>
