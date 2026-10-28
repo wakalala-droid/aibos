@@ -91,6 +91,9 @@ interface Entitlements {
   expired?: boolean;
   /** The plan that lapsed, when `expired`. */
   paid_tier?: string | null;
+  /** Kept although the plan no longer includes them: payroll, on a Pro
+   *  account that already ran it before the 22 October 2026 re-cut. */
+  kept?: string[];
 }
 
 interface ProfileContextValue {
@@ -122,6 +125,8 @@ interface ProfileContextValue {
   planExpired: boolean;
   /** The plan that lapsed, when planExpired. */
   paidTier: Tier | null;
+  /** Features this account keeps on top of its plan (see Entitlements.kept). */
+  kept: string[];
   /** Every set of books this person can open. One entry for most people. */
   workspaces: Workspace[];
 }
@@ -141,6 +146,7 @@ const DEFAULT: ProfileContextValue = {
   renewsAutomatically: false,
   planExpired: false,
   paidTier: null,
+  kept: [],
   workspaces: [],
 };
 
@@ -182,6 +188,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [renewsAutomatically, setRenewsAutomatically] = useState(false);
   const [planExpired, setPlanExpired] = useState(false);
   const [paidTier, setPaidTier] = useState<Tier | null>(null);
+  const [kept, setKept] = useState<string[]>([]);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const loggedLoginFor = useRef<string | null>(null);
 
@@ -263,6 +270,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       setRenewsAutomatically(Boolean(server.renews_automatically));
       setPlanExpired(Boolean(server.expired));
       setPaidTier(isTier(server.paid_tier) ? server.paid_tier : null);
+      setKept(Array.isArray(server.kept) ? server.kept : []);
       // A mismatch only means something when the plan in force is this
       // account's own. Staff work under the business's plan, and a lapsed plan
       // is explained by its own notice, so neither is a fault to report.
@@ -326,6 +334,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     renewsAutomatically,
     planExpired,
     paidTier,
+    kept,
     workspaces,
   };
 

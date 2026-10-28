@@ -823,7 +823,9 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
     return () => { alive = false; };
   }, []);
 
-  const canEmail = canAccess(tier, 'scheduled_brief');
+  // Every plan can switch the email on: below Pro+ it brings the one-line
+  // brief, the cash every morning (aibos-api notify.compose_one_line).
+  const fullBrief = canAccess(tier, 'scheduled_brief');
   const canWa = canAccess(tier, 'morning_brief');
 
   async function save() {
@@ -884,17 +886,16 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: canEmail ? 'pointer' : 'default', fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>
             <input
               type="checkbox"
               checked={emailOn}
-              disabled={!canEmail}
               onChange={(e) => setEmailOn(e.target.checked)}
               style={{ width: 18, height: 18, accentColor: 'var(--cyan)' }}
             />
-            Email me the brief (to your account email)
+            {fullBrief ? 'Email me the brief (to your account email)' : 'Email me my cash every morning, in one line'}
           </label>
-          {!canEmail && pill('Pro')}
+          {!fullBrief && pill('Pro+ sends the full brief')}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -920,7 +921,7 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
           <button
             type="button"
             onClick={() => void save()}
-            disabled={saving || (!canEmail && !canWa)}
+            disabled={saving}
             style={{
               padding: '10px 18px', borderRadius: 10, border: 'none',
               cursor: saving ? 'default' : 'pointer', background: 'var(--brand-fill)', color: 'var(--on-brand)',

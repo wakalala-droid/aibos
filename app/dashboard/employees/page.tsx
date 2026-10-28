@@ -13,9 +13,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { confirmSheet } from '@/lib/confirm';
 import Link from 'next/link';
-import { Pencil, Trash2, FileText, Play, Eye, ShieldCheck } from 'lucide-react';
+import { Pencil, Trash2, FileText, Play, Eye, ShieldCheck, Send } from 'lucide-react';
 import SectionCard from '@/components/ui/SectionCard';
 import Stat from '@/components/ui/Stat';
+import PayslipSend from '@/components/payroll/PayslipSend';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import { canAccess, requiredTier, TIERS } from '@/lib/tiers';
@@ -58,12 +59,13 @@ interface FormState {
   name: string; position: string; employment_type: EmploymentType;
   basic_pay: string; allowances: string; pay_day: string; gratuity_eligible: boolean; gratuity_rate: string;
   loan_balance: string; loan_monthly: string; napsa_number: string; tpin: string; notes: string;
-  napsa_exempt: boolean;
+  napsa_exempt: boolean; phone: string; email: string;
 }
 const EMPTY: FormState = {
   name: '', position: '', employment_type: 'permanent',
   basic_pay: '', allowances: '', pay_day: '28', gratuity_eligible: false, gratuity_rate: '25',
   loan_balance: '', loan_monthly: '', napsa_number: '', tpin: '', notes: '', napsa_exempt: false,
+  phone: '', email: '',
 };
 
 /** A person's pay before deductions: basic plus allowances. */
@@ -81,9 +83,10 @@ const fmtDue = (iso: string) =>
 export default function EmployeesPage() {
   const sym = useStore(s => s.currencySymbol) || 'K';
   const tier = useStore(s => s.tier);
-  const { profile } = useProfile();
+  const { profile, kept } = useProfile();
   const businessName = profile?.business_name || undefined;
-  const pro = canAccess(tier, 'payroll');
+  // A Pro account that ran payroll before the 22 October re-cut keeps it.
+  const pro = canAccess(tier, 'payroll') || kept.includes('payroll');
   const needTier = TIERS[requiredTier('payroll')].name;
   // The iPhone app sells nothing (lib/iosApp.ts): a locked payroll says so and stops.
   const ios = useIosApp();
@@ -119,6 +122,8 @@ export default function EmployeesPage() {
   // nothing calling them, so the owner could never obtain a payslip PDF.
   const [docBusy, setDocBusy] = useState<string | null>(null);
   const [docError, setDocError] = useState<string | null>(null);
+  // The run whose payslips are open to send, by id.
+  const [sendOpen, setSendOpen] = useState<string | null>(null);
 
   async function removeRun(runId: string, runPeriod: string) {
     if (!(await confirmSheet({
@@ -195,6 +200,7 @@ export default function EmployeesPage() {
       loan_balance: e.loan_balance ? String(e.loan_balance) : '',
       loan_monthly: e.loan_monthly ? String(e.loan_monthly) : '',
       napsa_number: e.napsa_number ?? '', tpin: e.tpin ?? '', notes: e.notes ?? '',
+      phone: e.phone ?? '', email: e.email ?? '',
     });
   }
   function cancelEdit() { setEditId(null); setForm(EMPTY); setMoreOpen(false); }
@@ -220,6 +226,10 @@ export default function EmployeesPage() {
         napsa_number: form.napsa_number.trim() || null,
         tpin: form.tpin.trim() || null,
         notes: form.notes.trim() || null,
+        // Sent only when there is something to say, so a database without
+        // migration 0042 still saves everyone without a phone or email.
+        ...(form.phone.trim() || editId ? { phone: form.phone.trim() || null } : {}),
+        ...(form.email.trim() || editId ? { email: form.email.trim() || null } : {}),
       };
       if (editId) await updateEmployee(editId, body);
       else await createEmployee(body);
@@ -255,10 +265,15 @@ export default function EmployeesPage() {
       // Run before payday, the wages wait for it (payroll.confirm_due_wages).
       const payday = run.pay_date ? new Date(`${run.pay_date}T00:00:00`) : null;
       const ahead = payday && payday > new Date();
+      // The account's first run sets the statutory reminders by itself.
+      const remindersLine = (run.reminders_set ?? []).length
+        ? ' AIBOS also put PAYE, NAPSA and NHIMA on your Schedule for the 10th of every month.'
+        : '';
       setRunOk(`Payroll for ${period} run: ${run.totals.headcount} paid, ${money(run.totals.net)} net to staff.` +
         (ahead ? ` The wages leave your cash on payday, ${payday.toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}.` : '') +
-        remLine);
+        remLine + remindersLine + ' Send everyone their payslip below.');
       setPreview(null); await load();
+      setSendOpen(run.id);
     } catch (e) { setRunError((e as Error).message); }
     finally { setBusy(false); }
   }
@@ -412,6 +427,11 @@ export default function EmployeesPage() {
                 </select>
               </div>
               <div><label className="field-label">Pay day</label><input type="number" min="1" max="28" value={form.pay_day} onChange={e => set('pay_day', e.target.value)} className="field" /></div>
+              <div><label className="field-label" htmlFor="emp-phone">Phone (WhatsApp)</label><input id="emp-phone" type="tel" inputMode="tel" autoComplete="off" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="097 712 3456" className="field" /></div>
+              <div><label className="field-label" htmlFor="emp-email">Email</label><input id="emp-email" type="email" autoComplete="off" value={form.email} onChange={e => set('email', e.target.value)} placeholder="grace@example.com" className="field" /></div>
+              <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
+                Their payslip goes here every month: by email from AIBOS, or on WhatsApp from your phone.
+              </p>
 
               <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <button type="button" className="pill pill-quiet" aria-expanded={moreOpen} onClick={() => setMoreOpen(o => !o)}>
@@ -666,6 +686,14 @@ export default function EmployeesPage() {
                         {docBusy === `pay:${r.id}` ? "Saving…" : "Paid them today"}
                       </button>
                     )}
+                    {/* Payslips to the staff themselves: email from AIBOS or
+                        WhatsApp from the owner's phone, and who has theirs. */}
+                    {pro && (
+                      <button type="button" onClick={() => setSendOpen(o => o === r.id ? null : r.id)}
+                        aria-expanded={sendOpen === r.id} className={sendOpen === r.id ? 'pill' : 'pill pill-quiet'}>
+                        <Send aria-hidden="true" />Send payslips
+                      </button>
+                    )}
                     <button type="button" onClick={() => void getDoc(r.id, r.period)} disabled={docBusy === r.id} className="pill pill-quiet">
                       <FileText aria-hidden="true" />{docBusy === r.id ? 'Preparing…' : 'Tax pack PDF'}
                     </button>
@@ -681,6 +709,7 @@ export default function EmployeesPage() {
                       <Trash2 aria-hidden="true" />{docBusy === r.id ? 'Working…' : 'Delete run'}
                     </button>
                   </span>
+                  {pro && sendOpen === r.id && <PayslipSend runId={r.id} money={money} />}
                   {recheck[r.id] && (
                     <div role="status" style={{ flexBasis: '100%', marginTop: 8, padding: '12px 16px', borderRadius: 'var(--radius-md)',
                       background: recheck[r.id].changed ? 'var(--amber-dim)' : 'var(--green-dim)',

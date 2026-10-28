@@ -1854,6 +1854,10 @@ export interface Employee {
   loan_balance: number;
   loan_monthly: number;
   notes?: string | null;
+  /** Where their payslip goes (migration 0042): a WhatsApp number in full
+   *  international form, and an email AIBOS sends it to with the PDF. */
+  phone?: string | null;
+  email?: string | null;
 }
 
 export type EmployeeInput =
@@ -1933,6 +1937,8 @@ export interface PayrollRun {
   remittances?: RemittanceDraft[];
   sdl?: SdlStatus;
   rates_note?: string | null;
+  /** The statutory reminders the account's first run set by itself. */
+  reminders_set?: string[];
 }
 
 export interface PayrollPreview {
@@ -2125,7 +2131,65 @@ export async function runPayroll(period: string, payDate?: string): Promise<Payr
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ period, pay_date: payDate ?? null, preview: false }),
   });
-  return data.run as PayrollRun;
+  return { ...(data.run as PayrollRun), reminders_set: (data.reminders_set as string[] | undefined) ?? [] };
+}
+
+// ── Payslips to the staff themselves (aibos-api payslip_delivery.py) ─────────
+
+/** One person on a run: where their payslip can go and whether it has. */
+export interface PayslipRecipient {
+  employee_id?: string | null;
+  employee_name?: string | null;
+  net?: number;
+  email?: string | null;
+  phone?: string | null;
+  /** Opens WhatsApp on the owner's phone with the payslip already written. */
+  whatsapp_url?: string | null;
+  sent_at?: string | null;
+  sent_via?: 'email' | 'whatsapp' | null;
+}
+
+export interface PayslipDelivery {
+  period: string;
+  people: PayslipRecipient[];
+  total: number;
+  sent: number;
+  waiting: number;
+  /** People with neither a phone nor an email: nowhere to send theirs. */
+  unreachable: number;
+  email_channel: 'live' | 'not configured';
+}
+
+export interface PayslipEmailResult {
+  sent: string[];
+  failed: string[];
+  no_email: string[];
+  already: string[];
+  email_channel: 'live' | 'not configured';
+  /** Set when the email went but its record waits for migration 0042. */
+  note?: string | null;
+}
+
+export async function getPayslipDelivery(runId: string): Promise<PayslipDelivery> {
+  const data = await spineFetch(`/payroll/runs/${encodeURIComponent(runId)}/delivery`);
+  return data as unknown as PayslipDelivery;
+}
+
+/** Email each person on the run their payslip, the PDF attached (owner). */
+export async function emailPayslips(runId: string, again = false): Promise<PayslipEmailResult> {
+  const data = await spineFetch(`/payroll/runs/${encodeURIComponent(runId)}/send-payslips`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ again }),
+  });
+  return data as unknown as PayslipEmailResult;
+}
+
+/** The owner opened this person's payslip in WhatsApp from AIBOS. */
+export async function markPayslipShared(runId: string, employeeId: string): Promise<{ sent_at: string }> {
+  const data = await spineFetch(
+    `/payroll/runs/${encodeURIComponent(runId)}/payslips/${encodeURIComponent(employeeId)}/shared`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ via: 'whatsapp' }),
+    });
+  return data as unknown as { sent_at: string };
 }
 
 // ── Future hooks: recommendations + simulation (Initiatives 10, 12) ────────────

@@ -11,6 +11,10 @@
 //
 // Now it flips that same setting, says exactly where the brief goes, and is
 // honest when the plan or the server's email key is what stands in the way.
+//
+// Below Pro+ (28 Oct 2026) the switch is not locked: it turns on the one-line
+// brief, the owner's cash every morning (aibos-api notify.compose_one_line).
+// The plans that most need a reason to open AIBOS each day used to get none.
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -20,7 +24,7 @@ import { useProfile } from '@/lib/profile';
 import { useStore } from '@/lib/store';
 import { briefDeliveryConfig } from '@/lib/api';
 import { canAccess, requiredTier, TIERS, type Tier } from '@/lib/tiers';
-import { NOT_ON_PLAN, useIosApp } from '@/lib/iosApp';
+import { useIosApp } from '@/lib/iosApp';
 
 type Status = 'idle' | 'saving' | 'error';
 
@@ -64,22 +68,34 @@ export default function BriefSubscribe() {
   const saving = status === 'saving';
   const where = to || 'your account email';
 
+  // What the full brief adds, said once, and never in the iPhone app.
+  const fuller = ios ? ' The full brief is not part of your plan.'
+    : ownPlan ? ` ${needed} sends the full brief: yesterday's sales, stock to reorder and the one thing to do today.`
+      : ' The full brief comes with a paid plan, which the business owner manages.';
+
   // A bento card like the rest of Home (second bento pass, 5 Oct 2026).
   return (
-    <BentoCard icon={<Sunrise />} title="Morning brief" tag={!allowed ? needed : on ? 'On' : 'Off'}
-      text={!allowed ? (
-        <>Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today,
-          by email and as a notification on any phone or computer where you turned them on.
-          {ios ? ` ${NOT_ON_PLAN}` : ownPlan ? ` It comes with ${needed}.` : ' It comes with a paid plan, which the business owner manages.'}</>
-      ) : on ? (
+    <BentoCard icon={<Sunrise />} title="Morning brief" tag={on ? 'On' : 'Off'}
+      text={!allowed ? (on ? (
+        <span role="status"><strong style={{ color: 'var(--text-1)' }}>On.</strong> Your cash, in one line, goes to {where} every
+          morning at 06:30 and to every phone or computer where you turned notifications on.{fuller}</span>
+      ) : (
+        <>Your cash, in one line, every morning at 06:30: sent to {where} and to your phone if notifications are
+          on there.{fuller}</>
+      )) : on ? (
         <span role="status"><strong style={{ color: 'var(--text-1)' }}>On.</strong> Your brief goes to {where} every morning at 06:30
           and to every phone or computer where you turned notifications on.</span>
       ) : (
         <>Every morning at 06:30: cash, yesterday&apos;s sales, stock to reorder and the one thing to do today,
           sent to {where} and to your phone if notifications are on there.</>
       )}
-      foot={!allowed ? (
-        ownPlan && !ios ? <Link className="pill pill-primary" href={`/checkout?plan=${requiredTier('scheduled_brief')}`}>See {needed}</Link> : null
+      foot={!allowed && !on ? (
+        <>
+          <button type="button" className="pill pill-primary" onClick={() => void setOn(true)} disabled={saving}>
+            {saving ? 'Saving…' : 'Email me my cash'}
+          </button>
+          {ownPlan && !ios && <Link className="pill pill-quiet" href={`/checkout?plan=${requiredTier('scheduled_brief')}`}>See {needed}</Link>}
+        </>
       ) : on ? (
         <>
           <button type="button" className="pill pill-quiet" onClick={() => void setOn(false)} disabled={saving}>
@@ -93,7 +109,7 @@ export default function BriefSubscribe() {
         </button>
       )}
     >
-      {allowed && on && emailLive === false && (
+      {on && emailLive === false && (
         <p className="bento-note" style={{ marginTop: 8 }}>
           Email sending is not switched on at our end yet, so nothing is going out. Your setting is kept for when it is.
         </p>
