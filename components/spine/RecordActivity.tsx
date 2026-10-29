@@ -39,19 +39,22 @@ const PAID_ONLY = ['cash', 'mobile_money', 'bank', 'card'];
 const PAID_OR_CREDIT = [...PAID_ONLY, 'credit'];
 const PLACES = ['cash', 'mobile_money', 'bank'];
 const paidBy = (options = PAID_ONLY, label = 'Paid by'): Field => ({ key: 'payment_method', label, kind: 'select', options });
+// The VAT printed on what was bought: claimable when a ZRA Smart Invoice backs
+// it (the VAT card on the Money page). A Smart Invoice's QR code has no VAT on it.
+const vatOnIt: Field = { key: 'tax', label: 'VAT on it', kind: 'number', placeholder: 'from the invoice' };
 
 // Which payload fields each type surfaces for review (RFC-001 §5). `amount` is
 // rendered separately (every money type needs it).
 const TYPE_FIELDS: Record<EventType, Field[]> = {
   Sale:               [{ key: 'customer', label: 'Customer', kind: 'text' }, paidBy(PAID_OR_CREDIT)],
-  Purchase:           [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }, paidBy(PAID_OR_CREDIT)],
-  Expense:            [{ key: 'category', label: 'Category', kind: 'text', placeholder: 'rent, fuel, utilities…' }, paidBy(), { key: 'is_fixed', label: 'Fixed cost?', kind: 'select', options: ['no', 'yes'] }],
-  InventoryReceipt:   [{ key: 'supplier', label: 'Supplier', kind: 'text' }, paidBy(PAID_OR_CREDIT)],
+  Purchase:           [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }, paidBy(PAID_OR_CREDIT), vatOnIt],
+  Expense:            [{ key: 'category', label: 'Category', kind: 'text', placeholder: 'rent, fuel, utilities…' }, paidBy(), { key: 'is_fixed', label: 'Fixed cost?', kind: 'select', options: ['no', 'yes'] }, vatOnIt],
+  InventoryReceipt:   [{ key: 'supplier', label: 'Supplier', kind: 'text' }, paidBy(PAID_OR_CREDIT), vatOnIt],
   InventoryAdjustment: [{ key: 'item', label: 'Item', kind: 'text' }, { key: 'delta_qty', label: 'Qty change (+/-)', kind: 'number' }, { key: 'reason', label: 'Reason', kind: 'select', options: ['recount', 'shrinkage', 'damage'] }],
   Salary:             [{ key: 'employee', label: 'Employee', kind: 'text' }, { key: 'period', label: 'Period', kind: 'text', placeholder: 'e.g. June 2026' }, paidBy()],
   SupplierPayment:    [{ key: 'supplier', label: 'Supplier', kind: 'text' }, { key: 'invoice_ref', label: 'Invoice ref', kind: 'text' }, paidBy()],
   CustomerPayment:    [{ key: 'customer', label: 'Customer', kind: 'text' }, { key: 'invoice_ref', label: 'Invoice ref', kind: 'text' }, paidBy(PAID_ONLY, 'Paid to you by')],
-  AssetPurchase:      [{ key: 'asset_name', label: 'Asset', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }, paidBy()],
+  AssetPurchase:      [{ key: 'asset_name', label: 'Asset', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }, paidBy(), vatOnIt],
   TaxPayment:         [{ key: 'tax_type', label: 'Tax type', kind: 'text', placeholder: 'VAT, PAYE…' }, { key: 'authority', label: 'Authority', kind: 'text', placeholder: 'ZRA' }, paidBy()],
   Loan:               [{ key: 'direction', label: 'Direction', kind: 'select', options: ['received', 'repayment'] }, { key: 'lender', label: 'Lender', kind: 'text' }, paidBy(PAID_ONLY, 'Paid or received by')],
   Refund:             [{ key: 'direction', label: 'Direction', kind: 'select', options: ['to_customer', 'from_supplier'] }, { key: 'reason', label: 'Reason', kind: 'text' }, paidBy(PAID_ONLY, 'Refunded by')],
@@ -96,8 +99,10 @@ const NO_AMOUNT: EventType[] = ['InventoryReceipt', 'InventoryAdjustment']; // a
 type Line = { name: string; qty: string };
 const ITEM_TYPES: EventType[] = ['InventoryReceipt', 'Sale', 'Purchase'];
 const ITEMS_REQUIRED: EventType[] = ['InventoryReceipt'];
-/** Proposal fields worth keeping that the form has no box for. */
-const CARRY_KEYS = ['note', 'tax'];
+/** Proposal fields worth keeping that the form has no box for. A ZRA Smart
+ *  Invoice's TPIN, signature and number make its VAT claimable. */
+const CARRY_KEYS = ['note', 'tax', 'smart_invoice', 'supplier_tpin', 'zra_branch', 'zra_signature',
+  'zra_sdc_id', 'zra_mark_id', 'zra_verify_url', 'invoice_ref', 'external_ref'];
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '10px 12px', minHeight: 44,
@@ -381,6 +386,8 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
       return;
     }
     const payload: Record<string, unknown> = { ...carry };
+    // A box on the form says what is saved: emptied, the proposal's figure goes too.
+    for (const fld of TYPE_FIELDS[etype]) delete payload[fld.key];
     if (needsAmount || amount) payload.amount = Math.abs(Number.isFinite(amt) ? amt : 0);
     if (filled.length) {
       payload.items = filled.map(l => l.name.trim());
@@ -552,6 +559,12 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
               {reasoning && (
                 <p style={{ margin: '0 0 14px', fontSize: 'var(--fs-data)', color: 'var(--text-3)', fontStyle: 'italic', lineHeight: 1.5 }}>
                   {reasoning}
+                </p>
+              )}
+
+              {carry.smart_invoice === true && typeof carry.supplier_tpin === 'string' && (
+                <p style={{ margin: '0 0 14px', fontSize: 'var(--fs-data)', color: 'var(--text-2)', lineHeight: 1.5 }}>
+                  ZRA Smart Invoice from TPIN {carry.supplier_tpin}. The VAT on it is VAT you can claim.
                 </p>
               )}
 

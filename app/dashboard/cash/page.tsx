@@ -2,6 +2,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import WhereMoneyWent from '@/components/dashboard/WhereMoneyWent';
 import BooksCheckCard from '@/components/money/BooksCheck';
+import VatClaimCard from '@/components/money/VatClaim';
 import OpeningBalance from '@/components/money/OpeningBalance';
 import HowPaidPanel from '@/components/money/HowPaid';
 import Link from 'next/link';
@@ -245,6 +246,9 @@ export default function CashPage() {
 
       {/* Where the money went this month, from the recorded entries (C5). */}
       {fromBooks && <Suspense fallback={null}><WhereMoneyWent sym={sym} /></Suspense>}
+
+      {/* The VAT on what was bought: claimable against a ZRA Smart Invoice, or not. */}
+      {fromBooks && <VatClaimCard sym={sym} />}
 
       {/* Every money record held against the books, to the ngwee. */}
       {fromBooks && <Suspense fallback={null}><BooksCheckCard /></Suspense>}

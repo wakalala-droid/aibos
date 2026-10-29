@@ -589,6 +589,38 @@ export async function getMoneyOut(start?: Date, end?: Date): Promise<{ parts: Mo
   return (await spineFetch(`/books/money-out${qs ? `?${qs}` : ''}`)) as unknown as { parts: MoneyOutPart[]; total: number; count: number };
 }
 
+/** One purchase in the VAT view (aibos-api books_views.vat_claim). */
+export interface VatEntry {
+  id: string;
+  event_type: EventType;
+  occurred_at: string;
+  supplier: string | null;
+  amount: number;
+  /** The VAT recorded on it; null when none was. */
+  vat: number | null;
+  /** The seller's TPIN and the invoice, when a ZRA Smart Invoice backs it. */
+  tpin?: string;
+  invoice?: string | null;
+}
+
+/** GET /books/vat: the VAT on a period's purchases, split by whether it can be claimed. */
+export interface VatClaim {
+  claim: { vat: number; count: number; no_vat_figure: number; entries: VatEntry[] };
+  lost: { spent: number; vat_shown: number; count: number; entries: VatEntry[] };
+  /** A Smart Invoice recorded again: claimed once, listed to be removed. */
+  twice: { vat: number; count: number; entries: VatEntry[] };
+  /** Has the business recorded any purchase at all? */
+  ever: boolean;
+}
+
+export async function getVatClaim(start?: Date, end?: Date): Promise<VatClaim> {
+  const q = new URLSearchParams();
+  if (start) q.set('start', start.toISOString());
+  if (end) q.set('end', end.toISOString());
+  const qs = q.toString();
+  return (await spineFetch(`/books/vat${qs ? `?${qs}` : ''}`)) as unknown as VatClaim;
+}
+
 /** What a month costs whatever is sold, and what grows with sales (the breakeven). */
 export interface CostSplit {
   ok: boolean;
