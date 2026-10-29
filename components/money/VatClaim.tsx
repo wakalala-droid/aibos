@@ -145,7 +145,7 @@ export default function VatClaimCard({ sym }: { sym: string }) {
         <>
           <Heading>VAT you can&apos;t claim: no Smart Invoice</Heading>
           <p style={{ margin: '0 0 4px', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-            If the seller is registered for VAT, ask them for a Smart Invoice and scan its QR code.
+            When a seller is registered for VAT, ask for a Smart Invoice next time and scan its QR code as you record the purchase.
           </p>
           <Entries rows={lost.entries} sym={sym} kind="lost" />
         </>
