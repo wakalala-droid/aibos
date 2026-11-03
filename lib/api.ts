@@ -808,7 +808,14 @@ export const downloadCompliancePdf = (runId: string, period: string, businessNam
   downloadFile(
     `/payroll/runs/${runId}/compliance.pdf` +
       (businessName ? `?business_name=${encodeURIComponent(businessName)}` : ''),
-    `statutory_${period}.pdf`,
+    `tax_pack_${period}.pdf`,
+  );
+/** The certificate of service (Employment Code Act s.59), the year's pay and
+ *  tax for ZRA form ITF/P13 and the gratuity statement, for someone leaving. */
+export const downloadLeavingPapers = (employeeId: string, name: string) =>
+  downloadFile(
+    `/employees/${encodeURIComponent(employeeId)}/leaving-papers.pdf`,
+    `leaving_papers_${name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_') || 'staff'}.pdf`,
   );
 
 export interface Party {
@@ -1890,10 +1897,29 @@ export interface Employee {
    *  international form, and an email AIBOS sends it to with the PDF. */
   phone?: string | null;
   email?: string | null;
+  /** What the returns and leaving papers name them by (migration 0043). */
+  nrc?: string | null;
+  nhima_number?: string | null;
+  /** Not their main job: PAYE is the top rate on all of it (ZRA 5.6). */
+  second_job?: boolean;
+  /** Gratuity owed from before AIBOS. */
+  gratuity_opening?: number;
+  /** Pay and PAYE earlier in the year (before AIBOS, or a previous employer's
+   *  ITF/P13), so PAYE can use ZRA's cumulative tables. */
+  paye_prior?: PayePrior | null;
+}
+
+export interface PayePrior {
+  year?: number;
+  /** The last month the figures cover, 'YYYY-MM'. */
+  through: string;
+  pay: number;
+  paye: number;
+  source: 'before_aibos' | 'p13';
 }
 
 export type EmployeeInput =
-  Partial<Omit<Employee, 'id' | 'status'>> & { name: string };
+  Partial<Omit<Employee, 'id'>> & { name: string };
 
 /** One person's line inside a pay run — the full statutory breakdown. */
 export interface Payslip {
@@ -1915,18 +1941,57 @@ export interface Payslip {
   employer_cost?: number;
   napsa_exempt?: boolean;
   taxable: number;
+  /** Below zero it is a refund ZRA's cumulative tables give back. */
   paye: number;
   loan_deduction: number;
   other_deductions: number;
+  /** Take-home pay, any gratuity paid included. */
   net: number;
   gratuity_accrued: number;
+  /** This month's own: overtime, a bonus (taxed), leave days paid out. */
+  extra_pay?: number;
+  extra_note?: string | null;
+  leave_days?: number;
+  leave_pay?: number;
+  basic_full?: number;
+  /** Gratuity paid with this pay, tax-free, and what is still owed after it. */
+  gratuity_paid?: number;
+  gratuity_balance?: number;
+  /** 'cumulative' (ZRA's tables), 'month 1', or 'second job'. */
+  paye_basis?: string | null;
+  paye_month?: number | null;
+  paye_why?: string | null;
+  paye_note?: string | null;
+  ytd_pay?: number;
+  ytd_paye?: number;
+  /** 'pay', 'final' (the month they left) or 'gratuity_only'. */
+  kind?: 'pay' | 'final' | 'gratuity_only';
+  // Preview only: what the run screen needs to suggest the month's changes.
+  gratuity_owed_before?: number;
+  gratuity_due?: boolean;
+  ends_on?: string | null;
+  started_on?: string | null;
+  change?: PayrollChange;
   breakdown?: Record<string, unknown>;
   linked_event_id?: string | null;
+}
+
+/** One person's changes for a month (all optional). */
+export interface PayrollChange {
+  basic?: number;
+  allowances?: number;
+  extra_pay?: number;
+  extra_note?: string;
+  leave_days?: number;
+  pay_gratuity?: boolean;
 }
 
 export interface PayrollTotals {
   basic?: number;
   allowances?: number;
+  extra_pay?: number;
+  leave_pay?: number;
+  gratuity_paid?: number;
   gross: number;
   napsa_employee: number;
   napsa_employer: number;
@@ -1969,12 +2034,15 @@ export interface PayrollRun {
   remittances?: RemittanceDraft[];
   sdl?: SdlStatus;
   rates_note?: string | null;
+  /** What to know beyond the figures: refunds, gratuity paid, ZRA's authority. */
+  notes?: string[];
   /** The statutory reminders the account's first run set by itself. */
   reminders_set?: string[];
 }
 
 export interface PayrollPreview {
   period: string;
+  pay_date?: string;
   payslips: Payslip[];
   totals: PayrollTotals;
   remittances: RemittanceDraft[];
@@ -1982,6 +2050,52 @@ export interface PayrollPreview {
   sdl?: SdlStatus;
   /** Set when the pay date is in a year whose rates AIBOS has not checked. */
   rates_note?: string | null;
+  notes?: string[];
+  /** People who left before this month and are still owed gratuity. */
+  gratuity_leavers?: Array<{ employee_id: string; name: string; owed: number; end_date?: string | null }>;
+}
+
+/** Where one person's gratuity stands. */
+export interface GratuityPosition {
+  employee_id: string;
+  name: string;
+  status: EmployeeStatus;
+  eligible: boolean;
+  rate: number;
+  opening: number;
+  accrued: number;
+  paid: number;
+  owed: number;
+  basic_earned_since: number;
+  months_since: number;
+  last_paid_on?: string | null;
+  due_on?: string | null;
+  overdue: boolean;
+  due_soon: boolean;
+}
+
+export interface GratuityBook {
+  people: GratuityPosition[];
+  total_owed: number;
+  overdue: number;
+  due_soon: number;
+}
+
+/** Something the law asks of the payroll that is not done yet. */
+export interface PayrollCheck {
+  level: 'act' | 'warn' | 'info';
+  text: string;
+  employee_id?: string | null;
+  name?: string | null;
+  fix?: string | null;
+}
+
+/** The employer's own numbers, on every return and leaving paper. */
+export interface PayrollEmployer {
+  name?: string | null;
+  tpin?: string | null;
+  napsa?: string | null;
+  nhima?: string | null;
 }
 
 /** Whether the business pays the Skills Development Levy, and why. */
@@ -2071,6 +2185,32 @@ export async function setPayrollSdl(sdl: SdlStatus['setting']): Promise<SdlStatu
   return data.sdl as SdlStatus;
 }
 
+/** The employer's TPIN, NAPSA account number and NHIMA number. */
+export async function getPayrollEmployer(): Promise<PayrollEmployer> {
+  const data = await spineFetch('/payroll/settings');
+  return (data.employer as PayrollEmployer) ?? {};
+}
+
+export async function setPayrollEmployer(numbers: PayrollEmployer): Promise<PayrollEmployer> {
+  const data = await spineFetch('/payroll/settings', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ employer: { tpin: numbers.tpin ?? null, napsa: numbers.napsa ?? null, nhima: numbers.nhima ?? null } }),
+  });
+  return (data.employer as PayrollEmployer) ?? {};
+}
+
+/** What each person is owed in gratuity and what falls due soon. */
+export async function getGratuityBook(): Promise<GratuityBook> {
+  const data = await spineFetch('/payroll/gratuity');
+  return data as unknown as GratuityBook;
+}
+
+/** What the law asks of the payroll that is not done yet. */
+export async function getPayrollChecks(): Promise<PayrollCheck[]> {
+  const data = await spineFetch('/payroll/checks');
+  return (data.items as PayrollCheck[]) ?? [];
+}
+
 /** A past run against today's rules: what was deducted too much or too little. */
 export async function recheckPayrollRun(runId: string): Promise<PayrollRecheck> {
   const data = await spineFetch(`/payroll/runs/${encodeURIComponent(runId)}/recheck`);
@@ -2092,11 +2232,13 @@ export async function getPayrollRun(id: string): Promise<PayrollRun> {
   return data.run as PayrollRun;
 }
 
-/** Compute a period without persisting — the on-screen table (free). */
-export async function previewPayroll(period: string, payDate?: string): Promise<PayrollPreview> {
+/** Compute a period without persisting — the on-screen table (free), with
+ *  this month's changes per employee id exactly as running it would. */
+export async function previewPayroll(period: string, payDate?: string,
+  changes?: Record<string, PayrollChange>): Promise<PayrollPreview> {
   const data = await spineFetch('/payroll/run', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ period, pay_date: payDate ?? null, preview: true }),
+    body: JSON.stringify({ period, pay_date: payDate ?? null, preview: true, changes: changes ?? null }),
   });
   return data.preview as PayrollPreview;
 }
@@ -2158,10 +2300,11 @@ export async function draftPayrollCorrections(id: string): Promise<PayrollCorrec
 }
 
 /** Commit a pay period — posts a Salary event per employee (Pro). */
-export async function runPayroll(period: string, payDate?: string): Promise<PayrollRun> {
+export async function runPayroll(period: string, payDate?: string,
+  changes?: Record<string, PayrollChange>): Promise<PayrollRun> {
   const data = await spineFetch('/payroll/run', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ period, pay_date: payDate ?? null, preview: false }),
+    body: JSON.stringify({ period, pay_date: payDate ?? null, preview: false, changes: changes ?? null }),
   });
   return { ...(data.run as PayrollRun), reminders_set: (data.reminders_set as string[] | undefined) ?? [] };
 }
