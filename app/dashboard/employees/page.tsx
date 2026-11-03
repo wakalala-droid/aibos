@@ -25,6 +25,7 @@ import Stat from '@/components/ui/Stat';
 import PayslipSend from '@/components/payroll/PayslipSend';
 import PayrollChecks from '@/components/payroll/PayrollChecks';
 import GratuityCard from '@/components/payroll/GratuityCard';
+import LeaveCard from '@/components/payroll/LeaveCard';
 import { Note } from '@/components/hospitality/kit';
 import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
@@ -36,10 +37,11 @@ import {
   previewPayroll, runPayroll, listPayrollRuns, getPayrollRates, deletePayrollRun,
   downloadPayslipPdf, downloadCompliancePdf, downloadLeavingPapers, setPayrollSdl, recheckPayrollRun,
   payPayrollWages, draftPayrollCorrections, getGratuityBook, getPayrollChecks, getPayrollEmployer, ApiError,
+  getLeaveBook, getMinWages,
   type Employee, type EmployeeInput, type EmploymentType,
   type PayrollPreview, type PayrollRun, type PayrollRates, type RemittanceDraft,
   type SdlStatus, type PayrollRecheck, type PayrollChange, type GratuityBook, type PayrollCheck,
-  type PayrollEmployer, type Payslip,
+  type PayrollEmployer, type Payslip, type LeaveBook, type MinWageOrder,
 } from '@/lib/api';
 
 /** What each payment to the authorities is, in words. */
@@ -73,6 +75,8 @@ interface FormState {
   start_date: string; contract_end: string; left_on: string;
   nrc: string; nhima_number: string; second_job: boolean; gratuity_opening: string;
   prior_source: 'none' | 'before_aibos' | 'p13'; prior_through: string; prior_pay: string; prior_paye: string;
+  hourly_rate: string; date_of_birth: string; napsa_to_65: boolean; leave_opening: string; leave_rate: string;
+  wage_order: '' | 'general' | 'shop' | 'domestic'; wage_category: string; guard: boolean;
 }
 const EMPTY: FormState = {
   name: '', position: '', employment_type: 'permanent',
@@ -82,24 +86,36 @@ const EMPTY: FormState = {
   start_date: '', contract_end: '', left_on: '',
   nrc: '', nhima_number: '', second_job: false, gratuity_opening: '',
   prior_source: 'none', prior_through: '', prior_pay: '', prior_paye: '',
+  hourly_rate: '', date_of_birth: '', napsa_to_65: false, leave_opening: '', leave_rate: '2',
+  wage_order: '', wage_category: 'I', guard: false,
 };
 
 /** One person's changes for the month, as typed (strings until sent). */
 interface ChangeForm {
   basic: string; allowances: string; extra_pay: string; extra_note: string; leave_days: string; pay_gratuity: boolean;
+  hours: string; days: string; overtime_hours: string; holiday_hours: string; leave_taken: string;
 }
-const NO_CHANGE: ChangeForm = { basic: '', allowances: '', extra_pay: '', extra_note: '', leave_days: '', pay_gratuity: false };
+const NO_CHANGE: ChangeForm = {
+  basic: '', allowances: '', extra_pay: '', extra_note: '', leave_days: '', pay_gratuity: false,
+  hours: '', days: '', overtime_hours: '', holiday_hours: '', leave_taken: '',
+};
 
 /** The typed changes as the API takes them: only what was said. */
 function changesOut(forms: Record<string, ChangeForm>): Record<string, PayrollChange> {
   const out: Record<string, PayrollChange> = {};
+  const counted = (v: string) => v.trim() !== '' && Number(v) > 0;
   for (const [id, f] of Object.entries(forms)) {
     const c: PayrollChange = {};
     if (f.basic.trim() !== '') c.basic = Number(f.basic);
     if (f.allowances.trim() !== '') c.allowances = Number(f.allowances);
-    if (f.extra_pay.trim() !== '' && Number(f.extra_pay) > 0) c.extra_pay = Number(f.extra_pay);
+    if (counted(f.extra_pay)) c.extra_pay = Number(f.extra_pay);
     if (f.extra_note.trim()) c.extra_note = f.extra_note.trim();
-    if (f.leave_days.trim() !== '' && Number(f.leave_days) > 0) c.leave_days = Number(f.leave_days);
+    if (counted(f.leave_days)) c.leave_days = Number(f.leave_days);
+    if (counted(f.leave_taken)) c.leave_taken = Number(f.leave_taken);
+    if (counted(f.hours)) c.hours = Number(f.hours);
+    if (counted(f.days)) c.days = Number(f.days);
+    if (counted(f.overtime_hours)) c.overtime_hours = Number(f.overtime_hours);
+    if (counted(f.holiday_hours)) c.holiday_hours = Number(f.holiday_hours);
     if (f.pay_gratuity) c.pay_gratuity = true;
     if (Object.keys(c).length) out[id] = c;
   }
@@ -110,10 +126,15 @@ function changesOut(forms: Record<string, ChangeForm>): Record<string, PayrollCh
 function slipExtras(s: Payslip, money: (v: number) => string): string {
   const parts: string[] = [];
   if (s.kind === 'final') parts.push(`final pay${s.ends_on ? `, left ${s.ends_on}` : ''}`);
-  if (s.kind === 'gratuity_only') parts.push('gratuity still owed');
-  if (s.kind !== 'gratuity_only' && (s.basic_full ?? 0) > 0 && (s.basic ?? 0) < (s.basic_full ?? 0)) parts.push(`${money(s.basic ?? 0)} basic for part of the month`);
+  if (s.kind === 'gratuity_only') parts.push('still owed after leaving');
+  if (s.casual) parts.push(s.needs_hours ? 'casual: type the hours' : `casual: ${s.hours} hours over ${s.days_worked} days at ${money(s.hourly_rate ?? 0)} + 25%`);
+  if (!s.casual && s.kind !== 'gratuity_only' && (s.basic_full ?? 0) > 0 && (s.basic ?? 0) < (s.basic_full ?? 0)) parts.push(`${money(s.basic ?? 0)} basic for part of the month`);
+  if ((s.overtime_pay ?? 0) > 0) parts.push(`${s.overtime_hours} overtime hours ${money(s.overtime_pay ?? 0)}`);
+  if ((s.holiday_pay ?? 0) > 0) parts.push(`${s.holiday_hours} rest day hours ${money(s.holiday_pay ?? 0)}`);
   if ((s.extra_pay ?? 0) > 0) parts.push(`${s.extra_note || 'extra pay'} ${money(s.extra_pay ?? 0)}`);
-  if ((s.leave_pay ?? 0) > 0) parts.push(`${s.leave_days} leave days ${money(s.leave_pay ?? 0)}`);
+  if ((s.leave_taken ?? 0) > 0) parts.push(`${s.leave_taken} leave days taken`);
+  if ((s.leave_pay ?? 0) > 0) parts.push(`${s.leave_days} leave days paid ${money(s.leave_pay ?? 0)}`);
+  if (s.napsa_why && s.napsa_exempt) parts.push(`no NAPSA: ${s.napsa_why}`);
   if ((s.gratuity_paid ?? 0) > 0) parts.push(`gratuity ${money(s.gratuity_paid ?? 0)} tax-free`);
   if (s.paye_basis === 'second job') parts.push('second job: PAYE at 37%');
   return parts.join(' · ');
@@ -181,6 +202,9 @@ export default function EmployeesPage() {
   const [checks, setChecks] = useState<PayrollCheck[]>([]);
   const [gratuity, setGratuity] = useState<GratuityBook>({ people: [], total_owed: 0, overdue: 0, due_soon: 0 });
   const [employer, setEmployer] = useState<PayrollEmployer>({});
+  const [leave, setLeave] = useState<LeaveBook>({ people: [], total_days: 0, total_value: 0, leavers_owed: 0 });
+  // The minimum wage Orders (SI 48, 49 and 50 of 2023), to choose one per person.
+  const [orders, setOrders] = useState<MinWageOrder[]>([]);
   const [lawLoading, setLawLoading] = useState(true);
   // This month's changes per person (a part month, extra pay, leave days,
   // the gratuity paid), and whose are open to type into.
@@ -247,10 +271,11 @@ export default function EmployeesPage() {
 
   const loadLaw = useCallback(async () => {
     setLawLoading(true);
-    const [c, g, er] = await Promise.allSettled([getPayrollChecks(), getGratuityBook(), getPayrollEmployer()]);
+    const [c, g, er, lv] = await Promise.allSettled([getPayrollChecks(), getGratuityBook(), getPayrollEmployer(), getLeaveBook()]);
     if (c.status === 'fulfilled') setChecks(c.value);
     if (g.status === 'fulfilled') setGratuity(g.value);
     if (er.status === 'fulfilled') setEmployer(er.value);
+    if (lv.status === 'fulfilled') setLeave(lv.value);
     setLawLoading(false);
   }, []);
 
@@ -266,6 +291,8 @@ export default function EmployeesPage() {
   // Read again whenever the books change anywhere (lib/booksSignal.ts).
   const booksVersion = useStore((s) => s.booksVersion);
   useEffect(() => { load(); }, [load, booksVersion]);
+  // The Orders change by statutory instrument, not by the books: read once.
+  useEffect(() => { getMinWages().then(setOrders).catch(() => setOrders([])); }, []);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm(p => ({ ...p, [k]: v }));
 
@@ -287,6 +314,10 @@ export default function EmployeesPage() {
       gratuity_opening: e.gratuity_opening ? String(e.gratuity_opening) : '',
       prior_source: prior ? prior.source : 'none', prior_through: prior?.through ?? '',
       prior_pay: prior ? String(prior.pay) : '', prior_paye: prior ? String(prior.paye) : '',
+      hourly_rate: e.hourly_rate ? String(e.hourly_rate) : '', date_of_birth: e.date_of_birth ?? '',
+      napsa_to_65: !!e.napsa_to_65, leave_opening: e.leave_opening ? String(e.leave_opening) : '',
+      leave_rate: String(e.leave_rate ?? 2), wage_order: e.wage_order ?? '', wage_category: e.wage_category ?? 'I',
+      guard: !!e.guard,
     });
   }
   function editById(id: string) {
@@ -303,6 +334,8 @@ export default function EmployeesPage() {
     if (form.prior_source !== 'none' && !/^\d{4}-\d{2}$/.test(form.prior_through)) {
       setError('Say the last month the earlier pay covers.'); return;
     }
+    const casual = form.employment_type === 'casual';
+    if (casual && !(Number(form.hourly_rate) > 0)) { setError('A casual worker is paid by the hour: say their hourly rate.'); return; }
     setSaving(true); setError(null);
     try {
       const contract = form.employment_type === 'contract';
@@ -310,7 +343,17 @@ export default function EmployeesPage() {
         name: form.name.trim(),
         position: form.position.trim() || null,
         employment_type: form.employment_type,
-        basic_pay: form.basic_pay ? Number(form.basic_pay) : 0,
+        basic_pay: casual ? 0 : form.basic_pay ? Number(form.basic_pay) : 0,
+        // Migration 0044's fields, sent only when there is something to say
+        // (or on a change), like 0042's and 0043's.
+        ...(casual || (editId && form.hourly_rate) ? { hourly_rate: casual ? Number(form.hourly_rate) : null } : {}),
+        ...(form.date_of_birth || editId ? { date_of_birth: form.date_of_birth || null } : {}),
+        ...(form.napsa_to_65 || editId ? { napsa_to_65: form.napsa_to_65 } : {}),
+        ...(form.leave_opening || editId ? { leave_opening: form.leave_opening ? Number(form.leave_opening) : 0 } : {}),
+        ...((form.leave_rate && Number(form.leave_rate) !== 2) || editId ? { leave_rate: form.leave_rate ? Number(form.leave_rate) : 2 } : {}),
+        ...(form.wage_order || editId ? { wage_order: form.wage_order || null,
+          wage_category: form.wage_order && form.wage_order !== 'domestic' ? form.wage_category : null } : {}),
+        ...(form.guard || editId ? { guard: form.guard } : {}),
         // Sent only when there is something to say, so a database that has
         // not had migration 0039 yet still saves everyone without allowances.
         ...(form.allowances || editId ? { allowances: form.allowances ? Number(form.allowances) : 0 } : {}),
@@ -371,6 +414,9 @@ export default function EmployeesPage() {
         out = await previewPayroll(period, payDate || undefined, changesOut(next));
       }
       setPreview(out);
+      // A casual worker is paid by the hour: open the first one waiting for hours.
+      const waitingHours = out.payslips.find(s => s.needs_hours && s.employee_id);
+      if (waitingHours) setAdjustOpen(waitingHours.employee_id!);
     }
     catch (e) { setRunError((e as Error).message); setPreview(null); }
     finally { setBusy(false); }
@@ -380,9 +426,11 @@ export default function EmployeesPage() {
     setChanges(c => ({ ...c, [id]: { ...(c[id] ?? NO_CHANGE), ...patch } }));
   }
 
-  /** Pay a leaver's gratuity still owed with this run, and show it. */
-  function payLeaverGratuity(id: string) {
-    const next = { ...changes, [id]: { ...(changes[id] ?? NO_CHANGE), pay_gratuity: true } };
+  /** Pay what a leaver is still owed with this run, gratuity and leave days, and show it. */
+  function payLeaverGratuity(id: string, leaveDays = 0) {
+    const mine = changes[id] ?? NO_CHANGE;
+    const next = { ...changes, [id]: { ...mine, pay_gratuity: true,
+      leave_days: leaveDays > 0 ? String(leaveDays) : mine.leave_days } };
     setChanges(next);
     void doPreview(next);
   }
@@ -467,6 +515,15 @@ export default function EmployeesPage() {
   // What each person is owed in gratuity, by id.
   const owedBy = useMemo<Record<string, number>>(
     () => Object.fromEntries(gratuity.people.map(p => [p.employee_id, p.owed])), [gratuity]);
+  // Leave days each person is owed, by id.
+  const leaveBy = useMemo<Record<string, number>>(
+    () => Object.fromEntries(leave.people.map(p => [p.employee_id, p.owed])), [leave]);
+  // The minimum the chosen Order sets for the person being edited.
+  const minimum = useMemo(() => {
+    const o = orders.find(x => x.order === form.wage_order);
+    if (!o) return null;
+    return o.categories.find(c => o.order === 'domestic' || c.category === form.wage_category) ?? null;
+  }, [orders, form.wage_order, form.wage_category]);
   const periodRun = useMemo(() => runs.find(r => r.period === period), [runs, period]);
   const alreadyRun = !!periodRun;
   const anyGratuityPaid = !!preview?.payslips.some(s => (s.gratuity_paid ?? 0) > 0);
@@ -510,18 +567,26 @@ export default function EmployeesPage() {
             <PayrollChecks checks={checks} employer={employer} loading={lawLoading}
               onChange={() => void loadLaw()} onEdit={editById} />
           </SectionCard>
-          <SectionCard title="Gratuity" explainId="payroll.gratuity"
-            subtitle="At least 25% of the basic pay a contract earns, kept for each person and paid tax-free when it ends.">
-            {gratuity.people.length > 0 ? (
-              <GratuityCard book={gratuity} money={money} papersBusy={docBusy}
-                onPapers={pro ? (id, name) => void getPapers(id, name) : undefined} />
-            ) : (
-              <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.55 }}>
-                No one earns gratuity yet. Someone on a fixed-term contract does: set them as a fixed-term
-                contract and AIBOS sets it aside with every run.
-              </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <SectionCard title="Gratuity" explainId="payroll.gratuity"
+              subtitle="At least 25% of the basic pay a contract earns, kept for each person and paid tax-free when it ends.">
+              {gratuity.people.length > 0 ? (
+                <GratuityCard book={gratuity} money={money} papersBusy={docBusy}
+                  onPapers={pro ? (id, name) => void getPapers(id, name) : undefined} />
+              ) : (
+                <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.55 }}>
+                  No one earns gratuity yet. Someone on a fixed-term contract does: set them as a fixed-term
+                  contract and AIBOS sets it aside with every run.
+                </p>
+              )}
+            </SectionCard>
+            {leave.people.length > 0 && (
+              <SectionCard title="Leave" explainId="payroll.leave"
+                subtitle="At least 2 days a month on full pay, earned with every run. Leave not taken is paid when someone leaves.">
+                <LeaveCard book={leave} money={money} />
+              </SectionCard>
             )}
-          </SectionCard>
+          </div>
         </div>
       )}
 
@@ -548,18 +613,26 @@ export default function EmployeesPage() {
                       {e.position && <span style={{ color: 'var(--text-3)', fontWeight: 500 }}> · {e.position}</span>}
                     </span>
                     <span className="row-sub" style={{ whiteSpace: 'normal' }}>
-                      Paid on the {e.pay_day}{e.pay_day === 1 ? 'st' : e.pay_day === 2 ? 'nd' : e.pay_day === 3 ? 'rd' : 'th'}
+                      {e.employment_type === 'casual'
+                        ? `Casual · ${money(e.hourly_rate ?? 0)} an hour + 25% loading`
+                        : <>Paid on the {e.pay_day}{e.pay_day === 1 ? 'st' : e.pay_day === 2 ? 'nd' : e.pay_day === 3 ? 'rd' : 'th'}</>}
                       {e.employment_type === 'contract' ? ` · contract${e.contract_end ? ` to ${e.contract_end}` : ''}` : ''}
                       {e.gratuity_eligible ? ` · gratuity ${Math.round(e.gratuity_rate * 100)}%` : ''}
                       {owedBy[e.id] > 0 ? `, ${money(owedBy[e.id])} owed` : ''}
+                      {leaveBy[e.id] > 0 ? ` · ${leaveBy[e.id]} leave days owed` : ''}
                       {(e.allowances || 0) > 0 ? ` · ${money(e.basic_pay)} basic + ${money(e.allowances)} allowances` : ''}
                       {e.napsa_exempt ? ' · no NAPSA (60 or over)' : ''}
                       {e.second_job ? ' · second job' : ''}
+                      {e.wage_order ? ` · ${e.wage_order === 'domestic' ? 'Domestic Workers' : e.wage_order === 'shop' ? 'Shop Workers' : 'General'} Order${e.wage_order !== 'domestic' && e.wage_category ? ` ${e.wage_category}` : ''}` : ''}
                       {e.loan_balance > 0 ? ` · owes ${money(e.loan_balance)} on a loan` : ''}
                       {e.status === 'left' ? ` · left${e.end_date ? ` on ${e.end_date}` : ''}` : ''}
                     </span>
                   </span>
-                  <span className="row-amount">{money(grossOf(e))}<span style={{ color: 'var(--text-3)', fontWeight: 400 }}> a month</span></span>
+                  <span className="row-amount">
+                    {e.employment_type === 'casual'
+                      ? <>{money((e.hourly_rate ?? 0) * 1.25)}<span style={{ color: 'var(--text-3)', fontWeight: 400 }}> an hour</span></>
+                      : <>{money(grossOf(e))}<span style={{ color: 'var(--text-3)', fontWeight: 400 }}> a month</span></>}
+                  </span>
                   <span className="row-actions">
                     {/* Leaving papers: the certificate of service (s.59), the
                         year's pay and tax for ITF/P13, the gratuity statement. */}
@@ -583,14 +656,25 @@ export default function EmployeesPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
               <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Name</label><input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Grace Banda" className="field" /></div>
               <div><label className="field-label">Role</label><input value={form.position} onChange={e => set('position', e.target.value)} placeholder="Cashier" className="field" /></div>
-              <div><label className="field-label">Basic pay a month ({sym})</label><input type="number" min="0" step="0.01" value={form.basic_pay} onChange={e => set('basic_pay', e.target.value)} placeholder="8000" className="field" /></div>
-              <div>
-                <label className="field-label">Allowances a month ({sym})</label>
-                <input type="number" min="0" step="0.01" value={form.allowances} onChange={e => set('allowances', e.target.value)} placeholder="0" className="field" />
-              </div>
-              <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
-                Allowances are housing, transport and any other cash paid on top every month. PAYE and NAPSA count them; NHIMA is 1% of basic pay only.
-              </p>
+              {form.employment_type === 'casual' ? (
+                <>
+                  <div><label className="field-label" htmlFor="emp-hourly">Hourly rate ({sym})</label><input id="emp-hourly" type="number" min="0" step="0.01" value={form.hourly_rate} onChange={e => set('hourly_rate', e.target.value)} placeholder="15" className="field" /></div>
+                  <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
+                    A casual worker is paid by the hour at the end of each day, with a 25% casual loading on top (Employment Code Act s.3){Number(form.hourly_rate) > 0 ? `: ${sym}${(Number(form.hourly_rate) * 1.25).toFixed(2)} an hour` : ''}. You type the hours each month when you run payroll. PAYE uses ZRA&rsquo;s daily tables; NAPSA and NHIMA apply; no gratuity or annual leave.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div><label className="field-label">Basic pay a month ({sym})</label><input type="number" min="0" step="0.01" value={form.basic_pay} onChange={e => set('basic_pay', e.target.value)} placeholder="8000" className="field" /></div>
+                  <div>
+                    <label className="field-label">Allowances a month ({sym})</label>
+                    <input type="number" min="0" step="0.01" value={form.allowances} onChange={e => set('allowances', e.target.value)} placeholder="0" className="field" />
+                  </div>
+                  <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
+                    Allowances are housing, transport and any other cash paid on top every month. PAYE and NAPSA count them; NHIMA is 1% of basic pay only.
+                  </p>
+                </>
+              )}
               <div>
                 <label className="field-label">Type</label>
                 <select value={form.employment_type} onChange={e => {
@@ -602,6 +686,7 @@ export default function EmployeesPage() {
                 }} className="field">
                   <option value="permanent">Permanent</option>
                   <option value="contract">Fixed-term contract</option>
+                  <option value="casual">Casual (paid by the hour)</option>
                 </select>
               </div>
               <div><label className="field-label">Pay day</label><input type="number" min="1" max="28" value={form.pay_day} onChange={e => set('pay_day', e.target.value)} className="field" /></div>
@@ -644,28 +729,80 @@ export default function EmployeesPage() {
                   <div><label className="field-label" htmlFor="emp-tpin">TPIN</label><input id="emp-tpin" inputMode="numeric" value={form.tpin} onChange={e => set('tpin', e.target.value)} className="field" /></div>
                   <div><label className="field-label" htmlFor="emp-napsa">NAPSA number</label><input id="emp-napsa" value={form.napsa_number} onChange={e => set('napsa_number', e.target.value)} className="field" /></div>
                   <div><label className="field-label" htmlFor="emp-nhima">NHIMA number</label><input id="emp-nhima" value={form.nhima_number} onChange={e => set('nhima_number', e.target.value)} className="field" /></div>
+                  <div><label className="field-label" htmlFor="emp-dob">Date of birth</label><input id="emp-dob" type="date" value={form.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} className="field" /></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'end', paddingBottom: 8 }}>
+                    <input id="emp-napsa65" type="checkbox" checked={form.napsa_to_65} onChange={e => set('napsa_to_65', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
+                    <label htmlFor="emp-napsa65" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>Retiring at 65, agreed</label>
+                  </div>
+                  <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
+                    With a date of birth NAPSA stops at 60 by itself, or at 65 when they chose to retire then and you agreed (National Pension Scheme Act 2026, s.29).
+                  </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1 / -1' }}>
                     <input id="emp-napsa-exempt" type="checkbox" checked={form.napsa_exempt} onChange={e => set('napsa_exempt', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
-                    <label htmlFor="emp-napsa-exempt" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>Aged 60 or over: no NAPSA</label>
+                    <label htmlFor="emp-napsa-exempt" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>No NAPSA for them (aged 60 or over, no date of birth here)</label>
                   </div>
+                  {form.employment_type !== 'casual' && (
+                    <>
+                      <div><label className="field-label" htmlFor="emp-lrate">Leave days a month</label><input id="emp-lrate" type="number" min="2" max="31" step="0.5" value={form.leave_rate} onChange={e => set('leave_rate', e.target.value)} className="field" /></div>
+                      <div><label className="field-label" htmlFor="emp-lopen">Leave days owed before AIBOS</label><input id="emp-lopen" type="number" min="0" step="0.5" value={form.leave_opening} onChange={e => set('leave_opening', e.target.value)} placeholder="0" className="field" /></div>
+                    </>
+                  )}
+
+                  {/* The minimum wage Order covering them (SI 48, 49 and 50 of 2023). */}
+                  <div>
+                    <label className="field-label" htmlFor="emp-order">Minimum wage Order</label>
+                    <select id="emp-order" value={form.wage_order} onChange={e => set('wage_order', e.target.value as FormState['wage_order'])} className="field">
+                      <option value="">None (management, a union, or paid above it)</option>
+                      <option value="general">General Order (SI 48 of 2023)</option>
+                      <option value="shop">Shop Workers Order (SI 50 of 2023)</option>
+                      <option value="domestic">Domestic Workers Order (SI 49 of 2023)</option>
+                    </select>
+                  </div>
+                  {form.wage_order && form.wage_order !== 'domestic' ? (
+                    <div>
+                      <label className="field-label" htmlFor="emp-cat">Category</label>
+                      <select id="emp-cat" value={form.wage_category} onChange={e => set('wage_category', e.target.value)} className="field">
+                        {(orders.find(o => o.order === form.wage_order)?.categories ?? []).map(c => (
+                          <option key={c.category} value={c.category}>{c.category}: {c.who}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : <div />}
+                  {minimum && (
+                    <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', lineHeight: 1.5,
+                      color: (form.employment_type === 'casual' ? Number(form.hourly_rate) < minimum.hourly : Number(form.basic_pay) < minimum.monthly) ? 'var(--amber)' : 'var(--text-3)' }}>
+                      At least {money(minimum.monthly)} basic a month ({money(minimum.hourly)} an hour), {money(minimum.gross)} with what the Order adds
+                      {minimum.order === 'domestic' ? ': K200 transport if they live more than 3 km away and you do not transport them.'
+                        : ': housing at 30% of basic unless you house them, K200 transport beyond 3 km unless you transport them, K180 lunch unless you give a free meal.'}
+                    </p>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1 / -1' }}>
-                    <input id="emp-second" type="checkbox" checked={form.second_job} onChange={e => set('second_job', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
-                    <label htmlFor="emp-second" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>This is a second job for them: PAYE at 37% on all of it</label>
+                    <input id="emp-guard" type="checkbox" checked={form.guard} onChange={e => set('guard', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
+                    <label htmlFor="emp-guard" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>A watchperson or guard: overtime after 60 hours a week, hourly rate on 240 hours</label>
                   </div>
+                  {form.employment_type !== 'casual' && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1 / -1' }}>
+                      <input id="emp-second" type="checkbox" checked={form.second_job} onChange={e => set('second_job', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
+                      <label htmlFor="emp-second" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>This is a second job for them: PAYE at 37% on all of it</label>
+                    </div>
+                  )}
                   <div><label className="field-label">Staff loan balance ({sym})</label><input type="number" min="0" value={form.loan_balance} onChange={e => set('loan_balance', e.target.value)} placeholder="0" className="field" /></div>
                   <div><label className="field-label">Deduct per month ({sym})</label><input type="number" min="0" value={form.loan_monthly} onChange={e => set('loan_monthly', e.target.value)} placeholder="0" className="field" /></div>
 
                   {/* Pay and PAYE earlier this year: the cumulative tables
-                      need the whole year (ZRA Employer's Guide 5.1 and 6.1). */}
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <label className="field-label" htmlFor="emp-prior">Pay earlier this year</label>
-                    <select id="emp-prior" value={form.prior_source} onChange={e => set('prior_source', e.target.value as FormState['prior_source'])} className="field">
-                      <option value="none">None, or all of it is in AIBOS</option>
-                      <option value="before_aibos">Paid by us before we used AIBOS</option>
-                      <option value="p13">From a previous employer (their ITF/P13)</option>
-                    </select>
-                  </div>
-                  {form.prior_source !== 'none' && (
+                      need the whole year (ZRA Employer's Guide 5.1 and 6.1). A
+                      casual worker's daily tables never look back. */}
+                  {form.employment_type !== 'casual' && (
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label className="field-label" htmlFor="emp-prior">Pay earlier this year</label>
+                      <select id="emp-prior" value={form.prior_source} onChange={e => set('prior_source', e.target.value as FormState['prior_source'])} className="field">
+                        <option value="none">None, or all of it is in AIBOS</option>
+                        <option value="before_aibos">Paid by us before we used AIBOS</option>
+                        <option value="p13">From a previous employer (their ITF/P13)</option>
+                      </select>
+                    </div>
+                  )}
+                  {form.employment_type !== 'casual' && form.prior_source !== 'none' && (
                     <>
                       <div><label className="field-label" htmlFor="emp-pthrough">Up to the end of</label><input id="emp-pthrough" type="month" value={form.prior_through} onChange={e => set('prior_through', e.target.value)} className="field" /></div>
                       <div><label className="field-label" htmlFor="emp-ppay">Pay in those months ({sym})</label><input id="emp-ppay" type="number" min="0" step="0.01" value={form.prior_pay} onChange={e => set('prior_pay', e.target.value)} className="field" /></div>
@@ -739,9 +876,12 @@ export default function EmployeesPage() {
               not on the run until the owner says to pay it with it. */}
           {preview && !alreadyRun && (preview.gratuity_leavers ?? []).map(l => (
             <Note key={l.employee_id} tone="warn">
-              {l.name} left{l.end_date ? ` on ${l.end_date}` : ''} and is still owed {money(l.owed)} gratuity (Employment Code Act s.73).
+              {l.name} left{l.end_date ? ` on ${l.end_date}` : ''} and is still owed
+              {l.owed > 0 ? ` ${money(l.owed)} gratuity (Employment Code Act s.73)` : ''}
+              {l.owed > 0 && (l.leave_owed ?? 0) > 0 ? ' and' : ''}
+              {(l.leave_owed ?? 0) > 0 ? ` ${l.leave_owed} leave days, ${money(l.leave_value ?? 0)} (s.36(5))` : ''}.
               <div style={{ marginTop: 6 }}>
-                <button type="button" className="pill pill-quiet" disabled={busy} onClick={() => payLeaverGratuity(l.employee_id)}>
+                <button type="button" className="pill pill-quiet" disabled={busy} onClick={() => payLeaverGratuity(l.employee_id, l.leave_owed ?? 0)}>
                   Pay it with this run
                 </button>
               </div>
@@ -813,22 +953,55 @@ export default function EmployeesPage() {
                           <tr key={`a${i}`}>
                             <td colSpan={9} style={{ padding: '8px 4px 16px' }}>
                               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
-                                <div><label className="field-label" htmlFor={`ch-basic-${id}`}>Basic this month ({sym})</label>
-                                  <input id={`ch-basic-${id}`} type="number" min="0" step="0.01" className="field" value={ch.basic}
-                                    placeholder={String(s.basic_full ?? s.basic ?? '')} onChange={e => setChange(id, { basic: e.target.value })} /></div>
-                                <div><label className="field-label" htmlFor={`ch-allow-${id}`}>Allowances this month ({sym})</label>
-                                  <input id={`ch-allow-${id}`} type="number" min="0" step="0.01" className="field" value={ch.allowances}
-                                    placeholder={String(s.allowances ?? 0)} onChange={e => setChange(id, { allowances: e.target.value })} /></div>
+                                {s.casual ? (
+                                  <>
+                                    <div><label className="field-label" htmlFor={`ch-hours-${id}`}>Hours worked</label>
+                                      <input id={`ch-hours-${id}`} type="number" min="0" step="0.5" className="field" value={ch.hours}
+                                        placeholder="0" onChange={e => setChange(id, { hours: e.target.value })} /></div>
+                                    <div><label className="field-label" htmlFor={`ch-days-${id}`}>Days worked</label>
+                                      <input id={`ch-days-${id}`} type="number" min="0" step="1" className="field" value={ch.days}
+                                        placeholder="8 hours a day" onChange={e => setChange(id, { days: e.target.value })} /></div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div><label className="field-label" htmlFor={`ch-basic-${id}`}>Basic this month ({sym})</label>
+                                      <input id={`ch-basic-${id}`} type="number" min="0" step="0.01" className="field" value={ch.basic}
+                                        placeholder={String(s.basic_full ?? s.basic ?? '')} onChange={e => setChange(id, { basic: e.target.value })} /></div>
+                                    <div><label className="field-label" htmlFor={`ch-allow-${id}`}>Allowances this month ({sym})</label>
+                                      <input id={`ch-allow-${id}`} type="number" min="0" step="0.01" className="field" value={ch.allowances}
+                                        placeholder={String(s.allowances ?? 0)} onChange={e => setChange(id, { allowances: e.target.value })} /></div>
+                                  </>
+                                )}
+                                <div><label className="field-label" htmlFor={`ch-ot-${id}`}>Overtime hours (1.5x)</label>
+                                  <input id={`ch-ot-${id}`} type="number" min="0" step="0.5" className="field" value={ch.overtime_hours}
+                                    placeholder="0" onChange={e => setChange(id, { overtime_hours: e.target.value })} /></div>
+                                <div><label className="field-label" htmlFor={`ch-hol-${id}`}>Rest day or holiday hours (2x)</label>
+                                  <input id={`ch-hol-${id}`} type="number" min="0" step="0.5" className="field" value={ch.holiday_hours}
+                                    placeholder="0" onChange={e => setChange(id, { holiday_hours: e.target.value })} /></div>
+                                {!s.casual && (
+                                  <div><label className="field-label" htmlFor={`ch-taken-${id}`}>Leave days taken</label>
+                                    <input id={`ch-taken-${id}`} type="number" min="0" step="0.5" className="field" value={ch.leave_taken}
+                                      placeholder="0" onChange={e => setChange(id, { leave_taken: e.target.value })} /></div>
+                                )}
                                 <div><label className="field-label" htmlFor={`ch-extra-${id}`}>Extra pay ({sym})</label>
                                   <input id={`ch-extra-${id}`} type="number" min="0" step="0.01" className="field" value={ch.extra_pay}
                                     placeholder="0" onChange={e => setChange(id, { extra_pay: e.target.value })} /></div>
                                 <div><label className="field-label" htmlFor={`ch-note-${id}`}>What for</label>
                                   <input id={`ch-note-${id}`} className="field" value={ch.extra_note} maxLength={120}
-                                    placeholder="Overtime, bonus" onChange={e => setChange(id, { extra_note: e.target.value })} /></div>
-                                <div><label className="field-label" htmlFor={`ch-leave-${id}`}>Leave days paid out</label>
-                                  <input id={`ch-leave-${id}`} type="number" min="0" step="0.5" className="field" value={ch.leave_days}
-                                    placeholder="0" onChange={e => setChange(id, { leave_days: e.target.value })} /></div>
+                                    placeholder="Bonus, commission" onChange={e => setChange(id, { extra_note: e.target.value })} /></div>
+                                {!s.casual && (
+                                  <div><label className="field-label" htmlFor={`ch-leave-${id}`}>Leave days paid out</label>
+                                    <input id={`ch-leave-${id}`} type="number" min="0" step="0.5" className="field" value={ch.leave_days}
+                                      placeholder="0" onChange={e => setChange(id, { leave_days: e.target.value })} /></div>
+                                )}
                               </div>
+                              {/* Their last pay: leave not taken is paid out (s.36(5)). */}
+                              {s.leave_due && !ch.leave_days && (
+                                <button type="button" className="pill pill-quiet" style={{ marginTop: 12 }}
+                                  onClick={() => setChange(id, { leave_days: String(s.leave_to_pay ?? s.leave_owed_before ?? 0) })}>
+                                  Pay out the {s.leave_to_pay ?? s.leave_owed_before} leave days owed
+                                </button>
+                              )}
                               {((s.gratuity_owed_before ?? 0) + (s.gratuity_accrued ?? 0) > 0) && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
                                   <input id={`ch-grat-${id}`} type="checkbox" checked={ch.pay_gratuity}
@@ -841,7 +1014,10 @@ export default function EmployeesPage() {
                               <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
                                 {s.started_on ? `Started on ${s.started_on}: type the basic for the days worked. ` : ''}
                                 {s.ends_on ? `${s.kind === 'pay' ? 'Contract ends' : 'Left'} on ${s.ends_on}: type the basic for the days worked and any leave days owed. ` : ''}
-                                Extra pay and leave days are taxed and count for NAPSA; NHIMA and the gratuity are on basic pay only. Leave days are full pay × days ÷ 26.
+                                {s.casual
+                                  ? 'Hours are paid at their rate plus the 25% casual loading, taxed on ZRA’s daily tables over the days worked. '
+                                  : `Leave owed before this month: ${s.leave_owed_before ?? 0} days. Days taken are paid as normal; days paid out are full pay × days ÷ 26. `}
+                                Overtime is past 48 hours a week ({s.casual ? 'their hourly rate' : 'basic ÷ 208 an hour, 240 for a guard'}). Extra pay is taxed and counts for NAPSA; NHIMA and the gratuity are on basic pay only.
                               </p>
                               <button type="button" className="pill" style={{ marginTop: 8 }} disabled={busy} onClick={() => void doPreview()}>
                                 {busy ? 'Working it out…' : 'Work it out again'}

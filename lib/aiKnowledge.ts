@@ -248,7 +248,7 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     title: 'Your People',
     what: 'The register of everyone the company pays: their role, basic pay, allowances, pay day, staff loan balance and, for fixed-term staff, gratuity terms.',
     why: 'Payroll can only be as right as the register behind it. Keeping people here means PAYE, NAPSA and net pay are worked out from real details, not guessed each month.',
-    how: 'Add a person with a name and basic pay to start, and their allowances (housing, transport and other cash paid every month) if they have any: PAYE and NAPSA count allowances, NHIMA does not. Open "Dates, gratuity, IDs and loan" for the day they started, when a contract ends, gratuity (on by law for a fixed-term contract, at least 25% of basic pay), their NRC, TPIN, NAPSA and NHIMA numbers, a second job (PAYE at 37%), pay and PAYE earlier in the year (so PAYE uses ZRA’s cumulative tables), staff loans and to mark someone aged 60 or over, who no longer pays NAPSA. When someone leaves, set "Left on": their last month is paid as their final pay and their leaving papers are one tap away. The register is free: running payroll is the Pro+ step.',
+    how: 'Add a person with a name and basic pay to start, and their allowances (housing, transport and other cash paid every month) if they have any: PAYE and NAPSA count allowances, NHIMA does not. Open "Dates, gratuity, IDs and loan" for the day they started, when a contract ends, gratuity (on by law for a fixed-term contract, at least 25% of basic pay), their NRC, TPIN, NAPSA and NHIMA numbers, a second job (PAYE at 37%), pay and PAYE earlier in the year (so PAYE uses ZRA’s cumulative tables), staff loans and to mark someone aged 60 or over, who no longer pays NAPSA. When someone leaves, set "Left on": their last month is paid as their final pay and their leaving papers are one tap away. A casual worker is paid by the hour with the 25% casual loading and taxed on ZRA’s daily tables. A date of birth stops NAPSA at 60 by itself (65 if they chose it and you agreed). Choose the minimum wage Order that covers someone (General, Shop Workers or Domestic Workers, 2023) and AIBOS checks their pay against it. The register is free: running payroll is the Pro+ step.',
     followups: ['How is a staff loan deducted?', 'Who accrues gratuity?'],
   },
   'payroll.checks': {
@@ -258,6 +258,14 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     why: 'The register can look complete while a gratuity goes unpaid or a return is missing a number, and those are the mistakes that end in a claim at the Labour office or a penalty. Each check names its section of the law.',
     how: 'Tap Change on a check to open that person’s details and put it right. Your employer numbers head the tax pack and every leaver’s certificate of service (Employment Code Act s.59).',
     followups: ['Who has to get gratuity?', 'What goes on a certificate of service?'],
+  },
+  'payroll.leave': {
+    id: 'payroll.leave',
+    title: 'Leave',
+    what: 'The annual leave each person is owed: at least 2 days a month on full pay (Employment Code Act 2019, s.36), earned with every payroll run, less the days taken and paid out, and what paying them out would cost (full pay × days ÷ 26).',
+    why: 'Leave not taken is still owed and is paid when someone leaves (s.36(5)), so the days owed are money owed. Seeing them every month keeps leave planned and the last pay right.',
+    how: 'Type the days someone takes in that month’s run (they are paid as normal). Their last pay offers to pay out the days still owed. Leave owed from before AIBOS, or more than 2 days a month in a contract, goes in the person’s details. Casual workers earn no annual leave.',
+    followups: ['How is leave pay worked out?', 'What happens to leave when someone leaves?'],
   },
   'payroll.gratuity': {
     id: 'payroll.gratuity',

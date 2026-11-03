@@ -36,6 +36,7 @@ export default function PayrollChecks({ checks, employer, onChange, onEdit, load
     try {
       await setPayrollEmployer({
         tpin: numbers.tpin?.trim() || null, napsa: numbers.napsa?.trim() || null, nhima: numbers.nhima?.trim() || null,
+        address: numbers.address?.trim() || null,
       });
       setSaved(true);
       onChange();
@@ -80,7 +81,7 @@ export default function PayrollChecks({ checks, employer, onChange, onEdit, load
 
       <Section title="Your employer numbers">
         <p className="rs-text" style={{ margin: '0 0 12px', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-          They head the tax pack and every leaver&rsquo;s certificate of service.
+          They head the tax pack, every payslip and every leaver&rsquo;s certificate of service.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
           <div><label className="field-label" htmlFor="er-tpin">TPIN</label>
@@ -89,6 +90,9 @@ export default function PayrollChecks({ checks, employer, onChange, onEdit, load
             <input id="er-napsa" className="field" value={numbers.napsa ?? ''} onChange={e => setNumbers(n => ({ ...n, napsa: e.target.value }))} /></div>
           <div><label className="field-label" htmlFor="er-nhima">NHIMA number</label>
             <input id="er-nhima" className="field" value={numbers.nhima ?? ''} onChange={e => setNumbers(n => ({ ...n, nhima: e.target.value }))} /></div>
+          <div style={{ gridColumn: '1 / -1' }}><label className="field-label" htmlFor="er-address">Business address (on every payslip)</label>
+            <input id="er-address" className="field" value={numbers.address ?? ''} placeholder="Plot 12, Cairo Road, Lusaka"
+              onChange={e => setNumbers(n => ({ ...n, address: e.target.value }))} /></div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 12, flexWrap: 'wrap' }}>
           <button type="button" className="pill" onClick={() => void save()} disabled={saving}>{saving ? 'Saving…' : 'Save the numbers'}</button>

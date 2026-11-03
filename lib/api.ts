@@ -1878,7 +1878,8 @@ export async function deleteScheduleItem(id: string): Promise<void> {
 
 // ── Employees & Payroll (Zambian statutory engine) ──────────────────────────────
 
-export type EmploymentType = 'permanent' | 'contract';
+/** 'casual': paid by the hour with the 25% casual loading, taxed on ZRA's daily tables (migration 0044). */
+export type EmploymentType = 'permanent' | 'contract' | 'casual';
 export type EmployeeStatus = 'active' | 'left';
 
 export interface Employee {
@@ -1920,6 +1921,19 @@ export interface Employee {
   /** Pay and PAYE earlier in the year (before AIBOS, or a previous employer's
    *  ITF/P13), so PAYE can use ZRA's cumulative tables. */
   paye_prior?: PayePrior | null;
+  /** Migration 0044. A casual worker's hourly rate before the 25% casual loading. */
+  hourly_rate?: number | null;
+  /** NAPSA stops at 60 by itself (65 with napsa_to_65). */
+  date_of_birth?: string | null;
+  napsa_to_65?: boolean;
+  /** Leave days owed from before AIBOS, and the days earned a month (at least 2). */
+  leave_opening?: number;
+  leave_rate?: number;
+  /** The minimum wage Order covering them and its category. */
+  wage_order?: 'general' | 'shop' | 'domestic' | null;
+  wage_category?: string | null;
+  /** A watchperson or guard: hourly rate on 240 hours, not 208. */
+  guard?: boolean;
 }
 
 export interface PayePrior {
@@ -1977,6 +1991,27 @@ export interface Payslip {
   paye_note?: string | null;
   ytd_pay?: number;
   ytd_paye?: number;
+  /** Why no NAPSA: their age, or marked by hand. */
+  napsa_why?: string | null;
+  /** A casual worker's month: hours, days and rate (before the loading). */
+  casual?: boolean;
+  hours?: number | null;
+  days_worked?: number | null;
+  hourly_rate?: number | null;
+  overtime_hours?: number;
+  overtime_pay?: number;
+  holiday_hours?: number;
+  holiday_pay?: number;
+  /** Annual leave: earned and taken this month, and owed after it. */
+  leave_earned?: number;
+  leave_taken?: number;
+  leave_balance?: number | null;
+  /** Preview only: leave owed before this month, due with a last pay, hours still to type. */
+  leave_owed_before?: number;
+  /** Leave days owed by the end of this month: what a last pay pays out. */
+  leave_to_pay?: number;
+  leave_due?: boolean;
+  needs_hours?: boolean;
   /** 'pay', 'final' (the month they left) or 'gratuity_only'. */
   kind?: 'pay' | 'final' | 'gratuity_only';
   // Preview only: what the run screen needs to suggest the month's changes.
@@ -1997,6 +2032,14 @@ export interface PayrollChange {
   extra_note?: string;
   leave_days?: number;
   pay_gratuity?: boolean;
+  /** A casual worker's hours and days this month. */
+  hours?: number;
+  days?: number;
+  /** Overtime at 1.5 times, rest-day and public holiday hours at double. */
+  overtime_hours?: number;
+  holiday_hours?: number;
+  /** Leave days taken this month on full pay. */
+  leave_taken?: number;
 }
 
 export interface PayrollTotals {
@@ -2065,7 +2108,8 @@ export interface PayrollPreview {
   rates_note?: string | null;
   notes?: string[];
   /** People who left before this month and are still owed gratuity. */
-  gratuity_leavers?: Array<{ employee_id: string; name: string; owed: number; end_date?: string | null }>;
+  gratuity_leavers?: Array<{ employee_id: string; name: string; owed: number; end_date?: string | null;
+    leave_owed?: number; leave_value?: number }>;
 }
 
 /** Where one person's gratuity stands. */
@@ -2109,6 +2153,50 @@ export interface PayrollEmployer {
   tpin?: string | null;
   napsa?: string | null;
   nhima?: string | null;
+  /** On every pay statement (SI 50 of 2023, 12(5)). */
+  address?: string | null;
+}
+
+/** Where one person's annual leave stands. */
+export interface LeavePosition {
+  employee_id: string;
+  name: string;
+  status: EmployeeStatus;
+  rate: number;
+  opening: number;
+  earned: number;
+  taken: number;
+  paid_out: number;
+  owed: number;
+  /** What paying the days out would cost: full pay x days / 26. */
+  value: number;
+}
+
+export interface LeaveBook {
+  people: LeavePosition[];
+  total_days: number;
+  total_value: number;
+  leavers_owed: number;
+}
+
+/** One category of a minimum wage Order. */
+export interface MinWageCategory {
+  order: 'general' | 'shop' | 'domestic';
+  law: string;
+  name: string;
+  category: string;
+  monthly: number;
+  hourly: number;
+  who: string;
+  gross: number;
+}
+
+export interface MinWageOrder {
+  order: 'general' | 'shop' | 'domestic';
+  name: string;
+  law: string;
+  effective_from: string;
+  categories: MinWageCategory[];
 }
 
 /** Whether the business pays the Skills Development Levy, and why. */
@@ -2207,7 +2295,8 @@ export async function getPayrollEmployer(): Promise<PayrollEmployer> {
 export async function setPayrollEmployer(numbers: PayrollEmployer): Promise<PayrollEmployer> {
   const data = await spineFetch('/payroll/settings', {
     method: 'PUT', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ employer: { tpin: numbers.tpin ?? null, napsa: numbers.napsa ?? null, nhima: numbers.nhima ?? null } }),
+    body: JSON.stringify({ employer: { tpin: numbers.tpin ?? null, napsa: numbers.napsa ?? null,
+      nhima: numbers.nhima ?? null, address: numbers.address ?? null } }),
   });
   return (data.employer as PayrollEmployer) ?? {};
 }
@@ -2216,6 +2305,18 @@ export async function setPayrollEmployer(numbers: PayrollEmployer): Promise<Payr
 export async function getGratuityBook(): Promise<GratuityBook> {
   const data = await spineFetch('/payroll/gratuity');
   return data as unknown as GratuityBook;
+}
+
+/** Each person's annual leave: days owed and what paying them out would cost. */
+export async function getLeaveBook(): Promise<LeaveBook> {
+  const data = await spineFetch('/payroll/leave');
+  return data as unknown as LeaveBook;
+}
+
+/** The minimum wage Orders and their categories (SI 48, 49 and 50 of 2023). */
+export async function getMinWages(): Promise<MinWageOrder[]> {
+  const data = await spineFetch('/payroll/min-wages');
+  return (data.orders as MinWageOrder[]) ?? [];
 }
 
 /** What the law asks of the payroll that is not done yet. */
