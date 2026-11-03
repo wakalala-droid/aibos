@@ -19,7 +19,11 @@ function getDetector(): BarcodeDetectorLike | null {
   catch { return null; }
 }
 
-export default function QrScanner({ onResult, onClose }: { onResult: (text: string) => void; onClose: () => void }) {
+export default function QrScanner({ onResult, onClose, title = 'Scan receipt QR', hint = "Point at the receipt's QR code" }: {
+  onResult: (text: string) => void; onClose: () => void;
+  /** What is being scanned, in the heading and under the camera (the receipt by default). */
+  title?: string; hint?: string;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -74,10 +78,10 @@ export default function QrScanner({ onResult, onClose }: { onResult: (text: stri
   function handleClose() { stop(); onClose(); }
 
   return (
-    <div role="dialog" aria-label="Scan receipt QR" style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'var(--overlay-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+    <div role="dialog" aria-label={title} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'var(--overlay-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div className="section-card" style={{ width: '100%', maxWidth: 420, padding: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <h3 className="section-title">Scan receipt QR</h3>
+          <h3 className="section-title">{title}</h3>
           <button type="button" onClick={handleClose} aria-label="Close" className="touch-target"
             style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', cursor: 'pointer' }}>✕</button>
         </div>
@@ -97,7 +101,7 @@ export default function QrScanner({ onResult, onClose }: { onResult: (text: stri
               )}
             </div>
             <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', marginTop: 10 }}>
-              Point at the receipt&apos;s QR code
+              {hint}
             </p>
           </>
         ) : (

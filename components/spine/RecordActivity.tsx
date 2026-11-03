@@ -57,7 +57,8 @@ const TYPE_FIELDS: Record<EventType, Field[]> = {
   AssetPurchase:      [{ key: 'asset_name', label: 'Asset', kind: 'text' }, { key: 'category', label: 'Category', kind: 'text' }, paidBy(), vatOnIt],
   TaxPayment:         [{ key: 'tax_type', label: 'Tax type', kind: 'text', placeholder: 'VAT, PAYE…' }, { key: 'authority', label: 'Authority', kind: 'text', placeholder: 'ZRA' }, paidBy()],
   Loan:               [{ key: 'direction', label: 'Direction', kind: 'select', options: ['received', 'repayment'] }, { key: 'lender', label: 'Lender', kind: 'text' }, paidBy(PAID_ONLY, 'Paid or received by')],
-  Refund:             [{ key: 'direction', label: 'Direction', kind: 'select', options: ['to_customer', 'from_supplier'] }, { key: 'reason', label: 'Reason', kind: 'text' }, paidBy(PAID_ONLY, 'Refunded by')],
+  // Money back from a supplier with a Smart Invoice is its credit note: its VAT comes off the VAT claimed.
+  Refund:             [{ key: 'direction', label: 'Direction', kind: 'select', options: ['to_customer', 'from_supplier'] }, { key: 'reason', label: 'Reason', kind: 'text' }, paidBy(PAID_ONLY, 'Refunded by'), vatOnIt],
   Transfer:           [{ key: 'from', label: 'Moved from', kind: 'select', options: PLACES }, { key: 'to', label: 'Moved to', kind: 'select', options: PLACES }],
 };
 

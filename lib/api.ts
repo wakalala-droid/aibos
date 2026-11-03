@@ -605,7 +605,10 @@ export interface VatEntry {
 
 /** GET /books/vat: the VAT on a period's purchases, split by whether it can be claimed. */
 export interface VatClaim {
-  claim: { vat: number; count: number; no_vat_figure: number; entries: VatEntry[] };
+  /** `vat` is what can be claimed once credit notes are taken off; `on_invoices` the purchases' VAT alone. */
+  claim: { vat: number; on_invoices: number; count: number; no_vat_figure: number; entries: VatEntry[] };
+  /** Suppliers' credit notes (money back, with a Smart Invoice): their VAT comes off the claim. */
+  credits: { vat: number; count: number; no_vat_figure: number; entries: VatEntry[] };
   lost: { spent: number; vat_shown: number; count: number; entries: VatEntry[] };
   /** A Smart Invoice recorded again: claimed once, listed to be removed. */
   twice: { vat: number; count: number; entries: VatEntry[] };
@@ -619,6 +622,16 @@ export async function getVatClaim(start?: Date, end?: Date): Promise<VatClaim> {
   if (end) q.set('end', end.toISOString());
   const qs = q.toString();
   return (await spineFetch(`/books/vat${qs ? `?${qs}` : ''}`)) as unknown as VatClaim;
+}
+
+/** Attach a scanned ZRA Smart Invoice to a purchase already recorded (the owner's).
+ *  `vat` is the VAT printed on the invoice, for a QR code that carries none. */
+export async function attachSmartInvoice(eventId: string, qr: string, vat?: number): Promise<{ event: BusinessEvent }> {
+  const data = await spineFetch(`/books/vat/${encodeURIComponent(eventId)}/smart-invoice`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(vat == null ? { qr } : { qr, vat }),
+  });
+  return data as unknown as { event: BusinessEvent };
 }
 
 /** What a month costs whatever is sold, and what grows with sales (the breakeven). */
