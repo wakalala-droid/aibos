@@ -14,7 +14,7 @@ export type NavIcon =
   | 'overview' | 'record' | 'cash' | 'invoice' | 'customers' | 'rooms' | 'inventory'
   | 'people' | 'schedule' | 'timeline' | 'import' | 'brief' | 'variance' | 'forecast'
   | 'anomaly' | 'breakeven' | 'simulate' | 'churn' | 'products' | 'market' | 'pos'
-  | 'benchmarks' | 'cashplan';
+  | 'benchmarks' | 'cashplan' | 'clients';
 
 export interface NavDoor {
   href: string;
@@ -38,6 +38,8 @@ export const DOORS: NavDoor[] = [
   { href: '/dashboard/cash',        label: 'Money',         icon: 'cash',      group: 'main', keywords: ['cash', 'balance', 'bank', 'runway', 'profit', 'spending', 'cash intelligence'] },
   { href: '/dashboard/invoices',    label: 'Get paid',      icon: 'invoice',   group: 'main', keywords: ['invoice', 'invoices', 'bill', 'payment link', 'owed', 'debtors', 'receivables'] },
   { href: '/dashboard/contacts',    label: 'Customers',     icon: 'customers', group: 'main', keywords: ['contacts', 'clients', 'suppliers', 'people', 'who owes'] },
+  // Shown on every plan: below Growth the page is the locked preview, like the cash plan.
+  { href: '/dashboard/clients',     label: 'Find clients',  short: 'Clients', icon: 'clients', group: 'main', keywords: ['prospects', 'leads', 'sales', 'new customers', 'outreach', 'cold email', 'marketing', 'grow', 'find customers', 'explee'] },
   { href: '/dashboard/hospitality', label: 'Rooms & Stays', short: 'Rooms', icon: 'rooms',     group: 'main', feature: 'hospitality', keywords: ['bookings', 'booking', 'rooms', 'stays', 'guests', 'units', 'calendar', 'hospitality', 'airbnb'] },
   { href: '/dashboard/inventory',   label: 'Stock',         icon: 'inventory', group: 'main', keywords: ['inventory', 'products', 'items', 'reorder', 'catalog'] },
   { href: '/dashboard/employees',   label: 'Staff',         icon: 'people',    group: 'main', keywords: ['employees', 'payroll', 'wages', 'salary', 'paye', 'napsa', 'payslip'] },
@@ -84,7 +86,7 @@ export type TeamRole = 'owner' | 'staff' | 'accountant' | string | null | undefi
 // than offered and then refused.
 const STAFF_HREFS = new Set([
   '/dashboard', '/dashboard/record', '/dashboard/timeline', '/dashboard/schedule',
-  '/dashboard/inventory', '/dashboard/hospitality',
+  '/dashboard/inventory', '/dashboard/hospitality', '/dashboard/clients',
 ]);
 const ACCOUNTANT_HIDE = new Set(['/dashboard/record', '/dashboard/import', '/dashboard/employees']);
 

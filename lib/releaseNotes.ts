@@ -23,6 +23,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-05-find-clients',
+    date: '2026-11-05',
+    title: 'Find your next customers',
+    intro: 'On Growth, AIBOS now looks for businesses that could buy from you and writes to them for you to send.',
+    items: [
+      { icon: 'assistant', title: 'Businesses found for you (Growth)', text: 'Pick a kind of business and a town, or paste your own list, and AIBOS adds them without finding anyone twice.' },
+      { icon: 'decide', title: 'Which ones fit, and why', text: 'AIBOS reads each website, scores the fit and writes the first message to the ones worth writing to: 300 a month.' },
+      { icon: 'words', title: 'Sent from your own email or WhatsApp', text: 'Nothing goes out until you press send there, and anyone who asks you to stop is never written to again.' },
+      { icon: 'line', title: 'Replies and follow-ups', text: 'Paste what they wrote back and AIBOS says what it means, drafts your answer and tells you when a follow-up is due.' },
+    ],
+  },
+  {
     id: '2026-10-16-chase-and-pace',
     date: '2026-10-16',
     title: 'Who to ask for money first',

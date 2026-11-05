@@ -35,6 +35,7 @@ export type Feature =
   | 'cross_engine'
   | 'multi_business'   // run several businesses under one login (audit #16)
   | 'cash_plan'        // the 13-week cash plan, the cash watch and the group view (16 Oct 2026)
+  | 'find_clients'     // Find clients: businesses found, researched and written to, sent by the owner (5 Nov 2026)
   | 'multi_location'   // UNBUILT: flag reserved; never list as a live inclusion (audit 2026-07)
   | 'api_access';      // UNBUILT: flag reserved; never list as a live inclusion (audit 2026-07)
 
@@ -133,6 +134,7 @@ export const TIERS: Record<Tier, TierMeta> = {
       'Who to ask for money first, with the reminder and your payment link ready to send',
       'Try a purchase, a hire or a price change on the plan before you decide',
       'A cash flow projection for your bank, ready to download',
+      'Find clients: AIBOS finds businesses that could buy from you and writes the first message, 300 a month',
       'Rooms & Stays: bookings, deposits and guest payment links',
       'One health score across money, customers and operations',
       'Priority support',
@@ -188,6 +190,8 @@ const GROWTH: Feature[] = [
   'cross_engine', 'multi_business', 'multi_location', 'api_access',
   // The 13-week cash plan: lock-step with entitlements.py _GROWTH.
   'cash_plan',
+  // Find clients (5 Nov 2026): lock-step with entitlements.py _GROWTH.
+  'find_clients',
   // PROVISIONAL — moves to its own add-on SKU later.
   'hospitality',
 ];

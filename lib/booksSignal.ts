@@ -20,6 +20,8 @@ const QUIET: RegExp[] = [
   /^\/transcribe/, /^\/simulate/, /^\/recommendations\//, /^\/memory\//, /^\/push\//,
   /^\/announce/, /^\/card-reminder/, /^\/members/, /^\/payments\/account/, /^\/profile/,
   /^\/latest-analysis/, /^\/payroll\/preview/, /^\/hospitality\/properties\/[^/]+\/guest-emails/,
+  // Find clients: businesses and drafts, never money.
+  /^\/clients\//,
 ];
 
 let timer: ReturnType<typeof setTimeout> | null = null;

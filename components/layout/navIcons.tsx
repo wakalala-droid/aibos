@@ -7,7 +7,7 @@ import {
   BedDouble, CalendarDays, CalendarRange, ChartColumn, CirclePlus, FlaskConical, Globe, History, House,
   IdCard, Layers, LayoutGrid, ListChecks, Lock, Menu, Moon, Package, ReceiptText, Scale,
   ShieldCheck, SlidersHorizontal, Sparkles, Store, Sun, Tag, TrendingUp, TriangleAlert,
-  Upload, UserMinus, Users, Wallet, type LucideIcon,
+  Upload, UserMinus, UserSearch, Users, Wallet, type LucideIcon,
 } from 'lucide-react';
 
 /** The icon for each door in lib/nav.ts, and a few controls. */
@@ -27,6 +27,7 @@ export const NAV_GLYPH: Record<string, LucideIcon> = {
   variance: ChartColumn,
   forecast: TrendingUp,
   cashplan: CalendarRange,
+  clients: UserSearch,
   anomaly: TriangleAlert,
   breakeven: Scale,
   simulate: FlaskConical,

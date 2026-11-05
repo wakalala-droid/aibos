@@ -3004,3 +3004,253 @@ export async function saveLatestAnalysis(engine: 'engine3' | 'engine2', filename
   });
 }
 
+
+// ── Find clients (Growth, 5 Nov 2026; aibos-api find_clients_routes.py) ──────
+// AIBOS finds businesses that could buy from the owner, reads their websites,
+// says which fit and writes the messages. It never sends: every message opens
+// in the owner's own email or WhatsApp and they press send there.
+
+export type ClientStage = 'new' | 'researched' | 'ready' | 'contacted' | 'replied' | 'meeting' | 'won' | 'lost' | 'skipped';
+export type ClientLabel = 'hot_lead' | 'wants_call' | 'question' | 'later' | 'out_of_office' | 'email_changed'
+  | 'not_interested' | 'unsubscribe';
+
+export interface ClientSettings {
+  sender_name: string | null;
+  sender_role: string | null;
+  phone: string | null;
+  booking_link: string | null;
+  followups: number;
+  followup_days: number;
+  facts: string | null;
+  do_not_contact: string[];
+}
+
+export interface ClientCampaignFields {
+  name: string;
+  offer: string | null;
+  who: string | null;
+  pain: string | null;
+  proof: string | null;
+  good_fit: string[];
+  rule_out: string[];
+  keywords: string[];
+  kinds: string[];
+  towns: string[];
+  status: 'active' | 'paused';
+}
+
+export interface ClientCampaign extends ClientCampaignFields {
+  id: string;
+  counts?: { all: number; contacted: number; replied: number; hot: number; won: number; waiting: number };
+}
+
+export interface ClientProspect {
+  id: string;
+  name: string;
+  kind: string | null;
+  town: string | null;
+  address: string | null;
+  email: string | null;
+  phone: string | null;
+  /** The phone as WhatsApp wants it (260...), when it is a Zambian mobile. */
+  whatsapp: string | null;
+  website: string | null;
+  contact_name: string | null;
+  contact_role: string | null;
+  fit: number | null;
+  fit_reasons: string[];
+  summary: string | null;
+  stage: ClientStage;
+  hot: boolean;
+  campaign_id: string | null;
+  last_contacted_at: string | null;
+  next_followup_at: string | null;
+  followups_sent: number;
+  notes: string | null;
+  source: 'map' | 'list' | 'typed';
+  researched_at: string | null;
+  research_note: string | null;
+  created_at: string;
+}
+
+export interface ClientMessage {
+  id: string;
+  prospect_id: string;
+  direction: 'out' | 'in';
+  kind: 'first' | 'followup' | 'answer' | 'reply';
+  channel: 'email' | 'whatsapp';
+  subject: string | null;
+  body: string;
+  whatsapp: string | null;
+  status: 'draft' | 'sent' | 'discarded' | 'received';
+  label: ClientLabel | null;
+  written_by: string | null;
+  created_at: string;
+  sent_at: string | null;
+}
+
+/** A message waiting for the owner, with where Send opens it. */
+export interface ClientDraft extends ClientMessage {
+  prospect: ClientProspect;
+  links: { mailto?: string; gmail?: string; whatsapp?: string };
+}
+
+/** A business that wrote back and is waiting on the owner. */
+export interface ClientNeed {
+  prospect: ClientProspect;
+  reply: { body: string | null; label: ClientLabel | null; label_words: string; at: string | null };
+  answer_waiting: boolean;
+}
+
+export interface ClientJob {
+  total: number;
+  done: number;
+  written: number;
+  running: boolean;
+  error: string | null;
+  already?: boolean;
+}
+
+export interface ClientAdded { added: number; known: number; blocked: number }
+
+interface ClientsBase {
+  plan: string;
+  kinds: Record<string, string>;
+  towns: string[];
+  allowance: number;
+  labels: Record<ClientLabel, string>;
+  /** The fit from which AIBOS writes the first message. */
+  write_from: number;
+  can_write: boolean;
+  is_owner: boolean;
+}
+
+/** Below Growth: enough for the locked preview. */
+export interface ClientsPreview extends ClientsBase { preview: true; reason?: string | null }
+
+export interface ClientsFull extends ClientsBase {
+  preview: false;
+  settings: ClientSettings;
+  drafts: ClientDraft[];
+  needs_you: ClientNeed[];
+  followups_due: number;
+  counts: Record<ClientStage, number>;
+  hot: number;
+  total: number;
+  campaigns: ClientCampaign[];
+  usage: { used: number; allowed: number; left: number };
+  job: ClientJob | null;
+  /** False when the AI is not connected: fit by rules, messages in AIBOS's own wording. */
+  ai: boolean;
+  business: string | null;
+}
+
+export type ClientsHome = ClientsPreview | ClientsFull;
+
+function clientsSend(path: string, method: string, body?: unknown): Promise<Record<string, unknown>> {
+  return spineFetch(path, body === undefined ? { method } : {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function getClients(): Promise<ClientsHome> {
+  return (await spineFetch('/clients')) as unknown as ClientsHome;
+}
+
+export async function saveClientSettings(patch: Partial<ClientSettings>): Promise<ClientSettings> {
+  return (await clientsSend('/clients/settings', 'PUT', patch)).settings as ClientSettings;
+}
+
+/** A campaign drafted from one line, not saved: the owner reads it first. */
+export async function fillClientCampaign(line: string): Promise<ClientCampaignFields> {
+  return (await clientsSend('/clients/campaigns/fill', 'POST', { line })).campaign as ClientCampaignFields;
+}
+
+export async function saveClientCampaign(fields: Partial<ClientCampaignFields>, id?: string): Promise<ClientCampaign> {
+  const data = id
+    ? await clientsSend(`/clients/campaigns/${encodeURIComponent(id)}`, 'PUT', fields)
+    : await clientsSend('/clients/campaigns', 'POST', fields);
+  return data.campaign as ClientCampaign;
+}
+
+export async function deleteClientCampaign(id: string): Promise<void> {
+  await clientsSend(`/clients/campaigns/${encodeURIComponent(id)}`, 'DELETE');
+}
+
+export async function listClientProspects(filter: { campaign_id?: string | null; stage?: ClientStage | null } = {}): Promise<ClientProspect[]> {
+  const q = new URLSearchParams();
+  if (filter.campaign_id) q.set('campaign_id', filter.campaign_id);
+  if (filter.stage) q.set('stage', filter.stage);
+  const qs = q.toString();
+  return ((await spineFetch(`/clients/prospects${qs ? `?${qs}` : ''}`)).prospects as ClientProspect[]) ?? [];
+}
+
+export async function getClientProspect(id: string): Promise<{ prospect: ClientProspect; messages: ClientMessage[] }> {
+  const data = await spineFetch(`/clients/prospects/${encodeURIComponent(id)}`);
+  return { prospect: data.prospect as ClientProspect, messages: (data.messages as ClientMessage[]) ?? [] };
+}
+
+export async function addClientProspect(fields: Partial<ClientProspect> & { name: string }): Promise<ClientAdded> {
+  return (await clientsSend('/clients/prospects', 'POST', fields)) as unknown as ClientAdded;
+}
+
+export async function updateClientProspect(id: string, patch: Partial<ClientProspect>): Promise<ClientProspect> {
+  return (await clientsSend(`/clients/prospects/${encodeURIComponent(id)}`, 'PATCH', patch)).prospect as ClientProspect;
+}
+
+export async function deleteClientProspect(id: string): Promise<void> {
+  await clientsSend(`/clients/prospects/${encodeURIComponent(id)}`, 'DELETE');
+}
+
+/** Search the map for one kind of business around one town. */
+export async function findClientsOnMap(kind: string, town: string, campaignId?: string | null): Promise<ClientAdded & { found: number }> {
+  return (await clientsSend('/clients/find', 'POST', { kind, town, campaign_id: campaignId || null })) as unknown as ClientAdded & { found: number };
+}
+
+/** A pasted or uploaded list: a CSV with headings, or one business a line. */
+export async function importClientList(text: string, campaignId?: string | null): Promise<ClientAdded & { read: number }> {
+  return (await clientsSend('/clients/import', 'POST', { text, campaign_id: campaignId || null })) as unknown as ClientAdded & { read: number };
+}
+
+/** Research the next businesses waiting; GET /clients reports how far it has got. */
+export async function researchClients(campaignId?: string | null): Promise<ClientJob> {
+  return (await clientsSend('/clients/research', 'POST', { campaign_id: campaignId || null })).job as ClientJob;
+}
+
+/** Write (or write again) the next message to one business. */
+export async function writeClientMessage(prospectId: string): Promise<ClientMessage> {
+  return (await clientsSend(`/clients/prospects/${encodeURIComponent(prospectId)}/write`, 'POST', {})).draft as ClientMessage;
+}
+
+/** What a business wrote back, pasted: read, the business moved on, the answer drafted. */
+export async function recordClientReply(prospectId: string, text: string): Promise<{
+  label: ClientLabel; label_words: string; prospect: ClientProspect; draft: ClientMessage | null;
+}> {
+  const data = await clientsSend(`/clients/prospects/${encodeURIComponent(prospectId)}/reply`, 'POST', { text });
+  return {
+    label: data.label as ClientLabel,
+    label_words: String(data.label_words ?? ''),
+    prospect: data.prospect as ClientProspect,
+    draft: (data.draft as ClientMessage | null) ?? null,
+  };
+}
+
+/** Write the follow-ups that are due. Returns how many were written. */
+export async function writeClientFollowups(): Promise<number> {
+  return Number((await clientsSend('/clients/followups', 'POST', {})).written ?? 0);
+}
+
+export async function editClientMessage(id: string, patch: { subject?: string; body?: string; whatsapp?: string }): Promise<ClientMessage> {
+  return (await clientsSend(`/clients/messages/${encodeURIComponent(id)}`, 'PATCH', patch)).message as ClientMessage;
+}
+
+/** The owner pressed send in their own email or WhatsApp. */
+export async function markClientMessageSent(id: string, channel: 'email' | 'whatsapp'): Promise<ClientProspect> {
+  return (await clientsSend(`/clients/messages/${encodeURIComponent(id)}/sent`, 'POST', { channel })).prospect as ClientProspect;
+}
+
+export async function discardClientMessage(id: string): Promise<void> {
+  await clientsSend(`/clients/messages/${encodeURIComponent(id)}/discard`, 'POST', {});
+}
