@@ -507,6 +507,7 @@
 .mkt-pain > :nth-child(2) { --i: 1; }
 .mkt-pain > :nth-child(3) { --i: 2; }
 .mkt-pain > :nth-child(4) { --i: 3; }
+.mkt-pain > :nth-child(5) { --i: 4; }
 @keyframes mkt-strike { from { background-size: 0% 2px; } }
 @keyframes mkt-fade-back { from { color: var(--text-2); } }
 @keyframes mkt-from-left { from { opacity: 0; transform: translateX(-12px); } }

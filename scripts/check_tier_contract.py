@@ -167,7 +167,18 @@ def parse_tiers_ts(src: str) -> dict:
         raise ValueError("could not find UNBUILT in tiers.ts")
     unbuilt = sorted(re.findall(r"'([^']+)'", balanced(src, m.end() - 1, "[", "]")))
 
-    return {"access": access, "taster": taster, "prices": prices, "unbuilt": unbuilt}
+    # How much of a shared feature each plan gets a month (7 Nov 2026: Find
+    # clients on every plan, businesses researched a month).
+    allowance: dict[str, dict[str, int]] = {}
+    m = re.search(r"const\s+FIND_CLIENTS_PER_MONTH\s*:[^=]*=\s*\{", src)
+    if m:
+        allowance["find_clients"] = {
+            am.group(1): int(am.group(2))
+            for am in re.finditer(r"(\w+)\s*:\s*(\d+)", balanced(src, m.end() - 1))
+        }
+
+    return {"access": access, "taster": taster, "prices": prices, "unbuilt": unbuilt,
+            "allowance": allowance}
 
 
 def assert_not_vacuous(parsed: dict) -> None:
@@ -250,6 +261,15 @@ def compare(parsed: dict, contract: dict) -> list[str]:
             )
     if parsed["prices"]["free"] != {"monthly": 0, "annual": 0}:
         problems.append(f"Free is not free in lib/tiers.ts: {parsed['prices']['free']}")
+
+    for feature, want in (contract.get("allowance") or {}).items():
+        got = parsed["allowance"].get(feature)
+        if got != want:
+            problems.append(
+                f"ALLOWANCE[{feature}] disagrees — the page quotes one and the server counts the other:\n"
+                f"    lib/tiers.ts: {got}\n"
+                f"    backend:      {want}"
+            )
 
     return problems
 

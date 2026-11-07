@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Smartphone, Users, Landmark, ShieldCheck } from 'lucide-react';
 import Hero from '@/components/marketing/Hero';
 import PainPromise from '@/components/marketing/PainPromise';
+import FindClients from '@/components/marketing/FindClients';
 import FeatureTheatre from '@/components/marketing/FeatureTheatre';
 import TheGoal from '@/components/marketing/TheGoal';
 import FeatureBento from '@/components/marketing/FeatureBento';
@@ -23,7 +24,7 @@ import Rise from '@/components/marketing/Rise';
 export const metadata: Metadata = {
   title: 'AIBOS · The brain behind every business',
   description:
-    'Record sales, send invoices with a mobile money payment link and ask your business anything. AIBOS keeps your books, watches your cash and answers in Kwacha. Start free.',
+    'Record sales, send invoices with a mobile money payment link, find new customers and ask your business anything. AIBOS keeps your books, watches your cash and answers in Kwacha. Start free.',
   alternates: { canonical: '/' },
 };
 
@@ -39,6 +40,8 @@ export default function MarketingHome() {
     <>
       <Hero />
       <PainPromise />
+      {/* 7 Nov 2026: Find clients on every plan, right after the promise. */}
+      <FindClients />
       <FeatureTheatre />
       <AskAnything />
       <MorningBrief />

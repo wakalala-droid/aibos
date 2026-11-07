@@ -12,6 +12,8 @@ export type Tier = 'free' | 'pro' | 'proplus' | 'growth';
 // Everything below is gated. The ladder was re-cut on 22 Oct 2026 (owner's
 // decision) so value climbs with price: see the plan arrays further down.
 export type Feature =
+  // Every plan, Free included (7 Nov 2026): the plans differ in how much.
+  | 'find_clients'     // Find clients: businesses found, researched and written to, sent by the owner (FIND_CLIENTS_PER_MONTH)
   | 'forecast'
   | 'anomaly'
   | 'variance'
@@ -35,7 +37,6 @@ export type Feature =
   | 'cross_engine'
   | 'multi_business'   // run several businesses under one login (audit #16)
   | 'cash_plan'        // the 13-week cash plan, the cash watch and the group view (16 Oct 2026)
-  | 'find_clients'     // Find clients: businesses found, researched and written to, sent by the owner (5 Nov 2026)
   | 'multi_location'   // UNBUILT: flag reserved; never list as a live inclusion (audit 2026-07)
   | 'api_access';      // UNBUILT: flag reserved; never list as a live inclusion (audit 2026-07)
 
@@ -63,7 +64,9 @@ export const TIERS: Record<Tier, TierMeta> = {
   free: {
     id: 'free',
     name: 'Free',
-    tagline: 'Prove it on your own numbers',
+    // 7 Nov 2026 (owner's decision): Find clients leads the Free plan. New
+    // customers are the one thing a new owner is paid back for at once.
+    tagline: 'Find your next customers',
     priceMonthly: 0,
     priceAnnual: 0,
     accent: 'var(--text-3)',
@@ -72,6 +75,7 @@ export const TIERS: Record<Tier, TierMeta> = {
     // receipts, customers, stock, the staff register and the schedule are
     // never gated. Anything not live yet says so in brackets.
     inclusions: [
+      'Find clients: AIBOS finds businesses that could buy from you and writes the first message, 20 a month',
       'Record sales and expenses, or upload a spreadsheet or receipt',
       'Profit and cash for your last 30 days',
       'Customers, stock, a staff register and a schedule',
@@ -89,6 +93,7 @@ export const TIERS: Record<Tier, TierMeta> = {
     accent: 'var(--cyan)',
     inclusions: [
       'Everything in Free',
+      'Find clients: 50 businesses a month researched and written to',
       'Your whole history, no 30-day limit',
       'Unlimited Ask AIBOS that remembers the conversation',
       'Forecasts, unusual-spending warnings, breakeven and month by month',
@@ -107,6 +112,7 @@ export const TIERS: Record<Tier, TierMeta> = {
     accent: 'var(--e2)',
     inclusions: [
       'Everything in Pro',
+      'Find clients: 100 businesses a month researched and written to',
       'Payroll with PAYE, NAPSA, NHIMA and take-home pay worked out',
       'The Morning Brief on Home: your day, ready before you ask',
       'The brief at 06:30 by email and on your phone, and on WhatsApp (rolling out)',
@@ -134,7 +140,7 @@ export const TIERS: Record<Tier, TierMeta> = {
       'Who to ask for money first, with the reminder and your payment link ready to send',
       'Try a purchase, a hire or a price change on the plan before you decide',
       'A cash flow projection for your bank, ready to download',
-      'Find clients: AIBOS finds businesses that could buy from you and writes the first message, 300 a month',
+      'Find clients: 300 businesses a month researched and written to',
       'Rooms & Stays: bookings, deposits and guest payment links',
       'One health score across money, customers and operations',
       'Priority support',
@@ -172,7 +178,11 @@ export function isPaidTier(v: unknown): v is PaidTier {
 // Re-cut on 22 Oct 2026 so value climbs with price: invoices and team invites
 // moved Free -> Pro, payroll, the scheduled brief and reminders Pro -> Pro+,
 // Hospitality Pro -> Growth (keep in lock-step with entitlements.py).
+// Find clients is on every plan since 7 Nov 2026 (lock-step with
+// entitlements.py _FREE); the plans differ in FIND_CLIENTS_PER_MONTH.
+const FREE: Feature[] = ['find_clients'];
 const PRO: Feature[] = [
+  ...FREE,
   'forecast', 'anomaly', 'variance', 'breakeven',
   'ai_chat', 'full_history', 'engine2', 'engine3',
   'invoices', 'team',
@@ -190,18 +200,36 @@ const GROWTH: Feature[] = [
   'cross_engine', 'multi_business', 'multi_location', 'api_access',
   // The 13-week cash plan: lock-step with entitlements.py _GROWTH.
   'cash_plan',
-  // Find clients (5 Nov 2026): lock-step with entitlements.py _GROWTH.
-  'find_clients',
   // PROVISIONAL — moves to its own add-on SKU later.
   'hospitality',
 ];
 
 const ACCESS: Record<Tier, Feature[]> = {
-  free: [],
+  free: FREE,
   pro: PRO,
   proplus: PROPLUS,
   growth: GROWTH,
 };
+
+/**
+ * Find clients on every plan (7 Nov 2026): businesses researched and written
+ * to a month. The SERVER counts and enforces them (find_clients.py ALLOWANCE,
+ * in usage_events); this map is what the pricing page and the page's upgrade
+ * line quote. Lock-step with tier_contract.json "allowance", checked by
+ * scripts/check_tier_contract.py.
+ */
+export const FIND_CLIENTS_PER_MONTH: Record<Tier, number> = {
+  free: 20,
+  pro: 50,
+  proplus: 100,
+  growth: 300,
+};
+
+/** The next plan up and what it gives, or null at the top. */
+export function nextTierUp(tier: Tier): Tier | null {
+  const i = TIER_ORDER.indexOf(tier);
+  return i >= 0 && i < TIER_ORDER.length - 1 ? TIER_ORDER[i + 1] : null;
+}
 
 /**
  * Flags reserved for features that DO NOT EXIST YET. They stay in the ladder

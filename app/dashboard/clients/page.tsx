@@ -1,14 +1,15 @@
 'use client';
 
-// Find clients (Growth, 5 Nov 2026): AIBOS finds businesses that could buy
-// from the owner (the map around a town, or a list they paste), reads their
-// websites, says which fit and why, and writes the first message, the
-// follow-ups and the answer to a reply. It never sends: each message opens in
-// the owner's own email or WhatsApp. The API is aibos-api find_clients_routes.py.
+// Find clients (5 Nov 2026; every plan since 7 Nov): AIBOS finds businesses
+// that could buy from the owner (the map around a town, or a list they paste),
+// reads their websites, says which fit and why, and writes the first message,
+// the follow-ups and the answer to a reply. It never sends: each message opens
+// in the owner's own email or WhatsApp. The API is aibos-api
+// find_clients_routes.py.
 //
-// Below Growth the door is still in the menu and the page is the locked
-// preview, like the cash plan. Staff use it on the owner's plan; the
-// accountant only reads.
+// The plans differ only in how many businesses a month are researched (20,
+// 50, 100 and 300: FIND_CLIENTS_PER_MONTH). Staff use it on the owner's plan;
+// the accountant only reads.
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -47,7 +48,7 @@ export default function FindClientsPage() {
 
   useEffect(() => { void load(); }, [load, tier]);
 
-  // While research runs on the server, look again every few seconds.
+  // While a search or research runs on the server, look again every few seconds.
   const running = Boolean(home && !home.preview && home.job?.running);
   useEffect(() => {
     if (!running) return;
@@ -55,8 +56,8 @@ export default function FindClientsPage() {
     return () => clearInterval(t);
   }, [running, load]);
 
-  const allowance = home?.allowance ?? 300;
-  const detail = `It reads their websites, says which fit and writes the first message for you to send from your own email or WhatsApp. ${allowance} businesses a month on Growth.`;
+  const allowance = home?.allowance ?? 20;
+  const detail = `It reads their websites, says which fit and writes the first message for you to send from your own email or WhatsApp. ${allowance} businesses a month on your plan.`;
 
   // Messages to send and replies with no answer drafted yet (a reply whose
   // answer is waiting is counted once, as the answer).

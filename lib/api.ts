@@ -6,7 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase';
-import type { PaidTier } from '@/lib/tiers';
+import type { PaidTier, Tier } from '@/lib/tiers';
 import { booksChanged } from '@/lib/booksSignal';
 import { inIosApp, withoutSales } from '@/lib/iosApp';
 
@@ -3005,7 +3005,7 @@ export async function saveLatestAnalysis(engine: 'engine3' | 'engine2', filename
 }
 
 
-// ── Find clients (Growth, 5 Nov 2026; aibos-api find_clients_routes.py) ──────
+// ── Find clients (every plan since 7 Nov 2026; aibos-api find_clients_routes.py)
 // AIBOS finds businesses that could buy from the owner, reads their websites,
 // says which fit and writes the messages. It never sends: every message opens
 // in the owner's own email or WhatsApp and they press send there.
@@ -3102,13 +3102,28 @@ export interface ClientNeed {
   answer_waiting: boolean;
 }
 
+/**
+ * One job at a time per business, run on after the answer: a map search, or
+ * research. A search (POST /clients/find) also says what it looked for and
+ * what it found, and with research it goes on to read and write to the first
+ * few (the first-time demo), so `phase` moves from 'map' to 'research'.
+ */
 export interface ClientJob {
+  phase?: 'map' | 'research';
   total: number;
   done: number;
   written: number;
   running: boolean;
   error: string | null;
   already?: boolean;
+  kind?: string;
+  town?: string;
+  found?: number;
+  added?: number;
+  known?: number;
+  blocked?: number;
+  started_at?: string;
+  finished_at?: string | null;
 }
 
 export interface ClientAdded { added: number; known: number; blocked: number }
@@ -3117,7 +3132,12 @@ interface ClientsBase {
   plan: string;
   kinds: Record<string, string>;
   towns: string[];
+  /** Businesses researched a month on this business's plan. */
   allowance: number;
+  /** The same for every plan, for the "move up" line (7 Nov 2026). */
+  allowances?: Partial<Record<Tier, number>>;
+  /** How many the first-time demo researches after finding. */
+  demo_research?: number;
   labels: Record<ClientLabel, string>;
   /** The fit from which AIBOS writes the first message. */
   write_from: number;
@@ -3205,8 +3225,15 @@ export async function deleteClientProspect(id: string): Promise<void> {
 }
 
 /** Search the map for one kind of business around one town. */
-export async function findClientsOnMap(kind: string, town: string, campaignId?: string | null): Promise<ClientAdded & { found: number }> {
-  return (await clientsSend('/clients/find', 'POST', { kind, town, campaign_id: campaignId || null })) as unknown as ClientAdded & { found: number };
+/**
+ * Search the map. The public map servers can take most of a minute, longer
+ * than the proxy waits (the 504s of 7 Nov 2026), so the search runs on after
+ * the answer: this returns the job, and GET /clients reports how it went.
+ * With `research`, the first few new ones are researched and written to too.
+ */
+export async function findClientsOnMap(kind: string, town: string, campaignId?: string | null,
+  research = false): Promise<ClientJob> {
+  return (await clientsSend('/clients/find', 'POST', { kind, town, campaign_id: campaignId || null, research })).job as ClientJob;
 }
 
 /** A pasted or uploaded list: a CSV with headings, or one business a line. */

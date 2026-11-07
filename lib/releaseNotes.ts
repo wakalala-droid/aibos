@@ -23,6 +23,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-07-find-clients-every-plan',
+    date: '2026-11-07',
+    title: 'Find clients is on your plan',
+    intro: 'Every plan now finds businesses that could buy from you, Free included. The plans differ in how many a month.',
+    items: [
+      { icon: 'assistant', title: 'Show me who could buy from me', text: 'Say in a line what you sell and who to, press once, and AIBOS finds businesses near you, reads the first few and writes to the ones that fit.' },
+      { icon: 'plan', title: 'How many a month', text: 'Free researches 20 businesses a month, Pro 50, Pro+ 100 and Growth 300. Finding them on the map does not count.' },
+      { icon: 'accuracy', title: 'A faster, steadier map search', text: 'The search now asks several map servers at once and carries on while you wait, so it no longer stops with an error.' },
+      { icon: 'words', title: 'Still sent by you', text: 'Nothing goes out until you press send in your own email or WhatsApp.' },
+    ],
+  },
+  {
     id: '2026-11-05-find-clients',
     date: '2026-11-05',
     title: 'Find your next customers',

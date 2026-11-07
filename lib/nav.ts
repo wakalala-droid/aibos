@@ -38,7 +38,7 @@ export const DOORS: NavDoor[] = [
   { href: '/dashboard/cash',        label: 'Money',         icon: 'cash',      group: 'main', keywords: ['cash', 'balance', 'bank', 'runway', 'profit', 'spending', 'cash intelligence'] },
   { href: '/dashboard/invoices',    label: 'Get paid',      icon: 'invoice',   group: 'main', keywords: ['invoice', 'invoices', 'bill', 'payment link', 'owed', 'debtors', 'receivables'] },
   { href: '/dashboard/contacts',    label: 'Customers',     icon: 'customers', group: 'main', keywords: ['contacts', 'clients', 'suppliers', 'people', 'who owes'] },
-  // Shown on every plan: below Growth the page is the locked preview, like the cash plan.
+  // On every plan since 7 Nov 2026: the plans differ in how many businesses a month.
   { href: '/dashboard/clients',     label: 'Find clients',  short: 'Clients', icon: 'clients', group: 'main', keywords: ['prospects', 'leads', 'sales', 'new customers', 'outreach', 'cold email', 'marketing', 'grow', 'find customers', 'explee'] },
   { href: '/dashboard/hospitality', label: 'Rooms & Stays', short: 'Rooms', icon: 'rooms',     group: 'main', feature: 'hospitality', keywords: ['bookings', 'booking', 'rooms', 'stays', 'guests', 'units', 'calendar', 'hospitality', 'airbnb'] },
   { href: '/dashboard/inventory',   label: 'Stock',         icon: 'inventory', group: 'main', keywords: ['inventory', 'products', 'items', 'reorder', 'catalog'] },

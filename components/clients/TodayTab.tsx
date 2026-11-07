@@ -2,22 +2,91 @@
 /**
  * Find clients, Today: what needs the owner now (replies, messages ready to
  * send, follow-ups due), then the month's research and finding more.
+ *
+ * On every plan since 7 Nov 2026. Someone new starts with one line and one
+ * press ("Show me who could buy from me"): AIBOS drafts the campaign from the
+ * line, finds businesses on the map and researches the first few, so the
+ * first visit ends with real messages to read, not an empty list.
  */
 import { useState } from 'react';
+import Link from 'next/link';
 import Panel from '@/components/home/Panel';
 import { Chip, Fact, Facts, Note } from '@/components/hospitality/kit';
 import {
   fillClientCampaign, findClientsOnMap, importClientList, researchClients, saveClientCampaign,
   updateClientProspect, writeClientFollowups,
-  type ClientCampaignFields, type ClientStage, type ClientsFull,
+  type ClientCampaignFields, type ClientJob, type ClientStage, type ClientsFull,
 } from '@/lib/api';
+import { FIND_CLIENTS_PER_MONTH, TIERS, isTier, nextTierUp } from '@/lib/tiers';
 import CampaignForm, { EMPTY_CAMPAIGN } from './CampaignForm';
 import DraftCard from './DraftCard';
 import { addedWords, labelTone, plural, said, when, type Said } from './shared';
 
 const JOB_MAX = 25;
+const DEMO_RESEARCH = 10;
 const DRAFTS_SHOWN = 8;
 const MAX_FILE = 2_000_000;
+/** About how long the public map takes, for the bar while it searches. */
+const MAP_SECONDS = 45;
+
+/**
+ * A map search as it runs on the server, and what it found when it is done.
+ * `fresh` is a search started on this visit: only then is a finished one
+ * worth saying again.
+ */
+function SearchStatus({ job, kinds, fresh }: { job: ClientJob; kinds: Record<string, string>; fresh: boolean }) {
+  const kindWord = ((job.kind && kinds[job.kind]) || 'businesses').toLowerCase();
+  const found = job.found ?? 0;
+  const foundLine = found === 0
+    ? `No ${kindWord} with a name were found around ${job.town}. Try another kind of business or another town.`
+    : `Found ${plural(found, 'place')} around ${job.town}: `
+      + `${addedWords({ added: job.added ?? 0, known: job.known ?? 0, blocked: job.blocked ?? 0 })}.`;
+
+  if (job.running && job.phase !== 'research') {
+    const started = job.started_at ? Date.parse(job.started_at) : NaN;
+    const seconds = Number.isFinite(started) ? (Date.now() - started) / 1000 : 0;
+    const width = Math.max(6, Math.min(92, Math.round((seconds / MAP_SECONDS) * 100)));
+    return (
+      <>
+        <p className="rs-text is-strong">Looking on the map for {kindWord} around {job.town}.</p>
+        <div className="rs-progress" role="progressbar" aria-label="Searching the map" aria-valuetext="Searching">
+          <span style={{ width: `${width}%` }} />
+        </div>
+        <p className="rs-text is-quiet">The public map can take up to a minute. You can leave this page; it carries on.</p>
+      </>
+    );
+  }
+  if (job.running) {
+    return (
+      <>
+        <p className="rs-text">{foundLine}</p>
+        <p className="rs-text is-strong">Reading websites and writing messages: {job.done} of {job.total} done.</p>
+        <div className="rs-progress" role="progressbar" aria-label="Research"
+          aria-valuemin={0} aria-valuemax={job.total} aria-valuenow={job.done}>
+          <span style={{ width: `${job.total ? Math.round((job.done / job.total) * 100) : 0}%` }} />
+        </div>
+        <p className="rs-text is-quiet">
+          {plural(job.written, 'message')} written so far. You can leave this page; it carries on.
+        </p>
+      </>
+    );
+  }
+  if (!fresh) return null;
+  if (job.error) {
+    return <Note tone="bad">{job.phase === 'research' ? `${foundLine} ${job.error}` : job.error}</Note>;
+  }
+  if (job.phase === 'research') {
+    return (
+      <Note tone={job.written > 0 ? 'good' : 'info'}>
+        {foundLine} AIBOS researched {job.done} and wrote {plural(job.written, 'message')}.
+        {job.written > 0
+          ? ' Read them under Ready to send, change anything you like, then send them yourself.'
+          : ' None fit well enough to write to yet. Research the rest below.'}
+      </Note>
+    );
+  }
+  return <Note tone={found && job.added ? 'good' : 'info'}>{foundLine}</Note>;
+}
 
 export default function TodayTab({ home, reload, startedHere, onStarted }: {
   home: ClientsFull;
@@ -29,10 +98,13 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
   const canWrite = home.can_write;
   const firstCampaign = home.campaigns.find((c) => c.status === 'active') ?? home.campaigns[0];
 
-  // Start: one line to a campaign.
+  // Start: one line to a campaign, or straight to the first customers.
   const [line, setLine] = useState('');
   const [filled, setFilled] = useState<ClientCampaignFields | null>(null);
   const [startNote, setStartNote] = useState<Said | null>(null);
+  const [demo, setDemo] = useState(false);
+  // The search whose result was put away with Done, so it is not said again below.
+  const [putAway, setPutAway] = useState<string | null>(null);
 
   // Research.
   const [researchNote, setResearchNote] = useState<Said | null>(null);
@@ -77,10 +149,40 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
     await reload();
   }
 
+  // The first-time demo: the campaign drafted from the line and saved (it can
+  // be changed under Campaigns any time), then the map searched and the first
+  // few researched, all on the server while the page reports.
+  const showMe = () => step('demo', async () => {
+    setStartNote(null);
+    const fields = await fillClientCampaign(line.trim());
+    const c = await saveClientCampaign(fields);
+    const k = c.kinds?.[0] ?? fields.kinds?.[0] ?? Object.keys(home.kinds)[0];
+    const t = c.towns?.[0] ?? fields.towns?.[0] ?? home.towns[0] ?? 'Lusaka';
+    setCampaignId(c.id);
+    setKind(k);
+    setTown(t);
+    setLine('');
+    setDemo(true);
+    try {
+      await findClientsOnMap(k, t, c.id, true);
+      onStarted();
+    } finally {
+      await reload();          // the campaign is saved either way
+    }
+  }, (text) => setStartNote({ tone: 'bad', text }), 'AIBOS could not start just now. Try again in a moment.');
+
   const job = home.job;
   const running = Boolean(job?.running);
+  const searching = Boolean(job?.kind);      // a map search (perhaps going on to research), not research alone
   const waiting = home.counts.new ?? 0;
   const next = Math.min(JOB_MAX, waiting, home.usage.left);
+  const demoN = Math.min(home.demo_research ?? DEMO_RESEARCH, home.usage.left);
+
+  // The plan with more, for the line under the month and when it is used up.
+  const plan = isTier(home.plan) ? home.plan : 'free';
+  const up = nextTierUp(plan);
+  const upName = up ? TIERS[up].name : '';
+  const upAllowed = up ? (home.allowances?.[up] ?? FIND_CLIENTS_PER_MONTH[up]) : 0;
 
   const research = () => step('research', async () => {
     setResearchNote(null);
@@ -92,10 +194,11 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
   const find = () => step('find', async () => {
     setFindNote(null);
     const got = await findClientsOnMap(kind, town, campaignId || null);
-    const kindWord = (home.kinds[kind] ?? 'businesses').toLowerCase();
-    setFindNote(got.found === 0
-      ? { tone: 'info', text: `No ${kindWord} with a name were found around ${town}. Try another kind of business or another town.` }
-      : { tone: got.added ? 'good' : 'info', text: `Found ${plural(got.found, 'place')} around ${town}: ${addedWords(got)}.` });
+    if (got.already) {
+      setFindNote({ tone: 'info', text: 'AIBOS is still on the last search or research. Search again when it is done.' });
+    } else {
+      onStarted();
+    }
     await reload();
   }, (text) => setFindNote({ tone: 'bad', text }), 'The map could not be searched just now. Try again in a minute.');
 
@@ -138,9 +241,26 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
-      {home.campaigns.length === 0 && canWrite && (
-        <Panel title="Start here">
-          {filled ? (
+      {(home.campaigns.length === 0 || demo) && canWrite && (
+        <Panel title={demo ? 'Your first customers' : 'Start here'}>
+          {demo ? (
+            <>
+              {job && searching
+                ? <SearchStatus job={job} kinds={home.kinds} fresh={startedHere} />
+                : busy === 'demo' && <p className="rs-text is-strong">Starting the search.</p>}
+              {job && searching && !running && (
+                <p className="rs-text is-quiet" style={{ marginTop: 12 }}>
+                  AIBOS saved what you sell as your first campaign. Change it any time under Campaigns.
+                </p>
+              )}
+              {!running && busy === null && (
+                <div className="rs-btns" style={{ marginTop: 14 }}>
+                  <button type="button" className="rs-btn is-quiet"
+                    onClick={() => { setDemo(false); setPutAway(job?.started_at ?? null); }}>Done</button>
+                </div>
+              )}
+            </>
+          ) : filled ? (
             <>
               <p className="rs-text" style={{ marginBottom: 18 }}>
                 Check what AIBOS filled in and change anything that is not right. Every message is written from this.
@@ -150,30 +270,42 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
             </>
           ) : (
             <>
-              <p className="rs-text">Say in a line what you sell and who to. AIBOS fills in the rest for you to check.</p>
+              <p className="rs-text">
+                Say in a line what you sell and who to. AIBOS finds businesses near you that could buy, reads their
+                websites and writes to the ones that fit. Nothing is sent until you send it yourself.
+              </p>
               <div className="rs-form" style={{ marginTop: 14 }}>
                 <label style={{ gridColumn: '1 / -1', minWidth: 0 }}>
                   <span className="field-label">What you sell and who to</span>
                   <input className="field" value={line} onChange={(e) => setLine(e.target.value)} maxLength={300}
-                    placeholder="For example: accounting software for hardware shops in Lusaka"
-                    onKeyDown={(e) => { if (e.key === 'Enter' && line.trim() && !busy) void fill(); }} />
+                    placeholder="For example: office cleaning for lodges and offices in Lusaka"
+                    onKeyDown={(e) => { if (e.key === 'Enter' && line.trim() && !busy && !running) void showMe(); }} />
                 </label>
               </div>
               <div className="rs-btns" style={{ marginTop: 14 }}>
-                <button type="button" className="rs-btn is-navy" onClick={() => void fill()} disabled={!line.trim() || busy !== null}
+                <button type="button" className="rs-btn is-navy" onClick={() => void showMe()}
+                  disabled={!line.trim() || busy !== null || running} aria-busy={busy === 'demo'}>
+                  {busy === 'demo' ? 'Finding them' : 'Show me who could buy from me'}
+                </button>
+                <button type="button" className="rs-btn is-quiet" onClick={() => void fill()} disabled={!line.trim() || busy !== null}
                   aria-busy={busy === 'fill'}>
-                  {busy === 'fill' ? 'Filling it in' : 'Fill it in'}
+                  {busy === 'fill' ? 'Filling it in' : 'Check the details first'}
                 </button>
                 <button type="button" className="rs-btn is-quiet" onClick={() => setFilled({ ...EMPTY_CAMPAIGN })}>
                   Write it yourself
                 </button>
               </div>
+              {demoN > 0 && (
+                <p className="rs-text is-quiet" style={{ marginTop: 12 }}>
+                  Show me searches the map and researches the first {demoN}, out of this month&apos;s {home.usage.allowed}.
+                </p>
+              )}
             </>
           )}
           {startNote && <Note tone={startNote.tone}>{startNote.text}</Note>}
         </Panel>
       )}
-      {home.campaigns.length > 0 && startNote && <Note tone={startNote.tone}>{startNote.text}</Note>}
+      {home.campaigns.length > 0 && !demo && startNote && <Note tone={startNote.tone}>{startNote.text}</Note>}
 
       {home.needs_you.length > 0 && (
         <Panel title={`Wrote back (${home.needs_you.length})`}>
@@ -256,9 +388,15 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
           <Fact label="Interested" value={home.hot.toLocaleString('en-GB')} />
           <Fact label="Won" value={(home.counts.won ?? 0).toLocaleString('en-GB')} />
         </Facts>
+        {up && home.is_owner && home.usage.left > 0 && (
+          <p className="rs-text is-quiet" style={{ marginTop: 12 }}>
+            {TIERS[plan].name} researches {home.usage.allowed} businesses a month and {upName} researches {upAllowed}.{' '}
+            <Link href="/dashboard/billing">See the plans</Link>
+          </p>
+        )}
 
         <div className="rs-sec">
-          {running && job ? (
+          {running && job && !searching ? (
             <>
               <p className="rs-text is-strong">
                 Reading websites and writing messages: {job.done} of {job.total} done.
@@ -280,18 +418,21 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
               {canWrite && (
                 <div className="rs-btns" style={{ marginTop: 14 }}>
                   <button type="button" className="rs-btn is-navy" onClick={() => void research()}
-                    disabled={next <= 0 || busy !== null} aria-busy={busy === 'research'}>
+                    disabled={next <= 0 || busy !== null || running} aria-busy={busy === 'research'}>
                     {busy === 'research' ? 'Starting' : next > 0 ? `Research the next ${next}` : 'Research'}
                   </button>
                 </div>
               )}
               {home.usage.left <= 0 && (
-                <Note tone="warn">This month&apos;s {home.usage.allowed} are used. More can be researched from the 1st.</Note>
+                <Note tone="warn">
+                  This month&apos;s {home.usage.allowed} are used. More can be researched from the 1st
+                  {up ? <>, or move up to <Link href="/dashboard/billing">{upName}</Link> for {upAllowed} a month</> : null}.
+                </Note>
               )}
               {home.usage.left > 0 && waiting === 0 && (
                 <p className="rs-text is-quiet" style={{ marginTop: 12 }}>Nothing is waiting. Find businesses below first.</p>
               )}
-              {startedHere && job && !job.error && job.total > 0 && (
+              {startedHere && job && !searching && !job.error && job.total > 0 && (
                 <Note tone="good">
                   Done: {plural(job.done, 'business', 'businesses')} researched and {plural(job.written, 'message')} written.
                   {job.written > 0 ? ' They are under Ready to send.' : ''}
@@ -299,7 +440,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
               )}
             </>
           )}
-          {job?.error && <Note tone="bad">{job.error}</Note>}
+          {job?.error && !searching && <Note tone="bad">{job.error}</Note>}
           {researchNote && <Note tone={researchNote.tone}>{researchNote.text}</Note>}
           {!home.ai && (
             <Note tone="info">
@@ -336,11 +477,17 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
             )}
           </div>
           <div className="rs-btns" style={{ marginTop: 14 }}>
-            <button type="button" className="rs-btn is-navy" onClick={() => void find()} disabled={!kind || !town || busy !== null}
-              aria-busy={busy === 'find'}>
-              {busy === 'find' ? 'Searching the map' : 'Search the map'}
+            <button type="button" className="rs-btn is-navy" onClick={() => void find()}
+              disabled={!kind || !town || busy !== null || running}
+              aria-busy={busy === 'find' || (running && searching && job?.phase === 'map')}>
+              {busy === 'find' || (running && searching && job?.phase === 'map') ? 'Searching the map' : 'Search the map'}
             </button>
           </div>
+          {job && searching && !demo && (running || (startedHere && job.started_at !== putAway)) && (
+            <div style={{ marginTop: 14 }}>
+              <SearchStatus job={job} kinds={home.kinds} fresh={startedHere} />
+            </div>
+          )}
           {findNote && <Note tone={findNote.tone}>{findNote.text}</Note>}
           <p className="rs-text is-quiet" style={{ marginTop: 12 }}>
             Places come from OpenStreetMap. Map data © OpenStreetMap contributors.

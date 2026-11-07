@@ -10,6 +10,7 @@ const ROWS = [
   ['Guessing what you made this month', 'Profit to the Kwacha, any time you ask'],
   ['Paying a NAPSA penalty again', 'A reminder days before every deadline'],
   ['Chasing customers who owe you', 'A mobile money link on every invoice'],
+  ['Waiting for new customers to find you', 'Businesses that could buy, found and written to'],
 ] as const;
 
 export default function PainPromise() {
