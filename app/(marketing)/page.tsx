@@ -40,7 +40,7 @@ export default function MarketingHome() {
     <>
       <Hero />
       <PainPromise />
-      {/* 7 Nov 2026: Find clients on every plan, right after the promise. */}
+      {/* Find clients right after the promise (7 Nov 2026): free for a day since 9 Nov. */}
       <FindClients />
       <FeatureTheatre />
       <AskAnything />

@@ -763,6 +763,24 @@ const post = (path: string, body?: unknown) =>
     body: JSON.stringify(body ?? {}),
   });
 
+/**
+ * Find clients credits bought once by card (9 Nov 2026): the API makes the
+ * Paddle transaction for the business's account, the page only opens it. The
+ * credits arrive by Paddle's webhook, so the page polls GET /clients after.
+ */
+export interface TopupCheckout {
+  transaction_id: string;
+  amount: number;
+  currency: string;
+  credits: number;
+  client_token: string;
+  environment: 'live' | 'sandbox';
+}
+
+export async function startTopupCheckout(credits: number): Promise<TopupCheckout> {
+  return (await post('/payments/paddle/topup', { credits })) as unknown as TopupCheckout;
+}
+
 /** The API makes the Paddle transaction; the page only opens it. */
 export async function startCardCheckout(plan: PaidTier, billing: 'monthly' | 'annual'): Promise<CardCheckout> {
   return (await post('/payments/paddle/checkout', { plan, billing })) as unknown as CardCheckout;
@@ -3122,9 +3140,46 @@ export interface ClientJob {
   added?: number;
   known?: number;
   blocked?: number;
+  /** New ones past this press's limit: the next press brings them. */
+  more?: number;
+  /** The public map is busy and AIBOS is asking again every 30 seconds. */
+  waiting?: boolean;
+  note?: string | null;
+  tries?: number;
   started_at?: string;
   finished_at?: string | null;
 }
+
+/**
+ * What Find clients can research now, the way Explee shows a balance
+ * (9 Nov 2026): Free's one free day, a paid plan's month, and top-ups bought
+ * by card that never run out. 1 credit = 1 business researched and written to.
+ */
+export interface ClientsBalance {
+  /** Businesses that can be researched now, from every pool. */
+  left: number;
+  /** This month's, as before 9 Nov 2026. */
+  used: number;
+  allowed: number;
+  /** Free only: null on a paid plan. */
+  trial: {
+    hours: number;
+    allowed: number;
+    used: number;
+    left: number;
+    started_at: string | null;
+    ends_at: string | null;
+    active: boolean;
+    ended: boolean;
+  } | null;
+  month: { allowed: number; used: number; left: number };
+  topup: { bought: number; used: number; left: number };
+  /** Whether the page works at all. */
+  open: boolean;
+  topups: ClientsTopup[];
+}
+
+export interface ClientsTopup { credits: number; usd: number }
 
 export interface ClientAdded { added: number; known: number; blocked: number }
 
@@ -3138,6 +3193,11 @@ interface ClientsBase {
   allowances?: Partial<Record<Tier, number>>;
   /** How many the first-time demo researches after finding. */
   demo_research?: number;
+  /** Free's one free day: how long, and how many businesses it researches. */
+  trial_hours?: number;
+  trial_research?: number;
+  /** The credit packs anyone can buy by card. */
+  topups?: ClientsTopup[];
   labels: Record<ClientLabel, string>;
   /** The fit from which AIBOS writes the first message. */
   write_from: number;
@@ -3145,8 +3205,18 @@ interface ClientsBase {
   is_owner: boolean;
 }
 
-/** Below Growth: enough for the locked preview. */
-export interface ClientsPreview extends ClientsBase { preview: true; reason?: string | null }
+/**
+ * Not open: a plan the server cannot read ('unreadable'), or a Free account
+ * whose free day is over with no credits left ('free_day_over'), which says
+ * what was kept and how to carry on.
+ */
+export interface ClientsPreview extends ClientsBase {
+  preview: true;
+  reason?: 'unreadable' | 'free_day_over' | string | null;
+  message?: string;
+  usage?: ClientsBalance;
+  kept?: { businesses: number; drafts: number };
+}
 
 export interface ClientsFull extends ClientsBase {
   preview: false;
@@ -3158,7 +3228,9 @@ export interface ClientsFull extends ClientsBase {
   hot: number;
   total: number;
   campaigns: ClientCampaign[];
-  usage: { used: number; allowed: number; left: number };
+  usage: ClientsBalance;
+  /** Why the page is open: the plan, Free's free day, or credits bought. */
+  via?: 'plan' | 'trial' | 'credits';
   job: ClientJob | null;
   /** False when the AI is not connected: fit by rules, messages in AIBOS's own wording. */
   ai: boolean;

@@ -177,8 +177,21 @@ def parse_tiers_ts(src: str) -> dict:
             for am in re.finditer(r"(\w+)\s*:\s*(\d+)", balanced(src, m.end() - 1))
         }
 
+    # Find clients priced like Explee (9 Nov 2026): Free's one free day, and the
+    # credit packs anyone can buy (businesses -> US dollars).
+    trial: dict[str, int] | None = None
+    m = re.search(r"const\s+FIND_CLIENTS_TRIAL\s*[^=]*=\s*\{", src)
+    if m:
+        trial = {tm.group(1): int(tm.group(2))
+                 for tm in re.finditer(r"(\w+)\s*:\s*(\d+)", balanced(src, m.end() - 1))}
+    topups: dict[str, int] | None = None
+    m = re.search(r"const\s+FIND_CLIENTS_TOPUPS\s*:[^=]*=\s*\{", src)
+    if m:
+        topups = {tm.group(1): int(tm.group(2))
+                  for tm in re.finditer(r"(\d+)\s*:\s*(\d+)", balanced(src, m.end() - 1))}
+
     return {"access": access, "taster": taster, "prices": prices, "unbuilt": unbuilt,
-            "allowance": allowance}
+            "allowance": allowance, "trial": trial, "topups": topups}
 
 
 def assert_not_vacuous(parsed: dict) -> None:
@@ -270,6 +283,19 @@ def compare(parsed: dict, contract: dict) -> list[str]:
                 f"    lib/tiers.ts: {got}\n"
                 f"    backend:      {want}"
             )
+
+    if "find_clients_trial" in contract and parsed["trial"] != contract["find_clients_trial"]:
+        problems.append(
+            f"FIND_CLIENTS_TRIAL disagrees, Free's free day:\n"
+            f"    lib/tiers.ts: {parsed['trial']}\n"
+            f"    backend:      {contract['find_clients_trial']}"
+        )
+    if "find_clients_topups" in contract and parsed["topups"] != contract["find_clients_topups"]:
+        problems.append(
+            f"FIND_CLIENTS_TOPUPS disagrees, and this is what a top-up CHARGES:\n"
+            f"    lib/tiers.ts: {parsed['topups']}\n"
+            f"    backend:      {contract['find_clients_topups']}"
+        )
 
     return problems
 

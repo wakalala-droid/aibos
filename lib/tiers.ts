@@ -66,7 +66,9 @@ export const TIERS: Record<Tier, TierMeta> = {
     name: 'Free',
     // 7 Nov 2026 (owner's decision): Find clients leads the Free plan. New
     // customers are the one thing a new owner is paid back for at once.
-    tagline: 'Find your next customers',
+    // 9 Nov 2026: as a one-day free trial (FIND_CLIENTS_TRIAL), Explee's way,
+    // not an allowance every month.
+    tagline: 'Find your next customers, free for a day',
     priceMonthly: 0,
     priceAnnual: 0,
     accent: 'var(--text-3)',
@@ -75,7 +77,7 @@ export const TIERS: Record<Tier, TierMeta> = {
     // receipts, customers, stock, the staff register and the schedule are
     // never gated. Anything not live yet says so in brackets.
     inclusions: [
-      'Find clients: AIBOS finds businesses that could buy from you and writes the first message, 20 a month',
+      'Find clients free for a day: AIBOS finds businesses that could buy from you and writes to 10 of them',
       'Record sales and expenses, or upload a spreadsheet or receipt',
       'Profit and cash for your last 30 days',
       'Customers, stock, a staff register and a schedule',
@@ -93,7 +95,7 @@ export const TIERS: Record<Tier, TierMeta> = {
     accent: 'var(--cyan)',
     inclusions: [
       'Everything in Free',
-      'Find clients: 50 businesses a month researched and written to',
+      'Find clients: 50 businesses a month researched and written to, top up any time',
       'Your whole history, no 30-day limit',
       'Unlimited Ask AIBOS that remembers the conversation',
       'Forecasts, unusual-spending warnings, breakeven and month by month',
@@ -178,11 +180,14 @@ export function isPaidTier(v: unknown): v is PaidTier {
 // Re-cut on 22 Oct 2026 so value climbs with price: invoices and team invites
 // moved Free -> Pro, payroll, the scheduled brief and reminders Pro -> Pro+,
 // Hospitality Pro -> Growth (keep in lock-step with entitlements.py).
-// Find clients is on every plan since 7 Nov 2026 (lock-step with
-// entitlements.py _FREE); the plans differ in FIND_CLIENTS_PER_MONTH.
-const FREE: Feature[] = ['find_clients'];
+// Find clients: on every paid plan, in FIND_CLIENTS_PER_MONTH, plus top-ups.
+// Free has no allowance since 9 Nov 2026, only a one-day trial
+// (FIND_CLIENTS_TRIAL) the server opens itself (lock-step with entitlements.py
+// _FREE and _PRO).
+const FREE: Feature[] = [];
 const PRO: Feature[] = [
   ...FREE,
+  'find_clients',
   'forecast', 'anomaly', 'variance', 'breakeven',
   'ai_chat', 'full_history', 'engine2', 'engine3',
   'invoices', 'team',
@@ -212,17 +217,30 @@ const ACCESS: Record<Tier, Feature[]> = {
 };
 
 /**
- * Find clients on every plan (7 Nov 2026): businesses researched and written
- * to a month. The SERVER counts and enforces them (find_clients.py ALLOWANCE,
- * in usage_events); this map is what the pricing page and the page's upgrade
- * line quote. Lock-step with tier_contract.json "allowance", checked by
- * scripts/check_tier_contract.py.
+ * Find clients, priced the way Explee prices it (9 Nov 2026): a free try, then
+ * credits. 1 credit = 1 business researched and written to; finding businesses
+ * costs nothing. Paid plans get FIND_CLIENTS_PER_MONTH, Free gets 0 and a free
+ * day instead, and anyone can top up. The SERVER counts and enforces all of it
+ * (find_clients.py ALLOWANCE, TRIAL_HOURS, TRIAL_RESEARCH, TOPUPS, in
+ * usage_events); these maps are what the pages quote. Lock-step with
+ * tier_contract.json "allowance", "find_clients_trial" and
+ * "find_clients_topups", checked by scripts/check_tier_contract.py.
  */
 export const FIND_CLIENTS_PER_MONTH: Record<Tier, number> = {
-  free: 20,
+  free: 0,
   pro: 50,
   proplus: 100,
   growth: 300,
+};
+
+/** Free's one free day: it starts at the first search, never on page open. */
+export const FIND_CLIENTS_TRIAL = { hours: 24, research: 10 };
+
+/** Credits bought once by card, never expiring: businesses -> US dollars. */
+export const FIND_CLIENTS_TOPUPS: Record<number, number> = {
+  100: 5,
+  300: 12,
+  1000: 35,
 };
 
 /** The next plan up and what it gives, or null at the top. */

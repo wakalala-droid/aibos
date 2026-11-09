@@ -3,10 +3,13 @@
  * Find clients, Today: what needs the owner now (replies, messages ready to
  * send, follow-ups due), then the month's research and finding more.
  *
- * On every plan since 7 Nov 2026. Someone new starts with one line and one
- * press ("Show me who could buy from me"): AIBOS drafts the campaign from the
- * line, finds businesses on the map and researches the first few, so the
- * first visit ends with real messages to read, not an empty list.
+ * Priced the way Explee prices it (9 Nov 2026): Free gets one free day, the
+ * paid plans a month's businesses, and anyone can top up by card. Someone new
+ * starts with one line and one press ("Show me who could buy from me"): AIBOS
+ * drafts the campaign from the line, finds businesses near them and
+ * researches the first few, so the first visit ends with real messages to
+ * read, not an empty list. Searches read AIBOS's own directory of places
+ * first, so they answer in seconds.
  */
 import { useState } from 'react';
 import Link from 'next/link';
@@ -17,17 +20,26 @@ import {
   updateClientProspect, writeClientFollowups,
   type ClientCampaignFields, type ClientJob, type ClientStage, type ClientsFull,
 } from '@/lib/api';
-import { FIND_CLIENTS_PER_MONTH, TIERS, isTier, nextTierUp } from '@/lib/tiers';
+import { FIND_CLIENTS_PER_MONTH, FIND_CLIENTS_TRIAL, TIERS, isTier, nextTierUp } from '@/lib/tiers';
 import CampaignForm, { EMPTY_CAMPAIGN } from './CampaignForm';
 import DraftCard from './DraftCard';
+import TopUp, { topupWords } from './TopUp';
 import { addedWords, labelTone, plural, said, when, type Said } from './shared';
 
 const JOB_MAX = 25;
 const DEMO_RESEARCH = 10;
 const DRAFTS_SHOWN = 8;
 const MAX_FILE = 2_000_000;
-/** About how long the public map takes, for the bar while it searches. */
-const MAP_SECONDS = 45;
+/** About how long a search takes when the place is not held yet, for the bar. */
+const MAP_SECONDS = 20;
+
+/** "in 23 hours", "in 40 minutes": how long the free day has left. */
+function endsIn(iso: string | null | undefined): string {
+  const end = iso ? Date.parse(iso) : NaN;
+  if (!Number.isFinite(end)) return '';
+  const minutes = Math.max(1, Math.round((end - Date.now()) / 60_000));
+  return minutes >= 60 ? `in ${plural(Math.floor(minutes / 60), 'hour')}` : `in ${plural(minutes, 'minute')}`;
+}
 
 /**
  * A map search as it runs on the server, and what it found when it is done.
@@ -37,22 +49,28 @@ const MAP_SECONDS = 45;
 function SearchStatus({ job, kinds, fresh }: { job: ClientJob; kinds: Record<string, string>; fresh: boolean }) {
   const kindWord = ((job.kind && kinds[job.kind]) || 'businesses').toLowerCase();
   const found = job.found ?? 0;
+  const more = job.more ?? 0;
   const foundLine = found === 0
     ? `No ${kindWord} with a name were found around ${job.town}. Try another kind of business or another town.`
     : `Found ${plural(found, 'place')} around ${job.town}: `
-      + `${addedWords({ added: job.added ?? 0, known: job.known ?? 0, blocked: job.blocked ?? 0 })}.`;
+      + `${addedWords({ added: job.added ?? 0, known: job.known ?? 0, blocked: job.blocked ?? 0 })}.`
+      + (more > 0 ? ` ${more.toLocaleString('en-GB')} more nearby: search again to add the next ones.` : '');
 
   if (job.running && job.phase !== 'research') {
     const started = job.started_at ? Date.parse(job.started_at) : NaN;
     const seconds = Number.isFinite(started) ? (Date.now() - started) / 1000 : 0;
-    const width = Math.max(6, Math.min(92, Math.round((seconds / MAP_SECONDS) * 100)));
+    const width = Math.max(6, Math.min(92, Math.round((seconds / (job.waiting ? 600 : MAP_SECONDS)) * 100)));
     return (
       <>
-        <p className="rs-text is-strong">Looking on the map for {kindWord} around {job.town}.</p>
-        <div className="rs-progress" role="progressbar" aria-label="Searching the map" aria-valuetext="Searching">
+        <p className="rs-text is-strong">Looking for {kindWord} around {job.town}.</p>
+        <div className="rs-progress" role="progressbar" aria-label="Searching" aria-valuetext="Searching">
           <span style={{ width: `${width}%` }} />
         </div>
-        <p className="rs-text is-quiet">The public map can take up to a minute. You can leave this page; it carries on.</p>
+        <p className="rs-text is-quiet">
+          {job.waiting && job.note
+            ? `${job.note}${job.tries ? ` Asked ${plural(job.tries, 'time')} so far.` : ''}`
+            : 'This usually takes a few seconds. You can leave this page; it carries on.'}
+        </p>
       </>
     );
   }
@@ -175,14 +193,50 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
   const running = Boolean(job?.running);
   const searching = Boolean(job?.kind);      // a map search (perhaps going on to research), not research alone
   const waiting = home.counts.new ?? 0;
-  const next = Math.min(JOB_MAX, waiting, home.usage.left);
-  const demoN = Math.min(home.demo_research ?? DEMO_RESEARCH, home.usage.left);
+  const bal = home.usage;
+  const next = Math.min(JOB_MAX, waiting, bal.left);
+  const demoN = Math.min(home.demo_research ?? DEMO_RESEARCH, bal.left);
 
-  // The plan with more, for the line under the month and when it is used up.
+  // Where the businesses researched come from: the free day (Free), the
+  // month (a paid plan), then top-ups bought by card. 9 Nov 2026.
+  const trial = bal.trial;
+  const month = bal.month ?? { allowed: bal.allowed, used: bal.used, left: Math.max(0, bal.allowed - bal.used) };
+  const topup = bal.topup ?? { bought: 0, used: 0, left: 0 };
+  const trialN = trial?.allowed ?? home.trial_research ?? FIND_CLIENTS_TRIAL.research;
+  const [topping, setTopping] = useState(false);
+
+  // The plan with more, for the line under the balance and when it is used up.
   const plan = isTier(home.plan) ? home.plan : 'free';
   const up = nextTierUp(plan);
   const upName = up ? TIERS[up].name : '';
   const upAllowed = up ? (home.allowances?.[up] ?? FIND_CLIENTS_PER_MONTH[up]) : 0;
+  const packs = topupWords(home.topups ?? bal.topups);
+
+  // What to say when nothing is left, and how to carry on.
+  const usedUpHead = month.allowed > 0
+    ? `This month's ${month.allowed.toLocaleString('en-GB')} are used.`
+    : trial?.ended ? 'Your free day has ended.' : `Your free day's ${trialN} businesses are used.`;
+  const usedUpWays = month.allowed > 0
+    ? <>Top up to carry on now, wait for the 1st{up ? <> or move up to <Link href="/dashboard/billing">{upName}</Link> for {upAllowed} a month</> : null}.</>
+    : <>Top up to carry on{up ? <> or choose <Link href="/dashboard/billing">{upName}</Link> for {upAllowed} a month</> : null}.</>;
+
+  // The top-up, opened from the balance or from the used-up note. Owner
+  // only: the business pays, and the route refuses staff.
+  const topUpBlock = home.is_owner ? (
+    topping ? (
+      <div style={{ marginTop: 14 }}>
+        <TopUp packs={home.topups ?? bal.topups} bought={topup.bought} reload={reload} onCancel={() => setTopping(false)} />
+      </div>
+    ) : (
+      <div className="rs-btns" style={{ marginTop: 14 }}>
+        <button type="button" className={bal.left > 0 ? 'rs-btn is-quiet' : 'rs-btn is-navy'} onClick={() => setTopping(true)}>
+          Top up
+        </button>
+      </div>
+    )
+  ) : (
+    <p className="rs-text is-quiet" style={{ marginTop: 12 }}>Ask the owner to top up when these run out.</p>
+  );
 
   const research = () => step('research', async () => {
     setResearchNote(null);
@@ -297,7 +351,13 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
               </div>
               {demoN > 0 && (
                 <p className="rs-text is-quiet" style={{ marginTop: 12 }}>
-                  Show me searches the map and researches the first {demoN}, out of this month&apos;s {home.usage.allowed}.
+                  {trial?.active && !trial.started_at
+                    ? `Free for a day: Show me finds businesses near you and researches the first ${demoN}. Your free day starts with your first search and lasts ${trial.hours} hours.`
+                    : trial?.active
+                      ? `Show me finds businesses near you and researches the first ${demoN} of your free day's ${trialN}. It ends ${endsIn(trial.ends_at)}.`
+                      : month.allowed > 0
+                        ? `Show me finds businesses near you and researches the first ${demoN}, out of this month's ${month.allowed}.`
+                        : `Show me finds businesses near you and researches the first ${demoN} from your top-ups.`}
                 </p>
               )}
             </>
@@ -379,21 +439,36 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
       )}
       {home.followups_due === 0 && followNote && <Note tone={followNote.tone}>{followNote.text}</Note>}
 
-      <Panel title="This month">
+      <Panel title={trial && month.allowed === 0 ? (trial.active ? 'Your free day' : 'Your businesses') : 'This month'}>
         <Facts>
-          <Fact label="Researched" value={`${home.usage.used.toLocaleString('en-GB')} of ${home.usage.allowed.toLocaleString('en-GB')}`}
-            hint={`${home.usage.left.toLocaleString('en-GB')} left until the 1st`} />
+          {trial && month.allowed === 0 && (
+            <Fact label="Free day" value={`${trial.used.toLocaleString('en-GB')} of ${trial.allowed.toLocaleString('en-GB')} researched`}
+              hint={!trial.active ? 'Ended' : trial.started_at ? `Ends ${endsIn(trial.ends_at)}` : 'Starts with your first search'} />
+          )}
+          {month.allowed > 0 && (
+            <Fact label="Researched" value={`${month.used.toLocaleString('en-GB')} of ${month.allowed.toLocaleString('en-GB')}`}
+              hint={`${month.left.toLocaleString('en-GB')} left until the 1st`} />
+          )}
+          {(topup.bought > 0 || topup.left > 0) && (
+            <Fact label="Topped up" value={`${topup.left.toLocaleString('en-GB')} left`} hint="They never run out" />
+          )}
           <Fact label="Waiting to research" value={waiting.toLocaleString('en-GB')} />
           <Fact label="Waiting for an answer" value={(home.counts.contacted ?? 0).toLocaleString('en-GB')} />
           <Fact label="Interested" value={home.hot.toLocaleString('en-GB')} />
           <Fact label="Won" value={(home.counts.won ?? 0).toLocaleString('en-GB')} />
         </Facts>
-        {up && home.is_owner && home.usage.left > 0 && (
+        {home.is_owner && bal.left > 0 && (
           <p className="rs-text is-quiet" style={{ marginTop: 12 }}>
-            {TIERS[plan].name} researches {home.usage.allowed} businesses a month and {upName} researches {upAllowed}.{' '}
-            <Link href="/dashboard/billing">See the plans</Link>
+            {month.allowed > 0 ? 'Need more this month? Top up '
+              : topup.left > 0 ? 'Top up more any time: '
+                : trial?.active ? 'After your free day, top up ' : 'When these run out, top up '}
+            {packs}.
+            {up ? <> Or {month.allowed > 0 ? 'move up to' : 'choose'} {upName} for {upAllowed} a month. <Link href="/dashboard/billing">See the plans</Link></> : null}
           </p>
         )}
+        {bal.left <= 0 && <Note tone="warn">{usedUpHead} {usedUpWays}</Note>}
+        {/* One place for the top-up, so a payment that lands keeps its own "added" note. */}
+        {topUpBlock}
 
         <div className="rs-sec">
           {running && job && !searching ? (
@@ -413,7 +488,11 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
             <>
               <p className="rs-text">
                 AIBOS reads each website, scores the fit from 0 to 100 and writes the first message to those that score
-                {` ${home.write_from}`} or more. Each business researched counts toward this month&apos;s {home.usage.allowed}.
+                {` ${home.write_from}`} or more.{' '}
+                {bal.left > 0
+                  ? `Each business researched uses one of the ${bal.left.toLocaleString('en-GB')} you have left.`
+                  : 'Each business researched uses one credit.'}{' '}
+                Finding businesses costs nothing.
               </p>
               {canWrite && (
                 <div className="rs-btns" style={{ marginTop: 14 }}>
@@ -423,13 +502,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
                   </button>
                 </div>
               )}
-              {home.usage.left <= 0 && (
-                <Note tone="warn">
-                  This month&apos;s {home.usage.allowed} are used. More can be researched from the 1st
-                  {up ? <>, or move up to <Link href="/dashboard/billing">{upName}</Link> for {upAllowed} a month</> : null}.
-                </Note>
-              )}
-              {home.usage.left > 0 && waiting === 0 && (
+              {bal.left > 0 && waiting === 0 && (
                 <p className="rs-text is-quiet" style={{ marginTop: 12 }}>Nothing is waiting. Find businesses below first.</p>
               )}
               {startedHere && job && !searching && !job.error && job.total > 0 && (

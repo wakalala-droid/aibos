@@ -23,6 +23,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-09-find-clients-credits',
+    date: '2026-11-09',
+    title: 'Find clients answers in seconds',
+    intro: "Searches now read AIBOS's own list of places, and Find clients is priced the simple way: try it free, then top up.",
+    items: [
+      { icon: 'accuracy', title: 'No more timeouts', text: 'AIBOS keeps its own list of places around every town, so a search answers in seconds. If a place is new, AIBOS keeps asking the map for you.' },
+      { icon: 'assistant', title: 'New businesses every time', text: 'Each search adds the nearest businesses you do not have yet, so pressing it again brings the next ones.' },
+      { icon: 'plan', title: 'Free for a day', text: 'On Free, AIBOS researches and writes to 10 businesses in the 24 hours after your first search. Pro researches 50 a month, Pro+ 100 and Growth 300.' },
+      { icon: 'words', title: 'Top up any time', text: 'Buy 100 businesses for $5, 300 for $12 or 1,000 for $35 by card, on any plan. They never run out. Finding businesses costs nothing.' },
+    ],
+  },
+  {
     id: '2026-11-07-find-clients-every-plan',
     date: '2026-11-07',
     title: 'Find clients is on your plan',

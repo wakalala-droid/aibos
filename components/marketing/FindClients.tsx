@@ -4,13 +4,15 @@ import Link from 'next/link';
 import { ArrowRight, Check, MapPin } from 'lucide-react';
 import { Notice } from '@/components/kit';
 import Rise from '@/components/marketing/Rise';
-import { FIND_CLIENTS_PER_MONTH as PER } from '@/lib/tiers';
+import { FIND_CLIENTS_PER_MONTH as PER, FIND_CLIENTS_TOPUPS, FIND_CLIENTS_TRIAL } from '@/lib/tiers';
 
-// Find clients on the website (7 Nov 2026: on every plan, Free included).
-// Drawn as the kit's own notices, the way the page shows a message ready to
-// send and the search behind it. The seller, the guest house and the message
-// are a sample; the caption says so. The numbers come from lib/tiers.ts, so
-// the site never promises a different month from the one the server counts.
+// Find clients on the website (7 Nov 2026), priced the way Explee prices it
+// since 9 Nov 2026: free for a day, then a plan's month or a top-up. Drawn as
+// the kit's own notices, the way the page shows a message ready to send and
+// the search behind it. The seller, the guest house and the message are a
+// sample; the caption says so. The numbers come from lib/tiers.ts, so the site
+// never promises a different number from the one the server counts.
+const LOW_PACK = Math.min(...Object.keys(FIND_CLIENTS_TOPUPS).map(Number));
 const VALUES = [
   'Businesses found around 16 Zambian towns, or from a list of your own',
   'Each one read and scored, so you write only to the ones that fit',
@@ -22,7 +24,7 @@ export default function FindClients() {
     <section id="find-clients" className="mkt-section" aria-labelledby="clients-h">
       <div className="mkt-wrap mkt-split">
         <div>
-          <p className="mkt-eyebrow">Find clients, on every plan</p>
+          <p className="mkt-eyebrow">Find clients, free for a day</p>
           <h2 id="clients-h" className="mkt-h2">Find your next customers.</h2>
           <p className="mkt-lead" style={{ marginTop: 20, maxWidth: 520 }}>
             Say in one line what you sell and who to. AIBOS finds businesses near you that could buy,
@@ -30,8 +32,9 @@ export default function FindClients() {
             and send it yourself.
           </p>
           <p className="mkt-lead" style={{ marginTop: 16, maxWidth: 520 }}>
-            Free researches {PER.free} businesses a month, Pro {PER.pro}, Pro+ {PER.proplus} and
-            Growth {PER.growth}.
+            Try it free for a day: AIBOS researches and writes to {FIND_CLIENTS_TRIAL.research} businesses.
+            Then Pro researches {PER.pro} a month, Pro+ {PER.proplus} and Growth {PER.growth}, and anyone can
+            top up {LOW_PACK} more for ${FIND_CLIENTS_TOPUPS[LOW_PACK]}.
           </p>
           <ul className="mkt-values">
             {VALUES.map((v) => (
