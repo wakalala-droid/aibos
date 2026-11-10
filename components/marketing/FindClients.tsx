@@ -16,7 +16,7 @@ const LOW_PACK = Math.min(...Object.keys(FIND_CLIENTS_TOPUPS).map(Number));
 const VALUES = [
   'Businesses found around 16 Zambian towns, or from a list of your own',
   'Each one read and scored, so you write only to the ones that fit',
-  'Nothing goes out until you press send in your own email or WhatsApp',
+  'Nothing goes out until you press send in your own email, WhatsApp or LinkedIn',
 ];
 
 export default function FindClients() {
@@ -28,8 +28,8 @@ export default function FindClients() {
           <h2 id="clients-h" className="mkt-h2">Find your next customers.</h2>
           <p className="mkt-lead" style={{ marginTop: 20, maxWidth: 520 }}>
             Say in one line what you sell and who to. AIBOS finds businesses near you that could buy,
-            reads their websites, says how well each one fits and writes the first message. You read it
-            and send it yourself.
+            reads their websites, says how well each one fits and writes the first message, with a short
+            note for LinkedIn. You read it and send it yourself.
           </p>
           <p className="mkt-lead" style={{ marginTop: 16, maxWidth: 520 }}>
             Try it free for a day: AIBOS researches and writes to {FIND_CLIENTS_TRIAL.research} businesses.

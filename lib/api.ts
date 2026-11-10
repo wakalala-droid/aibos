@@ -3026,7 +3026,12 @@ export async function saveLatestAnalysis(engine: 'engine3' | 'engine2', filename
 // ── Find clients (every plan since 7 Nov 2026; aibos-api find_clients_routes.py)
 // AIBOS finds businesses that could buy from the owner, reads their websites,
 // says which fit and writes the messages. It never sends: every message opens
-// in the owner's own email or WhatsApp and they press send there.
+// in the owner's own email, WhatsApp or LinkedIn and they press send there.
+// LinkedIn since 10 Nov 2026 (migration 0046), the safe way: AIBOS never opens
+// LinkedIn itself. It keeps the address a business links to, gives a search
+// that opens in the owner's own LinkedIn and writes the invitation note.
+
+export type ClientChannel = 'email' | 'whatsapp' | 'linkedin';
 
 export type ClientStage = 'new' | 'researched' | 'ready' | 'contacted' | 'replied' | 'meeting' | 'won' | 'lost' | 'skipped';
 export type ClientLabel = 'hot_lead' | 'wants_call' | 'question' | 'later' | 'out_of_office' | 'email_changed'
@@ -3073,6 +3078,10 @@ export interface ClientProspect {
   /** The phone as WhatsApp wants it (260...), when it is a Zambian mobile. */
   whatsapp: string | null;
   website: string | null;
+  /** Their LinkedIn page or profile (https://www.linkedin.com/...), when known. */
+  linkedin?: string | null;
+  /** A LinkedIn search for them, opened in the owner's own LinkedIn. */
+  linkedin_search?: string | null;
   contact_name: string | null;
   contact_role: string | null;
   fit: number | null;
@@ -3096,10 +3105,12 @@ export interface ClientMessage {
   prospect_id: string;
   direction: 'out' | 'in';
   kind: 'first' | 'followup' | 'answer' | 'reply';
-  channel: 'email' | 'whatsapp';
+  channel: ClientChannel;
   subject: string | null;
   body: string;
   whatsapp: string | null;
+  /** A first message's note for a LinkedIn invitation (200 characters). */
+  linkedin?: string | null;
   status: 'draft' | 'sent' | 'discarded' | 'received';
   label: ClientLabel | null;
   written_by: string | null;
@@ -3110,7 +3121,7 @@ export interface ClientMessage {
 /** A message waiting for the owner, with where Send opens it. */
 export interface ClientDraft extends ClientMessage {
   prospect: ClientProspect;
-  links: { mailto?: string; gmail?: string; whatsapp?: string };
+  links: { mailto?: string; gmail?: string; whatsapp?: string; linkedin?: string; linkedin_search?: string };
 }
 
 /** A business that wrote back and is waiting on the owner. */
@@ -3341,12 +3352,12 @@ export async function writeClientFollowups(): Promise<number> {
   return Number((await clientsSend('/clients/followups', 'POST', {})).written ?? 0);
 }
 
-export async function editClientMessage(id: string, patch: { subject?: string; body?: string; whatsapp?: string }): Promise<ClientMessage> {
+export async function editClientMessage(id: string, patch: { subject?: string; body?: string; whatsapp?: string; linkedin?: string }): Promise<ClientMessage> {
   return (await clientsSend(`/clients/messages/${encodeURIComponent(id)}`, 'PATCH', patch)).message as ClientMessage;
 }
 
-/** The owner pressed send in their own email or WhatsApp. */
-export async function markClientMessageSent(id: string, channel: 'email' | 'whatsapp'): Promise<ClientProspect> {
+/** The owner pressed send in their own email, WhatsApp or LinkedIn. */
+export async function markClientMessageSent(id: string, channel: ClientChannel): Promise<ClientProspect> {
   return (await clientsSend(`/clients/messages/${encodeURIComponent(id)}/sent`, 'POST', { channel })).prospect as ClientProspect;
 }
 

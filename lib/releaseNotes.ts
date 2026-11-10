@@ -23,6 +23,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-10-find-clients-linkedin',
+    date: '2026-11-10',
+    title: 'Find clients on LinkedIn',
+    intro: 'Find clients now works with LinkedIn too, and your LinkedIn account stays yours: AIBOS never signs in to it or sends for you.',
+    items: [
+      { icon: 'assistant', title: 'Their LinkedIn, kept for you', text: 'When a business links to its LinkedIn page from its website, AIBOS keeps it. You can also paste one or bring it in with a list.' },
+      { icon: 'group', title: 'Find the person who decides', text: 'Find on LinkedIn opens a search in your own LinkedIn. Paste the profile you pick in Edit details and AIBOS writes to them.' },
+      { icon: 'words', title: 'A note ready to paste', text: 'Each first message comes with a short note for a LinkedIn invitation. Open in LinkedIn copies it, so you paste it and press send.' },
+      { icon: 'line', title: 'Follow-ups as before', text: 'Press I sent it after you send on LinkedIn, and AIBOS tells you when to follow up.' },
+    ],
+  },
+  {
     id: '2026-11-09-find-clients-credits',
     date: '2026-11-09',
     title: 'Find clients answers in seconds',

@@ -403,7 +403,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
       {home.drafts.length > 0 && (
         <Panel title={`Ready to send (${home.drafts.length})`}>
           <p className="rs-text is-quiet" style={{ marginBottom: 14 }}>
-            AIBOS never sends for you. Each message opens in your own email or WhatsApp and you press send there.
+            AIBOS never sends for you. Each message opens in your own email, WhatsApp or LinkedIn and you press send there.
           </p>
           <div className="rs-list" style={{ gap: 12 }}>
             {drafts.map((d) => (

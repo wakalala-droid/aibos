@@ -3,6 +3,8 @@
  * Find clients, Businesses: every business found, by stage. Open one to see
  * why it fits, write to it, paste what it wrote back, move it on, keep it
  * from ever being written to again, or delete its details for good.
+ * Find on LinkedIn opens a search in the owner's own LinkedIn; the address
+ * they find is pasted in Edit details (AIBOS never opens LinkedIn itself).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Panel from '@/components/home/Panel';
@@ -42,7 +44,7 @@ export default function BusinessesTab({ home, reload }: { home: ClientsFull; rel
 
   const q = query.trim().toLowerCase();
   const list = useMemo(() => (rows ?? []).filter((p) => !q
-    || [p.name, p.town, p.email, p.contact_name, p.phone, p.website].some((v) => (v ?? '').toLowerCase().includes(q))),
+    || [p.name, p.town, p.email, p.contact_name, p.phone, p.website, p.linkedin].some((v) => (v ?? '').toLowerCase().includes(q))),
   [rows, q]);
 
   return (
@@ -133,7 +135,7 @@ export default function BusinessesTab({ home, reload }: { home: ClientsFull; rel
 }
 
 function AddOne({ home, onAdded }: { home: ClientsFull; onAdded: () => Promise<void> }) {
-  const blank = { name: '', email: '', phone: '', website: '', town: '', contact_name: '', contact_role: '' };
+  const blank = { name: '', email: '', phone: '', website: '', linkedin: '', town: '', contact_name: '', contact_role: '' };
   const [f, setF] = useState(blank);
   const [campaignId, setCampaignId] = useState(home.campaigns[0]?.id ?? '');
   const [busy, setBusy] = useState(false);
@@ -148,8 +150,8 @@ function AddOne({ home, onAdded }: { home: ClientsFull; onAdded: () => Promise<v
     try {
       const got = await addClientProspect({
         name: f.name.trim(), email: f.email.trim() || null, phone: f.phone.trim() || null, website: f.website.trim() || null,
-        town: f.town.trim() || null, contact_name: f.contact_name.trim() || null, contact_role: f.contact_role.trim() || null,
-        campaign_id: campaignId || null,
+        linkedin: f.linkedin.trim() || null, town: f.town.trim() || null, contact_name: f.contact_name.trim() || null,
+        contact_role: f.contact_role.trim() || null, campaign_id: campaignId || null,
       });
       setNote(got.added
         ? { tone: 'good', text: `${f.name.trim()} is added. Research it from Today, or open it below to write to it now.` }
@@ -172,6 +174,7 @@ function AddOne({ home, onAdded }: { home: ClientsFull; onAdded: () => Promise<v
         <Field label="Email"><input className="field" type="email" value={f.email} onChange={set('email')} /></Field>
         <Field label="Phone or WhatsApp"><input className="field" type="tel" value={f.phone} onChange={set('phone')} /></Field>
         <Field label="Website"><input className="field" value={f.website} onChange={set('website')} placeholder="example.co.zm" /></Field>
+        <Field label="LinkedIn"><input className="field" value={f.linkedin} onChange={set('linkedin')} placeholder="linkedin.com/company/their-name" /></Field>
         <Field label="Town">
           <input className="field" value={f.town} onChange={set('town')} list="clients-towns" />
           <datalist id="clients-towns">{home.towns.map((t) => <option key={t} value={t} />)}</datalist>
@@ -195,14 +198,17 @@ function AddOne({ home, onAdded }: { home: ClientsFull; onAdded: () => Promise<v
   );
 }
 
-/** Where the do not contact list stops them: the email, the phone, else the website. */
+/** Where the do not contact list stops them: the email, the phone and their
+ *  LinkedIn, else the website. */
 function stopValues(p: ClientProspect): string[] {
-  const out = [p.email, p.phone].filter((v): v is string => Boolean(v)).map((v) => v.toLowerCase());
+  const out = [p.email, p.phone, p.linkedin].filter((v): v is string => Boolean(v)).map((v) => v.toLowerCase());
   if (!out.length && p.website) {
     try { out.push(new URL(p.website).hostname.replace(/^www\./, '').toLowerCase()); } catch { /* not a web address */ }
   }
   return out;
 }
+
+const SENT_ON: Record<string, string> = { email: ', sent by email', whatsapp: ', sent on WhatsApp', linkedin: ', sent on LinkedIn' };
 
 function ProspectDetail({ id, home, onChanged, onGone }: {
   id: string;
@@ -217,7 +223,7 @@ function ProspectDetail({ id, home, onChanged, onGone }: {
   const [reply, setReply] = useState('');
   const [notes, setNotes] = useState('');
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ email: '', phone: '', website: '', contact_name: '', contact_role: '' });
+  const [form, setForm] = useState({ email: '', phone: '', website: '', linkedin: '', contact_name: '', contact_role: '' });
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const load = useCallback(async () => {
@@ -253,7 +259,7 @@ function ProspectDetail({ id, home, onChanged, onGone }: {
 
   const p = data.prospect;
   const can = home.can_write;
-  const reachable = Boolean(p.email || p.whatsapp);
+  const reachable = Boolean(p.email || p.whatsapp || p.linkedin);
   const campaign = home.campaigns.find((c) => c.id === p.campaign_id);
   const history = data.messages.filter((m) => m.status !== 'discarded');
 
@@ -270,7 +276,8 @@ function ProspectDetail({ id, home, onChanged, onGone }: {
           void act('details', async () => {
             await updateClientProspect(id, {
               email: form.email.trim() || null, phone: form.phone.trim() || null, website: form.website.trim() || null,
-              contact_name: form.contact_name.trim() || null, contact_role: form.contact_role.trim() || null,
+              linkedin: form.linkedin.trim() || null, contact_name: form.contact_name.trim() || null,
+              contact_role: form.contact_role.trim() || null,
             });
             setEditing(false);
             return 'Saved.';
@@ -279,6 +286,10 @@ function ProspectDetail({ id, home, onChanged, onGone }: {
           <Field label="Email"><input className="field" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
           <Field label="Phone or WhatsApp"><input className="field" type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
           <Field label="Website"><input className="field" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} /></Field>
+          <Field label="LinkedIn" hint="Their page or the profile of the person who decides.">
+            <input className="field" value={form.linkedin} onChange={(e) => setForm({ ...form, linkedin: e.target.value })}
+              placeholder="linkedin.com/in/their-name" />
+          </Field>
           <Field label="Who to write to"><input className="field" value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} /></Field>
           <Field label="Their role"><input className="field" value={form.contact_role} onChange={(e) => setForm({ ...form, contact_role: e.target.value })} /></Field>
           <div className="rs-btns" style={{ gridColumn: '1 / -1' }}>
@@ -293,6 +304,14 @@ function ProspectDetail({ id, home, onChanged, onGone }: {
           <Fact label="Website" value={p.website
             ? <a href={p.website} target="_blank" rel="noopener noreferrer">{p.website.replace(/^https?:\/\//, '')}</a>
             : 'None found'} />
+          <Fact label="LinkedIn" value={p.linkedin
+            ? <a href={p.linkedin} target="_blank" rel="noopener noreferrer" style={{ overflowWrap: 'anywhere' }}>
+                {p.linkedin.replace(/^https?:\/\/(www\.)?/, '')}
+              </a>
+            : p.linkedin_search
+              ? <a href={p.linkedin_search} target="_blank" rel="noopener noreferrer">Find on LinkedIn</a>
+              : 'Not known'}
+            hint={p.linkedin ? undefined : 'Opens in your own LinkedIn. Paste what you find in Edit details.'} />
           <Fact label="Who to write to" value={p.contact_name ? `${p.contact_name}${p.contact_role ? `, ${p.contact_role}` : ''}` : 'Not known'} />
           <Fact label="Fit" value={p.fit !== null && p.fit !== undefined ? `${p.fit} of 100` : 'Not researched yet'}
             hint={p.researched_at ? `Researched ${when(p.researched_at)}` : undefined} />
@@ -324,7 +343,7 @@ function ProspectDetail({ id, home, onChanged, onGone }: {
           )}
           {!editing && (
             <button type="button" className="rs-btn is-quiet is-sm" onClick={() => {
-              setForm({ email: p.email ?? '', phone: p.phone ?? '', website: p.website ?? '',
+              setForm({ email: p.email ?? '', phone: p.phone ?? '', website: p.website ?? '', linkedin: p.linkedin ?? '',
                 contact_name: p.contact_name ?? '', contact_role: p.contact_role ?? '' });
               setEditing(true);
             }}>Edit details</button>
@@ -397,7 +416,7 @@ function ProspectDetail({ id, home, onChanged, onGone }: {
                   <div className="rs-tl-what">
                     {m.direction === 'in'
                       ? `They wrote${m.label ? `: ${home.labels[m.label] ?? m.label}` : ''}`
-                      : `${KIND_WORDS[m.kind]}${m.status === 'draft' ? ', waiting for you' : m.channel === 'whatsapp' ? ', sent on WhatsApp' : ', sent by email'}`}
+                      : `${KIND_WORDS[m.kind]}${m.status === 'draft' ? ', waiting for you' : SENT_ON[m.channel] ?? SENT_ON.email}`}
                   </div>
                   <div className="rs-tl-when">{when(m.sent_at ?? m.created_at)}</div>
                   <p className="rs-text is-quiet" style={{ marginTop: 4, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{clip(m.body, 280)}</p>

@@ -62,8 +62,8 @@ export default function SettingsTab({ home, reload }: { home: ClientsFull; reloa
   return (
     <Panel title="Settings">
       <Note tone="info">
-        AIBOS never sends for you. Each message opens in your own email or WhatsApp with everything filled in. You
-        press send there, so replies come straight to you.
+        AIBOS never sends for you. Each message opens in your own email or WhatsApp with everything filled in, or in
+        your own LinkedIn with the note copied to paste. You press send there, so replies come straight to you.
       </Note>
       <form onSubmit={save} className="rs-form" style={{ alignItems: 'start', gap: 18, marginTop: 20 }}>
         <Field label="Your name, as you sign" hint={home.business ? `Messages are signed with this name and ${home.business}.` : undefined}>
@@ -96,7 +96,7 @@ export default function SettingsTab({ home, reload }: { home: ClientsFull; reloa
           <textarea className="field" rows={5} value={facts} onChange={(e) => setFacts(e.target.value)} maxLength={3000} />
         </Field>
         <Field label="Do not contact" wide
-          hint="One a line: an email, a whole domain such as example.co.zm, or a phone number. Anyone here is never found, written to or sent to again. People who reply asking to stop are added for you.">
+          hint="One a line: an email, a whole domain such as example.co.zm, a phone number or a LinkedIn address. Anyone here is never found, written to or sent to again. People who reply asking to stop are added for you.">
           <textarea className="field" rows={5} value={stop} onChange={(e) => setStop(e.target.value)} />
         </Field>
         <div style={{ gridColumn: '1 / -1' }}>

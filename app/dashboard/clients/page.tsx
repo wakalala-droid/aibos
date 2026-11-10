@@ -4,8 +4,9 @@
 // owner (from its own directory of places around a town, or a list they
 // paste), reads their websites, says which fit and why, and writes the first
 // message, the follow-ups and the answer to a reply. It never sends: each
-// message opens in the owner's own email or WhatsApp. The API is aibos-api
-// find_clients_routes.py.
+// message opens in the owner's own email, WhatsApp or LinkedIn (10 Nov 2026:
+// AIBOS never opens LinkedIn itself; it copies the note and opens their page
+// or a search). The API is aibos-api find_clients_routes.py.
 //
 // Priced the way Explee prices it (9 Nov 2026): Free gets one free day
 // (FIND_CLIENTS_TRIAL), the paid plans a month's businesses (50, 100 and 300:
@@ -101,7 +102,7 @@ export default function FindClientsPage() {
   }, [running, load]);
 
   const trialHours = home?.trial_hours ?? FIND_CLIENTS_TRIAL.hours;
-  const detail = `It reads their websites, says which fit and writes the first message for you to send from your own email or WhatsApp. Try it free for ${trialHours} hours, then top up or choose a plan.`;
+  const detail = `It reads their websites, says which fit and writes the first message for you to send from your own email, WhatsApp or LinkedIn. Try it free for ${trialHours} hours, then top up or choose a plan.`;
 
   // Messages to send and replies with no answer drafted yet (a reply whose
   // answer is waiting is counted once, as the answer).
@@ -120,7 +121,7 @@ export default function FindClientsPage() {
     <div className="rooms">
       <PageHeader
         title="Find clients"
-        subtitle="Businesses that could buy from you, found and written to. You send from your own email or WhatsApp."
+        subtitle="Businesses that could buy from you, found and written to. You send from your own email, WhatsApp or LinkedIn."
       />
       {failed && <Note tone="bad">{failed}</Note>}
       {!home && !failed && <div className="skeleton" style={{ height: 320, borderRadius: 'var(--radius-lg)' }} />}
