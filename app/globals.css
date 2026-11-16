@@ -1329,6 +1329,15 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
   background: radial-gradient(ellipse 60% 50% at 12% 0%, var(--card-wash), transparent 72%);
   opacity: var(--card-wash-opacity);
 }
+/* Its header on a phone: Talk and New chat keep one line each, the name keeps
+   its room, and the spark icon (decoration) steps aside for them. */
+.ai-panel-head .pill { white-space: nowrap; }
+.ai-panel-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 480px) {
+  .ai-panel-head { gap: 8px !important; padding-left: 16px !important; }
+  .ai-panel-head > .bento-icon { display: none; }
+  .ai-panel-head .ai-panel-tier { display: none; }
+}
 
 /* The page's own light: a faint aurora high on the left, under everything. */
 .app-shell {

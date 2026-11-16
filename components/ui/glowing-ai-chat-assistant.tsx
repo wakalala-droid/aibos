@@ -24,6 +24,17 @@ import { useAiAssistant, MAX_CHARS } from '@/lib/aiAssistant';
 import { DEFAULT_PROMPTS } from '@/lib/aiKnowledge';
 import AnswerCheck from '@/components/chat/AnswerCheck';
 import RichText from '@/components/chat/RichText';
+import { useTalkMode, type TalkPhase } from '@/lib/useTalkMode';
+
+// How long a press on the AIBOS button counts as "hold to talk".
+const HOLD_MS = 450;
+
+const TALK_WORDS: Record<Exclude<TalkPhase, 'off'>, string> = {
+  briefing: 'Getting your brief…',
+  speaking: 'Speaking…',
+  listening: 'Listening…',
+  thinking: 'Thinking…',
+};
 
 // ── Minimal stroke icons (2px, per visual_language_system.md) ────────────────
 const Icon = {
@@ -75,6 +86,33 @@ export function FloatingAiAssistant() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const atBottomRef = useRef(true);
   const recognitionRef = useRef<any>(null);
+
+  // ── Talk mode: AIBOS reads the brief, listens, answers out loud ────────────
+  const talk = useTalkMode({ messages, loading, sendMessage, pushAssistant, setSuggestions });
+  const { start: talkStart, stop: talkStop } = talk;
+  const talking = talk.phase !== 'off';
+  const startTalk = useCallback(() => {
+    recognitionRef.current?.stop();
+    setOpen(true);
+    talkStart(true);
+  }, [setOpen, talkStart]);
+  // Closing the panel ends the conversation.
+  useEffect(() => { if (!open && talking) talkStop(); }, [open, talking, talkStop]);
+
+  // Hold the AIBOS button to talk; a quick tap still opens and closes the panel.
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const held = useRef(false);
+  const onLauncherDown = useCallback(() => {
+    held.current = false;
+    holdTimer.current = setTimeout(() => { held.current = true; startTalk(); }, HOLD_MS);
+  }, [startTalk]);
+  const onLauncherUp = useCallback(() => {
+    if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; }
+  }, []);
+  const onLauncherClick = useCallback(() => {
+    if (held.current) { held.current = false; return; }
+    toggle();
+  }, [toggle]);
 
   const submit = useCallback((text: string) => {
     if (!text.trim() || loading) return;
@@ -164,16 +202,22 @@ export function FloatingAiAssistant() {
             }}
           >
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 16px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+            <div className="ai-panel-head" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 16px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
               <span className="bento-icon" aria-hidden="true" style={{ width: 44, height: 44 }}>{Icon.spark}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <span className="bento-title" style={{ display: 'block' }}>Ask AIBOS</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
+                <span className="bento-title ai-panel-name" style={{ display: 'block' }}>Ask AIBOS</span>
+                <span className="ai-panel-name" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
                   <span aria-hidden style={{ width: 8, height: 8, borderRadius: '50%', background: online ? 'var(--text-1)' : 'var(--text-4)', flexShrink: 0 }} />
-                  {online ? 'Ready' : 'Reconnecting…'} · {tierMeta.name}
+                  {online ? 'Ready' : 'Reconnecting…'}<span className="ai-panel-tier"> · {tierMeta.name}</span>
                 </span>
               </div>
-              {messages.length > 0 && (
+              <button type="button" onClick={talking ? talk.stop : startTalk} className="pill"
+                aria-pressed={talking}
+                title={talking ? 'Stop talking' : 'Talk to AIBOS: it reads your brief and listens'}
+                style={talking ? { background: 'var(--text-1)', color: 'var(--bg-card)' } : undefined}>
+                {Icon.mic}<span>{talking ? 'End' : 'Talk'}</span>
+              </button>
+              {messages.length > 0 && !talking && (
                 <button type="button" onClick={clearConversation} disabled={loading} className="pill pill-quiet"
                   title="Start a new conversation. AIBOS forgets this one.">
                   New chat
@@ -197,6 +241,11 @@ export function FloatingAiAssistant() {
                   <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
                     Ask about any number you see, or <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>hold your finger on any card</strong> and AIBOS explains what it is and why it matters.
                   </p>
+                  {talk.supported && (
+                    <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '8px 0 0' }}>
+                      Or press <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>Talk</strong> and just speak. AIBOS reads you your brief, answers out loud, and records a sale when you say confirm.
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -258,6 +307,34 @@ export function FloatingAiAssistant() {
               <div ref={bottomRef} />
             </div>
 
+            {/* Talk strip: what AIBOS is doing, what it heard */}
+            {(talking || talk.error) && (
+              <div role="status" aria-live="polite"
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
+                {talking && <TalkOrb phase={talk.phase} />}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {talking ? (
+                    <>
+                      <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' }}>
+                        {TALK_WORDS[talk.phase as Exclude<TalkPhase, 'off'>]}
+                      </span>
+                      <span style={{ display: 'block', fontSize: 'var(--fs-label)', color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {talk.heard && talk.heard !== '…' ? `“${talk.heard}”` : talk.phase === 'listening' ? 'Speak now. Say “that’s all” to finish.' : 'Tap Interrupt to speak over AIBOS.'}
+                      </span>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>{talk.error}</span>
+                  )}
+                </div>
+                {(talk.phase === 'speaking' || talk.phase === 'briefing') && (
+                  <button type="button" className="pill pill-quiet" onClick={talk.interrupt}>Interrupt</button>
+                )}
+                {!talking && (
+                  <button type="button" className="pill pill-quiet" onClick={talk.clearError}>OK</button>
+                )}
+              </div>
+            )}
+
             {/* Composer */}
             <div style={{ padding: '12px 14px 14px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-lg)', padding: '12px 12px 8px 16px', boxShadow: 'var(--shadow-card)' }}>
@@ -300,8 +377,14 @@ export function FloatingAiAssistant() {
       {/* ── Floating launcher ──────────────────────────────────────────────── */}
       <motion.button
         type="button"
-        onClick={toggle}
-        aria-label={open ? 'Close Ask AIBOS' : 'Open Ask AIBOS'}
+        onClick={onLauncherClick}
+        onPointerDown={onLauncherDown}
+        onPointerUp={onLauncherUp}
+        onPointerLeave={onLauncherUp}
+        onPointerCancel={onLauncherUp}
+        onContextMenu={(e) => e.preventDefault()}
+        title={open ? undefined : 'Tap to ask. Hold to talk.'}
+        aria-label={open ? 'Close Ask AIBOS' : 'Open Ask AIBOS. Hold to talk.'}
         aria-expanded={open}
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.94 }}
@@ -331,6 +414,28 @@ export function FloatingAiAssistant() {
         </AnimatePresence>
       </motion.button>
     </div>
+  );
+}
+
+// The talk indicator: one ink dot that breathes while listening and pulses
+// while AIBOS speaks, still while it thinks.
+function TalkOrb({ phase }: { phase: TalkPhase }) {
+  const moving = phase === 'listening' || phase === 'speaking' || phase === 'briefing';
+  return (
+    <span aria-hidden="true" style={{ position: 'relative', width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {moving && (
+        <motion.span
+          animate={{ scale: [1, phase === 'listening' ? 1.55 : 1.3, 1], opacity: [0.35, 0, 0.35] }}
+          transition={{ duration: phase === 'listening' ? 1.4 : 0.8, repeat: Infinity, ease: 'easeOut' }}
+          style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid var(--text-1)' }}
+        />
+      )}
+      <motion.span
+        animate={phase === 'thinking' ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
+        transition={{ duration: 1, repeat: phase === 'thinking' ? Infinity : 0 }}
+        style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--text-1)', display: 'block' }}
+      />
+    </span>
   );
 }
 

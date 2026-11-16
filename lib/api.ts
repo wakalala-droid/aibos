@@ -1224,6 +1224,16 @@ export async function transcribeAudio(blob: Blob): Promise<string> {
   return ((data as { text?: string }).text || '').trim();
 }
 
+/** The brief AIBOS reads aloud when the owner presses Talk (Jarvis, phase 1).
+ *  `text` is for the screen, `speech` the same words for the voice. */
+export interface SpokenBrief {
+  greeting: string; lines: string[]; question: string;
+  text: string; speech: string; full: boolean; suggestions: string[];
+}
+export async function getSpokenBrief(): Promise<SpokenBrief> {
+  return (await spineFetch('/brief/spoken')) as unknown as SpokenBrief;
+}
+
 /** AR aging per customer + ready-to-send WhatsApp nudge drafts (audit #15). */
 export async function getDebtors(businessName?: string | null): Promise<AgingReport> {
   const q = businessName ? `?business_name=${encodeURIComponent(businessName)}` : '';
