@@ -30,7 +30,8 @@ const ROLE_LABEL: Record<Workspace['role'], string> = {
   accountant: 'Accountant',
 };
 
-export default function BusinessSwitcher() {
+/** `fallback` shows instead when there is nothing to switch (the phone's top bar shows the wordmark). */
+export default function BusinessSwitcher({ fallback = null }: { fallback?: React.ReactNode } = {}) {
   const { teamRole, workspaces } = useProfile();
   const tier = useStore((s) => s.tier);
   const ios = useIosApp();
@@ -63,7 +64,7 @@ export default function BusinessSwitcher() {
 
   const showBusinesses = teamRole === 'owner' && businesses.length > 0;
   const showWorkspaces = workspaces.length > 1;
-  if (!showBusinesses && !showWorkspaces) return null;
+  if (!showBusinesses && !showWorkspaces) return <>{fallback}</>;
 
   const active = businesses.find((b) => b.id === activeId) ?? businesses[0];
   const canMulti = canAccess(tier as Tier, 'multi_business');

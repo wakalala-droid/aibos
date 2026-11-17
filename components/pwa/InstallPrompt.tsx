@@ -181,6 +181,9 @@ export default function InstallPrompt() {
       brand art
       role="region"
       ariaLabel="Install AIBOS as an app"
+      // A promo: on a phone it shows as its title and buttons only, unless it
+      // is showing the steps after a download.
+      className={mode === 'android-get' && downloaded ? '' : 'nudge-promo'}
       title={title}
       tag={tag}
       style={{ margin: '0 0 16px' }}

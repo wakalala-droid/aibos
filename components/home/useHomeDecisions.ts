@@ -7,6 +7,13 @@
 // and the top piece of advice. They now feed the one "Needs you" list beside
 // the workers' questions, so the owner has one place to look.
 //
+// Second pass the same day (the UX audit): entries waiting to be confirmed,
+// overdue invoices and a cash watch risk joined the list. Before, Home showed
+// each of them somewhere else while "Needs you" said nothing needed the
+// owner. When a worker already asks about the same thing (the Bookkeeper's
+// confirm_entry, the Collector's chase_payment) the worker's job stands for
+// it and this signal stays out (`coveredBy`).
+//
 // Trust rules (SAFEGUARD §0.1): each signal comes from recorded data. With no
 // data behind it, it is left out. Propose, then confirm: "Draft reorder"
 // makes a PENDING receipt, a check-in is sent from the owner's own WhatsApp.
@@ -19,6 +26,10 @@ import { fmt } from '@/lib/utils';
 import {
   getRecommendations, listProducts, setRecommendationStatus, type Product, type Recommendation,
 } from '@/lib/api';
+import { useMoney } from '@/hooks/useMoney';
+import { useBriefExtras } from '@/hooks/useBriefExtras';
+import { useCashWatch } from '@/hooks/useCashWatch';
+import { dayWords, floorWords } from '@/components/cashplan/PlanChart';
 import {
   reorderProposals, draftReorder, followUpProposals, dismissedFollowUps, dismissFollowUp,
   type ReorderProposal,
@@ -39,15 +50,21 @@ export interface HomeDecision {
   waLink?: string;
   customerId?: string;
   advice?: Recommendation;
+  /** A worker job of this kind, waiting, already asks about the same thing. */
+  coveredBy?: string;
 }
 
 export function useHomeDecisions() {
-  const { alerts, cashflow, rfm, monthly, tier, currencySymbol } = useStore();
+  const { alerts, cashflow, rfm, monthly, tier, currencySymbol, twin } = useStore();
   const { profile } = useProfile();
   const sym = currencySymbol || 'K';
   const canAutomate = canAccess(tier, 'automation');
   // With the workers on, the Sales scout asks about regulars gone quiet.
   const workersOn = canAccess(tier, 'chat_actions');
+
+  const money = useMoney(30);
+  const extras = useBriefExtras();
+  const watch = useCashWatch();
 
   const [products, setProducts] = useState<Product[] | null>(null);
   const [advice, setAdvice] = useState<Recommendation[]>([]);
@@ -77,6 +94,50 @@ export function useHomeDecisions() {
           ? 'Below six months. Decide what to cut or collect now.'
           : 'Under a year. Worth a plan this week.',
         kind: 'link', href: '/dashboard/cash', actionLabel: 'Look at cash',
+      });
+    }
+
+    // The 13-week watch: a real chance of running short.
+    if (watch?.ok) {
+      const short = Number(watch.chance_short_pct ?? 0);
+      const atRisk = watch.preview ? !!watch.at_risk : short >= 20;
+      if (atRisk) {
+        const line = floorWords(watch.floor, watch.floor_from === 'cushion', watch.sym || sym);
+        const when = watch.first_risk_date ? `First in the week of ${dayWords(watch.first_risk_date)}.` : 'In the next 13 weeks.';
+        out.push({
+          id: 'cash-watch', severity: short >= 50 ? 'crit' : 'warn', area: 'Money',
+          headline: short >= 99.5 ? `Your money is heading below ${line}`
+            : `A ${watch.chance_words ?? `${Math.round(short)}%`} chance your money goes below ${line}`,
+          reason: `${when} See what fixes it before it happens.`,
+          kind: 'link', href: '/dashboard/cash-plan', actionLabel: 'See why',
+        });
+      }
+    }
+
+    // Recorded but not confirmed: in no figure until the owner says so.
+    const waiting = money?.waiting.count ?? 0;
+    if (waiting > 0) {
+      out.push({
+        id: 'waiting', severity: 'warn', area: 'Books', coveredBy: 'confirm_entry',
+        headline: `${waiting} ${waiting === 1 ? 'entry is' : 'entries are'} waiting for you`,
+        reason: 'Recorded but not counted in your money yet. Confirm or fix each one.',
+        kind: 'link', href: '/dashboard/timeline?status=pending', actionLabel: 'Check them',
+      });
+    }
+
+    // Invoices past their due date (the Invoices page's own rule).
+    const overdue = extras?.overdueInvoices;
+    if (overdue && overdue.count > 0) {
+      // More overdue than the books say is owed: a sale missing from the books.
+      const unbooked = overdue.total > (Number(twin?.receivables) || 0) + 0.005;
+      out.push({
+        id: 'overdue', severity: 'warn', area: 'Get paid', coveredBy: unbooked ? undefined : 'chase_payment',
+        headline: `${overdue.count} invoice${overdue.count === 1 ? '' : 's'} overdue, ${fmt(overdue.total, false, sym)}`,
+        reason: unbooked
+          ? 'Its sale is not in your books, so Owed to you does not count it. The books check shows what to put right.'
+          : 'Past the day you asked to be paid. A reminder now is the easiest way to get it in.',
+        kind: 'link', href: unbooked ? '/dashboard/cash?check=1' : '/dashboard/invoices',
+        actionLabel: unbooked ? 'Check the books' : 'See who owes',
       });
     }
 
@@ -141,7 +202,7 @@ export function useHomeDecisions() {
     }
 
     return out.sort((a, b) => (a.severity === 'crit' ? 0 : 1) - (b.severity === 'crit' ? 0 : 1));
-  }, [alerts, cashflow, monthly, products, rfm, sym, profile?.business_name, fuDismissed, canAutomate, workersOn, advice]);
+  }, [alerts, cashflow, monthly, products, rfm, sym, profile?.business_name, fuDismissed, canAutomate, workersOn, advice, watch, money, extras, twin]);
 
   const draft = useCallback(async (p: ReorderProposal) => {
     setDraftState((s) => ({ ...s, [p.productId]: 'drafting' }));

@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 import MobileTabBar from './MobileTabBar';
 import DropAnywhere from './DropAnywhere';
 import RecordSheet from './RecordSheet';
+import BusinessSwitcher from './BusinessSwitcher';
 import { useStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme';
 import { ProfileProvider } from '@/lib/profile';
@@ -122,12 +123,13 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
               <HamburgerIcon />
             </button>
 
-            <span style={{
-              fontSize: 'var(--fs-body)', fontWeight: 700,
-              color: 'var(--text-1)', letterSpacing: '-0.02em',
-            }}>
-              AIBOS
-            </span>
+            {/* Which business, where the wordmark was (17 Nov 2026): on a
+                phone it used to take a line of its own under this bar. */}
+            <BusinessSwitcher fallback={
+              <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.02em' }}>
+                AIBOS
+              </span>
+            } />
 
             <button
               type="button"

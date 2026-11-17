@@ -79,8 +79,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="page-container" data-bento>
       <DashboardHeader />
-      <PlanNotice />
-      <InstallPrompt />
+      {/* One nudge for the whole screen (17 Nov 2026): the plan notice, else
+          the install card, and Home's own nudge only when neither is up
+          (globals.css .layout-nudge). Update and card prompts float. */}
+      <div className="one-nudge layout-nudge">
+        <PlanNotice />
+        <InstallPrompt />
+      </div>
       {/* Says when a newer AIBOS is ready, for a tab or an installed app that
           has been open since before it shipped. */}
       <UpdatePrompt />

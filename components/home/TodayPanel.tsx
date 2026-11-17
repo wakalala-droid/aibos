@@ -36,6 +36,11 @@ export default function TodayPanel() {
   const lowStock = products.filter((p) => Number(p.reorder_level) > 0 && Number(p.on_hand ?? 0) <= Number(p.reorder_level));
   const receivables = Number(twin?.receivables) || 0;
   const overdue = extras?.overdueInvoices;
+  // "Owed to you" is the books' figure. A sent invoice whose sale is not in
+  // the books (voided on Activity, or never posted) is still overdue on the
+  // Invoices page, so the two disagreed ("K0 owed, 1 invoice overdue,
+  // K2,400"). Say so, and open the books check that puts it right.
+  const unbooked = !!overdue && overdue.total > receivables + 0.005;
   const stockWord = ind.stockWord.charAt(0).toUpperCase() + ind.stockWord.slice(1);
 
   return (
@@ -55,11 +60,13 @@ export default function TodayPanel() {
         </Link>
 
         {seesMoney && (
-          <Link href="/dashboard/invoices" className="today-figure">
+          <Link href={unbooked ? '/dashboard/cash?check=1' : '/dashboard/invoices'} className="today-figure">
             <span className="today-figure-label">Owed to you</span>
             <BigMoney value={receivables} sym={sym} size="lg" />
             <span className="today-figure-sub" style={overdue ? { color: 'var(--red)', fontWeight: 600 } : undefined}>
-              {overdue
+              {overdue && unbooked
+                ? `${overdue.count} overdue invoice${overdue.count === 1 ? '' : 's'} (${fmt(overdue.total, false, sym)}) not in your books. Check them`
+                : overdue
                 ? `${overdue.count} invoice${overdue.count === 1 ? '' : 's'} overdue, ${fmt(overdue.total, false, sym)}`
                 : receivables > 0 ? 'Nothing overdue' : 'Nobody owes you'}
             </span>

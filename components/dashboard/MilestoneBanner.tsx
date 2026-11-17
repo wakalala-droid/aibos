@@ -37,7 +37,7 @@ export default function MilestoneBanner() {
   // A bento card (5 Oct 2026): round outlined mark, the milestone as the
   // spaced-capital title, one line under it. Monochrome.
   return (
-    <div role="status" className="bento" style={{ marginBottom: 16 }}>
+    <div role="status" className="bento nudge-promo" style={{ marginBottom: 16 }}>
       <div className="bento-head">
         <span className="bento-icon" aria-hidden="true">
           {milestone.icon === 'trophy' ? <Trophy /> : milestone.icon === 'streak' ? <Flame /> : <TrendingUp />}

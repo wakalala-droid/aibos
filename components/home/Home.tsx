@@ -8,10 +8,11 @@
 // one thing at a time:
 //
 //   1. the greeting, the one thing today, Record and Talk
-//   2. the AIBOS team: the whole scene, edge to edge (HomeTeam), for owners
+//   2. Needs you: the only to-do list, one line when nothing needs the owner
+//      (moved up by the UX audit the same day)
+//   3. the AIBOS team: the whole scene, edge to edge (HomeTeam), for owners
 //      whose plan has it; on other plans it comes last, asleep
-//   3. the money: the figure and its line, where it is, the 13-week watch
-//   4. Needs you: the only to-do list
+//   4. the money: the figure and its line, where it is, the 13-week watch
 //   5. Today: sales, money owed and stock, then coming up or just happened
 //
 // The AIBOS team page folded into Home the same day (/dashboard/team sends
@@ -19,7 +20,8 @@
 //
 // The numbers (scores, the month figures, the chart, the findings) moved to
 // Your numbers (/dashboard/numbers). Above the five blocks, at most one
-// nudge (teach AIBOS, unlock the brief, a milestone), never three.
+// nudge (teach AIBOS, unlock the brief, a milestone), never three, and none
+// while the layout shows a plan notice (globals.css .layout-nudge).
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -131,10 +133,14 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 2. The AIBOS team, edge to edge */}
+      {/* 2. Needs you: the only to-do list, first after the greeting (UX
+          audit 17 Nov 2026). One line when nothing does. */}
+      {seesMoney && <NeedsYou />}
+
+      {/* 3. The AIBOS team, edge to edge */}
       {teamFirst && <HomeTeam />}
 
-      {/* 3. The money */}
+      {/* 4. The money */}
       {seesMoney && (
         <>
           <div className="home-hero">
@@ -144,9 +150,6 @@ export default function Home() {
           <CashWatch />
         </>
       )}
-
-      {/* 4. Needs you */}
-      {seesMoney && <NeedsYou />}
 
       {/* 5. Today */}
       <TodayPanel />

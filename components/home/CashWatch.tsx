@@ -4,32 +4,24 @@
 // worth most where the owner already looks every morning, so Home carries it
 // in a glance: the headline, what is safe to spend (or the cash needed), the
 // chance of running short, what is due out in the next two weeks and who to
-// ask for money first, with the reminder ready. Below Growth it appears only
-// when the owner's own money is at risk, as one line that opens the plan.
+// ask for money first, with the reminder ready. Below Growth the risk shows
+// as an item in "Needs you" instead (components/home/useHomeDecisions.ts).
 // Read from GET /forecast/cash-watch, which keeps the plan a few minutes for
 // the same books and reads again the moment anything is recorded.
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, CalendarRange, MessageCircle } from 'lucide-react';
+import { ArrowUpRight, MessageCircle } from 'lucide-react';
 import Panel from './Panel';
 import { dayWords, floorWords } from '@/components/cashplan/PlanChart';
-import { getCashWatch, whatsAppLink, type CashWatch as Watch } from '@/lib/api';
+import { whatsAppLink } from '@/lib/api';
 import { useStore } from '@/lib/store';
+import { useCashWatch } from '@/hooks/useCashWatch';
 import { fmt } from '@/lib/utils';
 import { BAD } from '@/lib/tone';
 
 export default function CashWatch() {
-  const version = useStore((s) => s.booksVersion);
   const storeSym = useStore((s) => s.currencySymbol) || 'K';
-  const [watch, setWatch] = useState<Watch | null>(null);
-
-  useEffect(() => {
-    if (version === 0) return;
-    let alive = true;
-    getCashWatch().then((w) => { if (alive) setWatch(w); }).catch(() => { /* Home stands without it */ });
-    return () => { alive = false; };
-  }, [version]);
+  const watch = useCashWatch();
 
   if (!watch?.ok) return null;
   const sym = watch.sym || storeSym;
@@ -38,22 +30,9 @@ export default function CashWatch() {
   const onCushion = watch.floor_from === 'cushion';
   const line = floorWords(watch.floor, onCushion, sym);
 
-  if (watch.preview) {
-    if (!watch.at_risk) return null;
-    const when = watch.first_risk_date ? `, first in the week of ${dayWords(watch.first_risk_date)}` : ' in the next 13 weeks';
-    return (
-      <Panel>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-          <span className="bento-icon" aria-hidden="true" style={{ width: 44, height: 44 }}><CalendarRange /></span>
-          <p className="rs-text" style={{ flex: 1, minWidth: 220 }}>
-            {short >= 99.5 ? `AIBOS sees your money going below ${line}${when}.`
-              : `AIBOS sees a ${watch.chance_words} chance your money goes below ${line}${when}.`}
-          </p>
-          <Link className="pill" href="/dashboard/cash-plan">See why</Link>
-        </div>
-      </Panel>
-    );
-  }
+  // Below Growth the risk is one item in "Needs you" (17 Nov 2026), not a
+  // card of its own: the owner has one place to look.
+  if (watch.preview) return null;
 
   const tone = short >= 20 ? BAD : 'var(--text-1)';
   return (

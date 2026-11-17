@@ -38,7 +38,7 @@ Import: `import { Notice, BentoCard, NoticeArt, BrandMark, DocHeader } from '@/c
 - Charts use `--chart-1..6` and `--chart-muted`.
 - No em-dashes, no comma before "and", no emoji. Plain owner words.
 - No entrance animation on page content; icons move on hover only. No blurred sticky headers. (The public website has one scoped exception, below, and the app has two: the team scene and talking to AIBOS.)
-- Home asks for one thing at a time (owner, 17 Nov 2026): five blocks (greeting with Record and Talk, the AIBOS team scene edge to edge, the money, Needs you, Today; on plans without the team, the sleeping team comes last), at most one nudge above them, and Needs you is the only to-do list in the app. A new signal joins Needs you; it never becomes another card.
+- Home asks for one thing at a time (owner, 17 Nov 2026): five blocks (greeting with Record and Talk, Needs you, the AIBOS team scene edge to edge, the money, Today; on plans without the team, the sleeping team comes last), at most one nudge on the whole screen (the layout's plan notice and install card share the slot with Home's, `.one-nudge`; on a phone a promo nudge is its title and buttons), and Needs you is the only to-do list in the app, one line when nothing needs the owner. A new signal joins Needs you; it never becomes another card, and a figure elsewhere on Home never says something needs the owner that Needs you does not. The phone toolbar is one row; the business name sits in the top bar.
 
 ## Website navy (the public website only)
 The owner, 10 Oct 2026: "too much white going on, add dynamic dark navy blue like on the AI section on most of the site". The app keeps its own light and black themes; the website is navy.

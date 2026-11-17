@@ -48,7 +48,7 @@ export default function ActivationProgress() {
   // A bento card (5 Oct 2026): round mark, spaced-capital title with the day
   // count as its tag, one even bar and one next step.
   return (
-    <div role="status" className="bento" style={{ marginBottom: 16 }}>
+    <div role="status" className="bento nudge-promo" style={{ marginBottom: 16 }}>
       <div className="bento-head">
         <span className="bento-icon" aria-hidden="true"><CalendarCheck /></span>
         <div className="bento-main">

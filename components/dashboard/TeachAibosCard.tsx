@@ -37,7 +37,7 @@ export default function TeachAibosCard() {
   const pct = progress.total ? (progress.done / progress.total) * 100 : 0;
 
   return (
-    <div role="status" className="bento" style={{ marginBottom: 16 }}>
+    <div role="status" className="bento nudge-promo" style={{ marginBottom: 16 }}>
       <div className="bento-head">
         <span className="bento-icon" aria-hidden="true"><BookOpen /></span>
         <div className="bento-main">

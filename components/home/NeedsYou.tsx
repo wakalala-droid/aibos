@@ -11,7 +11,8 @@
 // Anything that cannot wait comes first, then the workers' questions oldest
 // first, then the rest. Three show; the rest open with "See all". When the
 // list is empty that is the reward: nothing needs you, and what AIBOS
-// handled today.
+// handled today, said in one line (the UX audit, 17 Nov 2026: an empty list
+// stood 225px tall). It sits right under the greeting.
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -48,6 +49,9 @@ export default function NeedsYou() {
   const [checking, setChecking] = useState(false);
   const [said, setSaid] = useState<string | null>(null);
   const [all, setAll] = useState(false);
+  // The first answer from the jobs list, yes or no: until then "Nothing
+  // needs you" could be said before it was known.
+  const [loaded, setLoaded] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -61,6 +65,8 @@ export default function NeedsYou() {
         .catch(() => {});
     } catch {
       setJobs((prev) => prev ?? null);
+    } finally {
+      setLoaded(true);
     }
   }, []);
 
@@ -107,14 +113,40 @@ export default function NeedsYou() {
     }
   }, [jobs]);
 
+  // A worker already asking about the same thing stands for the home's signal.
+  const asking = new Set((jobs ?? []).filter((j) => j.status === 'waiting').map((j) => j.kind));
+  const signals = decisions.filter((d) => !d.coveredBy || !asking.has(d.coveredBy));
   const items: Item[] = [
-    ...decisions.filter((d) => d.severity === 'crit').map((d) => ({ key: d.id, decision: d })),
+    ...signals.filter((d) => d.severity === 'crit').map((d) => ({ key: d.id, decision: d })),
     ...(jobs ?? []).map((j) => ({ key: j.id, job: j })),
-    ...decisions.filter((d) => d.severity !== 'crit').map((d) => ({ key: d.id, decision: d })),
+    ...signals.filter((d) => d.severity !== 'crit').map((d) => ({ key: d.id, decision: d })),
   ];
   const open = items.filter((i) => (i.job ? i.job.status === 'waiting' : true)).length;
   const shown = all ? items : items.slice(0, SHOWN);
   const more = items.length - shown.length;
+
+  // Nothing needs the owner: one line, not a panel.
+  if (items.length === 0) {
+    if (!loaded) return <div id="needs-you" className="needs-you-line skeleton" aria-hidden="true" />;
+    return (
+      <section id="needs-you" className="needs-you-line" aria-labelledby="needs-you-title" style={{ scrollMarginTop: 96 }}>
+        <span className="avatar avatar-in" aria-hidden="true"><Check /></span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h2 id="needs-you-title" className="needs-you-line-title">Nothing needs you</h2>
+          <p role="status" className="needs-you-line-sub">
+            {said ?? (handled > 0
+              ? `AIBOS handled ${handled} ${handled === 1 ? 'thing' : 'things'} today and keeps looking.`
+              : 'All clear. AIBOS keeps looking.')}
+          </p>
+        </div>
+        {jobs !== null && (
+          <button type="button" className="pill pill-quiet" style={{ minHeight: 44 }} disabled={checking} onClick={checkNow}>
+            {checking ? 'Looking' : 'Check now'}
+          </button>
+        )}
+      </section>
+    );
+  }
 
   return (
     <div id="needs-you" style={{ scrollMarginTop: 96 }}>
@@ -122,7 +154,7 @@ export default function NeedsYou() {
         title={
           <div style={{ flex: '1 1 200px', minWidth: 0 }}>
             <h2 id="needs-you-title" className="panel-title" style={{ margin: 0 }}>
-              {open === 0 ? 'Nothing needs you' : 'Needs you'}
+              {open === 0 ? 'All answered' : 'Needs you'}
               {open > 0 && <span className="needs-you-count">{open}</span>}
             </h2>
             <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>
@@ -140,20 +172,16 @@ export default function NeedsYou() {
           </button>
         ) : undefined}>
         {said && <p role="status" style={{ margin: '0 0 12px', fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>{said}</p>}
-        {items.length === 0 ? (
-          <p className="needs-you-clear"><span className="avatar avatar-in" aria-hidden="true"><Check /></span>All clear. AIBOS keeps looking.</p>
-        ) : (
-          <div className="needs-you-list">
-            {shown.map((i) => i.job ? (
-              <ActionCard key={i.key} job={i.job} busy={busy === i.job.id} onAnswer={answer} />
-            ) : (
-              <DecisionCard key={i.key} d={i.decision!} canAutomate={canAutomate}
-                drafting={i.decision!.proposal ? draftState[i.decision!.proposal.productId] : undefined}
-                busy={!!i.decision!.advice?.rec_id && adviceBusy === i.decision!.advice?.rec_id}
-                onDraft={draft} onFollowUpDone={followUpDone} onAdvice={answerAdvice} />
-            ))}
-          </div>
-        )}
+        <div className="needs-you-list">
+          {shown.map((i) => i.job ? (
+            <ActionCard key={i.key} job={i.job} busy={busy === i.job.id} onAnswer={answer} />
+          ) : (
+            <DecisionCard key={i.key} d={i.decision!} canAutomate={canAutomate}
+              drafting={i.decision!.proposal ? draftState[i.decision!.proposal.productId] : undefined}
+              busy={!!i.decision!.advice?.rec_id && adviceBusy === i.decision!.advice?.rec_id}
+              onDraft={draft} onFollowUpDone={followUpDone} onAdvice={answerAdvice} />
+          ))}
+        </div>
         {(more > 0 || all) && items.length > SHOWN && (
           <button type="button" className="pill pill-quiet" style={{ marginTop: 12, minHeight: 44 }} onClick={() => setAll((v) => !v)}>
             {all ? 'Show fewer' : `See all ${items.length}`}
