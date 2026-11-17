@@ -12,6 +12,7 @@
 // It is also not there when nothing is waiting: no empty box on the home page.
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Panel from '@/components/home/Panel';
 import ActionCard from '@/components/chat/ActionCard';
@@ -104,9 +105,12 @@ export default function NeedsYou({ spaced = false }: {
           </div>
         }
         action={
-          <button type="button" className="pill pill-quiet" style={{ minHeight: 44 }} disabled={checking} onClick={checkNow}>
-            {checking ? 'Looking' : 'Check now'}
-          </button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <button type="button" className="pill pill-quiet" style={{ minHeight: 44 }} disabled={checking} onClick={checkNow}>
+              {checking ? 'Looking' : 'Check now'}
+            </button>
+            <Link href="/dashboard/team" className="pill pill-quiet" style={{ minHeight: 44 }}>Your AIBOS team</Link>
+          </div>
         }>
         {said && <p role="status" style={{ margin: '0 0 12px', fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>{said}</p>}
         <div className="needs-you-list">

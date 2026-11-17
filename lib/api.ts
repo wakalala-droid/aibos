@@ -1255,17 +1255,40 @@ export interface AiAction {
   message?: string; whatsapp?: string;
 }
 
+/** A kind of job the owner can let AIBOS do by itself once earned. */
+export interface AiAutopilotKind {
+  kind: string; on: boolean; approved_in_a_row: number; earned: boolean; needs: number;
+  largest: number; types: string[];
+}
 export interface AiWorker {
+  /** 'assistant' is the chat's own jobs; the rest are the six workers. */
   id: string; name: string; does: string;
+  /** False when the plan does not include it; off_reason says which plan does. */
+  on: boolean; off_reason: string | null;
   waiting: number; done_this_week: number; last: AiAction | null;
+  autopilot?: AiAutopilotKind[];
+}
+export interface AiTeam {
+  workers: AiWorker[];
+  /** When the workers last looked through these books, if this run of the API knows. */
+  looked_at: string | null;
+  every_hours: number; day_from: number; day_to: number;
+}
+/** What AIBOS did lately, newest first, every status. */
+export async function listRecentActions(limit = 40): Promise<AiAction[]> {
+  return ((await spineFetch(`/actions?limit=${limit}`)).actions ?? []) as AiAction[];
 }
 
 /** The "Needs you" list: every job still waiting for the owner's yes. */
 export async function listWaitingActions(): Promise<AiAction[]> {
   return ((await spineFetch('/actions?status=waiting&limit=50')).actions ?? []) as AiAction[];
 }
-export async function getWorkers(): Promise<AiWorker[]> {
-  return ((await spineFetch('/workers')).workers ?? []) as AiWorker[];
+export async function getTeam(): Promise<AiTeam> {
+  const d = await spineFetch('/workers');
+  return {
+    workers: (d.workers ?? []) as AiWorker[], looked_at: (d.looked_at as string) ?? null,
+    every_hours: Number(d.every_hours) || 3, day_from: Number(d.day_from) || 7, day_to: Number(d.day_to) || 21,
+  };
 }
 /** Ask the workers to look through the books now. */
 export async function runWorkers(): Promise<{ new: number; closed: number }> {

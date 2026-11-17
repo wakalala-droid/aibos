@@ -27,6 +27,8 @@ Import: `import { Notice, BentoCard, NoticeArt, BrandMark, DocHeader } from '@/c
 | Filters | rounded chips that wrap | `.chips`, `.chip` |
 | Lists | a row with name, detail and amount | `.row`, `.row-title`, `.row-sub`, `.row-amount` |
 | Small figures | side by side inside a card | `.mini-stats`, `.mini-stat` |
+| `TeamMap` | the AIBOS team page: the mark in its white disc and dashed ring in the middle, the six workers around it on hairlines; status by fill (brand cyan needs the owner, with the count; outline is watching; faded and dashed is not on the plan). On a phone the mark sits on top and the workers go three across, no lines | `.team-map`, `.team-node`, `.team-hub` |
+| Job card | a job AIBOS did or is waiting to do: who asks, what, why, and the answers in the job's own words | `ActionCard`, `.ai-job`, `.needs-you-list` |
 
 ## Rules
 - Geist only. Mercury-standard sizes (owner, 7 Oct 2026): body 15px, data and labels 14px, spaced capitals 12px, card titles 17px, page titles 22px. Taps at least 44px. Contrast at least 4.5:1.
