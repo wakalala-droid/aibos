@@ -9,6 +9,7 @@ import AICFOChat from '@/components/chat/AICFOChat';
 import SimpleHome from '@/components/dashboard/SimpleHome';
 import DecisionsQueue from '@/components/dashboard/DecisionsQueue';
 import HomeTop from '@/components/home/HomeTop';
+import NeedsYou from '@/components/home/NeedsYou';
 import { useLiveCustomerIntel } from '@/hooks/useLiveCustomerIntel';
 import MilestoneBanner from '@/components/dashboard/MilestoneBanner';
 import ActivationProgress from '@/components/dashboard/ActivationProgress';
@@ -225,6 +226,7 @@ function OverviewPage() {
       <TeachAibosCard />
       <MilestoneBanner />
       <HomeTop />
+      <NeedsYou spaced />
       <DecisionsQueue />
       <div id="decide">
         <RecommendationList limit={3} title="Decide next" subtitle="From your own records, each with the evidence behind it." seeAllHref="/dashboard/brief?tab=advisor" />

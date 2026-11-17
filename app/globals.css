@@ -1351,6 +1351,16 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 .ai-job-said { margin: 4px 0 0; font-size: var(--fs-body); line-height: 1.5; color: var(--text-1); overflow-wrap: anywhere; }
 .ai-job-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .ai-job-actions .pill { min-height: 44px; }
+.ai-job-why { margin: 4px 0 0; font-size: var(--fs-data); line-height: 1.5; color: var(--text-2); overflow-wrap: anywhere; }
+.ai-job-message {
+  margin: 8px 0 0; padding: 12px; white-space: pre-wrap; overflow-wrap: anywhere;
+  font-size: var(--fs-data); line-height: 1.5; color: var(--text-1);
+  background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px;
+}
+
+/* The home page's "Needs you" list (Jarvis phase 3): the workers' questions, full width. */
+.needs-you-list { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.needs-you-list .ai-job { width: auto; margin-top: 0; }
 
 /* The page's own light: a faint aurora high on the left, under everything. */
 .app-shell {

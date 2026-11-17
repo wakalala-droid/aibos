@@ -1244,6 +1244,33 @@ export interface AiAction {
   /** What AIBOS will do, and the same in the past tense once done. */
   said: string; did: string; can_undo: boolean; at?: string; number?: string;
   offer_autopilot?: AiAutopilotOffer;
+  /** Phase 3: the worker that found it, and why it asks. */
+  worker?: { id: string; name: string };
+  why?: string;
+  /** Button words where "Yes, do it" / "Not now" would not fit. */
+  yes?: string; no?: string;
+  /** A note: the page of AIBOS where the owner deals with it. */
+  link?: { href: string; label: string };
+  /** Once done: what came of it (the Collector's reminder, ready to send). */
+  message?: string; whatsapp?: string;
+}
+
+export interface AiWorker {
+  id: string; name: string; does: string;
+  waiting: number; done_this_week: number; last: AiAction | null;
+}
+
+/** The "Needs you" list: every job still waiting for the owner's yes. */
+export async function listWaitingActions(): Promise<AiAction[]> {
+  return ((await spineFetch('/actions?status=waiting&limit=50')).actions ?? []) as AiAction[];
+}
+export async function getWorkers(): Promise<AiWorker[]> {
+  return ((await spineFetch('/workers')).workers ?? []) as AiWorker[];
+}
+/** Ask the workers to look through the books now. */
+export async function runWorkers(): Promise<{ new: number; closed: number }> {
+  const d = await spineFetch('/workers/run', { method: 'POST' });
+  return { new: Number(d.new) || 0, closed: Number(d.closed) || 0 };
 }
 
 export async function proposeAction(kind: string, args: Record<string, unknown>, talk = false): Promise<AiAction> {

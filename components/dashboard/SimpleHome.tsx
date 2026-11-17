@@ -33,6 +33,7 @@ import MilestoneBanner from '@/components/dashboard/MilestoneBanner';
 import ActivationProgress from '@/components/dashboard/ActivationProgress';
 import TeachAibosCard from '@/components/dashboard/TeachAibosCard';
 import HomeTop from '@/components/home/HomeTop';
+import NeedsYou from '@/components/home/NeedsYou';
 import Panel from '@/components/home/Panel';
 import type { BusinessEvent } from '@/lib/api';
 
@@ -123,6 +124,9 @@ export default function SimpleHome() {
       <MilestoneBanner />
 
       <HomeTop />
+
+      {/* What AIBOS's workers found, each waiting for a yes. */}
+      <NeedsYou />
 
       {/* Work AIBOS prepared: reorders and check-ins, one tap each. */}
       {(proposals.length > 0 || followUps.length > 0) && (
