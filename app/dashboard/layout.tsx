@@ -8,6 +8,7 @@ import InstallPrompt from '@/components/pwa/InstallPrompt';
 import UpdatePrompt from '@/components/pwa/UpdatePrompt';
 import CardReminderPrompt from '@/components/pwa/CardReminderPrompt';
 import WhatsNew from '@/components/pwa/WhatsNew';
+import GiftWelcome from '@/components/onboarding/GiftWelcome';
 import WelcomeTour from '@/components/onboarding/WelcomeTour';
 import DashboardTour from '@/components/onboarding/DashboardTour';
 import { logUsage, type UsageEngine } from '@/lib/usage';
@@ -91,6 +92,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <DashboardTour />
       {/* Shown once after an upgrade, and stays until it is closed. */}
       <WelcomeTour />
+      {/* A plan AIBOS gave free: the owner welcomed by name, once, on top. */}
+      <GiftWelcome />
     </div>
   );
 }

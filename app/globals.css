@@ -1887,6 +1887,9 @@ html, body {
 }
 .whatsnew-logo img { width: 60px; height: 60px; object-fit: contain; }
 .whatsnew-close { position: absolute; top: 16px; right: 16px; z-index: 2; }
+/* The gift welcome (GiftWelcome.tsx) opens over the upgrade welcome (z 1000),
+   which is waiting underneath for when it closes. */
+.whatsnew-backdrop.gift-welcome { z-index: 1100; }
 .whatsnew-body { padding: 32px; }
 .whatsnew-title { margin: 0; font-size: var(--fs-display); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; }
 .whatsnew-sub { margin: 12px 0 0; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); max-width: 560px; }

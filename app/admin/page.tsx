@@ -42,6 +42,9 @@ function SourceTag({ source }: { source: string | null }) {
     );
   if (source === 'payment')
     return <span className="badge" style={{ color: 'var(--good)', background: 'color-mix(in srgb, var(--good) 14%, transparent)', borderColor: 'color-mix(in srgb, var(--good) 35%, transparent)' }}>PAID</span>;
+  // A plan given free for a while (aibos-api gifts.py); it ends on its own.
+  if (source === 'gift')
+    return <span className="badge" style={{ color: 'var(--cyan)', background: 'color-mix(in srgb, var(--cyan) 14%, transparent)', borderColor: 'color-mix(in srgb, var(--cyan) 35%, transparent)' }}>GIFT</span>;
   return <span style={{ color: 'var(--text-4)' }}>None</span>;
 }
 

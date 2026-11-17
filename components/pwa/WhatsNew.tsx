@@ -60,8 +60,9 @@ function shippedWords(iso: string): string {
   return new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-/** The art: a bento grid in hairlines, the logo's rings and the money line. */
-function Art() {
+/** The art: a bento grid in hairlines, the logo's rings and the money line.
+ *  Also the art of the gift welcome (components/onboarding/GiftWelcome.tsx). */
+export function Art() {
   // Tiles laid out like the app's 6-column bento grid, left and right of the
   // logo, so the art is made of the thing it announces.
   const tiles: [number, number, number, number][] = [
