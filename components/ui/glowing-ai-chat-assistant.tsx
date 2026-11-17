@@ -23,6 +23,7 @@ import { TIERS } from '@/lib/tiers';
 import { useAiAssistant, MAX_CHARS } from '@/lib/aiAssistant';
 import { DEFAULT_PROMPTS } from '@/lib/aiKnowledge';
 import AnswerCheck from '@/components/chat/AnswerCheck';
+import ActionCard from '@/components/chat/ActionCard';
 import RichText from '@/components/chat/RichText';
 import { useTalkMode, type TalkPhase } from '@/lib/useTalkMode';
 
@@ -73,7 +74,7 @@ export function FloatingAiAssistant() {
   const {
     open, setOpen, toggle,
     messages, loading, status, online, suggestions, setSuggestions,
-    sendMessage, pushAssistant, clearConversation,
+    sendMessage, pushAssistant, clearConversation, answerAction, setTalking,
   } = useAiAssistant();
   const { isDark } = useTheme();
   const tier = useStore((s) => s.tier);
@@ -98,6 +99,8 @@ export function FloatingAiAssistant() {
   }, [setOpen, talkStart]);
   // Closing the panel ends the conversation.
   useEffect(() => { if (!open && talking) talkStop(); }, [open, talking, talkStop]);
+  // Jobs asked for while talking are logged as spoken.
+  useEffect(() => { setTalking(talking); }, [talking, setTalking]);
 
   // Hold the AIBOS button to talk; a quick tap still opens and closes the panel.
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -243,7 +246,7 @@ export function FloatingAiAssistant() {
                   </p>
                   {talk.supported && (
                     <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '8px 0 0' }}>
-                      Or press <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>Talk</strong> and just speak. AIBOS reads you your brief, answers out loud, and records a sale when you say confirm.
+                      Or press <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>Talk</strong> and just speak. AIBOS reads you your brief, answers out loud and does the job: a reminder, a sale, an invoice. Anything with money waits for your yes.
                     </p>
                   )}
                 </div>
@@ -268,7 +271,11 @@ export function FloatingAiAssistant() {
                         {m.timestamp}
                       </p>
                     </div>
-                    {m.role === 'assistant' && m.reads !== undefined && !m.ephemeral && (
+                    {m.role === 'assistant' && m.actions?.map((job) => (
+                      <ActionCard key={job.id} job={job} busy={loading} onAnswer={answerAction} />
+                    ))}
+                    {m.role === 'assistant' && m.reads !== undefined && !m.ephemeral
+                      && !(m.actions?.length && !m.reads.length) && (
                       <AnswerCheck
                         message={m}
                         question={messages[i - 1]?.role === 'user' ? messages[i - 1].content : undefined}

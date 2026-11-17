@@ -24,7 +24,8 @@ import { createClient } from '@/lib/supabase';
 import {
   listProducts, listEvents, classifyActivity, createEvent, confirmEvent, voidEvent,
   authHeaders, ACTIVE_BUSINESS_KEY, ACTING_AS_KEY,
-  type Product,
+  proposeAction, approveAction, declineAction, undoAction, setAutopilot, ApiError,
+  type Product, type AiAction,
 } from '@/lib/api';
 import { canAccess } from '@/lib/tiers';
 import { ASKS_TO_BUY, NOT_SOLD_HERE, inIosApp } from '@/lib/iosApp';
@@ -54,7 +55,13 @@ export interface ChatMessage {
    *  checked with "Right" / "That's wrong" (UI/UX audit C7). What the answer
    *  read on the way, in words with entry ids (C8); empty when not known. */
   reads?: ChatRead[];
+  /** Jobs this answer did or is waiting to do (Jarvis phase 2): each shows as
+   *  a card with Yes / Not now, or Undo once done. */
+  actions?: AiAction[];
 }
+
+/** How the owner answers a job: from the card, or by saying it. */
+export type ActionVerb = 'yes' | 'no' | 'undo';
 
 /** One lookup an answer made: "Read 214 sales from 1 to 30 September 2026". */
 export interface ChatRead { tool: string; said: string; ids: string[] }
@@ -83,6 +90,10 @@ interface AiAssistantCtx {
   sendMessage: (text: string) => void;
   pushAssistant: (content: string) => void;
   clearConversation: () => void;
+  /** Answer a job: yes, not now, or undo. */
+  answerAction: (id: string, verb: ActionVerb) => void;
+  /** Talk mode is on: jobs asked for are logged as spoken. */
+  setTalking: (on: boolean) => void;
 }
 
 const Ctx = createContext<AiAssistantCtx | null>(null);
@@ -456,6 +467,39 @@ const IOS_CHAT_LOCKED = 'Asking AIBOS is not part of your plan.';
 const CHAT_CONFIRM = /^(confirm|yes|yebo|yep|ok(ay)?|post it|do it)\b/i;
 const CHAT_CANCEL = /^(cancel|no|discard|void|scrap|don'?t)\b/i;
 
+// A job waiting for the owner's word (Jarvis phase 2). Stricter than the
+// draft's yes: only a short answer counts, so "okay, and what about July?"
+// never approves anything.
+const ACTION_YES = /^(yes|yeah|yep|yebo|confirm|ok(ay)?|sure|go ahead|do it|please do|post it)\b/i;
+const ACTION_NO = /^(no|nope|not now|cancel|leave it|don'?t)\b/i;
+const ACTION_UNDO = /^(undo|take (that|it) back|reverse (that|it)|cancel that)\b/i;
+const SHORT_ANSWER = (t: string) => t.split(/\s+/).filter(Boolean).length <= 6;
+
+/** Entries the chat records through a job (aibos-api actions.ENTRY_TYPES). */
+const JOB_ENTRY_TYPES = ['Sale', 'Expense', 'Purchase', 'CustomerPayment', 'SupplierPayment', 'Refund'];
+
+/** A classified entry as the arguments of a record_entry job. */
+function entryArgs(proposal: { event_type: string; payload?: Record<string, unknown> }): Record<string, unknown> {
+  const p = proposal.payload ?? {};
+  const first = (v: unknown) => (Array.isArray(v) ? v[0] : v);
+  const args: Record<string, unknown> = { event_type: proposal.event_type, amount: Number(p.amount) || 0 };
+  for (const k of ['customer', 'supplier', 'category', 'payment_method', 'direction'] as const) {
+    if (p[k] !== undefined && p[k] !== null && p[k] !== '') args[k] = p[k];
+  }
+  const item = p.item ?? first(p.items);
+  if (item) args.item = item;
+  const qty = Number(p.quantity ?? first(p.quantities));
+  if (qty > 0) args.quantity = qty;
+  return args;
+}
+
+/** The words that go with a job when it first appears. */
+export function jobLine(job: AiAction): string {
+  if (job.status === 'waiting') return `Here's what I'll do:\n\n**${job.said}**\n\nSay **yes** to go ahead, or **no** to leave it.`;
+  if (job.how === 'automatic') return `${job.did}. You told me to do these myself. Say **undo** to take it back.`;
+  return `${job.did}.${job.can_undo ? ' Say **undo** to take it back.' : ''}`;
+}
+
 function looksLikeTransaction(raw: string): boolean {
   const q = raw.trim().toLowerCase();
   if (/^(record|log)\b/.test(q)) return true;
@@ -640,6 +684,14 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
   // A chat-drafted spine event awaiting the owner's "confirm"/"cancel".
   const pendingChatEventRef = useRef<{ id: string; summary: string } | null>(null);
 
+  // Jobs (Jarvis phase 2): the newest one waiting for a yes, the newest one
+  // done that can be undone, and a "do these yourself" offer on the table.
+  const pendingActionRef = useRef<string | null>(null);
+  const lastDoneRef = useRef<string | null>(null);
+  const autopilotOfferRef = useRef<string | null>(null);
+  const talkingRef = useRef(false);
+  const setTalking = useCallback((on: boolean) => { talkingRef.current = on; }, []);
+
   // ── Memory: load this person's conversation for this business ──────────────
   const scopeRef = useRef<string | null>(null);
   const savedIdsRef = useRef<Set<string>>(new Set());
@@ -724,6 +776,9 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     setMessages([]);
     setSuggestions([]);
     pendingChatEventRef.current = null;
+    pendingActionRef.current = null;
+    lastDoneRef.current = null;
+    autopilotOfferRef.current = null;
     savedIdsRef.current = new Set();
     const scope = scopeRef.current;
     if (scope) { try { window.localStorage.removeItem(scope); } catch { /* private mode */ } }
@@ -741,6 +796,64 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       ...(ephemeral ? { ephemeral: true } : {}),
     }]);
   }, []);
+
+  /** Remember the jobs an answer brought, so a spoken yes, no or undo finds them. */
+  const noteJobs = useCallback((jobs: AiAction[]) => {
+    for (const job of jobs) {
+      if (job.status === 'waiting') pendingActionRef.current = job.id;
+      if (job.status === 'done' && job.can_undo) lastDoneRef.current = job.id;
+    }
+    const waiting = jobs.some((j) => j.status === 'waiting');
+    if (waiting) setSuggestions(['Yes', 'Not now']);
+    else if (jobs.some((j) => j.status === 'done' && j.can_undo)) setSuggestions(['Undo']);
+  }, []);
+
+  /** A job's new state, shown on its card wherever it is in the conversation. */
+  const updateJob = useCallback((job: AiAction) => {
+    setMessages((p) => p.map((m) => (m.actions?.some((a) => a.id === job.id)
+      ? { ...m, actions: m.actions.map((a) => (a.id === job.id ? { ...a, ...job } : a)) }
+      : m)));
+  }, []);
+
+  const answerAction = useCallback(async (id: string, verb: ActionVerb) => {
+    if (loadingRef.current) return;
+    setLoading(true);
+    setSuggestions([]);
+    autopilotOfferRef.current = null;
+    try {
+      const job = verb === 'yes' ? await approveAction(id)
+        : verb === 'no' ? await declineAction(id) : await undoAction(id);
+      updateJob(job);
+      if (pendingActionRef.current === id) pendingActionRef.current = null;
+      if (verb === 'no') { pushAssistant('Okay, I left it. Nothing was changed.'); return; }
+      if (verb === 'undo') {
+        if (lastDoneRef.current === id) lastDoneRef.current = null;
+        pushAssistant('Undone. I took that back and nothing else changed.');
+        return;
+      }
+      lastDoneRef.current = job.can_undo ? job.id : null;
+      let line = `Done. ${job.did}.`;
+      if (['record_entry', 'mark_invoice_paid', 'send_invoice'].includes(job.kind)) {
+        try {
+          await useStore.getState().refreshTwin();
+          const cashNow = useStore.getState().twin?.cash;
+          const sym = useStore.getState().currencySymbol || 'K';
+          if (typeof cashNow === 'number') line += ` Cash is now **${fmt(Number(cashNow), true, sym)}**.`;
+        } catch { /* the job is done; the figure shows on the next load */ }
+      }
+      if (job.offer_autopilot) {
+        autopilotOfferRef.current = job.offer_autopilot.kind;
+        line += `\n\n${job.offer_autopilot.said}`;
+        setSuggestions(['Yes, do these yourself', 'No, keep asking me']);
+      } else if (job.can_undo) setSuggestions(['Undo']);
+      pushAssistant(line);
+    } catch (err) {
+      if (pendingActionRef.current === id) pendingActionRef.current = null;
+      pushAssistant(err instanceof Error && err.message ? err.message : "I couldn't do that just now. Nothing was changed.");
+    } finally {
+      setLoading(false);
+    }
+  }, [pushAssistant, updateJob]);
 
   /**
    * Streamed answer (audit #21). POSTs to /chat/stream and writes each piece
@@ -817,6 +930,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       // are shown at once instead of being tried again.
       let final = false;
       const reads: ChatRead[] = [];   // what each lookup read (C8)
+      const jobs: AiAction[] = [];    // jobs done or waiting (Jarvis phase 2)
       // A refusal (no plan, no AI key, a bad request) now arrives as a frame,
       // because the API opens the answer before it checks anything.
       let gate: { code: number; detail: string } | null = null;
@@ -835,9 +949,11 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
             const msg = JSON.parse(line.slice(5).trim()) as {
               t?: string; tool?: string; status?: string; error?: string; done?: boolean; retry?: boolean;
               read?: ChatRead;
+              action?: AiAction;
               gate?: number; detail?: unknown;
             };
             if (msg.gate) gate = { code: msg.gate, detail: typeof msg.detail === 'string' ? msg.detail : '' };
+            else if (msg.action && typeof msg.action.id === 'string') jobs.push(msg.action);
             else if (msg.t) { write(msg.t); setStatus(null); }
             else if (msg.tool) setStatus(TOOL_STATUS[msg.tool] ?? 'Looking that up…');
             else if (msg.read && typeof msg.read.said === 'string') reads.push({ ...msg.read, ids: Array.isArray(msg.read.ids) ? msg.read.ids : [] });
@@ -862,8 +978,20 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       }
       if (bubble.id) {
         const answered = bubble.id;
-        setMessages((p) => p.map((m) => (m.id === answered ? { ...m, reads: [...reads] } : m)));
+        setMessages((p) => p.map((m) => (m.id === answered
+          ? { ...m, reads: [...reads], ...(jobs.length ? { actions: [...jobs] } : {}) } : m)));
         if (stopped) write(`\n\n${stopped}`);
+        noteJobs(jobs);
+        setOnline(true);
+        return 'answered';
+      }
+      // A job with no words from the AI: the job's own words stand in.
+      if (jobs.length) {
+        setMessages((p) => [...p, {
+          id: `a-${Date.now()}-jobs`, role: 'assistant', content: jobs.map(jobLine).join('\n\n'),
+          timestamp: nowTime(), actions: [...jobs],
+        }]);
+        noteJobs(jobs);
         setOnline(true);
         return 'answered';
       }
@@ -888,7 +1016,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       window.clearTimeout(idle);
       setStreaming(false);
     }
-  }, [pushAssistant]);
+  }, [pushAssistant, noteJobs]);
 
   const sendMessage = useCallback(async (raw: string) => {
     const text = raw.trim().slice(0, MAX_CHARS);
@@ -906,6 +1034,32 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     // 00) The iPhone app sells nothing (lib/iosApp.ts): a question about buying a
     //     plan or what one costs gets one plain answer and never reaches the model.
     if (inIosApp() && ASKS_TO_BUY.test(text)) { pushAssistant(NOT_SOLD_HERE); return; }
+
+    // 0) A job is waiting on the owner's word, or one just done can be taken
+    //    back, or AIBOS offered to do these by itself. A short answer settles
+    //    it; anything else moves the conversation on and the job keeps its card.
+    const waitingJob = pendingActionRef.current;
+    const offer = autopilotOfferRef.current;
+    autopilotOfferRef.current = null;
+    if (SHORT_ANSWER(text)) {
+      if (waitingJob && ACTION_YES.test(text)) { void answerAction(waitingJob, 'yes'); return; }
+      if (waitingJob && ACTION_NO.test(text)) { void answerAction(waitingJob, 'no'); return; }
+      if (offer && (ACTION_YES.test(text) || /\bdo (these|them) (yourself|myself)\b/i.test(text))) {
+        setLoading(true);
+        try {
+          await setAutopilot(offer, true);
+          pushAssistant("Done. From now on I'll record entries like these myself and tell you each time. Anything bigger, or a new kind, I'll still ask about. Say **undo** on any of them.");
+        } catch (err) {
+          pushAssistant(err instanceof Error && err.message ? err.message : "I couldn't switch that on just now.");
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
+      if (offer && ACTION_NO.test(text)) { pushAssistant("Okay, I'll keep asking you first."); return; }
+      if (lastDoneRef.current && ACTION_UNDO.test(text)) { void answerAction(lastDoneRef.current, 'undo'); return; }
+    }
+    pendingActionRef.current = null;
 
     // 0) A drafted event is waiting on the owner's word — one word settles it.
     const draft = pendingChatEventRef.current;
@@ -956,6 +1110,28 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         if (!proposal?.event_type) {
           pushAssistant("I couldn't work out what kind of activity that is. Try phrasing it like “sold 3 bags of mealie meal for K450”, or use the **Record** page, which previews everything first.");
           return;
+        }
+        // Through a job (Jarvis phase 2), so each yes counts towards AIBOS
+        // doing these by itself. Before the API's migration 0047 the job
+        // route answers 503 and the entry is drafted the way it always was.
+        if (JOB_ENTRY_TYPES.includes(proposal.event_type)) {
+          try {
+            const job = await proposeAction('record_entry',
+              entryArgs({ event_type: proposal.event_type, payload: proposal.payload }), talkingRef.current);
+            logUsage('event_recorded', { meta: { event_type: proposal.event_type, via: 'chat' } });
+            setMessages((p) => [...p, {
+              id: `a-${Date.now()}-job`, role: 'assistant', content: jobLine(job), timestamp: nowTime(), actions: [job],
+            }]);
+            noteJobs([job]);
+            if (job.status === 'done') await useStore.getState().refreshTwin().catch(() => undefined);
+            return;
+          } catch (err) {
+            if (!(err instanceof ApiError) || err.status === 400) {
+              pushAssistant(err instanceof Error && err.message ? err.message : "I couldn't draft that just now.");
+              return;
+            }
+            // Not ready or not allowed: the old way below.
+          }
         }
         const ev = await createEvent({
           event_type: proposal.event_type,
@@ -1077,6 +1253,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       message: text,
       messages: [...earlier, { role: 'user', content: text }],
       qid,
+      talk: talkingRef.current,
       context: buildContext(s, lv, {
         name: profileRef.current?.business_name,
         type: profileRef.current?.business_type,
@@ -1143,15 +1320,21 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       }
       setOnline(true);
       const reply = (data.reply as string) ?? (data.response as string) ?? '';
-      if (reply.trim()) {
-        setMessages((p) => [...p, { id: `a-${Date.now()}-${p.length}`, role: 'assistant', content: reply, timestamp: nowTime(), reads: [] }]);
+      const jobs = (Array.isArray(data.actions) ? data.actions : []) as AiAction[];
+      if (reply.trim() || jobs.length) {
+        setMessages((p) => [...p, {
+          id: `a-${Date.now()}-${p.length}`, role: 'assistant',
+          content: reply.trim() ? reply : jobs.map(jobLine).join('\n\n'), timestamp: nowTime(), reads: [],
+          ...(jobs.length ? { actions: jobs } : {}),
+        }]);
+        noteJobs(jobs);
       }
       else pushAssistant(failureText(null), true);
     } finally {
       setLoading(false);
       setStatus(null);
     }
-  }, [pushAssistant, streamChat]);
+  }, [pushAssistant, streamChat, answerAction, noteJobs]);
 
   // ── Long-press explanation → answer instantly from the knowledge base ──────
   useEffect(() => {
@@ -1266,7 +1449,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       open, setOpen, toggle,
       messages, loading, online, suggestions, setSuggestions,
       status: loading && !streaming ? (status ?? 'Working on it…') : null,
-      sendMessage, pushAssistant, clearConversation,
+      sendMessage, pushAssistant, clearConversation, answerAction, setTalking,
     }}>
       {children}
     </Ctx.Provider>

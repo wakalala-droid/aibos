@@ -1234,6 +1234,41 @@ export async function getSpokenBrief(): Promise<SpokenBrief> {
   return (await spineFetch('/brief/spoken')) as unknown as SpokenBrief;
 }
 
+// ── Jobs AIBOS does (Jarvis phase 2, aibos-api actions.py) ───────────────────
+// 'waiting' wants the owner's yes; 'done' can be undone when can_undo says so.
+export type AiActionStatus = 'waiting' | 'done' | 'declined' | 'undone' | 'failed' | 'expired';
+export interface AiAutopilotOffer { kind: string; approved_in_a_row: number; largest: number; said: string }
+export interface AiAction {
+  id: string; kind: string; status: AiActionStatus;
+  how: 'did' | 'asked' | 'automatic' | null;
+  /** What AIBOS will do, and the same in the past tense once done. */
+  said: string; did: string; can_undo: boolean; at?: string; number?: string;
+  offer_autopilot?: AiAutopilotOffer;
+}
+
+export async function proposeAction(kind: string, args: Record<string, unknown>, talk = false): Promise<AiAction> {
+  const data = await spineFetch('/actions', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ kind, args, talk }),
+  });
+  return data.action as AiAction;
+}
+export async function approveAction(id: string): Promise<AiAction> {
+  return (await spineFetch(`/actions/${encodeURIComponent(id)}/approve`, { method: 'POST' })).action as AiAction;
+}
+export async function declineAction(id: string): Promise<AiAction> {
+  return (await spineFetch(`/actions/${encodeURIComponent(id)}/decline`, { method: 'POST' })).action as AiAction;
+}
+export async function undoAction(id: string): Promise<AiAction> {
+  return (await spineFetch(`/actions/${encodeURIComponent(id)}/undo`, { method: 'POST' })).action as AiAction;
+}
+export async function setAutopilot(kind: string, on: boolean): Promise<void> {
+  await spineFetch('/actions/autopilot', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ kind, on }),
+  });
+}
+
 /** AR aging per customer + ready-to-send WhatsApp nudge drafts (audit #15). */
 export async function getDebtors(businessName?: string | null): Promise<AgingReport> {
   const q = businessName ? `?business_name=${encodeURIComponent(businessName)}` : '';
