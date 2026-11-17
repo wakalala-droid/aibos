@@ -8,10 +8,14 @@
 // one thing at a time:
 //
 //   1. the greeting, the one thing today, Record and Talk
-//   2. the money: the figure and its line, where it is, the 13-week watch
-//   3. Needs you: the only to-do list
-//   4. Today: sales, money owed and stock, then coming up or just happened
-//   5. the AIBOS team: what the workers did last
+//   2. the AIBOS team: the whole scene, edge to edge (HomeTeam), for owners
+//      whose plan has it; on other plans it comes last, asleep
+//   3. the money: the figure and its line, where it is, the 13-week watch
+//   4. Needs you: the only to-do list
+//   5. Today: sales, money owed and stock, then coming up or just happened
+//
+// The AIBOS team page folded into Home the same day (/dashboard/team sends
+// here): the owner works with the team where they already are.
 //
 // The numbers (scores, the month figures, the chart, the findings) moved to
 // Your numbers (/dashboard/numbers). Above the five blocks, at most one
@@ -39,7 +43,7 @@ import WhereItIs from './WhereItIs';
 import CashWatch from './CashWatch';
 import NeedsYou from './NeedsYou';
 import TodayPanel from './TodayPanel';
-import TeamStrip from './TeamStrip';
+import HomeTeam from './HomeTeam';
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -71,6 +75,7 @@ export default function Home() {
   const seesMoney = roleAllows(teamRole, '/dashboard/cash');
   const canRecord = roleAllows(teamRole, '/dashboard/record');
   const owner = !teamRole || teamRole === 'owner';
+  const teamFirst = owner && canAccess(tier, 'chat_actions');
 
   // The one thing today, from the morning brief's own reading of the day.
   const twinActive = !!twin && (Number(twin.event_count) > 0 || Number(twin.cash) !== 0);
@@ -126,7 +131,10 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 2. The money */}
+      {/* 2. The AIBOS team, edge to edge */}
+      {teamFirst && <HomeTeam />}
+
+      {/* 3. The money */}
       {seesMoney && (
         <>
           <div className="home-hero">
@@ -137,14 +145,14 @@ export default function Home() {
         </>
       )}
 
-      {/* 3. Needs you */}
+      {/* 4. Needs you */}
       {seesMoney && <NeedsYou />}
 
-      {/* 4. Today */}
+      {/* 5. Today */}
       <TodayPanel />
 
-      {/* 5. The AIBOS team */}
-      {owner && <TeamStrip />}
+      {/* Plans without the team: the team asleep, last */}
+      {owner && !teamFirst && <HomeTeam />}
 
       <nav className="home-foot" aria-label="More">
         {seesMoney && <Link href="/dashboard/numbers" className="pill pill-quiet">Your numbers</Link>}

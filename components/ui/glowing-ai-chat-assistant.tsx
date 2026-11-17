@@ -37,6 +37,7 @@ const TALK_WORDS: Record<Exclude<TalkPhase, 'off'>, string> = {
   speaking: 'Speaking…',
   listening: 'Listening…',
   thinking: 'Thinking…',
+  resting: 'Waiting for you',
 };
 
 // ── Minimal stroke icons (2px, per visual_language_system.md) ────────────────
@@ -90,16 +91,16 @@ export function FloatingAiAssistant() {
   const atBottomRef = useRef(true);
   const recognitionRef = useRef<any>(null);
 
-  // ── Talk mode: AIBOS reads the brief, listens, answers out loud ────────────
+  // ── Talk mode: AIBOS says hello, listens, answers out loud ─────────────────
   const talk = useTalkMode({ messages, loading, sendMessage, pushAssistant, setSuggestions });
   const { start: talkStart, stop: talkStop } = talk;
   const talking = talk.phase !== 'off';
   const startTalk = useCallback(() => {
     recognitionRef.current?.stop();
     setOpen(true);
-    talkStart(true);
+    talkStart();
   }, [setOpen, talkStart]);
-  // "Talk to AIBOS" on Home or the team page starts the same conversation.
+  // "Talk to AIBOS" on Home or the team scene starts the same conversation.
   useEffect(() => {
     window.addEventListener(TALK_EVENT, startTalk);
     return () => window.removeEventListener(TALK_EVENT, startTalk);
@@ -199,6 +200,7 @@ export function FloatingAiAssistant() {
     <>
     {talking && (
       <TalkOverlay phase={talk.phase as Exclude<TalkPhase, 'off'>} heard={talk.heard} answer={lastAnswer?.content ?? null}
+        error={talk.error}
         job={lastJob} busy={loading} onAnswer={answerAction}
         onInterrupt={talk.interrupt} onEnd={talk.stop}
         onType={() => { talk.stop(); setOpen(true); setTimeout(() => inputRef.current?.focus(), 120); }} />
@@ -234,7 +236,7 @@ export function FloatingAiAssistant() {
               </div>
               <button type="button" onClick={talking ? talk.stop : startTalk} className="pill"
                 aria-pressed={talking}
-                title={talking ? 'Stop talking' : 'Talk to AIBOS: it reads your brief and listens'}
+                title={talking ? 'Stop talking' : 'Talk to AIBOS: it asks what you need and listens'}
                 style={talking ? { background: 'var(--text-1)', color: 'var(--bg-card)' } : undefined}>
                 {Icon.mic}<span>{talking ? 'End' : 'Talk'}</span>
               </button>
@@ -264,7 +266,7 @@ export function FloatingAiAssistant() {
                   </p>
                   {talk.supported && (
                     <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '8px 0 0' }}>
-                      Or press <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>Talk</strong> and just speak. AIBOS reads you your brief, answers out loud and does the job: a reminder, a sale, an invoice. Anything with money waits for your yes.
+                      Or press <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>Talk</strong> and just speak. AIBOS asks what you need, answers out loud and does the job: a reminder, a sale, an invoice. Anything with money waits for your yes.
                     </p>
                   )}
                 </div>
@@ -344,15 +346,18 @@ export function FloatingAiAssistant() {
                         {TALK_WORDS[talk.phase as Exclude<TalkPhase, 'off'>]}
                       </span>
                       <span style={{ display: 'block', fontSize: 'var(--fs-label)', color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {talk.heard && talk.heard !== '…' ? `“${talk.heard}”` : talk.phase === 'listening' ? 'Speak now. Say “that’s all” to finish.' : 'Tap Interrupt to speak over AIBOS.'}
+                        {talk.heard && talk.heard !== '…' ? `“${talk.heard}”`
+                          : talk.phase === 'listening' ? 'Speak now. Say “that’s all” to finish.'
+                          : talk.phase === 'resting' ? (talk.error ?? 'Tap Talk now when you are ready.')
+                          : 'Tap Talk now to speak over AIBOS.'}
                       </span>
                     </>
                   ) : (
                     <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-2)' }}>{talk.error}</span>
                   )}
                 </div>
-                {(talk.phase === 'speaking' || talk.phase === 'briefing') && (
-                  <button type="button" className="pill pill-quiet" onClick={talk.interrupt}>Interrupt</button>
+                {(talk.phase === 'speaking' || talk.phase === 'briefing' || talk.phase === 'resting') && (
+                  <button type="button" className="pill pill-quiet" onClick={talk.interrupt}>Talk now</button>
                 )}
                 {!talking && (
                   <button type="button" className="pill pill-quiet" onClick={talk.clearError}>OK</button>

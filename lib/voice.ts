@@ -105,9 +105,18 @@ export function stopSpeaking(): void {
   if (canSpeak()) window.speechSynthesis.cancel();
 }
 
+/** How the owner says the words a device voice gets wrong (17 Nov 2026):
+ *  AIBOS is "AI boss", not "eye-boss"; ngwee is "ngwe", as in kwacha ngwe. */
+export function pronounce(text: string): string {
+  return text
+    .replace(/\bAI[\s-]?BOS\b/gi, 'A I boss')
+    .replace(/\bngwee\b/gi, 'ngweh');
+}
+
 /** Say `text`; resolves when it is finished or stopped. Long text goes a
  *  sentence at a time: Chrome cuts a single long utterance off mid-way. */
-export function speak(text: string): Promise<void> {
+export function speak(raw: string): Promise<void> {
+  const text = pronounce(raw);
   return new Promise((resolve) => {
     if (!canSpeak() || !text.trim()) { resolve(); return; }
     const synth = window.speechSynthesis;
@@ -137,17 +146,40 @@ export interface ListenOpts {
   signal?: AbortSignal;
 }
 
+// The browser's live recognition broke once (no speech service, a language it
+// does not know): use the recording for the rest of the visit.
+let liveBroken = false;
+
 /** One spoken turn: the words, or '' when nothing was said. */
-export function listenOnce(opts: ListenOpts = {}): Promise<string> {
-  return listenMode() === 'speech' ? listenLive(opts) : listenRecorded(opts);
+export async function listenOnce(opts: ListenOpts = {}): Promise<string> {
+  if (listenMode() === 'speech' && !liveBroken) {
+    try {
+      return await listenLive(opts);
+    } catch (e) {
+      if ((e as Error).message === 'mic') throw e;
+      liveBroken = true;                                            // fall through to the recording
+      if (opts.signal?.aborted) return '';
+    }
+  }
+  if (typeof MediaRecorder === 'undefined' || !navigator.mediaDevices?.getUserMedia) return '';
+  return listenRecorded(opts);
+}
+
+// English the speech services know; anything else (en-ZM, say) is heard as British English.
+const LIVE_LANGS = /^en-(gb|us|au|ca|in|ie|nz|za|ng|ke|ph|sg)$/i;
+
+function liveLang(): string {
+  const lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-GB';
+  if (lang.toLowerCase().startsWith('en')) return LIVE_LANGS.test(lang) ? lang : 'en-GB';
+  return lang;
 }
 
 function listenLive({ onInterim, signal }: ListenOpts): Promise<string> {
   return new Promise((resolve, reject) => {
     const Ctor = recognitionCtor();
-    if (!Ctor) { resolve(''); return; }
+    if (!Ctor) { reject(new Error('none')); return; }
     const rec = new Ctor();
-    rec.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-GB';
+    rec.lang = liveLang();
     rec.interimResults = true;
     rec.continuous = false;
     let heard = '';
@@ -159,10 +191,12 @@ function listenLive({ onInterim, signal }: ListenOpts): Promise<string> {
     rec.onerror = (e) => { if (e.error && e.error !== 'no-speech' && e.error !== 'aborted') failed = e.error; };
     rec.onend = () => {
       if (failed === 'not-allowed' || failed === 'service-not-allowed') reject(new Error('mic'));
+      // No speech service (Brave, offline Chrome) or a language it lacks: the caller records instead.
+      else if (failed && !heard) reject(new Error(failed));
       else resolve(heard);
     };
-    signal?.addEventListener('abort', () => { heard = ''; try { rec.abort(); } catch { /* ended */ } });
-    try { rec.start(); } catch { resolve(''); }
+    signal?.addEventListener('abort', () => { heard = ''; failed = null; try { rec.abort(); } catch { /* ended */ } });
+    try { rec.start(); } catch (e) { reject(e instanceof Error ? e : new Error('start')); }
   });
 }
 

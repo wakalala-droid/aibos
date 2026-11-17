@@ -5,8 +5,9 @@
 // up in the middle of a navy screen while the conversation runs. Under it,
 // what AIBOS is doing in one word, the words it just heard or the start of
 // its answer, and a job waiting for a yes, so it can be tapped as well as
-// said. Interrupt while it speaks; End goes back to the page; Type instead
-// keeps the chat open without the voice. Escape ends.
+// said. Tapping the sphere (or Talk now) stops AIBOS and listens; after a
+// quiet spell it rests here until tapped. End goes back to the page; Type
+// instead keeps the chat open without the voice. Escape ends.
 
 import { useEffect, useState } from 'react';
 import AibosSphere from './AibosSphere';
@@ -20,6 +21,7 @@ const WORDS: Record<Exclude<TalkPhase, 'off'>, string> = {
   speaking: 'Speaking',
   listening: 'Listening',
   thinking: 'Thinking',
+  resting: 'Waiting for you',
 };
 
 /** An answer as one plain paragraph, for reading along. */
@@ -28,10 +30,11 @@ function plain(text: string, cap = 240): string {
   return flat.length > cap ? `${flat.slice(0, cap).replace(/\s\S*$/, '')}…` : flat;
 }
 
-export default function TalkOverlay({ phase, heard, answer, job, busy, onAnswer, onInterrupt, onEnd, onType }: {
+export default function TalkOverlay({ phase, heard, answer, error, job, busy, onAnswer, onInterrupt, onEnd, onType }: {
   phase: Exclude<TalkPhase, 'off'>;
   heard: string;
   answer: string | null;
+  error: string | null;
   job: AiAction | null;
   busy: boolean;
   onAnswer: (id: string, verb: ActionVerb) => void;
@@ -54,24 +57,31 @@ export default function TalkOverlay({ phase, heard, answer, job, busy, onAnswer,
 
   const size = w < 520 ? 220 : 300;
   const listening = phase === 'listening';
+  const resting = phase === 'resting';
   const said = heard && heard !== '…' ? heard : '';
+  const canTap = phase === 'speaking' || phase === 'briefing' || resting;
 
   return (
     <div className="talk-overlay" data-theme="dark" role="dialog" aria-modal="true" aria-label="Talking to AIBOS">
       <div className="talk-overlay-body">
-        <AibosSphere size={size} bars width={w} phase={phase} pulse={said} label={`AIBOS is ${WORDS[phase].toLowerCase()}`} />
+        <button type="button" className="talk-sphere-btn" onClick={onInterrupt} disabled={!canTap}
+          aria-label={canTap ? 'Talk now' : `AIBOS is ${WORDS[phase].toLowerCase()}`}>
+          <AibosSphere size={size} bars width={w} phase={resting ? 'idle' : phase} pulse={said} />
+        </button>
         <p className="talk-phase" role="status" aria-live="polite">{WORDS[phase]}</p>
         <p className="talk-caption">
           {listening
             ? (said ? `“${said}”` : 'Speak now. Say “that’s all” to finish.')
-            : answer ? plain(answer) : ' '}
+            : resting
+              ? (error ?? 'I did not catch anything. Tap the sphere and speak.')
+              : answer ? plain(answer) : ' '}
         </p>
         {job && job.status === 'waiting' && (
           <div className="talk-job"><ActionCard job={job} busy={busy} onAnswer={onAnswer} /></div>
         )}
         <div className="talk-acts">
-          {(phase === 'speaking' || phase === 'briefing') && (
-            <button type="button" className="pill pill-primary" onClick={onInterrupt}>Interrupt</button>
+          {canTap && (
+            <button type="button" className="pill pill-primary" onClick={onInterrupt}>Talk now</button>
           )}
           <button type="button" className="pill pill-quiet" onClick={onType}>Type instead</button>
           <button type="button" className="pill" onClick={onEnd}>End</button>

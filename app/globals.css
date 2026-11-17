@@ -1398,33 +1398,6 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 .today-switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 20px 0 8px; padding-top: 16px; border-top: 1px solid var(--border); }
 .today-switch .chip { min-height: 44px; }
 
-/* The team strip on Home: the mark, one live line, the six workers. */
-.team-strip { display: flex; align-items: center; gap: 16px; color: inherit; text-decoration: none; min-height: 56px; border-radius: var(--radius-md); }
-.team-strip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
-.team-strip-hub {
-  position: relative; flex-shrink: 0; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%;
-  background: #fff; box-shadow: 0 0 0 6px var(--bg-card), 0 0 0 7px var(--border-strong);
-}
-.team-strip-hub::after { content: ''; position: absolute; inset: -10px; border-radius: 50%; border: 1px dashed var(--border-strong); }
-.team-strip-main { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; margin-left: 6px; }
-.team-strip-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.team-strip-line { font-size: var(--fs-data); line-height: 1.45; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.team-strip-crew { display: flex; gap: 6px; flex-shrink: 0; }
-.team-strip-dot {
-  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
-  border: 1px solid var(--border-strong); color: var(--text-2);
-}
-.team-strip-dot svg { width: 16px; height: 16px; }
-.team-strip-dot.is-ask { background: var(--brand-fill); border-color: var(--brand-fill); color: #0c0a09; }
-.team-strip-dot.is-off { border-style: dashed; color: var(--text-4); }
-.team-strip-go { flex-shrink: 0; width: 20px; height: 20px; color: var(--text-3); }
-.team-strip.is-auto .team-strip-hub::after { border-color: var(--chart-line); animation: scene-turn 24s linear infinite; }
-@media (max-width: 719px) {
-  .team-strip { flex-wrap: wrap; }
-  .team-strip-crew { order: 3; width: 100%; justify-content: space-between; padding-left: 4px; }
-  .team-strip-go { display: none; }
-}
-
 /* ── AIBOS auto: the switch at the top right of every page ─────────────────── */
 .auto-wrap { position: relative; display: flex; }
 .auto-switch {
@@ -1467,25 +1440,48 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
    dashed ring in the middle, the six workers three each side, a hexagon
    badge beside a small card. Status by fill: brand cyan needs the owner,
    outline is watching, faded and dashed is not on the plan. It moves only
-   when something is happening (the kit's one exception in the app). */
+   when something is happening (the kit's one exception in the app).
+   On Home it runs edge to edge across the content frame (HomeTeam measures
+   it): no frame, no corners, the grid fading out at the sides, so it reads
+   as a place, not a window. The mark is the exact middle of the stage. */
+.home-team { position: relative; align-self: flex-start; flex-shrink: 0; max-width: none; margin: 8px 0; }
+.home-team-said { max-width: 1216px; margin: 12px auto 0; padding: 0 32px; }
+@media (max-width: 1023px) { .home-team-said { padding: 0 16px; } }
 .scene {
   --scene-bg: #050b18; --scene-card: #0b1629; --scene-line: rgba(96,165,250,0.28); --scene-glow: #3b82f6;
-  position: relative; border-radius: 18px; overflow: hidden; padding: 20px; color: var(--text-1);
+  container: scene / inline-size;
+  position: relative; overflow: hidden; padding: 40px 32px 32px; color: var(--text-1);
   background:
-    radial-gradient(ellipse 55% 60% at 50% 50%, rgba(37,99,235,0.20), transparent 70%),
-    radial-gradient(ellipse 50% 70% at 0% 0%, rgba(59,130,246,0.14), transparent 70%),
-    linear-gradient(rgba(96,165,250,0.05) 1px, transparent 1px) 0 0 / 100% 40px,
-    linear-gradient(90deg, rgba(96,165,250,0.05) 1px, transparent 1px) 0 0 / 40px 100%,
+    radial-gradient(ellipse 45% 55% at 50% 40%, rgba(37,99,235,0.28), transparent 70%),
+    radial-gradient(ellipse 55% 50% at 0% 0%, rgba(59,130,246,0.14), transparent 70%),
+    radial-gradient(ellipse 55% 50% at 100% 100%, rgba(0,212,255,0.08), transparent 70%),
+    linear-gradient(rgba(96,165,250,0.05) 1px, transparent 1px) 0 0 / 100% 44px,
+    linear-gradient(90deg, rgba(96,165,250,0.05) 1px, transparent 1px) 0 0 / 44px 100%,
     var(--scene-bg);
-  border: 1px solid rgba(96,165,250,0.22);
+  border-block: 1px solid rgba(96,165,250,0.22);
 }
-.scene-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; }
-.scene-stage { position: relative; height: 540px; min-width: 0; }
+/* The grid fades towards the edges: a stage with no frame. */
+.scene::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 80% 75% at 50% 40%, transparent 55%, var(--scene-bg) 100%);
+}
+.scene-inner { position: relative; max-width: 1216px; margin: 0 auto; }
+.scene-stage { position: relative; height: 600px; min-width: 0; }
 .scene-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.scene-lines.is-phone { display: none; }
 .scene-line { stroke: var(--scene-line); stroke-width: 1.5; }
 .scene-line.is-ask { stroke: var(--brand-fill); stroke-width: 2.5; filter: drop-shadow(0 0 4px rgba(0,212,255,0.7)); }
 .scene-line.is-off { stroke: rgba(148,163,184,0.25); stroke-dasharray: 3 7; }
 .scene.is-auto .scene-line.is-watch { stroke: rgba(96,165,250,0.55); }
+
+/* Rings around the middle, for depth. The dashed one turns while auto runs. */
+.scene-orbits { position: absolute; inset: 0; pointer-events: none; }
+.scene-orbits i { position: absolute; left: 50%; top: 50%; border-radius: 50%; border: 1px solid rgba(96,165,250,0.12); transform: translate(-50%, -50%); }
+.scene-orbits i:nth-child(1) { width: 300px; height: 300px; }
+.scene-orbits i:nth-child(2) { width: 470px; height: 470px; border-style: dashed; border-color: rgba(96,165,250,0.12); }
+.scene-orbits i:nth-child(3) { width: 660px; height: 660px; border-color: rgba(96,165,250,0.07); }
+.scene.is-auto .scene-orbits i:nth-child(2) { animation: scene-orbit 90s linear infinite; }
+@keyframes scene-orbit { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
 /* Light running along a line: in to the middle from a worker that found something, out while auto runs. */
 .scene-spark {
@@ -1504,14 +1500,14 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
   85% { opacity: 1; } 100% { left: var(--x1); top: var(--y1); opacity: 0; }
 }
 
-/* The middle: the mark in a white disc, the dashed ring, a fainter outer ring. */
+/* The middle: the rings and the disc share one centre, the stage's own. The
+   name and state hang under the rings, so they never push the mark off it. */
 .scene-hub {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 230px; height: 230px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  position: absolute; left: 50%; top: 50%; z-index: 1; width: 200px; height: 200px; transform: translate(-50%, -50%);
   border: 0; border-radius: 50%; padding: 0; cursor: pointer; font: inherit; color: #fff;
   background: radial-gradient(circle, rgba(11,22,41,0.96) 58%, rgba(11,22,41,0.6) 70%, transparent 71%);
 }
-.scene-hub:focus-visible { outline: 2px solid var(--brand-fill); outline-offset: 4px; }
+.scene-hub:focus-visible { outline: 2px solid var(--brand-fill); outline-offset: 22px; }
 .scene-hub-outer { position: absolute; inset: -18px; border-radius: 50%; border: 1px solid rgba(96,165,250,0.18); }
 .scene-hub-ring {
   position: absolute; inset: 0; border-radius: 50%; border: 1.5px dashed rgba(96,165,250,0.55);
@@ -1521,11 +1517,16 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 .scene.is-auto .scene-hub-ring { animation: scene-turn 40s linear infinite; border-color: rgba(0,212,255,0.7); }
 @keyframes scene-turn { to { transform: rotate(360deg); } }
 .scene-hub-disc {
-  position: relative; display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; background: #fff;
-  box-shadow: 0 0 0 8px rgba(255,255,255,0.06), 0 0 30px rgba(96,165,250,0.45);
+  position: absolute; left: 50%; top: 50%; width: 96px; height: 96px; margin: -48px 0 0 -48px;
+  display: grid; place-items: center; border-radius: 50%; background: #fff;
+  box-shadow: 0 0 0 8px rgba(255,255,255,0.06), 0 0 36px rgba(96,165,250,0.5);
 }
-.scene-hub-word { position: relative; margin-top: 6px; font-size: 22px; font-weight: 300; letter-spacing: 0.32em; padding-left: 0.32em; color: #fff; }
-.scene-hub-sub { position: relative; max-width: 170px; text-align: center; font-size: var(--fs-label); line-height: 1.35; color: rgba(226,232,240,0.8); }
+.scene-hub-text {
+  position: absolute; left: 50%; top: calc(100% + 26px); width: 200px; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none;
+}
+.scene-hub-word { font-size: 22px; font-weight: 300; letter-spacing: 0.32em; padding-left: 0.32em; color: #fff; }
+.scene-hub-sub { text-align: center; font-size: var(--fs-label); line-height: 1.35; color: rgba(226,232,240,0.8); }
 .scene-hub[aria-pressed="true"] .scene-hub-disc { box-shadow: 0 0 0 4px var(--scene-bg), 0 0 0 6px #fff; }
 
 /* A worker: the hexagon badge on the line's end, its card outward. */
@@ -1580,12 +1581,9 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 }
 @keyframes scene-sweep { to { background-position: 150% 0; } }
 
-/* Live activity, beside the stage. */
-.scene-live {
-  display: flex; flex-direction: column; min-width: 0; padding: 16px; border-radius: 14px;
-  background: rgba(11,22,41,0.85); border: 1px solid rgba(96,165,250,0.22);
-}
-.scene-live-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 12px; font-size: 17px; font-weight: 600; color: #fff; }
+/* Live activity: the newest three, in a row under the stage. */
+.scene-live { margin-top: 24px; }
+.scene-live-head { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; font-size: 17px; font-weight: 600; color: #fff; }
 .scene-live-chip {
   display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
   font-size: var(--fs-label); font-weight: 600; color: #bae6fd; background: rgba(56,189,248,0.12);
@@ -1593,20 +1591,31 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 .scene-live-chip i { width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; }
 .scene-live-chip.is-on i { animation: auto-breathe 1.6s ease-in-out infinite; }
 .scene-live-empty { margin: 0; font-size: var(--fs-data); line-height: 1.5; color: rgba(226,232,240,0.75); }
-.scene-feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; position: relative; }
-.scene-feed::before { content: ''; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 1px; background: rgba(96,165,250,0.25); }
-.scene-feed li { position: relative; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 8px; padding: 8px 0 8px 18px; animation: scene-arrive 0.2s ease-out both; }
-.scene-feed li::before { content: ''; position: absolute; left: 0; top: 13px; width: 11px; height: 11px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 0 3px #0b1629; }
-.scene-feed li.is-waiting::before { background: #fbbf24; }
+.scene-feed { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.scene-feed li {
+  display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 14px 16px; border-radius: 12px;
+  background: rgba(11,22,41,0.85); border: 1px solid rgba(96,165,250,0.22); animation: scene-arrive 0.2s ease-out both;
+}
 @keyframes scene-arrive { from { opacity: 0; transform: translateY(12px); } }
-.scene-feed-time { font-size: var(--fs-label); color: rgba(226,232,240,0.7); font-variant-numeric: tabular-nums; padding-top: 1px; }
-.scene-feed-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.scene-feed-who { font-size: var(--fs-data); font-weight: 600; color: #fff; }
-.scene-feed-what { font-size: var(--fs-label); line-height: 1.45; color: rgba(226,232,240,0.78); overflow-wrap: anywhere; }
+.scene-feed-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.scene-feed-who { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-data); font-weight: 600; color: #fff; }
+.scene-feed-who::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; flex-shrink: 0; }
+.scene-feed li.is-waiting .scene-feed-who::before { background: #fbbf24; }
+.scene-feed-time { font-size: var(--fs-label); color: rgba(226,232,240,0.7); font-variant-numeric: tabular-nums; }
+.scene-feed-what {
+  font-size: var(--fs-label); line-height: 1.45; color: rgba(226,232,240,0.78); overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
 
-/* The bar to talk to AIBOS, under the stage. */
+/* Not on this plan, or not ready: said under the sleeping team. */
+.scene-locked { max-width: 600px; margin: 24px auto 0; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.scene-locked-head { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.3; color: #fff; }
+.scene-locked-text { margin: 0; font-size: var(--fs-body); line-height: 1.5; color: rgba(226,232,240,0.8); }
+.scene-locked .pill { min-height: 44px; }
+
+/* The bar to talk to AIBOS, centred under the mark. */
 .scene-ask {
-  display: flex; align-items: center; gap: 12px; margin-top: 20px; padding: 8px 8px 8px 8px;
+  display: flex; align-items: center; gap: 12px; max-width: 760px; margin: 20px auto 0; padding: 8px;
   border-radius: 16px; background: rgba(11,22,41,0.9); border: 1px solid rgba(96,165,250,0.3);
 }
 .scene-ask-sphere { flex-shrink: 0; padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; }
@@ -1627,32 +1636,48 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 
 /* The scene picks its layout from its own width, not the window's: the menu
    and the page padding take different room on different screens. The stage
-   with its cards three each side needs about 800px; live activity beside it
-   needs 320px more. */
-.scene { container: scene / inline-size; }
-@container scene (max-width: 1139px) {
-  .scene-grid { grid-template-columns: minmax(0, 1fr); }
-}
-@media (max-width: 879px) { .scene { padding: 16px; } }
-/* Narrower than the stage needs: the mark on top, the workers two across, no lines. */
+   with its cards three each side needs about 800px. */
+@media (max-width: 879px) { .scene { padding: 28px 16px 24px; } }
+/* Narrower than that (a phone, a tablet, a laptop with the menu open): the
+   six in a ring round the mark, badges with their names, the lines and the
+   light still running. One screen tall, and still a place, not a list. */
 @container scene (max-width: 799px) {
-  .scene-stage { height: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .scene-lines, .scene-spark { display: none; }
-  .scene-hub { position: relative; left: auto; top: auto; transform: none; grid-column: 1 / -1; justify-self: center; margin: 20px 0 16px; width: 200px; height: 200px; }
+  .scene-stage { height: 470px; }
+  .scene-lines { display: none; }
+  .scene-lines.is-phone { display: block; }
+  .scene-spark { --x1: var(--px) !important; --y1: var(--py) !important; }
+  .scene-orbits i:nth-child(1) { width: 220px; height: 220px; }
+  .scene-orbits i:nth-child(2) { width: 330px; height: 330px; }
+  .scene-orbits i:nth-child(3) { display: none; }
+  .scene-hub { width: 150px; height: 150px; }
+  .scene-hub-outer { inset: -12px; }
+  .scene-hub-ring i { top: 12px; right: 22px; }
+  .scene-hub-disc { width: 76px; height: 76px; margin: -38px 0 0 -38px; }
+  .scene-hub-text { width: 150px; top: calc(100% + 18px); }
+  .scene-hub-word { font-size: 17px; }
   .scene-station, .scene-station.is-left, .scene-station.is-right {
-    position: relative; left: auto !important; top: auto !important; transform: none;
-    flex-direction: row; text-align: left; min-width: 0;
+    left: var(--px) !important; top: var(--py) !important; transform: translate(-50%, -30px);
+    flex-direction: column; align-items: center; gap: 4px; width: 104px; text-align: center;
   }
-  .scene-hex { width: 56px; height: 56px; }
-  .scene-hex-icon svg { width: 22px; height: 22px; }
+  .scene-hex { width: 60px; height: 60px; }
+  .scene-hex-icon svg { width: 24px; height: 24px; }
   .scene-card, .scene-station.is-left .scene-card, .scene-station.is-right .scene-card {
-    flex: 1; width: auto; min-width: 0; margin: 0 0 0 -10px; padding: 8px 10px 8px 18px; border-radius: 0 12px 12px 0; align-items: flex-start;
+    flex: none; width: auto; min-height: 0; margin: 0; padding: 0; gap: 2px; border: 0; background: none; align-items: center;
   }
-  .scene-station.is-left .scene-count, .scene-station.is-right .scene-count { left: 40px; right: auto; }
+  .scene-card-name, .scene-card-state { text-shadow: 0 1px 6px var(--scene-bg); }
+  .scene-card-name { font-size: var(--fs-label); }
+  .scene-meter { display: none; }
+  .scene-station.is-left .scene-count, .scene-station.is-right .scene-count { left: auto; right: 14px; top: -6px; }
+  .scene-feed { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .scene-feed li:nth-child(n + 3) { display: none; }
   .scene-ask-mic { display: none; }
 }
-@container scene (max-width: 439px) {
-  .scene-stage { grid-template-columns: minmax(0, 1fr); }
+/* A phone: names only under the badges (the fill and the count say the
+   rest) and the newest line of live activity. */
+@container scene (max-width: 559px) {
+  .scene-card-state { display: none; }
+  .scene-feed { grid-template-columns: minmax(0, 1fr); }
+  .scene-feed li:nth-child(n + 2) { display: none; }
   .scene-ask { gap: 8px; }
   .scene-ask-send { width: 48px; }
 }
@@ -1691,11 +1716,15 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 .talk-job .ai-job { width: auto; }
 .talk-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; }
 .talk-acts .pill { min-height: 44px; min-width: 112px; justify-content: center; }
+/* The sphere is the button: tap it to talk over AIBOS or wake it from a rest. */
+.talk-sphere-btn { padding: 0; border: 0; background: none; color: inherit; border-radius: 50%; cursor: pointer; }
+.talk-sphere-btn:disabled { cursor: default; }
+.talk-sphere-btn:focus-visible { outline: 2px solid var(--brand-fill); outline-offset: 4px; }
 
 @media (prefers-reduced-motion: reduce) {
   .scene-spark { display: none; }
-  .scene-hub-ring, .scene-station.is-ask .scene-hex, .scene-feed li, .scene.is-checking .scene-hex::after,
-  .auto-switch.is-on .auto-switch-knob::after, .scene-live-chip.is-on i, .team-strip.is-auto .team-strip-hub::after,
+  .scene-hub-ring, .scene-orbits i, .scene-station.is-ask .scene-hex, .scene-feed li, .scene.is-checking .scene-hex::after,
+  .auto-switch.is-on .auto-switch-knob::after, .scene-live-chip.is-on i,
   .sheet, .talk-overlay { animation: none !important; }
 }
 

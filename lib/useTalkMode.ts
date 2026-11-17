@@ -2,22 +2,40 @@
 /**
  * Talk mode: the owner speaks to AIBOS and AIBOS speaks back (Jarvis, phase 1).
  *
- * Press Talk (or hold the AIBOS button): AIBOS reads the spoken brief
- * (GET /brief/spoken), asks "What would you like me to handle first?", and
- * listens. What the owner says goes to the ordinary chat (sendMessage), so
- * every answer, every lookup and the "sold 3 crates for K360" -> "confirm"
- * flow work by voice. Each answer is read aloud, then AIBOS listens again,
- * until the owner says "that's all", stays quiet, or presses End.
+ * Press Talk (or hold the AIBOS button): AIBOS greets the owner with one short
+ * question ("Good afternoon. What are we working on?") and listens. Since
+ * 17 Nov 2026 it no longer reads the whole brief first: the owner asked to be
+ * listened to, not talked at. The brief is one sentence away ("brief me").
+ * What the owner says goes to the ordinary chat (sendMessage), so every
+ * answer, every lookup and the "sold 3 crates for K360" -> "confirm" flow work
+ * by voice. Each answer is read aloud, then AIBOS listens again.
+ *
+ * When nothing is heard AIBOS listens once more, then rests on screen
+ * ("Tap to talk") instead of vanishing; "that's all" or End finishes.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChatMessage } from '@/lib/aiAssistant';
 import { getSpokenBrief } from '@/lib/api';
 import { canSpeak, listenMode, listenOnce, primeSpeech, speak, speakable, stopSpeaking } from '@/lib/voice';
 
-export type TalkPhase = 'off' | 'briefing' | 'speaking' | 'listening' | 'thinking';
+export type TalkPhase = 'off' | 'briefing' | 'speaking' | 'listening' | 'thinking' | 'resting';
 
 const STOP_WORDS = /^(stop|end|cancel talk|that'?s (all|it)|thank you,? that'?s (all|it)|thanks,? that'?s (all|it)|goodbye|bye|no,? that'?s (all|it)|nothing( else)?|no thanks?)[.!]*$/i;
 const BRIEF_WORDS = /^(brief me|(give me |read me |what'?s )?(my |the )?(morning )?brief|what'?s (happening|new)( today)?)[.?!]*$/i;
+
+const QUESTIONS = [
+  'What are we working on?',
+  'What would you like to work on?',
+  'What can I do for you?',
+  'What do you need?',
+];
+
+/** "Good afternoon. What are we working on?", by the clock on the owner's device. */
+export function greeting(now = new Date()): string {
+  const h = now.getHours();
+  const hello = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  return `${hello}. ${QUESTIONS[now.getMinutes() % QUESTIONS.length]}`;
+}
 
 interface Deps {
   messages: ChatMessage[];
@@ -39,6 +57,7 @@ export function useTalkMode({ messages, loading, sendMessage, pushAssistant, set
   const isOff = useCallback(() => phaseRef.current === 'off', []);
   const abortRef = useRef<AbortController | null>(null);
   const lastIdRef = useRef<string | null>(null);         // the newest message before the owner spoke
+  const quietRef = useRef(0);                            // turns in a row with nothing heard
   const messagesRef = useRef(messages);
   useEffect(() => { messagesRef.current = messages; }, [messages]);
 
@@ -60,21 +79,32 @@ export function useTalkMode({ messages, loading, sendMessage, pushAssistant, set
 
   const listen = useCallback(async () => {
     if (isOff()) return;
+    abortRef.current?.abort();
     set('listening');
     setHeard('');
+    setError(null);
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     let text = '';
     try {
       text = (await listenOnce({ onInterim: setHeard, signal: ctrl.signal })).trim();
     } catch {
-      setError('AIBOS cannot hear you. Allow the microphone for this site, then press Talk again.');
-      stop();
+      if (ctrl.signal.aborted || isOff()) return;
+      setError('AIBOS cannot hear you. Allow the microphone for this site, then tap the sphere.');
+      set('resting');
       return;
     }
     if (ctrl.signal.aborted || isOff()) return;
     setHeard(text);
-    if (!text) { stop(); return; }                       // quiet: talk mode rests
+    if (!text) {
+      // Quiet: listen once more, then rest on screen until the owner taps.
+      quietRef.current += 1;
+      if (quietRef.current < 2) { listen(); return; }
+      quietRef.current = 0;
+      set('resting');
+      return;
+    }
+    quietRef.current = 0;
     if (STOP_WORDS.test(text)) {
       await say('Okay. I am here when you need me.');
       stop();
@@ -88,7 +118,7 @@ export function useTalkMode({ messages, loading, sendMessage, pushAssistant, set
 
   const brief = useCallback(async () => {
     set('briefing');
-    let speech = 'I am listening. What would you like me to handle first?';
+    let speech = 'I could not read your brief just now. What would you like me to handle?';
     try {
       const b = await getSpokenBrief();
       pushAssistant([b.greeting, ...b.lines, `**${b.question}**`].join('\n\n'));
@@ -101,23 +131,26 @@ export function useTalkMode({ messages, loading, sendMessage, pushAssistant, set
   }, [isOff, listen, pushAssistant, say, set, setSuggestions]);
   useEffect(() => { briefRef.current = brief; }, [brief]);
 
-  /** Start talking. Call from a tap: phones only let a page talk or listen after one. */
-  const start = useCallback((withBrief = true) => {
+  /** Start talking: a short hello and a question, then listen. Call from a
+   *  tap: phones only let a page talk or listen after one. */
+  const start = useCallback(() => {
     if (!supported) {
       setError('This browser cannot talk yet. Chrome or Edge on a computer, or Chrome on Android, can.');
       return;
     }
     setError(null);
+    quietRef.current = 0;
     primeSpeech();
-    if (withBrief) { brief(); return; }
-    set('speaking');
-    speak('I am listening.').then(() => { if (!isOff()) listen(); });
-  }, [brief, isOff, listen, set, supported]);
+    const hello = greeting();
+    pushAssistant(hello);
+    say(hello).then(() => { if (!isOff()) listen(); });
+  }, [isOff, listen, pushAssistant, say, supported]);
 
-  /** While AIBOS is talking: stop it and listen to the owner instead. */
+  /** Tap while AIBOS talks or rests: stop it and listen to the owner now. */
   const interrupt = useCallback(() => {
-    if (phaseRef.current !== 'speaking' && phaseRef.current !== 'briefing') return;
+    if (phaseRef.current === 'off' || phaseRef.current === 'listening' || phaseRef.current === 'thinking') return;
     stopSpeaking();
+    quietRef.current = 0;
     listen();
   }, [listen]);
 

@@ -33,8 +33,8 @@ export interface NavDoor {
 }
 
 export const DOORS: NavDoor[] = [
-  { href: '/dashboard',             label: 'Home',          icon: 'overview',  group: 'main', keywords: ['today', 'overview', 'dashboard', 'start', 'morning brief'] },
-  { href: '/dashboard/team',        label: 'AIBOS team',    short: 'Team', icon: 'team', group: 'main', feature: 'chat_actions', keywords: ['workers', 'jarvis', 'needs you', 'jobs', 'automatic', 'autopilot', 'bookkeeper', 'collector', 'mission control', 'assistant'] },
+  // The AIBOS team lives on Home since 17 Nov 2026, so its words find Home.
+  { href: '/dashboard',             label: 'Home',          icon: 'overview',  group: 'main', keywords: ['today', 'overview', 'dashboard', 'start', 'morning brief', 'aibos team', 'workers', 'jarvis', 'needs you', 'jobs', 'automatic', 'autopilot', 'bookkeeper', 'collector', 'mission control', 'assistant'] },
   { href: '/dashboard/record',      label: 'Record',        icon: 'record',    group: 'main', keywords: ['add', 'sale', 'sold', 'expense', 'spent', 'enter', 'receipt'] },
   { href: '/dashboard/cash',        label: 'Money',         icon: 'cash',      group: 'main', keywords: ['cash', 'balance', 'bank', 'runway', 'profit', 'spending', 'cash intelligence'] },
   { href: '/dashboard/invoices',    label: 'Get paid',      icon: 'invoice',   group: 'main', keywords: ['invoice', 'invoices', 'bill', 'payment link', 'owed', 'debtors', 'receivables'] },
@@ -90,8 +90,7 @@ const STAFF_HREFS = new Set([
   '/dashboard', '/dashboard/record', '/dashboard/timeline', '/dashboard/schedule',
   '/dashboard/inventory', '/dashboard/hospitality', '/dashboard/clients',
 ]);
-// AIBOS team asks the owner for yeses; the API answers no one else.
-const ACCOUNTANT_HIDE = new Set(['/dashboard/record', '/dashboard/import', '/dashboard/employees', '/dashboard/team']);
+const ACCOUNTANT_HIDE = new Set(['/dashboard/record', '/dashboard/import', '/dashboard/employees']);
 
 export function roleAllows(role: TeamRole, href: string): boolean {
   const path = href.split('?')[0];
