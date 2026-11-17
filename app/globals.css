@@ -1370,6 +1370,12 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 
 /* ── Home, one page for everyone (17 Nov 2026 cleanup, components/home/Home.tsx) ── */
 .home { display: flex; flex-direction: column; gap: 16px; }
+/* On a phone the money comes before the team scene (UX audit step 6): the
+   scene is most of a phone screen, the money is why the owner opened Home. */
+@media (max-width: 767px) {
+  .home > .home-team.is-first { order: 1; }
+  .home > .home-today, .home > .home-team:not(.is-first), .home > .home-foot { order: 2; }
+}
 /* At most one nudge: the first that has something to say, the rest hidden. */
 .one-nudge > * + * { display: none; }
 .one-nudge > * { margin-bottom: 0 !important; }

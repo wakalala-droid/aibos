@@ -21,8 +21,9 @@ export default function MorningBrief() {
           <h2 id="brief-h" className="mkt-h2">Your day, ready before you ask.</h2>
           <p className="mkt-lead" style={{ marginTop: 20, maxWidth: 520 }}>
             Every morning at 06:30: your cash, yesterday&apos;s sales, stock to reorder and the one thing
-            to do today. Pro sends it to your inbox and your phone. Pro+ puts it on Home and
-            sends it to WhatsApp (rolling out).
+            to do today. Pro+ puts it on Home and sends it to your inbox, your phone and
+            WhatsApp (rolling out). On every plan the one thing to do shows on Home free for
+            14 days once you have recorded on three different days.
           </p>
           <ul className="mkt-values">
             {VALUES.map((v) => (

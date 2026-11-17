@@ -9,7 +9,8 @@
 // the chat ("yes", "not now", "undo").
 
 import { useState } from 'react';
-import type { AiAction } from '@/lib/api';
+import { setAutopilot, type AiAction } from '@/lib/api';
+import { teamChanged } from '@/lib/autoMode';
 import type { ActionVerb } from '@/lib/aiAssistant';
 
 const STATE: Record<AiAction['status'], string> = {
@@ -21,12 +22,29 @@ const STATE: Record<AiAction['status'], string> = {
   expired: 'No longer waiting',
 };
 
-export default function ActionCard({ job, busy, onAnswer }: {
+const WORDS = ['no', 'one', 'two', 'three', 'four', 'five'];
+
+export default function ActionCard({ job, busy, onAnswer, offers = false }: {
   job: AiAction;
   busy: boolean;
   onAnswer: (id: string, verb: ActionVerb) => void;
+  /** Show the "do these yourself" offer here (Needs you); the chat says it in its answer. */
+  offers?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
+  const [autoSaid, setAutoSaid] = useState<string | null>(null);
+  const earning = job.status === 'done' ? job.earning : undefined;
+  const left = earning ? earning.needs - earning.approved_in_a_row : 0;
+
+  async function turnOn(kind: string) {
+    try {
+      await setAutopilot(kind, true);
+      setAutoSaid('Done. AIBOS records entries like these by itself now, each with an Undo.');
+      teamChanged();
+    } catch {
+      setAutoSaid('That did not go through. Try again from the Assistant on your AIBOS team.');
+    }
+  }
   const state = job.status === 'done' && job.how === 'automatic' ? 'Done by itself' : STATE[job.status];
   const label = job.worker ? (job.status === 'waiting' ? job.worker.name : `${job.worker.name}: ${state}`) : state;
   const words = job.status === 'waiting' || job.status === 'declined' || job.status === 'expired' ? job.said : job.did;
@@ -67,6 +85,23 @@ export default function ActionCard({ job, busy, onAnswer }: {
             {job.no || 'Not now'}
           </button>
         </div>
+      )}
+      {earning && left > 0 && (
+        <p className="ai-job-why">
+          {`${earning.approved_in_a_row} of ${earning.needs}: ${WORDS[left] ?? left} more ${left === 1 ? 'yes' : 'yeses'} like this and AIBOS can record these by itself.`}
+        </p>
+      )}
+      {offers && job.status === 'done' && job.offer_autopilot && (
+        autoSaid ? <p className="ai-job-why" role="status">{autoSaid}</p> : (
+          <>
+            <p className="ai-job-why">{job.offer_autopilot.said}</p>
+            <div className="ai-job-actions">
+              <button type="button" className="pill pill-primary" onClick={() => void turnOn(job.offer_autopilot!.kind)}>
+                Yes, record these yourself
+              </button>
+            </div>
+          </>
+        )
       )}
       {job.status === 'done' && job.can_undo && (
         <div className="ai-job-actions">

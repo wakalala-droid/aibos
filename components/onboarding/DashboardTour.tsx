@@ -25,11 +25,11 @@ interface Stop {
 }
 
 const STOPS: Stop[] = [
-  { anchor: 'ask-bar',     title: 'Just talk',             body: 'Tap Talk to AIBOS and ask anything about your business (“How much cash do I have?”). AIBOS answers out loud from your real records. Never a made-up number.' },
+  { anchor: 'ask-bar',     title: 'Just talk',             body: 'Tap Talk to AIBOS: it says hello, asks what you need and listens. Ask anything about your business (“How much cash do I have?”) and it answers out loud from your real records. Never a made-up number.' },
   { anchor: 'today-cards', title: 'Your day at a glance',  body: 'Today\'s sales, money owed to you and whether stock needs attention. These update themselves as you record.' },
   { anchor: 'nav-record',  title: 'Record what happens',   body: 'Sold something? Paid someone? Say it in plain words and AIBOS does the bookkeeping: cash, stock and debts stay current.' },
   { anchor: 'ask-aibos',   title: 'AIBOS is always here',  body: 'Your AI advisor lives one click away on every page. You can also press and hold any card to have it explained.' },
-  { anchor: 'mode-toggle', title: 'Simple or Pro',         body: 'Simple keeps the menu to the essentials. Flip to Pro any time to add every report and forecast to the menu: nothing is hidden for good.' },
+  { anchor: 'needs-you',   title: 'Only what needs you',   body: 'Everything AIBOS wants you to look at is in this one list, right under your greeting. Nothing happens until you say yes, and when it is empty, nothing needs you.' },
 ];
 
 interface Rect { top: number; left: number; width: number; height: number }

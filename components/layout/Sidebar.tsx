@@ -17,27 +17,28 @@ import { IC } from './navIcons';
 type NavItem = { href: string; label: string; icon: JSX.Element; engine?: 'ci' | 'ops' };
 
 // The menu is built from lib/nav.ts, the same list the phone bar and the search
-// box use (UI/UX audit 2026-10, A5 to A8, A14). Simple and Pro share every door
-// and every name; Pro adds one "Reports" group, folded away until it is wanted.
+// box use (UI/UX audit 2026-10, A5 to A8, A14). The reports are one "Reports"
+// group, folded away until it is wanted. The Simple and Pro switch went with
+// the two homes (UX audit, 17 Nov 2026): it only hid that group, and it asked
+// every owner a question most should never have to answer.
 const REPORTS_KEY = 'aibos-reports-open-v1';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const {
     sidebarCollapsed, toggleSidebar, hasEngine2Data, hasEngine3Data, uploadedFile,
-    mobileNavOpen, setMobileNav, tier, uiMode, setUiMode,
+    mobileNavOpen, setMobileNav, tier,
   } = useStore();
   const { toggle, isDark } = useTheme();
   const { isAdmin, teamRole, loading: planLoading } = useProfile();
   const ios = useIosApp();
   const { setOpen: setAssistantOpen } = useAiAssistant();
   const col = sidebarCollapsed;
-  const simple = uiMode === 'simple';
 
   const doors = visibleDoors(tier as Tier, teamRole);
   const toItem = (d: NavDoor): NavItem => ({ href: d.href, label: d.label, icon: IC[d.icon], engine: d.engine });
   const mainItems = doors.filter((d) => d.group === 'main').map(toItem);
-  const reportItems = simple ? [] : doors.filter((d) => d.group === 'reports').map(toItem);
+  const reportItems = doors.filter((d) => d.group === 'reports').map(toItem);
   const onReport = reportItems.some((r) => isDoorActive(r.href, pathname));
   const [reportsOpen, setReportsOpen] = useState(false);
   useEffect(() => {
@@ -324,33 +325,6 @@ export default function Sidebar() {
           {isDark ? IC.sun : IC.moon}
         </button>
 
-        {/* Simple ⇄ Pro mode switch — every technical tab is one flick away. */}
-        {col ? (
-          <button
-            type="button"
-            onClick={() => setUiMode(simple ? 'technical' : 'simple')}
-            aria-label={simple ? 'Switch to Pro mode: every report' : 'Switch to Simple mode'}
-            title={simple ? 'Switch to Pro mode' : 'Switch to Simple mode'}
-            className="icon-pill"
-            style={{ color: simple ? 'var(--text-3)' : 'var(--cyan)' }}
-          >
-            {IC.sliders}
-          </button>
-        ) : (
-          <div role="group" aria-label="Interface mode" data-tour="mode-toggle" className="seg" style={{ flexShrink: 0 }}>
-            {(['simple', 'technical'] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setUiMode(m)}
-                aria-pressed={uiMode === m}
-                aria-label={m === 'simple' ? 'Simple mode: the essentials in plain language' : 'Pro mode: every report'}
-              >
-                {m === 'simple' ? 'Simple' : 'Pro'}
-              </button>
-            ))}
-          </div>
-        )}
         <AnimatePresence>
           {!col && uploadedFile && (
             <motion.span

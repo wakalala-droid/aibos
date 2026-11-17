@@ -74,7 +74,6 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
   const mobileNavOpen = useStore((s) => s.mobileNavOpen);
   const toggleMobileNav = useStore((s) => s.toggleMobileNav);
   const setMobileNav = useStore((s) => s.setMobileNav);
-  const uiMode = useStore((s) => s.uiMode);
   const { toggle, isDark } = useTheme();
 
   if (isBare) {
@@ -95,8 +94,7 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
       <BootSplash />
       <a href="#main" className="skip-link">Skip to main content</a>
 
-      {/* data-uimode lets CSS give Simple mode its mobile tab bar clearance. */}
-      <div className="app-shell" data-uimode={uiMode}>
+      <div className="app-shell">
         <Sidebar />
 
         {/* Backdrop — only rendered (and visible) when the mobile drawer is open. */}
@@ -147,7 +145,7 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
         {/* Floating AI assistant — available across the dashboard chrome. */}
         <FloatingAiAssistant />
 
-        {/* Simple mode: thumb-reach bottom tabs on phones (hidden at lg+). */}
+        {/* Thumb-reach bottom tabs on phones (hidden at lg+). */}
         <MobileTabBar />
 
         {/* Drop or paste a receipt or spreadsheet on any page (C4). */}

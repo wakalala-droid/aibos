@@ -79,7 +79,7 @@ function Meter({ done }: { done: number }) {
   );
 }
 
-export default function TeamScene({ workers, recent, auto, checking, picked, onPick, onTalk, onAsk, locked }: {
+export default function TeamScene({ workers, recent, auto, checking, picked, onPick, onTalk, onAsk, locked, ask = true }: {
   workers: AiWorker[];
   recent: AiAction[];
   auto: boolean;
@@ -90,6 +90,8 @@ export default function TeamScene({ workers, recent, auto, checking, picked, onP
   onAsk: (text: string) => void;
   /** Not on this plan (or not ready): the team shows asleep and `locked` takes the live activity's place. */
   locked?: React.ReactNode;
+  /** The ask bar under the stage; the landing page's sample team has none. */
+  ask?: boolean;
 }) {
   const [q, setQ] = useState('');
   const assistant = workers.find((w) => w.id === 'assistant');
@@ -192,7 +194,7 @@ export default function TeamScene({ workers, recent, auto, checking, picked, onP
           </div>
         )}
 
-        <form className="scene-ask" onSubmit={(e) => { e.preventDefault(); if (q.trim()) { onAsk(q.trim()); setQ(''); } }}>
+        {ask && <form className="scene-ask" onSubmit={(e) => { e.preventDefault(); if (q.trim()) { onAsk(q.trim()); setQ(''); } }}>
           <button type="button" className="scene-ask-sphere" onClick={onTalk} aria-label="Talk to AIBOS">
             <AibosSphere size={56} still />
           </button>
@@ -201,7 +203,7 @@ export default function TeamScene({ workers, recent, auto, checking, picked, onP
             placeholder="Ask AIBOS anything, like “Who owes me the most?”" />
           <button type="button" className="icon-pill scene-ask-mic" onClick={onTalk} aria-label="Talk instead"><Mic aria-hidden="true" /></button>
           <button type="submit" className="scene-ask-send" disabled={!q.trim()} aria-label="Ask"><Send aria-hidden="true" /></button>
-        </form>
+        </form>}
       </div>
     </section>
   );

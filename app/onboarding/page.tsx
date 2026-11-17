@@ -1,8 +1,12 @@
 'use client';
 /**
- * AIBOS — Business Setup Wizard (Evolution Initiative 1).
+ * AIBOS: Business Setup (Evolution Initiative 1).
  * Start a business on AIBOS with only a phone: a few essentials, everything else
- * optional. "Initial cash" seeds the Digital Twin's opening balance; the rest
+ * optional. One screen since the UX audit (17 Nov 2026): name, industry and
+ * cash on hand, the rest folded under "More about the business"; it used to
+ * be four screens (Business, Money, Operations, Review) before any value.
+ * Then one first thing to do, the first sale, with the other starts quiet
+ * under it (six equal buttons made many owners pick none). "Initial cash" seeds the Digital Twin's opening balance; the rest
  * updates the profile. Mobile-first, one decision at a time (ux_intelligence.md
  * DECISION SIMPLIFICATION), every state handled.
  */
@@ -29,7 +33,6 @@ const LANGUAGES = [
   { v: 'toi', l: 'Tonga' }, { v: 'other', l: 'Other' },
 ];
 
-const STEPS = ['Business', 'Money', 'Operations', 'Review'];
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '12px 14px', minHeight: 48,
@@ -167,7 +170,7 @@ export default function OnboardingPage() {
   }, [profile]);
 
   const sym = CURRENCIES.find(c => c.code === form.currency)?.symbol ?? 'K';
-  const canNext = step !== 0 || form.business_name.trim().length > 0;
+  const canFinish = form.business_name.trim().length > 0;
 
   async function finish() {
     setError(null); setSaving(true);
@@ -240,36 +243,37 @@ export default function OnboardingPage() {
     finally { setGettingBook(false); }
   }
 
+  const quietRow: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '12px 4px', minHeight: 56,
+    border: 'none', borderTop: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', color: 'var(--text-1)',
+  };
+  const quietIcon = (done?: boolean): React.CSSProperties => ({ display: 'inline-flex', color: done ? 'var(--good)' : 'var(--text-3)', flexShrink: 0 });
+  const quietTitle: React.CSSProperties = { display: 'block', fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)' };
+  const quietSub: React.CSSProperties = { fontSize: 'var(--fs-label)', color: 'var(--text-3)' };
+  const errorBox = error && (
+    <div role="alert" style={{ marginTop: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>
+      {error}
+    </div>
+  );
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-page)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '32px 16px' }}>
       <div style={{ width: '100%', maxWidth: 560 }}>
         <h1 style={{ fontSize: 'var(--fs-h2)', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', margin: '0 0 4px' }}>
-          Set up your business
+          {step === 4 ? 'Your business is set up' : 'Set up your business'}
         </h1>
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 24px' }}>
-          A few essentials: everything else you can add later.
+          {step === 4 ? 'Now the first thing that makes AIBOS useful.' : 'Three things and you are in. Everything else can wait.'}
         </p>
-
-        {/* Stepper — hidden on the post-setup first-win step. */}
-        {step < 4 && (
-          <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
-            {STEPS.map((s, i) => (
-              <div key={s} style={{ flex: 1 }}>
-                <div style={{ height: 4, borderRadius: 99, background: i <= step ? 'var(--cyan)' : 'var(--border)' }} />
-                <div style={{ marginTop: 6, fontSize: 'var(--fs-caps)', color: i === step ? 'var(--cyan)' : 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s}</div>
-              </div>
-            ))}
-          </div>
-        )}
 
         <div className="section-card" style={{ padding: 24 }}>
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.2 }}>
-              {step === 0 && (
-                <>
+              {step !== 4 && (
+                <form onSubmit={(e) => { e.preventDefault(); if (canFinish && !saving) void finish(); }}>
                   <div style={fieldGap}>
-                    <label style={labelStyle}>Business name *</label>
-                    <input autoFocus value={form.business_name} onChange={e => set('business_name', e.target.value)} placeholder="e.g. Mwansa General Dealers" style={inputStyle} />
+                    <label htmlFor="ob-name" style={labelStyle}>Business name *</label>
+                    <input id="ob-name" autoFocus value={form.business_name} onChange={e => set('business_name', e.target.value)} placeholder="e.g. Mwansa General Dealers" style={inputStyle} />
                   </div>
 
                   {/* If they already have an online presence, offer it back as
@@ -286,208 +290,125 @@ export default function OnboardingPage() {
                   />
 
                   <div style={fieldGap}>
-                    <label style={labelStyle}>Industry</label>
-                    <select value={form.industry} onChange={e => set('industry', e.target.value)} style={inputStyle}>
+                    <label htmlFor="ob-industry" style={labelStyle}>Industry</label>
+                    <select id="ob-industry" value={form.industry} onChange={e => set('industry', e.target.value)} style={inputStyle}>
                       <option value="">Select…</option>
                       {INDUSTRIES.map(i => <option key={i} value={i}>{i}</option>)}
                     </select>
                   </div>
                   <div style={fieldGap}>
-                    <label style={labelStyle}>Location</label>
-                    <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Lusaka" style={inputStyle} />
-                  </div>
-                </>
-              )}
-
-              {step === 1 && (
-                <>
-                  <div style={fieldGap}>
-                    <label style={labelStyle}>Currency</label>
-                    <select value={form.currency} onChange={e => set('currency', e.target.value)} style={inputStyle}>
-                      {CURRENCIES.map(c => <option key={c.code} value={c.code}>{`${c.name} (${c.symbol})`}</option>)}
-                    </select>
-                  </div>
-                  <div style={fieldGap}>
-                    <label style={labelStyle}>Cash on hand today</label>
-                    <input type="number" inputMode="decimal" value={form.initial_cash} onChange={e => set('initial_cash', e.target.value)} placeholder={`${sym} 0.00`} style={{ ...inputStyle }} />
+                    <label htmlFor="ob-cash" style={labelStyle}>Cash on hand today</label>
+                    <input id="ob-cash" type="number" inputMode="decimal" value={form.initial_cash} onChange={e => set('initial_cash', e.target.value)} placeholder={`${sym} 0.00`} style={{ ...inputStyle }} />
                     <p style={{ fontSize: 'var(--fs-data)', color: 'var(--text-4)', marginTop: 6 }}>
                       Your starting balance: every entry you record adjusts it from here.
                     </p>
                   </div>
-                  <div style={fieldGap}>
-                    <label style={labelStyle}>Tax status</label>
-                    <select value={form.tax_status} onChange={e => set('tax_status', e.target.value)} style={inputStyle}>
-                      {TAX.map(t => <option key={t.v} value={t.v}>{t.l}</option>)}
-                    </select>
-                  </div>
-                </>
-              )}
 
-              {step === 2 && (
-                <>
-                  <div style={fieldGap}>
-                    <label style={labelStyle}>Number of employees</label>
-                    <input type="number" inputMode="numeric" value={form.employees} onChange={e => set('employees', e.target.value)} placeholder="e.g. 4" style={{ ...inputStyle }} />
-                  </div>
-                  <div style={fieldGap}>
-                    <label style={labelStyle}>Operating hours</label>
-                    <input value={form.operating_hours} onChange={e => set('operating_hours', e.target.value)} placeholder="e.g. 08:00 to 18:00" style={inputStyle} />
-                  </div>
-                  <div style={fieldGap}>
-                    <label style={labelStyle}>Preferred language</label>
-                    <select value={form.language} onChange={e => set('language', e.target.value)} style={inputStyle}>
-                      {LANGUAGES.map(l => <option key={l.v} value={l.v}>{l.l}</option>)}
-                    </select>
-                  </div>
-                </>
+                  <details style={{ marginBottom: 8 }}>
+                    <summary style={{ cursor: 'pointer', minHeight: 44, display: 'flex', alignItems: 'center', fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-2)' }}>
+                      More about the business (optional)
+                    </summary>
+                    <div style={{ paddingTop: 12 }}>
+                      <div style={fieldGap}>
+                        <label htmlFor="ob-location" style={labelStyle}>Location</label>
+                        <input id="ob-location" value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Lusaka" style={inputStyle} />
+                      </div>
+                      <div style={fieldGap}>
+                        <label htmlFor="ob-currency" style={labelStyle}>Currency</label>
+                        <select id="ob-currency" value={form.currency} onChange={e => set('currency', e.target.value)} style={inputStyle}>
+                          {CURRENCIES.map(c => <option key={c.code} value={c.code}>{`${c.name} (${c.symbol})`}</option>)}
+                        </select>
+                      </div>
+                      <div style={fieldGap}>
+                        <label htmlFor="ob-tax" style={labelStyle}>Tax status</label>
+                        <select id="ob-tax" value={form.tax_status} onChange={e => set('tax_status', e.target.value)} style={inputStyle}>
+                          {TAX.map(t => <option key={t.v} value={t.v}>{t.l}</option>)}
+                        </select>
+                      </div>
+                      <div style={fieldGap}>
+                        <label htmlFor="ob-employees" style={labelStyle}>Number of employees</label>
+                        <input id="ob-employees" type="number" inputMode="numeric" value={form.employees} onChange={e => set('employees', e.target.value)} placeholder="e.g. 4" style={{ ...inputStyle }} />
+                      </div>
+                      <div style={fieldGap}>
+                        <label htmlFor="ob-hours" style={labelStyle}>Operating hours</label>
+                        <input id="ob-hours" value={form.operating_hours} onChange={e => set('operating_hours', e.target.value)} placeholder="e.g. 08:00 to 18:00" style={inputStyle} />
+                      </div>
+                      <div style={fieldGap}>
+                        <label htmlFor="ob-language" style={labelStyle}>Preferred language</label>
+                        <select id="ob-language" value={form.language} onChange={e => set('language', e.target.value)} style={inputStyle}>
+                          {LANGUAGES.map(l => <option key={l.v} value={l.v}>{l.l}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </details>
+
+                  {errorBox}
+
+                  <button type="submit" disabled={!canFinish || saving} className="touch-target"
+                    style={{ marginTop: 16, width: '100%', padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canFinish && !saving ? 'pointer' : 'default', opacity: canFinish && !saving ? 1 : 0.5 }}>
+                    {saving ? 'Setting up…' : 'Start using AIBOS'}
+                  </button>
+                </form>
               )}
 
               {step === 4 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  <div>
-                    <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 4px' }}>
-                      You&apos;re set up. Let&apos;s get your first numbers.
-                    </h2>
-                    <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
-                      One real entry and your dashboard comes alive. Pick whatever&apos;s easiest right now.
-                    </p>
-                  </div>
-
-                  {/* First, let AIBOS learn the business: five minutes of
-                      questions so its first answers are about THIS business. */}
-                  <button type="button" onClick={() => router.push('/dashboard/teach')} className="touch-target"
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cyan)', background: 'var(--cyan-dim)', cursor: 'pointer' }}>
-                    <span aria-hidden style={{ display: 'inline-flex', color: 'var(--cyan)' }}><BookOpen size={26} strokeWidth={2} /></span>
-                    <span>
-                      <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>Teach AIBOS your business</span>
-                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>About five minutes of questions: your story, a normal month and your goals.</span>
-                    </span>
-                  </button>
-
-                  <button type="button" onClick={() => router.push('/dashboard/record?receipt=1')} className="touch-target"
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: 'pointer' }}>
-                    <span aria-hidden style={{ display: 'inline-flex', color: 'var(--text-2)' }}><Camera size={26} strokeWidth={2} /></span>
-                    <span>
-                      <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>Scan your last receipt</span>
-                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Photograph it: AIBOS reads it and records the purchase.</span>
-                    </span>
-                  </button>
-
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  {/* The one first thing: a real sale, typed or said. */}
                   <button type="button" onClick={() => router.push('/dashboard/record')} className="touch-target"
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: 'pointer' }}>
-                    <span aria-hidden style={{ display: 'inline-flex', color: 'var(--text-2)' }}><MessageSquare size={26} strokeWidth={2} /></span>
-                    <span>
-                      <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>Record a sale in words</span>
-                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>“{industryOf(form.industry, form.industry).saleExample}”</span>
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', padding: 18, borderRadius: 'var(--radius-md)', border: '1px solid var(--cyan)', background: 'var(--cyan-dim)', cursor: 'pointer' }}>
+                    <span aria-hidden style={{ display: 'inline-flex', color: 'var(--cyan)' }}><MessageSquare size={28} strokeWidth={2} /></span>
+                    <span style={{ minWidth: 0 }}>
+                      <span style={{ display: 'block', fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)' }}>Tell AIBOS your last sale</span>
+                      <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>Type it or say it, the way you would tell a friend: “{industryOf(form.industry, form.industry).saleExample}”</span>
                     </span>
                   </button>
-
-                  <button type="button" onClick={() => void seedStarters()} disabled={seeding || seeded} className="touch-target"
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: seeded ? 'default' : 'pointer', opacity: seeded ? 0.75 : 1 }}>
-                    <span aria-hidden style={{ display: 'inline-flex', color: seeded ? 'var(--good)' : 'var(--text-2)' }}>{seeded ? <CircleCheck size={26} strokeWidth={2} /> : <Package size={26} strokeWidth={2} />}</span>
-                    <span>
-                      <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
-                        {seeded ? 'Starter products added' : seeding ? 'Adding…' : `Add starter products for your ${industryOf(form.industry, form.industry).label}`}
-                      </span>
-                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-                        {seeded ? 'Edit prices and stock anytime on the Inventory page.' : 'A ready-made catalog you can edit: no blank page.'}
-                      </span>
-                    </span>
-                  </button>
-
-                  <button type="button" onClick={() => void getWorkbook()} disabled={gettingBook} className="touch-target"
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', cursor: gettingBook ? 'default' : 'pointer' }}>
-                    <span aria-hidden style={{ display: 'inline-flex', color: gotBook ? 'var(--good)' : 'var(--text-2)' }}>{gotBook ? <CircleCheck size={26} strokeWidth={2} /> : <FileSpreadsheet size={26} strokeWidth={2} />}</span>
-                    <span>
-                      <span style={{ display: 'block', fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)' }}>
-                        {gotBook ? 'Your AIBOS workbook is downloaded' : gettingBook ? 'Making your workbook…' : 'Get your AIBOS workbook'}
-                      </span>
-                      <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-                        {gotBook ? 'Fill it in, then upload it on the Upload a file page.' : 'A spreadsheet laid out the way AIBOS reads: fill it in and upload it.'}
-                      </span>
-                    </span>
-                  </button>
-
-                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '4px 0 0', textAlign: 'center' }}>
-                    Record for 3 days and your Morning Brief unlocks automatically.
+                  <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '10px 0 20px' }}>
+                    Record on 3 different days and the one thing to do each day shows on Home, free for 14 days.
                   </p>
 
-                  <button type="button" onClick={() => router.push('/dashboard')} className="touch-target"
-                    style={{ marginTop: 4, padding: '12px 20px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer' }}>
-                    {seeded ? 'Go to my dashboard' : 'I&apos;ll do this later: go to dashboard'}
+                  <p className="eyebrow" style={{ margin: '0 0 4px' }}>Or start another way</p>
+                  <button type="button" onClick={() => router.push('/dashboard/record?receipt=1')} style={quietRow}>
+                    <span aria-hidden style={quietIcon()}><Camera size={22} strokeWidth={2} /></span>
+                    <span><span style={quietTitle}>Scan your last receipt</span><span style={quietSub}>Photograph it: AIBOS reads it and records the purchase.</span></span>
                   </button>
-                </div>
-              )}
+                  <button type="button" onClick={() => router.push('/dashboard/teach')} style={quietRow}>
+                    <span aria-hidden style={quietIcon()}><BookOpen size={22} strokeWidth={2} /></span>
+                    <span><span style={quietTitle}>Teach AIBOS your business</span><span style={quietSub}>About five minutes of questions: your story, a normal month and your goals.</span></span>
+                  </button>
+                  <button type="button" onClick={() => void seedStarters()} disabled={seeding || seeded} style={{ ...quietRow, cursor: seeded ? 'default' : 'pointer' }}>
+                    <span aria-hidden style={quietIcon(seeded)}>{seeded ? <CircleCheck size={22} strokeWidth={2} /> : <Package size={22} strokeWidth={2} />}</span>
+                    <span>
+                      <span style={quietTitle}>{seeded ? 'Starter products added' : seeding ? 'Adding…' : `Add starter products for your ${industryOf(form.industry, form.industry).label}`}</span>
+                      <span style={quietSub}>{seeded ? 'Edit prices and stock any time on the Stock page.' : 'A ready-made list you can edit: no blank page.'}</span>
+                    </span>
+                  </button>
+                  <button type="button" onClick={() => void getWorkbook()} disabled={gettingBook} style={{ ...quietRow, cursor: gettingBook ? 'default' : 'pointer' }}>
+                    <span aria-hidden style={quietIcon(gotBook)}>{gotBook ? <CircleCheck size={22} strokeWidth={2} /> : <FileSpreadsheet size={22} strokeWidth={2} />}</span>
+                    <span>
+                      <span style={quietTitle}>{gotBook ? 'Your AIBOS workbook is downloaded' : gettingBook ? 'Making your workbook…' : 'Get your AIBOS workbook'}</span>
+                      <span style={quietSub}>{gotBook ? 'Fill it in, then upload it on the Upload a file page.' : 'A spreadsheet laid out the way AIBOS reads: fill it in and upload it.'}</span>
+                    </span>
+                  </button>
 
-              {step === 3 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {[
-                    ['Business', form.business_name || 'None'],
-                    ['Industry', form.industry || 'None'],
-                    ['Location', form.location || 'None'],
-                    // Shown only when an identity match supplied them — no point
-                    // printing two empty rows for everyone else.
-                    ...(form.phone ? [['Phone', form.phone]] : []),
-                    ...(form.website ? [['Website', form.website]] : []),
-                    ['Currency', form.currency],
-                    ['Cash on hand', form.initial_cash ? `${sym}${form.initial_cash}` : `${sym}0`],
-                    ['Tax status', TAX.find(t => t.v === form.tax_status)?.l ?? 'None'],
-                    ['Employees', form.employees || 'None'],
-                    ['Hours', form.operating_hours || 'None'],
-                    ['Language', LANGUAGES.find(l => l.v === form.language)?.l ?? 'None'],
-                  ].map(([k, v]) => (
-                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</span>
-                      <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', textAlign: 'right' }}>{v}</span>
-                    </div>
-                  ))}
+                  {errorBox}
+
+                  <button type="button" onClick={() => router.push('/dashboard')} className="touch-target"
+                    style={{ marginTop: 16, padding: '12px 20px', minHeight: 48, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: 'pointer' }}>
+                    Go to Home
+                  </button>
                 </div>
               )}
             </motion.div>
           </AnimatePresence>
-
-          {error && (
-            <div style={{ marginTop: 16, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', fontSize: 'var(--fs-body)' }}>
-              {error}
-            </div>
-          )}
-
-          {/* Nav — the first-win step has its own actions. */}
-          {step < 4 && (
-          <div style={{ display: 'flex', gap: 8, marginTop: 24, justifyContent: 'space-between' }}>
-            <button
-              type="button" onClick={() => setStep(s => Math.max(0, s - 1))}
-              disabled={step === 0 || saving} className="touch-target"
-              style={{ padding: '12px 20px', minHeight: 48, borderRadius: 10, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)', fontSize: 'var(--fs-body)', fontWeight: 600, cursor: step === 0 ? 'default' : 'pointer', opacity: step === 0 ? 0.4 : 1 }}
-            >
-              Back
-            </button>
-            {step < STEPS.length - 1 ? (
-              <button
-                type="button" onClick={() => setStep(s => s + 1)} disabled={!canNext} className="touch-target"
-                style={{ padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--cyan)', color: 'var(--on-cyan)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canNext ? 'pointer' : 'default', opacity: canNext ? 1 : 0.5 }}
-              >
-                Continue
-              </button>
-            ) : (
-              <button
-                type="button" onClick={finish} disabled={saving} className="touch-target"
-                style={{ padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1 }}
-              >
-                {saving ? 'Setting up…' : 'Start using AIBOS'}
-              </button>
-            )}
-          </div>
-          )}
         </div>
 
-        {step < 4 && (
-        <button
-          type="button" onClick={() => router.push('/dashboard/record')}
-          style={{ marginTop: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 'var(--fs-label)', textDecoration: 'underline', display: 'block', marginInline: 'auto' }}
-        >
-          Skip for now
-        </button>
+        {step !== 4 && (
+          <button
+            type="button" onClick={() => router.push('/dashboard/record')}
+            style={{ marginTop: 16, minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 'var(--fs-label)', textDecoration: 'underline', display: 'block', marginInline: 'auto' }}
+          >
+            Skip for now
+          </button>
         )}
       </div>
     </div>

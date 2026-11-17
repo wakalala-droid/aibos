@@ -1244,6 +1244,8 @@ export interface AiAction {
   /** What AIBOS will do, and the same in the past tense once done. */
   said: string; did: string; can_undo: boolean; at?: string; number?: string;
   offer_autopilot?: AiAutopilotOffer;
+  /** After a yes to a job that can earn automatic: how close it is (actions.py EARN_AFTER). */
+  earning?: { approved_in_a_row: number; needs: number };
   /** Phase 3: the worker that found it, and why it asks. */
   worker?: { id: string; name: string };
   why?: string;

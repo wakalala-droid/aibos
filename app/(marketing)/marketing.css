@@ -556,3 +556,8 @@
     transition: none !important;
   }
 }
+
+/* The AIBOS team on the landing page (components/marketing/TeamSection.tsx):
+   the app's own navy scene, edge to edge under the heading. */
+.mkt-team { margin-top: 32px; }
+.mkt-team-values { max-width: 760px; margin: 24px auto 0; }

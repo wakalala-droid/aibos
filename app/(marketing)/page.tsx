@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Smartphone, Users, Landmark, ShieldCheck } from 'lucide-react';
 import Hero from '@/components/marketing/Hero';
 import PainPromise from '@/components/marketing/PainPromise';
+import TeamSection from '@/components/marketing/TeamSection';
 import FindClients from '@/components/marketing/FindClients';
 import FeatureTheatre from '@/components/marketing/FeatureTheatre';
 import TheGoal from '@/components/marketing/TheGoal';
@@ -18,7 +19,7 @@ import Rise from '@/components/marketing/Rise';
 // same bento cards, notices, money figures, rows and pills as the app, so
 // what a visitor sees here is what they get after signing up. In navy, in the
 // order of what an owner should feel (docs/LANDING_NAVY_PLAN_2026-10.md):
-// the promise, their week named, the jobs done for them, the proof, how easy
+// the promise, the AIBOS team at work, their week named, the jobs done for them, the proof, how easy
 // it is, who it is for, the goal and the one action.
 
 export const metadata: Metadata = {
@@ -39,6 +40,9 @@ export default function MarketingHome() {
   return (
     <>
       <Hero />
+      {/* The AIBOS team right after the promise (UX audit, 17 Nov 2026): the
+          thing no other books app here does, shown before anything else. */}
+      <TeamSection />
       <PainPromise />
       {/* Find clients right after the promise (7 Nov 2026): free for a day since 9 Nov. */}
       <FindClients />

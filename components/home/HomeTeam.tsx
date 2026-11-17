@@ -26,7 +26,7 @@ import WorkerSheet from '@/components/team/WorkerSheet';
 import type { ActionVerb } from '@/lib/aiAssistant';
 import { useAiAssistant } from '@/lib/aiAssistant';
 import {
-  ApiError, approveAction, declineAction, getTeam, listRecentActions, listWaitingActions,
+  ApiError, approveAction, declineAction, getTeam, listRecentActions, listWaitingActions, previewAuto,
   setAutopilot, undoAction, type AiAction, type AiTeam, type AiWorker,
 } from '@/lib/api';
 import { teamChanged, useAutoMode, useOnTeamChange } from '@/lib/autoMode';
@@ -34,7 +34,7 @@ import { NOT_ON_PLAN_SHORT, useIosApp } from '@/lib/iosApp';
 import { useProfile } from '@/lib/profile';
 import { useStore } from '@/lib/store';
 import { startTalk } from '@/lib/talkEvent';
-import { canAccess, type Tier } from '@/lib/tiers';
+import { canAccess, requiredTier, TIERS, type Tier } from '@/lib/tiers';
 
 // The team as it stands on a plan without it: everyone asleep.
 const ASLEEP: AiWorker[] = [
@@ -65,7 +65,8 @@ function useBleed(ref: React.RefObject<HTMLElement>) {
   }, [ref]);
 }
 
-export default function HomeTeam() {
+/** `first`: right under Needs you (owners with the team); on phones the money still comes first (globals.css). */
+export default function HomeTeam({ first = false }: { first?: boolean } = {}) {
   const router = useRouter();
   const tier = useStore((s) => s.tier) as Tier;
   const sym = useStore((s) => s.currencySymbol) || 'K';
@@ -84,6 +85,10 @@ export default function HomeTeam() {
   const [sheet, setSheet] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [said, setSaid] = useState<{ tone: 'good' | 'bad'; text: string } | null>(null);
+  // Plans without the team: what it would find in these books right now, as
+  // counts (GET /auto/preview writes nothing). The owner's own numbers sell
+  // the team better than a description (UX audit step 7, 17 Nov 2026).
+  const [found, setFound] = useState<{ found: Record<string, number>; total: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   useBleed(ref);
 
@@ -104,6 +109,13 @@ export default function HomeTeam() {
 
   useEffect(() => { load(); }, [load, booksVersion]);
   useOnTeamChange(load);
+
+  useEffect(() => {
+    if (hasTeam || !owner) return;
+    let alive = true;
+    previewAuto().then((p) => { if (alive) setFound(p); }).catch(() => { /* the plain teaser stands */ });
+    return () => { alive = false; };
+  }, [hasTeam, owner, booksVersion]);
 
   if (!owner) return null;
 
@@ -150,20 +162,37 @@ export default function HomeTeam() {
 
   const ready = hasTeam && team && !failed;
   const sheetWorker = sheet ? team?.workers.find((w) => w.id === sheet) : undefined;
+  const plan = requiredTier('chat_actions');
+  const planName = TIERS[plan].name;
+  const foundWords = found && found.total > 0
+    ? ASLEEP.filter((w) => found.found[w.id]).map((w) => `${w.name} ${found.found[w.id]}`).join(', ')
+    : '';
   const locked = !hasTeam ? (
     <>
-      <p className="scene-locked-head">Six workers who look through your books and ask before they act</p>
-      <p className="scene-locked-text">They confirm entries, chase what you are owed, keep tax and pay on time and spot quiet customers. Nothing happens until you say yes.</p>
+      <p className="scene-locked-head">
+        {found && found.total > 0
+          ? `Your team found ${found.total} ${found.total === 1 ? 'thing' : 'things'} in your books just now`
+          : 'Six workers who look through your books and ask before they act'}
+      </p>
+      <p className="scene-locked-text">
+        {found && found.total > 0
+          ? `${foundWords}. They would ask you about each one, and nothing happens until you say yes.`
+          : 'They confirm entries, chase what you are owed, keep tax and pay on time and spot quiet customers. Nothing happens until you say yes.'}
+      </p>
       {ios ? <p className="scene-locked-text">{NOT_ON_PLAN_SHORT}.</p>
-        : <Link href="/dashboard/billing" className="pill pill-primary">They come with Pro+. See plans</Link>}
+        : <Link href={`/checkout?plan=${plan}`} className="pill pill-primary">Let them work, {planName}</Link>}
     </>
   ) : failed ? <p className="scene-locked-text">{failed}</p> : null;
+  // Asleep, but each one shows what it found.
+  const asleep = found && found.total > 0
+    ? ASLEEP.map((w) => (found.found[w.id] ? { ...w, off_reason: `Found ${found.found[w.id]}` } : w))
+    : ASLEEP;
 
   return (
-    <div id="team" className="home-team" ref={ref} style={{ scrollMarginTop: 96 }}>
-      <TeamScene workers={ready ? team.workers : ASLEEP} recent={recent} auto={autoOn} checking={false}
+    <div id="team" className={`home-team${first ? ' is-first' : ''}`} ref={ref} style={{ scrollMarginTop: 96 }}>
+      <TeamScene workers={ready ? team.workers : asleep} recent={recent} auto={autoOn} checking={false}
         picked={sheet} locked={ready ? undefined : locked ?? <p className="scene-locked-text">Waking your team.</p>}
-        onPick={(id) => (ready ? setSheet(id) : !hasTeam && !ios ? router.push('/dashboard/billing') : undefined)}
+        onPick={(id) => (ready ? setSheet(id) : !hasTeam && !ios ? router.push(`/checkout?plan=${plan}`) : undefined)}
         onTalk={startTalk} onAsk={ask} />
       {said && <div className="home-team-said"><Note tone={said.tone}>{said.text}</Note></div>}
       {ready && sheetWorker && (

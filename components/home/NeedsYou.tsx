@@ -127,9 +127,9 @@ export default function NeedsYou() {
 
   // Nothing needs the owner: one line, not a panel.
   if (items.length === 0) {
-    if (!loaded) return <div id="needs-you" className="needs-you-line skeleton" aria-hidden="true" />;
+    if (!loaded) return <div id="needs-you" data-tour="needs-you" className="needs-you-line skeleton" aria-hidden="true" />;
     return (
-      <section id="needs-you" className="needs-you-line" aria-labelledby="needs-you-title" style={{ scrollMarginTop: 96 }}>
+      <section id="needs-you" data-tour="needs-you" className="needs-you-line" aria-labelledby="needs-you-title" style={{ scrollMarginTop: 96 }}>
         <span className="avatar avatar-in" aria-hidden="true"><Check /></span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h2 id="needs-you-title" className="needs-you-line-title">Nothing needs you</h2>
@@ -149,7 +149,7 @@ export default function NeedsYou() {
   }
 
   return (
-    <div id="needs-you" style={{ scrollMarginTop: 96 }}>
+    <div id="needs-you" data-tour="needs-you" style={{ scrollMarginTop: 96 }}>
       <Panel labelledBy="needs-you-title"
         title={
           <div style={{ flex: '1 1 200px', minWidth: 0 }}>
@@ -174,7 +174,7 @@ export default function NeedsYou() {
         {said && <p role="status" style={{ margin: '0 0 12px', fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>{said}</p>}
         <div className="needs-you-list">
           {shown.map((i) => i.job ? (
-            <ActionCard key={i.key} job={i.job} busy={busy === i.job.id} onAnswer={answer} />
+            <ActionCard key={i.key} job={i.job} busy={busy === i.job.id} onAnswer={answer} offers />
           ) : (
             <DecisionCard key={i.key} d={i.decision!} canAutomate={canAutomate}
               drafting={i.decision!.proposal ? draftState[i.decision!.proposal.productId] : undefined}

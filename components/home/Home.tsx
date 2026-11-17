@@ -11,7 +11,9 @@
 //   2. Needs you: the only to-do list, one line when nothing needs the owner
 //      (moved up by the UX audit the same day)
 //   3. the AIBOS team: the whole scene, edge to edge (HomeTeam), for owners
-//      whose plan has it; on other plans it comes last, asleep
+//      whose plan has it; on other plans it comes last, asleep. On a phone
+//      the money comes before it (the scene is most of a phone screen and
+//      the money is what the owner opens Home for).
 //   4. the money: the figure and its line, where it is, the 13-week watch
 //   5. Today: sales, money owed and stock, then coming up or just happened
 //
@@ -39,6 +41,8 @@ import { OutboxChip } from '@/components/pwa/OfflineSync';
 import { TOUR_RESTART_EVENT } from '@/components/onboarding/DashboardTour';
 import MilestoneBanner from '@/components/dashboard/MilestoneBanner';
 import ActivationProgress from '@/components/dashboard/ActivationProgress';
+import BriefTrialEnded from '@/components/dashboard/BriefTrialEnded';
+import { useBriefTrial, dayWords } from '@/lib/briefTrial';
 import TeachAibosCard from '@/components/dashboard/TeachAibosCard';
 import MoneyHero from './MoneyHero';
 import WhereItIs from './WhereItIs';
@@ -67,6 +71,9 @@ export default function Home() {
   const rfm = useStore((s) => s.rfm);
   const { profile, teamRole } = useProfile();
   const extras = useBriefExtras();
+  // The brief's 14 free days after the first-week goal (lib/briefTrial).
+  const trial = useBriefTrial();
+  const briefOn = canAccess(tier, 'morning_brief') || !!trial?.active;
 
   // The twin is refreshed after every record, fix and removal: that moment
   // is when the screen last matched the books.
@@ -82,7 +89,7 @@ export default function Home() {
   // The one thing today, from the morning brief's own reading of the day.
   const twinActive = !!twin && (Number(twin.event_count) > 0 || Number(twin.cash) !== 0);
   const oneThing = useMemo(() => {
-    if (!canAccess(tier, 'morning_brief') || !twinActive || !extras) return null;
+    if (!briefOn || !twinActive || !extras) return null;
     const gone = typeof window === 'undefined' ? new Set<string>() : dismissedFollowUps();
     const followUps = followUpProposals(rfm, sym, profile?.business_name).filter((f) => !gone.has(f.customerId));
     const lines = dailyFocus({
@@ -95,16 +102,19 @@ export default function Home() {
     });
     const line = lines.find((l) => l.startsWith('One thing today: '));
     return line ? line.replace('One thing today: ', '') : null;
-  }, [tier, twinActive, extras, sym, twin, rfm, profile?.business_name]);
+  }, [briefOn, twinActive, extras, sym, twin, rfm, profile?.business_name]);
 
   const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
     <div className="home">
-      {/* At most one nudge: the first of these that has something to say. */}
+      {/* At most one nudge: the first of these that has something to say.
+          The first-week goal and the brief's ending come first: each lasts
+          days, where Teach waits until it is answered. */}
       <div className="one-nudge">
-        <TeachAibosCard />
         <ActivationProgress />
+        <BriefTrialEnded />
+        <TeachAibosCard />
         <MilestoneBanner />
       </div>
 
@@ -118,7 +128,15 @@ export default function Home() {
             {today}
             {twin && <span style={{ marginLeft: 16, whiteSpace: 'nowrap' }}><span className="live-dot" aria-hidden="true" />{updated}</span>}
           </p>
-          {oneThing && <p className="home-one-thing"><span className="eyebrow">One thing today</span>{oneThing}</p>}
+          {oneThing && (
+            <p className="home-one-thing">
+              <span className="eyebrow">
+                One thing today
+                {trial?.active && trial.endsOn && <span style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 400 }}>{` · free until ${dayWords(trial.endsOn)}`}</span>}
+              </span>
+              {oneThing}
+            </p>
+          )}
           <OutboxChip style={{ marginTop: 10 }} />
         </div>
         <div className="home-acts" role="group" aria-label="Quick actions">
@@ -138,7 +156,7 @@ export default function Home() {
       {seesMoney && <NeedsYou />}
 
       {/* 3. The AIBOS team, edge to edge */}
-      {teamFirst && <HomeTeam />}
+      {teamFirst && <HomeTeam first />}
 
       {/* 4. The money */}
       {seesMoney && (
@@ -152,7 +170,7 @@ export default function Home() {
       )}
 
       {/* 5. Today */}
-      <TodayPanel />
+      <div className="home-today"><TodayPanel /></div>
 
       {/* Plans without the team: the team asleep, last */}
       {owner && !teamFirst && <HomeTeam />}

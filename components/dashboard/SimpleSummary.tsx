@@ -3,23 +3,21 @@
 // SimpleSummary — the five-second explanation band (ux_intelligence.md:
 // "Can a first-time business owner understand this in under five seconds?").
 //
-// In Simple mode, every technical hub opens with its story told in plain
-// words, composed ONLY from the user's real data — the charts below become
-// detail, not homework. Renders nothing in technical mode, and nothing when
-// there's no data (each page's own empty state already handles that).
+// Every technical hub opens with its story told in plain words, composed ONLY
+// from the user's real data: the charts below become detail, not homework.
+// For everyone since the Simple and Pro switch went (17 Nov 2026). Renders
+// nothing when there's no data (each page's own empty state handles that).
 
 import { useStore } from '@/lib/store';
 import { fmt } from '@/lib/utils';
 
 export default function SimpleSummary({ page }: { page: 'cash' | 'customers' | 'ops' }) {
-  const uiMode = useStore((s) => s.uiMode);
   const sym = useStore((s) => s.currencySymbol) || 'K';
   const twin = useStore((s) => s.twin);
   const kpi = useStore((s) => s.kpi);
   const rfm = useStore((s) => s.rfm);
   const pos = useStore((s) => s.posGrandTotals);
 
-  if (uiMode !== 'simple') return null;
   const money = (n: number) => fmt(n, true, sym);
 
   let text: string | null = null;
