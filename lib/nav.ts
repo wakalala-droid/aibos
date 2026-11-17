@@ -14,7 +14,7 @@ export type NavIcon =
   | 'overview' | 'record' | 'cash' | 'invoice' | 'customers' | 'rooms' | 'inventory'
   | 'people' | 'schedule' | 'timeline' | 'import' | 'brief' | 'variance' | 'forecast'
   | 'anomaly' | 'breakeven' | 'simulate' | 'churn' | 'products' | 'market' | 'pos'
-  | 'benchmarks' | 'cashplan' | 'clients' | 'team';
+  | 'benchmarks' | 'cashplan' | 'clients' | 'team' | 'numbers';
 
 export interface NavDoor {
   href: string;
@@ -47,6 +47,7 @@ export const DOORS: NavDoor[] = [
   { href: '/dashboard/schedule',    label: 'Schedule',      icon: 'schedule',  group: 'main', keywords: ['calendar', 'reminders', 'meetings', 'deadlines', 'zra', 'pick-up'] },
   { href: '/dashboard/timeline',    label: 'Activity',      icon: 'timeline',  group: 'main', keywords: ['timeline', 'entries', 'history', 'records', 'transactions', 'void', 'remove'] },
 
+  { href: '/dashboard/numbers',     label: 'Your numbers',        icon: 'numbers',    group: 'reports', keywords: ['overview', 'health score', 'kpi', 'revenue', 'profit', 'margin', 'findings', 'scores', 'chart'] },
   { href: '/dashboard/brief',       label: 'Briefs',              icon: 'brief',      group: 'reports', keywords: ['brief', 'summary', 'recommendations', 'advice', 'advisor'] },
   { href: '/dashboard/variance',    label: 'Month by month',      icon: 'variance',   group: 'reports', keywords: ['variance', 'changes', 'compare months', 'cost spike'] },
   { href: '/dashboard/cash-plan',   label: 'Cash plan',           icon: 'cashplan',   group: 'reports', keywords: ['13 weeks', 'cash flow', 'run short', 'shortfall', 'safe to spend', 'afford', 'bills coming', 'group', 'all businesses'] },

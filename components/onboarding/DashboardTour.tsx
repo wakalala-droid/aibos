@@ -25,11 +25,11 @@ interface Stop {
 }
 
 const STOPS: Stop[] = [
-  { anchor: 'ask-bar',     title: 'Just ask',              body: 'Type any question about your business (“How much cash do I have?”) and AIBOS answers from your real records. Never a made-up number.' },
+  { anchor: 'ask-bar',     title: 'Just talk',             body: 'Tap Talk to AIBOS and ask anything about your business (“How much cash do I have?”). AIBOS answers out loud from your real records. Never a made-up number.' },
   { anchor: 'today-cards', title: 'Your day at a glance',  body: 'Today\'s sales, money owed to you and whether stock needs attention. These update themselves as you record.' },
   { anchor: 'nav-record',  title: 'Record what happens',   body: 'Sold something? Paid someone? Say it in plain words and AIBOS does the bookkeeping: cash, stock and debts stay current.' },
   { anchor: 'ask-aibos',   title: 'AIBOS is always here',  body: 'Your AI advisor lives one click away on every page. You can also press and hold any card to have it explained.' },
-  { anchor: 'mode-toggle', title: 'Simple or Pro',         body: 'Simple mode shows the essentials. Flip to Pro any time for every chart, forecast and intelligence engine: nothing is hidden for good.' },
+  { anchor: 'mode-toggle', title: 'Simple or Pro',         body: 'Simple keeps the menu to the essentials. Flip to Pro any time to add every report and forecast to the menu: nothing is hidden for good.' },
 ];
 
 interface Rect { top: number; left: number; width: number; height: number }
@@ -94,7 +94,7 @@ export default function DashboardTour() {
     return () => window.clearTimeout(timer);
   }, [pathname, begin]);
 
-  // Manual replay (SimpleHome dispatches this).
+  // Manual replay (Home's "Take the tour again" dispatches this).
   useEffect(() => {
     const onStart = () => begin();
     window.addEventListener(TOUR_RESTART_EVENT, onStart);

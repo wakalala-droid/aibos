@@ -26,6 +26,7 @@ import PhoneAlerts from '@/components/pwa/PhoneAlerts';
 import ReminderPopup from '@/components/schedule/ReminderPopup';
 import CurrencySelector from '@/components/ui/CurrencySelector';
 import BusinessSwitcher from '@/components/layout/BusinessSwitcher';
+import AutoSwitch from '@/components/layout/AutoSwitch';
 
 // Bell read-state: the dot shows only for alerts the user hasn't opened the
 // tray for. On-device signature — the alert list itself stays server-driven.
@@ -346,6 +347,11 @@ export default function DashboardHeader() {
           (it sits inside wrapRef, so the outside-click close doesn't fire). */}
       <div onMouseDownCapture={() => setOpen(null)} style={{ display: 'contents' }}>
         <CurrencySelector />
+      </div>
+
+      {/* AIBOS auto: the team runs the day by itself, asking only when it must. */}
+      <div onMouseDownCapture={() => setOpen(null)} style={{ display: 'contents' }}>
+        <AutoSwitch />
       </div>
 
       {/* Notifications */}

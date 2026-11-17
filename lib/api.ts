@@ -1272,6 +1272,8 @@ export interface AiTeam {
   workers: AiWorker[];
   /** When the workers last looked through these books, if this run of the API knows. */
   looked_at: string | null;
+  /** AIBOS auto is on for these books: the team looks every hour. */
+  auto?: boolean;
   every_hours: number; day_from: number; day_to: number;
 }
 /** What AIBOS did lately, newest first, every status. */
@@ -1286,11 +1288,41 @@ export async function listWaitingActions(): Promise<AiAction[]> {
 export async function getTeam(): Promise<AiTeam> {
   const d = await spineFetch('/workers');
   return {
-    workers: (d.workers ?? []) as AiWorker[], looked_at: (d.looked_at as string) ?? null,
+    workers: (d.workers ?? []) as AiWorker[], looked_at: (d.looked_at as string) ?? null, auto: !!d.auto,
     every_hours: Number(d.every_hours) || 3, day_from: Number(d.day_from) || 7, day_to: Number(d.day_to) || 21,
   };
 }
 /** Ask the workers to look through the books now. */
+/** AIBOS auto (17 Nov 2026): the switch at the top of every page. */
+export interface AutoState {
+  /** False on a plan without the team; ready is false before migration 0047. */
+  available: boolean; ready: boolean; on: boolean;
+  /** The largest entry auto records or confirms by itself. */
+  limit?: number;
+  does?: string[]; asks?: string[];
+}
+function autoFrom(d: Record<string, unknown>, available: boolean, ready: boolean): AutoState {
+  return {
+    available, ready, on: !!d.on,
+    limit: typeof d.limit === 'number' ? d.limit : undefined,
+    does: Array.isArray(d.does) ? (d.does as string[]) : undefined,
+    asks: Array.isArray(d.asks) ? (d.asks as string[]) : undefined,
+  };
+}
+export async function getAuto(): Promise<AutoState> {
+  const d = await spineFetch('/auto');
+  return autoFrom(d, !!d.available, d.ready !== false);
+}
+export async function setAuto(on: boolean): Promise<AutoState> {
+  const d = await spineFetch('/auto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ on }) });
+  return autoFrom(d, true, true);
+}
+/** What the team would find in these books now, as counts per worker. Writes nothing. */
+export async function previewAuto(): Promise<{ found: Record<string, number>; total: number; names: Record<string, string> }> {
+  const d = await spineFetch('/auto/preview');
+  return { found: (d.found ?? {}) as Record<string, number>, total: Number(d.total) || 0, names: (d.names ?? {}) as Record<string, string> };
+}
+
 export async function runWorkers(): Promise<{ new: number; closed: number }> {
   const d = await spineFetch('/workers/run', { method: 'POST' });
   return { new: Number(d.new) || 0, closed: Number(d.closed) || 0 };

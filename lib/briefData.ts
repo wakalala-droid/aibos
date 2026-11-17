@@ -1,5 +1,5 @@
 // lib/briefData.ts — one fetcher for everything the Morning Brief needs
-// beyond the twin (audit #9). SimpleHome and the Today card both call this,
+// beyond the twin (audit #9). Home and the Today card both call this,
 // so the brief's inputs can never drift between surfaces. Every source is
 // best-effort (Promise.allSettled): a failed fetch omits its lines rather
 // than breaking the homepage.

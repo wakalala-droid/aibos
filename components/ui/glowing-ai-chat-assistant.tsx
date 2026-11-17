@@ -26,6 +26,8 @@ import AnswerCheck from '@/components/chat/AnswerCheck';
 import ActionCard from '@/components/chat/ActionCard';
 import RichText from '@/components/chat/RichText';
 import { useTalkMode, type TalkPhase } from '@/lib/useTalkMode';
+import { TALK_EVENT } from '@/lib/talkEvent';
+import TalkOverlay from '@/components/talk/TalkOverlay';
 
 // How long a press on the AIBOS button counts as "hold to talk".
 const HOLD_MS = 450;
@@ -97,6 +99,11 @@ export function FloatingAiAssistant() {
     setOpen(true);
     talkStart(true);
   }, [setOpen, talkStart]);
+  // "Talk to AIBOS" on Home or the team page starts the same conversation.
+  useEffect(() => {
+    window.addEventListener(TALK_EVENT, startTalk);
+    return () => window.removeEventListener(TALK_EVENT, startTalk);
+  }, [startTalk]);
   // Closing the panel ends the conversation.
   useEffect(() => { if (!open && talking) talkStop(); }, [open, talking, talkStop]);
   // Jobs asked for while talking are logged as spoken.
@@ -183,8 +190,19 @@ export function FloatingAiAssistant() {
 
   const mark = isDark ? '/brand/aibos-mark-dark.png' : '/brand/aibos-mark-light.png';
   const hasUserMsg = messages.some((m) => m.role === 'user');
+  // While talking, the sphere reads along: AIBOS's latest answer and a job
+  // from it that waits for a yes, so it can be tapped as well as said.
+  const lastAnswer = [...messages].reverse().find((m) => m.role === 'assistant');
+  const lastJob = lastAnswer?.actions?.find((j) => j.status === 'waiting') ?? null;
 
   return (
+    <>
+    {talking && (
+      <TalkOverlay phase={talk.phase as Exclude<TalkPhase, 'off'>} heard={talk.heard} answer={lastAnswer?.content ?? null}
+        job={lastJob} busy={loading} onAnswer={answerAction}
+        onInterrupt={talk.interrupt} onEnd={talk.stop}
+        onType={() => { talk.stop(); setOpen(true); setTimeout(() => inputRef.current?.focus(), 120); }} />
+    )}
     <div className="ai-fab-wrap" style={{ position: 'fixed', right: 24, bottom: 24, zIndex: 900, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 14, pointerEvents: 'none' }}>
       {/* ── Panel ──────────────────────────────────────────────────────────── */}
       <AnimatePresence>
@@ -421,6 +439,7 @@ export function FloatingAiAssistant() {
         </AnimatePresence>
       </motion.button>
     </div>
+    </>
   );
 }
 

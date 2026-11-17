@@ -27,7 +27,9 @@ Import: `import { Notice, BentoCard, NoticeArt, BrandMark, DocHeader } from '@/c
 | Filters | rounded chips that wrap | `.chips`, `.chip` |
 | Lists | a row with name, detail and amount | `.row`, `.row-title`, `.row-sub`, `.row-amount` |
 | Small figures | side by side inside a card | `.mini-stats`, `.mini-stat` |
-| `TeamMap` | the AIBOS team page: the mark in its white disc and dashed ring in the middle, the six workers around it on hairlines; status by fill (brand cyan needs the owner, with the count; outline is watching; faded and dashed is not on the plan). On a phone the mark sits on top and the workers go three across, no lines | `.team-map`, `.team-node`, `.team-hub` |
+| `TeamScene` | the AIBOS team page (owner's reference picture, 17 Nov 2026): a navy stage (the website's navy, the product's one dark screen) with the mark in its white disc and dashed ring in the middle, the six workers three each side as a hexagon badge beside a small card (name, state, a five-bar meter of the week), joined by lines of light; live activity beside it, the bar to talk to AIBOS under it. Status by fill: brand cyan needs the owner, with the count; outline is watching; faded and dashed is not on the plan. Tapping a worker opens its sheet (`WorkerSheet`), never a card per worker. Under 880px the mark sits on top and the workers go two across, no lines | `.scene`, `.scene-station`, `.scene-hub`, `.scene-live`, `.sheet` |
+| `AutoSwitch` | AIBOS auto, top right of every page: a pill with the word and a switch; brand cyan when on, with a breathing dot. The first time on, it says what it does by itself and what it always asks. Locked (dashed) on a plan without the team, opening what the team would find in the owner's own books | `.auto-switch`, `.auto-pop` |
+| `AibosSphere` | talking to AIBOS: the glass sphere with water moving inside, blue and white with one gold light, the mark in the middle, the voice as bars either side (`TalkOverlay` puts it full screen on navy while the owner talks). Small and still, it is the button that starts talking | `.aibos-sphere`, `.talk-overlay` |
 | Job card | a job AIBOS did or is waiting to do: who asks, what, why, and the answers in the job's own words | `ActionCard`, `.ai-job`, `.needs-you-list` |
 
 ## Rules
@@ -35,7 +37,8 @@ Import: `import { Notice, BentoCard, NoticeArt, BrandMark, DocHeader } from '@/c
 - Numbers are ink. Red only for a figure that went the wrong way (`trendTone`, `signTone`).
 - Charts use `--chart-1..6` and `--chart-muted`.
 - No em-dashes, no comma before "and", no emoji. Plain owner words.
-- No entrance animation on page content; icons move on hover only. No blurred sticky headers. (The public website has one scoped exception, below.)
+- No entrance animation on page content; icons move on hover only. No blurred sticky headers. (The public website has one scoped exception, below, and the app has two: the team scene and talking to AIBOS.)
+- Home asks for one thing at a time (owner, 17 Nov 2026): five blocks (greeting with Record and Talk, the money, Needs you, Today, the team strip), at most one nudge above them, and Needs you is the only to-do list in the app. A new signal joins Needs you; it never becomes another card.
 
 ## Website navy (the public website only)
 The owner, 10 Oct 2026: "too much white going on, add dynamic dark navy blue like on the AI section on most of the site". The app keeps its own light and black themes; the website is navy.
@@ -56,3 +59,10 @@ The app stays still. The public website (`app/(marketing)`) may move, but only w
 - **Pain to promise:** the brand line strikes each old job through and the answer rises in its place. **The goal:** four large lines light up once each reaches the middle of the screen.
 - Only the video and the theatre loop, nothing floats over the content and nothing blocks the page. With `prefers-reduced-motion` none of the page motion runs (the sky is still and the scenes show their finished picture); the hero video still plays.
 - Phones: everything fits at 320px. Long words wrap, never cut off; card contents use the full width under the icon and title.
+
+## The team scene and the sphere (the app's two moving pieces)
+The owner, 17 Nov 2026: "maintain the very same AIBOS UI kit for the design, but we just need some animation going on." Two pieces may move, and only when something is happening, so the movement tells the owner something:
+- **The team scene:** light runs along a worker's line into the middle when it has found something, and out along every line while AIBOS auto is on; the dashed ring turns while auto is on; a badge that needs the owner swells gently; a sweep crosses the badges while the team looks (Check now); a new line of live activity slides in (12px over 200ms, like a notice). A team at rest is still.
+- **The sphere:** the water runs fast and the bars follow a voice while AIBOS speaks, the water jumps each time a word is heard while it listens, it swirls slowly with the gold light brighter while it thinks. Drawn on one canvas. Small on a button it is a still picture.
+- With `prefers-reduced-motion` neither moves: the scene is still and the sphere is one picture.
+

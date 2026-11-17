@@ -15,7 +15,11 @@ import { openRecordSheet } from '@/lib/recordSheet';
 import BigMoney from './BigMoney';
 import Panel from './Panel';
 
-export default function ActivityFeed({ limit = 8 }: { limit?: number }) {
+export default function ActivityFeed({ limit = 8, bare = false }: {
+  limit?: number;
+  /** Just the list, for a panel that already has its own title (Home's Today). */
+  bare?: boolean;
+}) {
   const sym = useStore((s) => s.currencySymbol) || 'K';
   const events = useBooksEvents();
   const todayKey = localDay(new Date());
@@ -26,9 +30,8 @@ export default function ActivityFeed({ limit = 8 }: { limit?: number }) {
 
   const groups = byDay(latest);
 
-  return (
-    <Panel title="Recent activity" labelledBy="recent-activity-title"
-      action={<Link href="/dashboard/timeline" className="pill pill-quiet">See all</Link>}>
+  const list = (
+    <>
       {events === null ? (
         <div className="skeleton" style={{ height: 240 }} />
       ) : latest.length === 0 ? (
@@ -60,6 +63,13 @@ export default function ActivityFeed({ limit = 8 }: { limit?: number }) {
           ))}
         </div>
       )}
+    </>
+  );
+  if (bare) return list;
+  return (
+    <Panel title="Recent activity" labelledBy="recent-activity-title"
+      action={<Link href="/dashboard/timeline" className="pill pill-quiet">See all</Link>}>
+      {list}
     </Panel>
   );
 }

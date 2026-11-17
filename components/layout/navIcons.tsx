@@ -4,7 +4,7 @@
 // menu, the phone bar, Home's "Go deeper" cards and the card icons.
 
 import {
-  BedDouble, Bot, CalendarDays, CalendarRange, ChartColumn, CirclePlus, FlaskConical, Globe, History, House,
+  BedDouble, Bot, Gauge, CalendarDays, CalendarRange, ChartColumn, CirclePlus, FlaskConical, Globe, History, House,
   IdCard, Layers, LayoutGrid, ListChecks, Lock, Menu, Moon, Package, ReceiptText, Scale,
   ShieldCheck, SlidersHorizontal, Sparkles, Store, Sun, Tag, TrendingUp, TriangleAlert,
   Upload, UserMinus, UserSearch, Users, Wallet, type LucideIcon,
@@ -13,6 +13,7 @@ import {
 /** The icon for each door in lib/nav.ts, and a few controls. */
 export const NAV_GLYPH: Record<string, LucideIcon> = {
   overview: House,
+  numbers: Gauge,
   record: CirclePlus,
   cash: Wallet,
   invoice: ReceiptText,

@@ -27,7 +27,11 @@ function whenWords(d: Date): string {
   return showTime ? `${dayPart}, ${time}` : dayPart;
 }
 
-export default function ComingUp() {
+export default function ComingUp({ limit = 6, bare = false }: {
+  limit?: number;
+  /** Just the list, for a panel that already has its own title (Home's Today). */
+  bare?: boolean;
+} = {}) {
   const [items, setItems] = useState<ScheduleItem[] | null>(null);
   // Read again whenever the books change (a reminder paid from the Schedule).
   const booksVersion = useStore((s) => s.booksVersion);
@@ -42,11 +46,10 @@ export default function ComingUp() {
     .filter((i) => i.status === 'scheduled')
     .map((i) => ({ item: i, when: new Date(i.next_occurrences?.[0] ?? i.starts_at) }))
     .sort((a, b) => a.when.getTime() - b.when.getTime())
-    .slice(0, 6);
+    .slice(0, limit);
 
-  return (
-    <Panel title="Coming up" labelledBy="coming-up-title" style={{ height: 'auto' }}
-      action={<Link href="/dashboard/schedule" className="pill pill-quiet">Schedule</Link>}>
+  const list = (
+    <>
       {items === null ? <div className="skeleton" style={{ height: 200 }} /> : rows.length === 0 ? (
         <div style={{ display: 'grid', gap: 12, justifyItems: 'start' }}>
           <p style={{ margin: 0, fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>Nothing in the next two weeks.</p>
@@ -70,6 +73,13 @@ export default function ComingUp() {
           })}
         </div>
       )}
+    </>
+  );
+  if (bare) return list;
+  return (
+    <Panel title="Coming up" labelledBy="coming-up-title" style={{ height: 'auto' }}
+      action={<Link href="/dashboard/schedule" className="pill pill-quiet">Schedule</Link>}>
+      {list}
     </Panel>
   );
 }
