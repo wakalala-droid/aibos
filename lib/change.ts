@@ -30,9 +30,11 @@ export function monthChange(cur: number, prev: number | undefined, monthsRecorde
 export const enoughHistory = (monthsRecorded: number): boolean => monthsRecorded >= MIN_MONTHS;
 
 // A month still running is not a month (audit 19 Nov 2026). Nineteen days of
-// November against all of October read "Sales fell 37%, look into the drop"
-// to an owner whose sales were steady: a false alarm on the page they trust
-// most. While a month runs, sales are compared at their pace to the month end,
+// November against all 31 of October read "Sales fell 38.7% compared with
+// October. Look into the drop before it grows." to an owner whose sales were
+// steady, marked high: a false alarm on the page they trust most. (On test
+// books with two months it read "K4,151 less".) While a month runs, sales
+// are compared at their pace to the month end,
 // and only from the 7th, when there is enough of the month to have a pace.
 // Costs and profit are not projected: rent and stock land on one day.
 
