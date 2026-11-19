@@ -7,7 +7,8 @@
 // week and its last job. The Assistant's sheet carries the earned "do these
 // yourself" switch. Escape or the close button shuts it.
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useModalFocus } from '@/hooks/useModalFocus';
 import Link from 'next/link';
 import { MessageCircle, X } from 'lucide-react';
 import ActionCard from '@/components/chat/ActionCard';
@@ -44,6 +45,9 @@ export default function WorkerSheet({ worker, jobs, sym, ios, busy, auto, onAnsw
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
+  // Focus stays in the sheet and goes back to the worker when it closes.
+  const panel = useRef<HTMLElement>(null);
+  useModalFocus(panel);
 
   const s = workerState(worker);
   const Icon = worker.id === 'assistant' ? MessageCircle : (WORKER_ICONS[worker.id] ?? MessageCircle);
@@ -75,7 +79,7 @@ export default function WorkerSheet({ worker, jobs, sym, ios, busy, auto, onAnsw
   return (
     <>
       <button type="button" className="sheet-backdrop" aria-label="Close" onClick={onClose} />
-      <aside className="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <aside ref={panel} className="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
         <header className="sheet-head">
           <span className={`bento-icon sheet-icon is-${s.tone}`} aria-hidden="true"><Icon /></span>
           <div style={{ minWidth: 0, flex: 1 }}>

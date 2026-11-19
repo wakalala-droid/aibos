@@ -14,6 +14,7 @@
 
 import { canAccess, type Tier } from '@/lib/tiers';
 import { useStore } from '@/lib/store';
+import { useProfile } from '@/lib/profile';
 import { useRecordingDays } from '@/hooks/useRecordingDays';
 
 export const GOAL_DAYS = 3;
@@ -51,11 +52,21 @@ export function briefTrialFrom(days: string[], complete: boolean, owned: boolean
   return { owned, days: count, active, ended: !active, endsOn };
 }
 
+/** An account this new has every recording day in the latest entries. */
+const YOUNG_DAYS = 30;
+
 export function useBriefTrial(): BriefTrial | null {
   const tier = useStore((s) => s.tier) as Tier;
+  const { profile } = useProfile();
   const rec = useRecordingDays();
   if (!rec) return null;
-  return briefTrialFrom(rec.days, rec.complete, canAccess(tier, 'morning_brief'));
+  // A new owner who brings a big file on day one fills the read limit at once.
+  // That said "long past its first week" and the free days never came (audit
+  // 19 Nov 2026). An account under a month old is in its first weeks whatever
+  // its log holds, and its recording days are the newest entries.
+  const created = profile?.created_at ? Date.parse(profile.created_at) : NaN;
+  const young = Number.isFinite(created) && Date.now() - created < YOUNG_DAYS * DAY;
+  return briefTrialFrom(rec.days, rec.complete || young, canAccess(tier, 'morning_brief'));
 }
 
 /** "3 December" */

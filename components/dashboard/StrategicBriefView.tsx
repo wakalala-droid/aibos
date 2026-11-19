@@ -5,7 +5,7 @@
 // component. Takes raw data as props (no store), derives recommendations the
 // same way the product does — so nothing is fabricated.
 import { fmt, scoreColor } from '@/lib/utils';
-import { monthChange, monthName, enoughHistory, MIN_MONTHS } from '@/lib/change';
+import { monthChange, monthName, enoughHistory, fairMonth, MIN_MONTHS } from '@/lib/change';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import BentoCard, { bentoSpans } from '@/components/ui/BentoCard';
@@ -101,11 +101,20 @@ export default function StrategicBriefView({
   const prev = monthly[monthly.length - 2];
   // Below a sensible base the change is given in money, not a percentage
   // (lib/change: "1423.5%" from a tiny first month read as broken).
-  const revenueChange = last && prev ? monthChange(Number(last.Revenue) || 0, Number(prev.Revenue) || 0, monthly.length) : undefined;
-  const profitChange = last && prev
+  // A month still running is compared at its pace, sales only, from the 7th
+  // (lib/change fairMonth). Profit waits for the month to end: rent lands on one day.
+  const running = last && prev ? fairMonth(last.Month, Number(last.Revenue) || 0) : undefined;
+  const partial = !!running && (running.pace || running.early);
+  const revenueChange = last && prev && running && !running.early
+    ? monthChange(running.value, Number(prev.Revenue) || 0, monthly.length) : undefined;
+  const profitChange = last && prev && !partial
     ? monthChange((Number(last.Revenue) || 0) - (Number(last.Costs) || 0), (Number(prev.Revenue) || 0) - (Number(prev.Costs) || 0), monthly.length)
     : undefined;
   const periodLabel = monthly.length === 1 ? '1 month recorded' : `${monthly.length} months`;
+  const salesSub = !(monthly.length > 1 && prev) ? (monthly.length ? periodLabel : 'no months yet')
+    : running?.pace ? `${periodLabel}, ${monthName(last.Month)} on pace vs ${monthName(prev.Month)}`
+    : running?.early ? `${periodLabel}, ${monthName(last.Month)} just started`
+    : `${periodLabel}, change vs ${monthName(prev.Month)}`;
   const months = Math.max(monthly.length, 1);
 
   // ── Best and worst month, as facts rather than decoration ────────────────
@@ -143,7 +152,7 @@ export default function StrategicBriefView({
         <KPICard label="Health score" value={scoreReady ? String(health.score) : 'Not yet'} sub={scoreReady ? health.label : `Needs ${MIN_MONTHS} months of records`}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke={healthColour} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           iconBg={`color-mix(in srgb, ${healthColour} 15%, transparent)`} sparkColor={healthColour} delay={0} />
-        <KPICard label="Sales" value={fmt(kpi.totalRevenue, true, sym)} sub={monthly.length > 1 && prev ? `${periodLabel}, change vs ${monthName(prev.Month)}` : monthly.length ? periodLabel : 'no months yet'} change={revenueChange}
+        <KPICard label="Sales" value={fmt(kpi.totalRevenue, true, sym)} sub={salesSub} change={revenueChange}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><polyline points="16 7 22 7 22 13" stroke="var(--good)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           iconBg="rgba(52,211,153,0.15)" sparkData={monthly.slice(-6).map((m) => Number(m.Revenue) || 0)} sparkColor="var(--good)" delay={0.06} />
         <KPICard label="Profit" value={fmt(kpi.totalProfit, true, sym)} sub={`${kpi.avgMargin.toFixed(1)}% average margin`} change={profitChange}

@@ -106,12 +106,12 @@ export default function QrScanner({ onResult, onClose, title = 'Scan receipt QR'
           </>
         ) : (
           <div>
-            <label style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'block' }}>
+            <label htmlFor="qr-paste" style={{ fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'block' }}>
               Paste the QR contents
             </label>
-            <textarea value={paste} onChange={e => setPaste(e.target.value)} rows={3}
+            <textarea id="qr-paste" value={paste} onChange={e => setPaste(e.target.value)} rows={3}
               placeholder="Paste the decoded QR text / URL here"
-              style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', color: 'var(--text-1)', fontSize: 'var(--fs-data)', outline: 'none', resize: 'vertical' }} />
+              style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', color: 'var(--text-1)', fontSize: 'var(--fs-data)', resize: 'vertical' }} />
             <button type="button" onClick={() => paste.trim() && onResult(paste.trim())} disabled={!paste.trim()} className="touch-target"
               style={{ marginTop: 10, width: '100%', padding: '12px', minHeight: 48, borderRadius: 999, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: paste.trim() ? 'pointer' : 'default', opacity: paste.trim() ? 1 : 0.5 }}>
               Use this code

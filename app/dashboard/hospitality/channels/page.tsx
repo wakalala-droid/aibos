@@ -133,17 +133,17 @@ function UnitChannels({ unit, channels, onChange, onError }: { unit: Unit; chann
               {c.last_sync_note && <p style={{ fontSize: 'var(--fs-label)', color: c.sync_status === 'error' ? 'var(--red)' : 'var(--text-3)', margin: '0 0 10px' }}>{c.last_sync_note}</p>}
 
               {/* Import URL (pull) */}
-              <label className="field-label">Import URL: paste the OTA’s iCal export link, then Sync</label>
+              <label htmlFor={`ch-${c.id}-import`} className="field-label">Import URL: paste the OTA’s iCal export link, then Sync</label>
               <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                <input className="field" style={{ flex: 1 }} defaultValue={c.ical_import_url || ''} placeholder="https://…/calendar.ics" onBlur={e => { if (e.target.value.trim() !== (c.ical_import_url || '')) saveImport(c, e.target.value); }} />
+                <input id={`ch-${c.id}-import`} className="field" style={{ flex: 1 }} defaultValue={c.ical_import_url || ''} placeholder="https://…/calendar.ics" onBlur={e => { if (e.target.value.trim() !== (c.ical_import_url || '')) saveImport(c, e.target.value); }} />
               </div>
 
               {/* Export feed (publish) */}
               {c.ical_export_token && (
                 <>
-                  <label className="field-label">Our feed URL: paste this into the OTA’s “import calendar” field</label>
+                  <label htmlFor={`ch-${c.id}-feed`} className="field-label">Our feed URL: paste this into the OTA’s “import calendar” field</label>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <input className="field" style={{ flex: 1, color: 'var(--text-3)' }} readOnly value={icalFeedUrl(c.ical_export_token)} onFocus={e => e.target.select()} />
+                    <input id={`ch-${c.id}-feed`} className="field" style={{ flex: 1, color: 'var(--text-3)' }} readOnly value={icalFeedUrl(c.ical_export_token)} onFocus={e => e.target.select()} />
                     <button className="pill pill-quiet" onClick={() => copyFeed(c.ical_export_token!)}>{copied === c.ical_export_token ? 'Copied ✓' : 'Copy'}</button>
                   </div>
                 </>
@@ -156,14 +156,14 @@ function UnitChannels({ unit, channels, onChange, onError }: { unit: Unit; chann
       {/* Add channel */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'end', flexWrap: 'wrap', paddingTop: 12, borderTop: '1px solid var(--border)' }}>
         <div style={{ minWidth: 140 }}>
-          <label className="field-label">Add channel</label>
-          <select className="field" value={type} onChange={e => setType(e.target.value as ChannelType)}>
+          <label htmlFor="ch-add-type" className="field-label">Add channel</label>
+          <select id="ch-add-type" className="field" value={type} onChange={e => setType(e.target.value as ChannelType)}>
             {(Object.keys(TYPE_LABEL) as ChannelType[]).map(t => <option key={t} value={t}>{TYPE_LABEL[t]}</option>)}
           </select>
         </div>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <label className="field-label">Import URL (optional)</label>
-          <input className="field" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://…/calendar.ics" />
+          <label htmlFor="ch-add-import" className="field-label">Import URL (optional)</label>
+          <input id="ch-add-import" className="field" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://…/calendar.ics" />
         </div>
         <button className="pill pill-primary" style={{ opacity: busy === 'add' ? 0.7 : 1 }} disabled={busy === 'add'} onClick={add}>{busy === 'add' ? 'Adding…' : 'Add channel'}</button>
       </div>

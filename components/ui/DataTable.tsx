@@ -11,6 +11,9 @@ export interface DataTableColumn<T> {
   /** Unique column id. */
   key: string;
   label: string;
+  /** Say the label to a screen reader only (a column of buttons): an empty
+   *  header left the column without a name (audit 19 Nov 2026). */
+  hideLabel?: boolean;
   /** Provide to make the column sortable. */
   sortValue?: (row: T) => string | number;
   render: (row: T, index: number) => React.ReactNode;
@@ -146,7 +149,7 @@ export default function DataTable<T>({
                           {active ? (sort!.dir === 'asc' ? '↑' : '↓') : '↕'}
                         </span>
                       </button>
-                    ) : col.label}
+                    ) : col.hideLabel ? <span className="sr-only">{col.label}</span> : col.label}
                   </th>
                 );
               })}

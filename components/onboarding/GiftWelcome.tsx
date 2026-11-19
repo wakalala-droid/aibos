@@ -18,6 +18,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useModalFocus } from '@/hooks/useModalFocus';
 import Image from 'next/image';
 import { BellRing, CalendarRange, FlaskConical, Search, X, type LucideIcon } from 'lucide-react';
 import { authHeaders } from '@/lib/api';
@@ -71,6 +72,7 @@ function spanWords(months?: number): string {
 export function GiftWelcomePanel({ gift, onClose }: { gift: GiftMeta; onClose: () => void }) {
   const { isDark } = useTheme();
   const button = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
   const plan = (isTier(gift.plan) && gift.plan !== 'free' ? gift.plan : 'growth') as Exclude<Tier, 'free'>;
   const planName = TIERS[plan].name;
   const items = HIGHLIGHTS[plan];
@@ -81,16 +83,17 @@ export function GiftWelcomePanel({ gift, onClose }: { gift: GiftMeta; onClose: (
     window.addEventListener('keydown', onKey);
     const before = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    button.current?.focus({ preventScroll: true });
     return () => {
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = before;
     };
   }, [onClose]);
+  // Focus starts on the button, stays in the panel and goes back on close.
+  useModalFocus(panel, true, button);
 
   return (
     <div className="whatsnew-backdrop gift-welcome" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="whatsnew" role="dialog" aria-modal="true" aria-labelledby="gift-title">
+      <div ref={panel} className="whatsnew" role="dialog" aria-modal="true" aria-labelledby="gift-title">
         <div className="whatsnew-art">
           <Art />
           <div className="whatsnew-logo">

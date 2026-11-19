@@ -629,13 +629,13 @@ export default function SchedulePage() {
 
             {moreOpen && (
               <>
-                <div><label className="field-label">With whom</label><input value={form.withWhom} onChange={e => set('withWhom', e.target.value)} placeholder="Customer / supplier" className="field" /></div>
-                <div><label className="field-label">Where</label><input value={form.location} onChange={e => set('location', e.target.value)} className="field" /></div>
-                <div><label className="field-label">Amount ({sym})</label><input type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="Powers one-tap recording" className="field" /></div>
+                <div><label htmlFor="sched-with-whom" className="field-label">With whom</label><input id="sched-with-whom" value={form.withWhom} onChange={e => set('withWhom', e.target.value)} placeholder="Customer / supplier" className="field" /></div>
+                <div><label htmlFor="sched-where" className="field-label">Where</label><input id="sched-where" value={form.location} onChange={e => set('location', e.target.value)} className="field" /></div>
+                <div><label htmlFor="sched-amount" className="field-label">Amount ({sym})</label><input id="sched-amount" type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="Powers one-tap recording" className="field" /></div>
                 <div>
-                  <label className="field-label">Repeats {pro || ios ? '' : `· ${needTier}`}</label>
+                  <label htmlFor="sched-repeats" className="field-label">Repeats {pro || ios ? '' : `· ${needTier}`}</label>
                   {pro ? (
-                    <select value={form.repeat} onChange={e => set('repeat', e.target.value as RepeatChoice)} className="field">
+                    <select id="sched-repeats" value={form.repeat} onChange={e => set('repeat', e.target.value as RepeatChoice)} className="field">
                       <option value="none">Does not repeat</option>
                       <option value="daily">Daily</option>
                       <option value="weekly">Weekly</option>
@@ -650,7 +650,7 @@ export default function SchedulePage() {
                     </Link>
                   )}
                 </div>
-                <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Notes</label><input value={form.notes} onChange={e => set('notes', e.target.value)} className="field" /></div>
+                <div style={{ gridColumn: '1 / -1' }}><label htmlFor="sched-notes" className="field-label">Notes</label><input id="sched-notes" value={form.notes} onChange={e => set('notes', e.target.value)} className="field" /></div>
               </>
             )}
           </div>

@@ -24,7 +24,8 @@ function recordingStreak(events: BusinessEvent[]): number {
   const days = new Set<string>();
   for (const e of events) {
     if (e.status === 'void') continue;
-    days.add(new Date(e.occurred_at).toLocaleDateString('en-CA')); // YYYY-MM-DD local
+    // The day it was written down: a backdated entry does not fill a gap.
+    days.add(new Date(e.recorded_at || e.occurred_at).toLocaleDateString('en-CA')); // YYYY-MM-DD local
   }
   let streak = 0;
   const cursor = new Date();

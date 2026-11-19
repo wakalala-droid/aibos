@@ -76,9 +76,12 @@ export default async function PricingPage() {
         </div>
       </section>
 
-      {/* Tiers, with the US dollar / Kwacha switch */}
-      <section className="mkt-section mkt-section--tight">
+      {/* Tiers, with the US dollar / Kwacha switch. The plan names are h3s,
+          so the section is named by an h2 a screen reader can jump to (they
+          followed the h1 with no h2 between, audit 19 Nov 2026). */}
+      <section className="mkt-section mkt-section--tight" aria-labelledby="plans-h">
         <div className="mkt-wrap" style={{ maxWidth: 1240 }}>
+          <h2 id="plans-h" className="sr-only">Plans and prices</h2>
           <PricingTiers cardPrices={cardPrices} zmwRate={zmwRate} />
         </div>
       </section>

@@ -8,7 +8,7 @@
 // Undo while it can still be taken back. The same answers work out loud in
 // the chat ("yes", "not now", "undo").
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { setAutopilot, type AiAction } from '@/lib/api';
 import { teamChanged } from '@/lib/autoMode';
 import type { ActionVerb } from '@/lib/aiAssistant';
@@ -33,6 +33,25 @@ export default function ActionCard({ job, busy, onAnswer, offers = false }: {
 }) {
   const [copied, setCopied] = useState(false);
   const [autoSaid, setAutoSaid] = useState<string | null>(null);
+
+  // After a Yes or an Undo here the buttons that had focus are gone, and focus
+  // fell to the top of the page (audit 19 Nov 2026). It moves to what the card
+  // offers next (Undo, Open WhatsApp), or the card, whose new state is read out.
+  const card = useRef<HTMLDivElement>(null);
+  const answered = useRef(false);
+  const seen = useRef(job.status);
+  useEffect(() => {
+    if (seen.current === job.status) return;
+    seen.current = job.status;
+    if (!answered.current) return;
+    answered.current = false;
+    const node = card.current;
+    if (!node) return;
+    const at = document.activeElement;
+    if (at && at !== document.body && !node.contains(at)) return;   // the owner moved on
+    const next = node.querySelector<HTMLElement>('.ai-job-actions button:not([disabled]), .ai-job-actions a[href]');
+    (next ?? node).focus({ preventScroll: true });
+  }, [job.status]);
   const earning = job.status === 'done' ? job.earning : undefined;
   const left = earning ? earning.needs - earning.approved_in_a_row : 0;
 
@@ -59,7 +78,8 @@ export default function ActionCard({ job, busy, onAnswer, offers = false }: {
   }
 
   return (
-    <div className="ai-job" data-status={job.status}>
+    <div ref={card} className="ai-job" data-status={job.status} tabIndex={-1} role="group" aria-label={label}
+      onClickCapture={() => { answered.current = true; }}>
       <p className="eyebrow" style={{ margin: 0 }}>{label}</p>
       <p className="ai-job-said">{words}</p>
       {job.status === 'waiting' && job.why && <p className="ai-job-why">{job.why}</p>}

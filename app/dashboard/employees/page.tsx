@@ -654,8 +654,8 @@ export default function EmployeesPage() {
               {editId ? 'Change a person' : 'Add a person'}
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
-              <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Name</label><input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Grace Banda" className="field" /></div>
-              <div><label className="field-label">Role</label><input value={form.position} onChange={e => set('position', e.target.value)} placeholder="Cashier" className="field" /></div>
+              <div style={{ gridColumn: '1 / -1' }}><label htmlFor="emp-name" className="field-label">Name</label><input id="emp-name" value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Grace Banda" className="field" /></div>
+              <div><label htmlFor="emp-role" className="field-label">Role</label><input id="emp-role" value={form.position} onChange={e => set('position', e.target.value)} placeholder="Cashier" className="field" /></div>
               {form.employment_type === 'casual' ? (
                 <>
                   <div><label className="field-label" htmlFor="emp-hourly">Hourly rate ({sym})</label><input id="emp-hourly" type="number" min="0" step="0.01" value={form.hourly_rate} onChange={e => set('hourly_rate', e.target.value)} placeholder="15" className="field" /></div>
@@ -665,10 +665,10 @@ export default function EmployeesPage() {
                 </>
               ) : (
                 <>
-                  <div><label className="field-label">Basic pay a month ({sym})</label><input type="number" min="0" step="0.01" value={form.basic_pay} onChange={e => set('basic_pay', e.target.value)} placeholder="8000" className="field" /></div>
+                  <div><label htmlFor="emp-basic" className="field-label">Basic pay a month ({sym})</label><input id="emp-basic" type="number" min="0" step="0.01" value={form.basic_pay} onChange={e => set('basic_pay', e.target.value)} placeholder="8000" className="field" /></div>
                   <div>
-                    <label className="field-label">Allowances a month ({sym})</label>
-                    <input type="number" min="0" step="0.01" value={form.allowances} onChange={e => set('allowances', e.target.value)} placeholder="0" className="field" />
+                    <label htmlFor="emp-allowances" className="field-label">Allowances a month ({sym})</label>
+                    <input id="emp-allowances" type="number" min="0" step="0.01" value={form.allowances} onChange={e => set('allowances', e.target.value)} placeholder="0" className="field" />
                   </div>
                   <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
                     Allowances are housing, transport and any other cash paid on top every month. PAYE and NAPSA count them; NHIMA is 1% of basic pay only.
@@ -676,8 +676,8 @@ export default function EmployeesPage() {
                 </>
               )}
               <div>
-                <label className="field-label">Type</label>
-                <select value={form.employment_type} onChange={e => {
+                <label htmlFor="emp-type" className="field-label">Type</label>
+                <select id="emp-type" value={form.employment_type} onChange={e => {
                   const type = e.target.value as EmploymentType;
                   // A fixed-term contract earns gratuity by law (Employment
                   // Code Act s.54 and s.73): on unless the owner turns it off.
@@ -689,7 +689,7 @@ export default function EmployeesPage() {
                   <option value="casual">Casual (paid by the hour)</option>
                 </select>
               </div>
-              <div><label className="field-label">Pay day</label><input type="number" min="1" max="28" value={form.pay_day} onChange={e => set('pay_day', e.target.value)} className="field" /></div>
+              <div><label htmlFor="emp-pay-day" className="field-label">Pay day</label><input id="emp-pay-day" type="number" min="1" max="28" value={form.pay_day} onChange={e => set('pay_day', e.target.value)} className="field" /></div>
               <div><label className="field-label" htmlFor="emp-phone">Phone (WhatsApp)</label><input id="emp-phone" type="tel" inputMode="tel" autoComplete="off" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="097 712 3456" className="field" /></div>
               <div><label className="field-label" htmlFor="emp-email">Email</label><input id="emp-email" type="email" autoComplete="off" value={form.email} onChange={e => set('email', e.target.value)} placeholder="grace@example.com" className="field" /></div>
               <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
@@ -786,8 +786,8 @@ export default function EmployeesPage() {
                       <label htmlFor="emp-second" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>This is a second job for them: PAYE at 37% on all of it</label>
                     </div>
                   )}
-                  <div><label className="field-label">Staff loan balance ({sym})</label><input type="number" min="0" value={form.loan_balance} onChange={e => set('loan_balance', e.target.value)} placeholder="0" className="field" /></div>
-                  <div><label className="field-label">Deduct per month ({sym})</label><input type="number" min="0" value={form.loan_monthly} onChange={e => set('loan_monthly', e.target.value)} placeholder="0" className="field" /></div>
+                  <div><label htmlFor="emp-loan" className="field-label">Staff loan balance ({sym})</label><input id="emp-loan" type="number" min="0" value={form.loan_balance} onChange={e => set('loan_balance', e.target.value)} placeholder="0" className="field" /></div>
+                  <div><label htmlFor="emp-loan-monthly" className="field-label">Deduct per month ({sym})</label><input id="emp-loan-monthly" type="number" min="0" value={form.loan_monthly} onChange={e => set('loan_monthly', e.target.value)} placeholder="0" className="field" /></div>
 
                   {/* Pay and PAYE earlier this year: the cumulative tables
                       need the whole year (ZRA Employer's Guide 5.1 and 6.1). A
@@ -821,7 +821,7 @@ export default function EmployeesPage() {
                       Their last month is paid as their final pay: type the basic for the days worked and any leave days owed when you run it. Their leaving papers (certificate of service and ITF/P13 figures) are on the list above.
                     </p>
                   )}
-                  <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Notes</label><input value={form.notes} onChange={e => set('notes', e.target.value)} className="field" /></div>
+                  <div style={{ gridColumn: '1 / -1' }}><label htmlFor="emp-notes" className="field-label">Notes</label><input id="emp-notes" value={form.notes} onChange={e => set('notes', e.target.value)} className="field" /></div>
                 </>
               )}
             </div>
@@ -844,8 +844,8 @@ export default function EmployeesPage() {
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 16 }}>
             <div>
-              <label className="field-label">Pay period</label>
-              <input type="month" value={period} onChange={e => { setPeriod(e.target.value); setPreview(null); setChanges({}); setAdjustOpen(null); setRunOk(null); setRunError(null); }} className="field" style={{ width: 'auto' }} />
+              <label htmlFor="emp-pay-period" className="field-label">Pay period</label>
+              <input id="emp-pay-period" type="month" value={period} onChange={e => { setPeriod(e.target.value); setPreview(null); setChanges({}); setAdjustOpen(null); setRunOk(null); setRunError(null); }} className="field" style={{ width: 'auto' }} />
             </div>
             <div>
               <label className="field-label" htmlFor="pay-date">Paid on</label>

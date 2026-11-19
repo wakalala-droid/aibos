@@ -915,6 +915,20 @@ select:focus-visible,
   outline-offset: -2px;
 }
 
+/* A chat box (audit 19 Nov 2026): the ring goes round the whole box, where
+   the bare text area inside it had none at all. */
+.composer:focus-within { outline: 2px solid var(--cyan); outline-offset: 2px; }
+@supports selector(:has(*)) {
+  .composer:focus-within { outline: none; }
+  .composer:has(textarea:focus) { outline: 2px solid var(--cyan); outline-offset: 2px; }
+}
+.composer textarea:focus,
+.composer textarea:focus-visible { outline: none; }
+
+/* A dialog focused as a whole (hooks/useModalFocus) is not a control: its
+   title is read out, and the ring belongs on the controls inside it. */
+[role="dialog"][tabindex="-1"]:focus-visible { outline: none; }
+
 /* Native <select> option popups. color-scheme (set per theme on :root) makes
    Chromium paint these correctly; these explicit colours are the cross-browser
    guarantee (Firefox / older Windows honour option background+color). Keeps the
@@ -1398,6 +1412,15 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 .home-hello { margin: 0; font-size: var(--fs-h1); font-weight: 600; letter-spacing: -0.025em; color: var(--text-1); }
 .home-date { margin: 6px 0 0; font-size: var(--fs-body); color: var(--text-3); }
 .home-one-thing { margin: 12px 0 0; max-width: 640px; font-size: var(--fs-body); line-height: 1.5; color: var(--text-1); }
+/* The week's rhythm under the greeting (components/home/BooksRhythm.tsx):
+   a dot a day, ink when the books were kept, a hairline ring when not, and
+   today a firmer grey ring until something is recorded (a dashed ring broke
+   up at 8px). Never a warning colour. */
+.home-rhythm { display: flex; align-items: center; gap: 10px; margin: 8px 0 0; font-size: var(--fs-label); color: var(--text-3); }
+.rhythm-dots { display: inline-flex; gap: 4px; flex-shrink: 0; }
+.rhythm-dot { box-sizing: border-box; width: 8px; height: 8px; border-radius: 999px; border: 1.5px solid var(--border-strong); }
+.rhythm-dot.is-kept { background: var(--text-1); border-color: var(--text-1); }
+.rhythm-dot.is-today { border-color: var(--text-3); }
 .home-one-thing .eyebrow { display: block; margin: 0 0 2px; }
 .home-acts { display: flex; flex-wrap: wrap; gap: 8px; }
 .home-acts .pill { min-height: 44px; }

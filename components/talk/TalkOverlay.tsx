@@ -9,7 +9,8 @@
 // quiet spell it rests here until tapped. End goes back to the page; Type
 // instead keeps the chat open without the voice. Escape ends.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useModalFocus } from '@/hooks/useModalFocus';
 import AibosSphere from './AibosSphere';
 import ActionCard from '@/components/chat/ActionCard';
 import type { AiAction } from '@/lib/api';
@@ -43,6 +44,9 @@ export default function TalkOverlay({ phase, heard, answer, error, job, busy, on
   onType: () => void;
 }) {
   const [w, setW] = useState(900);
+  // Focus stays in the overlay and goes back to Talk when it ends.
+  const panel = useRef<HTMLDivElement>(null);
+  useModalFocus(panel);
   useEffect(() => {
     const fit = () => setW(Math.min(window.innerWidth - 32, 960));
     fit();
@@ -62,7 +66,7 @@ export default function TalkOverlay({ phase, heard, answer, error, job, busy, on
   const canTap = phase === 'speaking' || phase === 'briefing' || resting;
 
   return (
-    <div className="talk-overlay" data-theme="dark" role="dialog" aria-modal="true" aria-label="Talking to AIBOS">
+    <div ref={panel} className="talk-overlay" data-theme="dark" role="dialog" aria-modal="true" aria-label="Talking to AIBOS">
       <div className="talk-overlay-body">
         <button type="button" className="talk-sphere-btn" onClick={onInterrupt} disabled={!canTap}
           aria-label={canTap ? 'Talk now' : `AIBOS is ${WORDS[phase].toLowerCase()}`}>

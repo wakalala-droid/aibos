@@ -109,7 +109,7 @@ const inputStyle: React.CSSProperties = {
   width: '100%', padding: '10px 12px', minHeight: 44,
   background: 'var(--bg-input)', border: '1px solid var(--border-md)',
   borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', outline: 'none',
+  fontSize: 'var(--fs-body)',
 };
 
 /** Today on the owner's own calendar. toISOString() is UTC, so between
@@ -572,16 +572,16 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 12 }}>
                 {/* Type */}
                 <div>
-                  <label className="field-label">Type</label>
-                  <select value={etype} onChange={e => changeType(e.target.value as EventType)} className="field">
+                  <label htmlFor="rec-type" className="field-label">Type</label>
+                  <select id="rec-type" value={etype} onChange={e => changeType(e.target.value as EventType)} className="field">
                     {TYPES.map(t => <option key={t} value={t}>{typeLabel(t)}</option>)}
                   </select>
                 </div>
 
                 {/* Amount */}
                 <div>
-                  <label className="field-label">Amount ({currencySymbol})</label>
-                  <input
+                  <label htmlFor="rec-amount" className="field-label">Amount ({currencySymbol})</label>
+                  <input id="rec-amount"
                     type="number" inputMode="decimal" value={amount}
                     onChange={e => setAmount(e.target.value)}
                     placeholder="0.00"
@@ -592,9 +592,9 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                 {/* Type-specific fields */}
                 {TYPE_FIELDS[etype].map(fld => (
                   <div key={fld.key}>
-                    <label className="field-label">{fld.label}</label>
+                    <label htmlFor={`rec-${fld.key}`} className="field-label">{fld.label}</label>
                     {fld.kind === 'select' ? (
-                      <select
+                      <select id={`rec-${fld.key}`}
                         value={fields[fld.key] ?? ''}
                         onChange={e => setFields(p => ({ ...p, [fld.key]: e.target.value }))}
                         className="field"
@@ -603,7 +603,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
                         {fld.options!.map(o => <option key={o} value={o}>{OPTION_LABEL[o] ?? o}</option>)}
                       </select>
                     ) : (
-                      <input
+                      <input id={`rec-${fld.key}`}
                         type={fld.kind === 'number' ? 'number' : 'text'}
                         value={fields[fld.key] ?? ''}
                         onChange={e => setFields(p => ({ ...p, [fld.key]: e.target.value }))}
@@ -616,8 +616,8 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
 
                 {/* Date */}
                 <div>
-                  <label className="field-label">Date</label>
-                  <input type="date" value={occurred} max={todayISO()} onChange={e => setOccurred(e.target.value)}
+                  <label htmlFor="rec-date" className="field-label">Date</label>
+                  <input id="rec-date" type="date" value={occurred} max={todayISO()} onChange={e => setOccurred(e.target.value)}
                     className="field" />
                 </div>
               </div>

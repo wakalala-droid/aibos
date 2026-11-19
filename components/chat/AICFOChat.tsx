@@ -91,6 +91,7 @@ export default function AICFOChat() {
 
       {/* Body */}
       <div ref={scrollRef} onScroll={onBodyScroll} role="log" aria-live="polite" aria-atomic="false" aria-label="Conversation with AIBOS"
+        aria-busy={loading}
         style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
 
         {/* Quick prompts — shown only when no user messages yet */}
@@ -162,13 +163,13 @@ export default function AICFOChat() {
 
       {/* Input bar */}
       <div style={{ padding: '12px 16px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-lg)', padding: '8px 8px 8px 16px', boxShadow: 'var(--shadow-card)' }}>
+        <div className="composer" style={{ display: 'flex', alignItems: 'flex-end', gap: 10, background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-lg)', padding: '8px 8px 8px 16px', boxShadow: 'var(--shadow-card)' }}>
           <label htmlFor="cfo-chat-input" className="sr-only">Message to AIBOS</label>
           <textarea
             id="cfo-chat-input" ref={inputRef} value={input}
             onChange={(e) => setInput(e.target.value)} onKeyDown={handleKey}
             placeholder="Ask AIBOS anything…" aria-label="Message to AIBOS" rows={1} disabled={loading}
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontSize: 'var(--fs-body)', color: 'var(--text-1)', lineHeight: 1.5, maxHeight: 120, overflow: 'auto' }}
+            style={{ flex: 1, background: 'transparent', border: 'none', resize: 'none', fontSize: 'var(--fs-body)', color: 'var(--text-1)', lineHeight: 1.5, maxHeight: 120, overflow: 'auto' }}
             onInput={(e) => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 120)}px`; }}
           />
           <button type="button" onClick={() => submit(input)} disabled={!input.trim() || loading} aria-label="Send message"

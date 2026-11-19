@@ -42,7 +42,9 @@ function Field({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        style={{ width: '100%', accentColor: 'var(--cyan)' }}
+        // 44px tall like every other control: the bare slider was a 16px
+        // strip to hit with a thumb (audit 19 Nov 2026).
+        style={{ width: '100%', height: 44, margin: 0, accentColor: 'var(--cyan)' }}
       />
     </div>
   );

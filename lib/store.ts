@@ -8,6 +8,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { setCurrencyGlobal, symbolForToken } from "./currency";
+import { isUnfinishedMonth } from "./change";
 import type { Tier } from "./tiers";
 import { getTwin, getTwinFinancials, getLatestAnalysis, saveLatestAnalysis, authHeaders, type SavedAnalysis, ACTIVE_BUSINESS_KEY, ACTING_AS_KEY, type Twin, type BusinessEvent } from "./api";
 
@@ -496,9 +497,13 @@ function extremes(monthly: MonthlyRow[]) {
     month: String(m.Month),
     profit: (Number(m.Revenue) || 0) - (Number(m.Costs) || 0),
   }));
+  // A month still running is never the "worst month": by mid-month it has half
+  // its sales and all its rent (audit 19 Nov 2026). It can be the best one.
+  const whole = withProfit.filter((m) => !isUnfinishedMonth(m.month));
+  const pool = whole.length ? whole : withProfit;
   return {
     best: withProfit.reduce((a, b) => (b.profit > a.profit ? b : a), withProfit[0]),
-    worst: withProfit.reduce((a, b) => (b.profit < a.profit ? b : a), withProfit[0]),
+    worst: pool.reduce((a, b) => (b.profit < a.profit ? b : a), pool[0]),
     count: withProfit.length,
   };
 }

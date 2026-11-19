@@ -208,7 +208,7 @@ export default function AdminAccountsPage() {
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search name or email…"
         aria-label="Search accounts by name or email"
-        style={{ flex: '1 1 220px', minHeight: 44, padding: '9px 14px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none' }}
+        style={{ flex: '1 1 220px', minHeight: 44, padding: '9px 14px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
       />
       <select aria-label="Filter by tier" value={tierFilter} onChange={(e) => setTierFilter(e.target.value as 'all' | Tier)} style={{ minHeight: 44, padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}>
         <option value="all">All tiers</option>

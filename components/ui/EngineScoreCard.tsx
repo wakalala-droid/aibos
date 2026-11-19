@@ -24,37 +24,40 @@ export default function EngineScoreCard({
   const col = scoreColor(score);
   const blank = locked || notYet;
   const bloom = bloomProps(blank ? undefined : score, colour);
-  return (
-    <Link
-      href={locked ? '#' : href}
-      onClick={(e) => { if (locked) e.preventDefault(); }}
-      style={{ textDecoration: 'none' }}
-    >
-      <BorderGlow glowColor={CURSOR_GLOW} backgroundColor="var(--bg-card)" borderRadius={14} glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH} style={{ height: '100%' }}>
-        <div
-          className="kpi-card glow-inner"
-          data-ai-explain={explainId}
-          data-ai-label={explainId ? sentenceCase(label) : undefined}
-          data-ai-value={explainId && !blank ? String(score) : undefined}
-          title={explainId ? 'Hold (long-press) to have AIBOS explain this score' : undefined}
-          style={{ ...bloom.style, opacity: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer' }}
-        >
+  const card = (
+    <BorderGlow glowColor={CURSOR_GLOW} backgroundColor="var(--bg-card)" borderRadius={14} glowRadius={48} glowIntensity={1.2} coneSpread={12} colors={MESH} style={{ height: '100%' }}>
+      <div
+        className="kpi-card glow-inner"
+        data-ai-explain={explainId}
+        data-ai-label={explainId ? sentenceCase(label) : undefined}
+        data-ai-value={explainId && !blank ? String(score) : undefined}
+        title={explainId ? 'Hold (long-press) to have AIBOS explain this score' : undefined}
+        style={{ ...bloom.style, cursor: locked ? 'default' : 'pointer' }}
+      >
 
-          <p className="kpi-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span aria-hidden="true" style={{ width: 10, height: 10, borderRadius: 999, background: colour, flexShrink: 0 }} />
-            {sentenceCase(label)}
-          </p>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 12px' }}>
-            {sub}
-          </p>
-          <p className="money money-lg" style={{ color: blank ? 'var(--text-4)' : col, margin: '0 0 12px', display: 'block' }}>
-            {blank ? 'Not yet' : score}
-          </p>
-          <div className="progress-track">
-            {!blank && <div className="progress-fill" style={{ width: `${score}%`, background: col }} />}
-          </div>
+        <p className="kpi-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span aria-hidden="true" style={{ width: 10, height: 10, borderRadius: 999, background: colour, flexShrink: 0 }} />
+          {sentenceCase(label)}
+        </p>
+        <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 12px' }}>
+          {sub}
+        </p>
+        <p className="money money-lg" style={{ color: blank ? 'var(--text-4)' : col, margin: '0 0 12px', display: 'block' }}>
+          {blank ? 'Not yet' : score}
+        </p>
+        <div className="progress-track">
+          {!blank && <div className="progress-fill" style={{ width: `${score}%`, background: col }} />}
         </div>
-      </BorderGlow>
+      </div>
+    </BorderGlow>
+  );
+  // A locked card is not a link (audit 19 Nov 2026): a link to "#" that does
+  // nothing was a dead stop for the keyboard and a screen reader, and the
+  // half fade took its words under the contrast line. "Not yet" says it.
+  if (locked) return <div>{card}</div>;
+  return (
+    <Link href={href} style={{ textDecoration: 'none' }}>
+      {card}
     </Link>
   );
 }

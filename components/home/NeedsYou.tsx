@@ -14,7 +14,7 @@
 // handled today, said in one line (the UX audit, 17 Nov 2026: an empty list
 // stood 225px tall). It sits right under the greeting.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Check } from 'lucide-react';
@@ -73,13 +73,29 @@ export default function NeedsYou() {
   useEffect(() => { load(); }, [load, booksVersion]);
   useOnTeamChange(load);
 
+  // A "Not now" takes its card away with the button that had focus (audit
+  // 19 Nov 2026): once the list has redrawn, focus goes to the next job's
+  // answer, or to the list's title, never to the top of the page.
+  const refocus = useRef(false);
+  useEffect(() => {
+    if (!refocus.current || busy) return;
+    refocus.current = false;
+    const at = document.activeElement;
+    if (at && at !== document.body) return;
+    const next = document.querySelector<HTMLElement>('#needs-you .ai-job-actions button:not([disabled])');
+    (next ?? document.getElementById('needs-you-title'))?.focus({ preventScroll: true });
+  }, [jobs, busy]);
+
   async function answer(id: string, verb: ActionVerb) {
     setBusy(id);
     setSaid(null);
     try {
       const run = verb === 'yes' ? approveAction : verb === 'no' ? declineAction : undoAction;
       const job = await run(id);
-      if (verb === 'no') setJobs((prev) => (prev ?? []).filter((j) => j.id !== id));
+      if (verb === 'no') {
+        refocus.current = true;
+        setJobs((prev) => (prev ?? []).filter((j) => j.id !== id));
+      }
       else setJobs((prev) => (prev ?? []).map((j) => (j.id === id ? job : j)));
       if (verb === 'yes') setHandled((n) => n + 1);
       teamChanged();
@@ -132,7 +148,7 @@ export default function NeedsYou() {
       <section id="needs-you" data-tour="needs-you" className="needs-you-line" aria-labelledby="needs-you-title" style={{ scrollMarginTop: 96 }}>
         <span className="avatar avatar-in" aria-hidden="true"><Check /></span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h2 id="needs-you-title" className="needs-you-line-title">Nothing needs you</h2>
+          <h2 id="needs-you-title" tabIndex={-1} className="needs-you-line-title">Nothing needs you</h2>
           <p role="status" className="needs-you-line-sub">
             {said ?? (handled > 0
               ? `AIBOS handled ${handled} ${handled === 1 ? 'thing' : 'things'} today and keeps looking.`
@@ -153,7 +169,7 @@ export default function NeedsYou() {
       <Panel labelledBy="needs-you-title"
         title={
           <div style={{ flex: '1 1 200px', minWidth: 0 }}>
-            <h2 id="needs-you-title" className="panel-title" style={{ margin: 0 }}>
+            <h2 id="needs-you-title" tabIndex={-1} className="panel-title" style={{ margin: 0 }}>
               {open === 0 ? 'All answered' : 'Needs you'}
               {open > 0 && <span className="needs-you-count">{open}</span>}
             </h2>

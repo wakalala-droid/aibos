@@ -28,7 +28,10 @@ async function read(): Promise<RecordingDays> {
   const days = new Set<string>();
   for (const e of events) {
     if (e.status === 'void') continue;
-    days.add(new Date(e.occurred_at).toLocaleDateString('en-CA'));
+    // The day it was written down, not the day it happened (audit 19 Nov
+    // 2026): a file of last year's sales, or three backdated entries made in
+    // one sitting, met "record on 3 different days" without a second visit.
+    days.add(new Date(e.recorded_at || e.occurred_at).toLocaleDateString('en-CA'));
   }
   return { days: [...days].sort(), complete: events.length < LIMIT };
 }

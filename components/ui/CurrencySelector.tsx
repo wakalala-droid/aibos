@@ -269,7 +269,7 @@ export default function CurrencySelector({ align = 'right' }: { align?: 'left' |
                   width: 64, minHeight: 44, padding: '6px 8px', textAlign: 'center',
                   borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)',
                   background: 'var(--bg-input)', color: 'var(--text-1)',
-                  ...geist, fontSize: 'var(--fs-body)', outline: 'none',
+                  ...geist, fontSize: 'var(--fs-body)',
                 }}
               />
               <button

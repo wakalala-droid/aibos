@@ -144,7 +144,11 @@ export function FloatingAiAssistant() {
     if (el) atBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
   }, []);
 
-  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 120); }, [open]);
+  // Not while the talk overlay is up: the box behind it took focus from the
+  // overlay, so Tab and a screen reader were left behind it (audit 19 Nov 2026).
+  useEffect(() => {
+    if (open) setTimeout(() => { if (!document.querySelector('.talk-overlay')) inputRef.current?.focus(); }, 120);
+  }, [open]);
 
   // Escape closes the panel (accessibility_system.md KEYBOARD RULE).
   useEffect(() => {
@@ -253,6 +257,7 @@ export function FloatingAiAssistant() {
 
             {/* Body */}
             <div ref={scrollRef} onScroll={onBodyScroll} role="log" aria-live="polite" aria-label="Conversation"
+              aria-busy={loading}
               style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
 
               {!hasUserMsg && messages.length === 0 && (
@@ -367,13 +372,13 @@ export function FloatingAiAssistant() {
 
             {/* Composer */}
             <div style={{ padding: '12px 14px 14px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-lg)', padding: '12px 12px 8px 16px', boxShadow: 'var(--shadow-card)' }}>
+              <div className="composer" style={{ display: 'flex', flexDirection: 'column', gap: 8, background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-lg)', padding: '12px 12px 8px 16px', boxShadow: 'var(--shadow-card)' }}>
                 <label htmlFor="ai-assistant-input" className="sr-only">Ask AIBOS</label>
                 <textarea id="ai-assistant-input" ref={inputRef} value={input} rows={2}
                   onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))} onKeyDown={handleKey}
                   placeholder="Ask anything, or long-press a card to learn about it…"
                   maxLength={MAX_CHARS} disabled={loading}
-                  style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontSize: 'var(--fs-body)', color: 'var(--text-1)', lineHeight: 1.5, maxHeight: 110, overflow: 'auto' }} />
+                  style={{ width: '100%', background: 'transparent', border: 'none', resize: 'none', fontSize: 'var(--fs-body)', color: 'var(--text-1)', lineHeight: 1.5, maxHeight: 110, overflow: 'auto' }} />
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>

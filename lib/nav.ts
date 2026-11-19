@@ -80,6 +80,24 @@ export const ACTIONS: { href: string; label: string; keywords: string[]; feature
   { href: '/dashboard/schedule',            label: 'Add a reminder',     keywords: ['reminder', 'schedule', 'meeting', 'deadline', 'new'] },
 ];
 
+/**
+ * The browser tab's title for a dashboard page (WCAG 2.4.2, audit 19 Nov
+ * 2026). Every page was "AIBOS · Business Intelligence Platform", so the tabs,
+ * the history and a screen reader could not tell Staff from Money. The
+ * longest door that holds the path names it: /dashboard/hospitality/units is
+ * Rooms & Stays.
+ */
+export function titleFor(pathname: string): string {
+  const path = pathname.replace(/\/+$/, '') || '/';
+  if (path === '/dashboard') return 'Home · AIBOS';
+  let best: { href: string; label: string } | null = null;
+  for (const d of [...DOORS, ...ACCOUNT_DOORS]) {
+    if (d.href === '/dashboard') continue;
+    if ((path === d.href || path.startsWith(`${d.href}/`)) && (!best || d.href.length > best.href.length)) best = d;
+  }
+  return best ? `${best.label} · AIBOS` : 'AIBOS';
+}
+
 export type TeamRole = 'owner' | 'staff' | 'accountant' | string | null | undefined;
 
 // Staff see the day-to-day (record and plan), not the money pages; accountants

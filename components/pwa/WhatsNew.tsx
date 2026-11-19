@@ -18,6 +18,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useModalFocus } from '@/hooks/useModalFocus';
 import Image from 'next/image';
 import {
   Archive, BellRing, Building2, CalendarRange, FlaskConical, Hash, LayoutGrid, MessageSquareText,
@@ -124,6 +125,7 @@ export default function WhatsNew() {
   const { isDark } = useTheme();
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
   const release = LATEST_RELEASE;
 
   useEffect(() => {
@@ -152,18 +154,19 @@ export default function WhatsNew() {
     window.addEventListener('keydown', onKey);
     const before = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    button.current?.focus({ preventScroll: true });
     return () => {
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = before;
     };
   }, [open, close]);
+  // Focus starts on the button, stays in the panel and goes back on close.
+  useModalFocus(panel, open, button);
 
   if (!open) return null;
 
   return (
     <div className="whatsnew-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) close(); }}>
-      <div className="whatsnew" role="dialog" aria-modal="true" aria-labelledby="whatsnew-title">
+      <div ref={panel} className="whatsnew" role="dialog" aria-modal="true" aria-labelledby="whatsnew-title">
         <div className="whatsnew-art">
           <Art />
           <div className="whatsnew-logo">

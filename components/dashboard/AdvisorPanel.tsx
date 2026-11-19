@@ -200,15 +200,15 @@ export function WhatIfPanel() {
 
         {isHire ? (
           <>
-            <label style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>How many</label>
-            <input type="number" value={count} min={1} onChange={e => setCount(Number(e.target.value))} className="field" />
-            <label style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Monthly salary ({sym})</label>
-            <input type="number" value={salary} min={0} onChange={e => setSalary(Number(e.target.value))} className="field" />
+            <label htmlFor="adv-count" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>How many</label>
+            <input id="adv-count" type="number" value={count} min={1} onChange={e => setCount(Number(e.target.value))} className="field" />
+            <label htmlFor="adv-salary" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Monthly salary ({sym})</label>
+            <input id="adv-salary" type="number" value={salary} min={0} onChange={e => setSalary(Number(e.target.value))} className="field" />
           </>
         ) : (
           <>
-            <label style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Change (%)</label>
-            <input type="number" value={value} min={-100} max={500} onChange={e => setValue(Number(e.target.value))} className="field" />
+            <label htmlFor="adv-change" style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Change (%)</label>
+            <input id="adv-change" type="number" value={value} min={-100} max={500} onChange={e => setValue(Number(e.target.value))} className="field" />
           </>
         )}
 

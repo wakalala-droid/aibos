@@ -87,21 +87,21 @@ export default function GuestsPage() {
         {showAdd && (
           <div style={{ padding: 18, borderRadius: 'var(--radius-lg)', background: 'var(--pill-bg)', marginBottom: 16 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 12 }}>
-              <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Full name</label><input className="field" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} /></div>
-              <div><label className="field-label">Phone (WhatsApp)</label><input className="field" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+2609…" /></div>
-              <div><label className="field-label">Email</label><input className="field" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
-              <div><label className="field-label">Nationality</label><input className="field" value={form.nationality} onChange={e => setForm({ ...form, nationality: e.target.value })} /></div>
+              <div style={{ gridColumn: '1 / -1' }}><label htmlFor="guest-full-name" className="field-label">Full name</label><input id="guest-full-name" className="field" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} /></div>
+              <div><label htmlFor="guest-phone" className="field-label">Phone (WhatsApp)</label><input id="guest-phone" className="field" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+2609…" /></div>
+              <div><label htmlFor="guest-email" className="field-label">Email</label><input id="guest-email" className="field" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
+              <div><label htmlFor="guest-nationality" className="field-label">Nationality</label><input id="guest-nationality" className="field" value={form.nationality} onChange={e => setForm({ ...form, nationality: e.target.value })} /></div>
               <div>
-                <label className="field-label">ID type</label>
-                <select className="field" value={form.id_document_type} onChange={e => setForm({ ...form, id_document_type: e.target.value as typeof form.id_document_type })}>
+                <label htmlFor="guest-id-type" className="field-label">ID type</label>
+                <select id="guest-id-type" className="field" value={form.id_document_type} onChange={e => setForm({ ...form, id_document_type: e.target.value as typeof form.id_document_type })}>
                   <option value="">Choose…</option>
                   <option value="passport">Passport</option>
                   <option value="national_id">National ID</option>
                   <option value="other">Other</option>
                 </select>
               </div>
-              <div><label className="field-label">ID number (sealed)</label><input className="field" value={form.id_document_number} onChange={e => setForm({ ...form, id_document_number: e.target.value })} placeholder="Encrypted at rest" /></div>
-              <div style={{ gridColumn: '1 / -1' }}><label className="field-label">Staff notes (private)</label><input className="field" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Preferences, discretion notes…" /></div>
+              <div><label htmlFor="guest-id-number" className="field-label">ID number (sealed)</label><input id="guest-id-number" className="field" value={form.id_document_number} onChange={e => setForm({ ...form, id_document_number: e.target.value })} placeholder="Encrypted at rest" /></div>
+              <div style={{ gridColumn: '1 / -1' }}><label htmlFor="guest-notes" className="field-label">Staff notes (private)</label><input id="guest-notes" className="field" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Preferences, discretion notes…" /></div>
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 'var(--fs-data)', color: 'var(--text-2)', cursor: 'pointer' }}>
               <input type="checkbox" checked={form.vip_flag} onChange={e => setForm({ ...form, vip_flag: e.target.checked })} /> VIP guest

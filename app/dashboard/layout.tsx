@@ -13,6 +13,7 @@ import WelcomeTour from '@/components/onboarding/WelcomeTour';
 import DashboardTour from '@/components/onboarding/DashboardTour';
 import { logUsage, type UsageEngine } from '@/lib/usage';
 import { onBooksChanged } from '@/lib/booksSignal';
+import { titleFor } from '@/lib/nav';
 
 // Map a dashboard path to the engine it belongs to, for usage tracking.
 function engineForPath(path: string): UsageEngine | undefined {
@@ -32,6 +33,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // dashboards from events (Initiative 9). Safe no-op if the spine is
   // unconfigured or a file is already loaded (guarded inside refreshTwin).
   useEffect(() => { refreshTwin(); }, [refreshTwin]);
+
+  // Each page names its own tab (lib/nav titleFor).
+  useEffect(() => { document.title = titleFor(pathname || ''); }, [pathname]);
 
   // Every page works off the same books. Count them again whenever they
   // change anywhere (lib/booksSignal.ts: any page here, another tab), when

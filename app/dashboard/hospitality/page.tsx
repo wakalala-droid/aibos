@@ -436,6 +436,10 @@ export default function HospitalityPage() {
 
   return (
     <>
+      {/* The calendar is the page's face, so its name is said, not shown: a
+          page without a heading had nothing for a screen reader to jump to
+          (audit 19 Nov 2026). */}
+      <h1 className="sr-only">Rooms &amp; Stays</h1>
       {error && (
         <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'var(--red-dim)', border: '1px solid var(--crit)', color: 'var(--crit)', fontSize: 'var(--fs-body)', lineHeight: 1.6 }}>
           {error}
@@ -446,9 +450,9 @@ export default function HospitalityPage() {
       {noUnits && (
         <SectionCard title="Add your first property" subtitle="One record per unit becomes the single source of truth every channel pulls from.">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 12, alignItems: 'end' }}>
-            <div><label className="field-label">Property name</label><input className="field" value={setupName} onChange={e => setSetupName(e.target.value)} placeholder="Dunslim Apartments" /></div>
-            <div><label className="field-label">First unit</label><input className="field" value={setupUnit} onChange={e => setSetupUnit(e.target.value)} placeholder="Unit A, 2 bedroom" /></div>
-            <div><label className="field-label">Nightly rate ({sym})</label><input className="field" type="number" min="0" value={setupRate} onChange={e => setSetupRate(e.target.value)} placeholder="850" /></div>
+            <div><label htmlFor="stay-property-name" className="field-label">Property name</label><input id="stay-property-name" className="field" value={setupName} onChange={e => setSetupName(e.target.value)} placeholder="Dunslim Apartments" /></div>
+            <div><label htmlFor="stay-first-unit" className="field-label">First unit</label><input id="stay-first-unit" className="field" value={setupUnit} onChange={e => setSetupUnit(e.target.value)} placeholder="Unit A, 2 bedroom" /></div>
+            <div><label htmlFor="stay-nightly-rate" className="field-label">Nightly rate ({sym})</label><input id="stay-nightly-rate" className="field" type="number" min="0" value={setupRate} onChange={e => setSetupRate(e.target.value)} placeholder="850" /></div>
             <button className="pill pill-primary" style={{ opacity: busy ? 0.7 : 1 }} disabled={busy} onClick={runSetup}>{busy ? 'Creating…' : 'Create'}</button>
           </div>
         </SectionCard>
@@ -536,16 +540,16 @@ export default function HospitalityPage() {
               </div>
               <div className="rs-form">
                 <div>
-                  <label className="field-label">Unit</label>
-                  <select className="field" value={draft.unit_id} onChange={e => setDraft({ ...draft, unit_id: e.target.value })}>
+                  <label htmlFor="stay-unit" className="field-label">Unit</label>
+                  <select id="stay-unit" className="field" value={draft.unit_id} onChange={e => setDraft({ ...draft, unit_id: e.target.value })}>
                     {units.map(u => <option key={u.id} value={u.id}>{u.unit_name}</option>)}
                   </select>
                 </div>
-                <div><label className="field-label">Guest name</label><input className="field" value={draft.guest} onChange={e => setDraft({ ...draft, guest: e.target.value })} placeholder="Optional. Saves the guest" /></div>
-                <div><label className="field-label">Check-in</label><input className="field" type="date" value={draft.check_in} onChange={e => setDraft({ ...draft, check_in: e.target.value, check_out: e.target.value >= draft.check_out ? iso(addDays(parseISO(e.target.value), 1)) : draft.check_out })} /></div>
-                <div><label className="field-label">Check-out</label><input className="field" type="date" value={draft.check_out} min={draft.check_in} onChange={e => setDraft({ ...draft, check_out: e.target.value })} /></div>
-                <div><label className="field-label">Guests</label><input className="field" type="number" min="1" value={draft.guests} onChange={e => setDraft({ ...draft, guests: e.target.value })} /></div>
-                <div><label className="field-label">Total ({sym})</label><input className="field" type="number" min="0" value={draft.amount} onChange={e => setDraft({ ...draft, amount: e.target.value })} placeholder="Records revenue" /></div>
+                <div><label htmlFor="stay-guest-name" className="field-label">Guest name</label><input id="stay-guest-name" className="field" value={draft.guest} onChange={e => setDraft({ ...draft, guest: e.target.value })} placeholder="Optional. Saves the guest" /></div>
+                <div><label htmlFor="stay-check-in" className="field-label">Check-in</label><input id="stay-check-in" className="field" type="date" value={draft.check_in} onChange={e => setDraft({ ...draft, check_in: e.target.value, check_out: e.target.value >= draft.check_out ? iso(addDays(parseISO(e.target.value), 1)) : draft.check_out })} /></div>
+                <div><label htmlFor="stay-check-out" className="field-label">Check-out</label><input id="stay-check-out" className="field" type="date" value={draft.check_out} min={draft.check_in} onChange={e => setDraft({ ...draft, check_out: e.target.value })} /></div>
+                <div><label htmlFor="stay-guests" className="field-label">Guests</label><input id="stay-guests" className="field" type="number" min="1" value={draft.guests} onChange={e => setDraft({ ...draft, guests: e.target.value })} /></div>
+                <div><label htmlFor="stay-total" className="field-label">Total ({sym})</label><input id="stay-total" className="field" type="number" min="0" value={draft.amount} onChange={e => setDraft({ ...draft, amount: e.target.value })} placeholder="Records revenue" /></div>
               </div>
               <div className="rs-form" style={{ marginTop: 18 }}>
                 <div>

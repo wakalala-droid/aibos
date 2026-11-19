@@ -45,7 +45,7 @@ interface State {
 const input: React.CSSProperties = {
   width: '100%', padding: '8px 10px', minHeight: 44, background: 'var(--bg-input)',
   border: '1px solid var(--border-md)', borderRadius: 6, color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', outline: 'none',
+  fontSize: 'var(--fs-body)',
 };
 const lbl: React.CSSProperties = {
   fontSize: 'var(--fs-caps)', fontWeight: 600, color: 'var(--text-3)',
@@ -253,12 +253,12 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 12, marginBottom: 14 }}>
             <div>
-              <label style={lbl}>Property name</label>
-              <input style={input} value={propertyName} onChange={(e) => setPropertyName(e.target.value)} placeholder="Dunslim Apartments" />
+              <label htmlFor="hs-property" style={lbl}>Property name</label>
+              <input id="hs-property" style={input} value={propertyName} onChange={(e) => setPropertyName(e.target.value)} placeholder="Dunslim Apartments" />
             </div>
             <div>
-              <label style={lbl}>Address (optional)</label>
-              <input style={input} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Makeni Road, Lusaka" />
+              <label htmlFor="hs-address" style={lbl}>Address (optional)</label>
+              <input id="hs-address" style={input} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Makeni Road, Lusaka" />
             </div>
           </div>
 
@@ -266,8 +266,8 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
             <div key={i} style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginBottom: 12 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 110px), 1fr))', gap: 10 }}>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={lbl}>Unit {i + 1} name</label>
-                  <input
+                  <label htmlFor={`hs-unit-${i}-name`} style={lbl}>Unit {i + 1} name</label>
+                  <input id={`hs-unit-${i}-name`}
                     style={input}
                     value={u.unit_name}
                     onChange={(e) => setUnits(units.map((x, j) => (j === i ? { ...x, unit_name: e.target.value } : x)))}
@@ -279,11 +279,11 @@ export default function HospitalitySetup({ userId }: { userId: string }) {
                     </p>
                   )}
                 </div>
-                <div><label style={lbl}>Bedrooms</label><input style={input} type="number" min="0" value={u.bedrooms} onChange={(e) => setUnits(units.map((x, j) => (j === i ? { ...x, bedrooms: e.target.value } : x)))} /></div>
-                <div><label style={lbl}>Bathrooms</label><input style={input} type="number" min="0" step="0.5" value={u.bathrooms} onChange={(e) => setUnits(units.map((x, j) => (j === i ? { ...x, bathrooms: e.target.value } : x)))} /></div>
-                <div><label style={lbl}>Sleeps</label><input style={input} type="number" min="1" value={u.max_guests} onChange={(e) => setUnits(units.map((x, j) => (j === i ? { ...x, max_guests: e.target.value } : x)))} /></div>
-                <div><label style={lbl}>Rate/night</label><input style={input} type="number" min="0" value={u.base_nightly_rate} onChange={(e) => setUnits(units.map((x, j) => (j === i ? { ...x, base_nightly_rate: e.target.value } : x)))} placeholder="2000" /></div>
-                <div><label style={lbl}>Currency</label><input style={input} value={u.currency} onChange={(e) => setUnits(units.map((x, j) => (j === i ? { ...x, currency: e.target.value } : x)))} /></div>
+                <div><label htmlFor={`hs-unit-${i}-bedrooms`} style={lbl}>Bedrooms</label><input id={`hs-unit-${i}-bedrooms`} style={input} type="number" min="0" value={u.bedrooms} onChange={(e) => setUnits(units.map((x, j) => (j === i ? { ...x, bedrooms: e.target.value } : x)))} /></div>
+                <div><label htmlFor={`hs-unit-${i}-bathrooms`} style={lbl}>Bathrooms</label><input id={`hs-unit-${i}-bathrooms`} style={input} type="number" min="0" step="0.5" value={u.bathrooms} onChange={(e) => setUnits(units.map((x, j) => (j === i ? { ...x, bathrooms: e.target.value } : x)))} /></div>
+                <div><label htmlFor={`hs-unit-${i}-sleeps`} style={lbl}>Sleeps</label><input id={`hs-unit-${i}-sleeps`} style={input} type="number" min="1" value={u.max_guests} onChange={(e) => setUnits(units.map((x, j) => (j === i ? { ...x, max_guests: e.target.value } : x)))} /></div>
+                <div><label htmlFor={`hs-unit-${i}-rate`} style={lbl}>Rate/night</label><input id={`hs-unit-${i}-rate`} style={input} type="number" min="0" value={u.base_nightly_rate} onChange={(e) => setUnits(units.map((x, j) => (j === i ? { ...x, base_nightly_rate: e.target.value } : x)))} placeholder="2000" /></div>
+                <div><label htmlFor={`hs-unit-${i}-currency`} style={lbl}>Currency</label><input id={`hs-unit-${i}-currency`} style={input} value={u.currency} onChange={(e) => setUnits(units.map((x, j) => (j === i ? { ...x, currency: e.target.value } : x)))} /></div>
               </div>
               {units.length > 1 && (
                 <button type="button" style={{ ...ghostBtn, marginTop: 8, color: 'var(--crit)', borderColor: 'color-mix(in srgb, var(--crit) 40%, transparent)' }}

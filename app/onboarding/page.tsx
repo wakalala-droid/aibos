@@ -37,7 +37,7 @@ const LANGUAGES = [
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '12px 14px', minHeight: 48,
   background: 'var(--bg-input)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)',
-  color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none',
+  color: 'var(--text-1)', fontSize: 'var(--fs-body)',
 };
 const labelStyle: React.CSSProperties = {
   fontSize: 'var(--fs-caps)', fontWeight: 600,

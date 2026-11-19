@@ -750,7 +750,7 @@ function TeamCard({ tier }: { tier: Tier }) {
       {!canInvite ? (
         <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 16px' }}>
           {ios ? 'Inviting your team is not part of your plan.' : (
-            <>Inviting your staff and your accountant comes with {needTier}. <Link href="/pricing" style={{ color: 'var(--cyan)' }}>See plans</Link></>
+            <>Inviting your staff and your accountant comes with {needTier}. <Link href="/dashboard/billing" style={{ color: 'var(--cyan)', textDecoration: 'underline', textUnderlineOffset: 3 }}>See plans</Link></>
           )}
         </p>
       ) : (

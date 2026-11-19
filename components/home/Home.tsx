@@ -41,6 +41,8 @@ import { OutboxChip } from '@/components/pwa/OfflineSync';
 import { TOUR_RESTART_EVENT } from '@/components/onboarding/DashboardTour';
 import MilestoneBanner from '@/components/dashboard/MilestoneBanner';
 import ActivationProgress from '@/components/dashboard/ActivationProgress';
+import WelcomeBack from '@/components/home/WelcomeBack';
+import BooksRhythm from '@/components/home/BooksRhythm';
 import BriefTrialEnded from '@/components/dashboard/BriefTrialEnded';
 import { useBriefTrial, dayWords } from '@/lib/briefTrial';
 import TeachAibosCard from '@/components/dashboard/TeachAibosCard';
@@ -101,7 +103,11 @@ export default function Home() {
       overdueInvoices: extras.overdueInvoices,
     });
     const line = lines.find((l) => l.startsWith('One thing today: '));
-    return line ? line.replace('One thing today: ', '') : null;
+    if (!line) return null;
+    // The brief writes it mid-sentence ("chase the K2,350 ..."); on its own
+    // line under the eyebrow it starts a sentence.
+    const said = line.slice('One thing today: '.length);
+    return said.charAt(0).toUpperCase() + said.slice(1);
   }, [briefOn, twinActive, extras, sym, twin, rfm, profile?.business_name]);
 
   const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -109,9 +115,11 @@ export default function Home() {
   return (
     <div className="home">
       {/* At most one nudge: the first of these that has something to say.
-          The first-week goal and the brief's ending come first: each lasts
-          days, where Teach waits until it is answered. */}
+          Welcome back leads (three days away is when a habit ends), then the
+          first-week goal and the brief's ending: each lasts days, where Teach
+          waits until it is answered. */}
       <div className="one-nudge">
+        <WelcomeBack />
         <ActivationProgress />
         <BriefTrialEnded />
         <TeachAibosCard />
@@ -128,6 +136,7 @@ export default function Home() {
             {today}
             {twin && <span style={{ marginLeft: 16, whiteSpace: 'nowrap' }}><span className="live-dot" aria-hidden="true" />{updated}</span>}
           </p>
+          {canRecord && <BooksRhythm />}
           {oneThing && (
             <p className="home-one-thing">
               <span className="eyebrow">

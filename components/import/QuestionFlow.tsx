@@ -46,7 +46,7 @@ const quiet: React.CSSProperties = {
 const field: React.CSSProperties = {
   width: '100%', padding: '12px 14px', minHeight: 48, background: 'var(--bg-page)',
   border: '1px solid var(--border-md)', borderRadius: 10, color: 'var(--text-1)',
-  fontSize: 'var(--fs-body)', outline: 'none',
+  fontSize: 'var(--fs-body)',
 };
 
 export default function QuestionFlow({

@@ -1,7 +1,7 @@
 'use client';
 import { useStore } from '@/lib/store';
 import { fmt, scoreColor, formatAxis, n } from '@/lib/utils';
-import { monthChange, monthName, monthTick, moneyChangeText, MIN_MONTHS } from '@/lib/change';
+import { monthChange, monthName, monthTick, moneyChangeText, fairMonth, MIN_MONTHS } from '@/lib/change';
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import InsightCard from '@/components/ui/InsightCard';
@@ -94,12 +94,19 @@ function OverviewPage() {
   // months are recorded and the month before is a sensible base, otherwise the
   // difference in money. Margin moves in points and waits for the same base.
   const monthsRecorded = isTimeSeries ? safeMonthly.length : 0;
-  const revChange    = prevM ? monthChange(lastRev, prevRev, monthsRecorded) : undefined;
-  const costChange   = prevM ? monthChange(lastCost, prevCost, monthsRecorded) : undefined;
-  const profitChange = prevM ? monthChange(lastProfit, prevProfit, monthsRecorded) : undefined;
-  const marginChange = prevM && revChange?.pct !== undefined ? { diff: lastMargin - prevMargin } : undefined;
+  // A month still running is compared at its pace, sales only, from the 7th
+  // (lib/change fairMonth): part of November against all of October was a
+  // false "Sales fell" every month.
+  const running = prevM ? fairMonth(lastM?.Month, lastRev) : { value: lastRev, pace: false, early: false };
+  const partial = running.pace || running.early;
+  const revChange    = prevM && !running.early ? monthChange(running.value, prevRev, monthsRecorded) : undefined;
+  const costChange   = prevM && !partial ? monthChange(lastCost, prevCost, monthsRecorded) : undefined;
+  const profitChange = prevM && !partial ? monthChange(lastProfit, prevProfit, monthsRecorded) : undefined;
+  const marginChange = prevM && !partial && revChange?.pct !== undefined ? { diff: lastMargin - prevMargin } : undefined;
   const prevName = prevM ? monthName(prevM.Month) : '';
-  const growthSub = prevM ? `vs ${prevName}` : 'first month';
+  const lastName = lastM ? monthName(lastM.Month) : '';
+  const growthSub = !prevM ? 'first month' : partial ? `${lastName} so far` : `${lastName} vs ${prevName}`;
+  const revSub = running.pace ? `${lastName} on pace vs ${prevName}` : growthSub;
 
   // Customer + Operations quick stats
   const safeRfm     = Array.isArray(rfm) ? rfm : [];
@@ -159,12 +166,21 @@ function OverviewPage() {
     });
     if (revChange !== undefined) {
       const up = revChange.diff >= 0;
+      const pct = revChange.pct !== undefined ? `${Math.abs(revChange.pct).toFixed(1)}%` : '';
+      const inMoney = moneyChangeText(revChange.diff, sym, String(prevM?.Month ?? ''));
       synthSignals.push({
-        insight: revChange.pct !== undefined
-          ? `Sales ${up ? 'rose' : 'fell'} ${Math.abs(revChange.pct).toFixed(1)}% compared with ${prevName}.`
-          : `Sales were ${moneyChangeText(revChange.diff, sym, String(prevM?.Month ?? ''))}.`,
-        action: up ? 'Put more behind what sold best.' : 'Look into the drop before it grows.',
-        priority: !up && (revChange.pct ?? 0) < -10 ? 'high' : !up ? 'medium' : 'low',
+        insight: running.pace
+          ? pct
+            ? `${lastName} sales are on pace to ${up ? 'beat' : 'fall short of'} ${prevName} by ${pct}.`
+            : `${lastName} sales are on pace to be ${inMoney}.`
+          : pct
+            ? `Sales ${up ? 'rose' : 'fell'} ${pct} compared with ${prevName}.`
+            : `Sales were ${inMoney}.`,
+        // A pace is a forecast, not a loss: the month can still be turned.
+        action: up ? 'Put more behind what sold best.'
+          : running.pace ? 'There is still time this month: push what sells best.'
+          : 'Look into the drop before it grows.',
+        priority: !up && !running.pace && (revChange.pct ?? 0) < -10 ? 'high' : !up ? 'medium' : 'low',
         source_engines: ['E1'],
       });
     }
@@ -249,7 +265,7 @@ function OverviewPage() {
         <KPICard
           explainId="kpi.revenue"
           label="TOTAL REVENUE" value={fmt(kpi?.totalRevenue ?? 0, true, sym)}
-          change={revChange} sub={growthSub} sparkData={revSpark} sparkColor="var(--spark-revenue)"
+          change={revChange} sub={revSub} sparkData={revSpark} sparkColor="var(--spark-revenue)"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--blue)" strokeWidth="1.8" fill="none"/><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H9m0 0h4.5a1.5 1.5 0 010 3H9" stroke="var(--blue)" strokeWidth="1.4" strokeLinecap="round"/></svg>}
           iconBg="rgba(96,165,250,0.15)" delay={0}
         />

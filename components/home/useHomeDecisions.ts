@@ -23,6 +23,7 @@ import { useStore } from '@/lib/store';
 import { useProfile } from '@/lib/profile';
 import { canAccess } from '@/lib/tiers';
 import { fmt } from '@/lib/utils';
+import { isUnfinishedMonth } from '@/lib/change';
 import {
   getRecommendations, listProducts, setRecommendationStatus, type Product, type Recommendation,
 } from '@/lib/api';
@@ -175,12 +176,15 @@ export function useHomeDecisions() {
     }
 
     // Only once three months are recorded: a first tiny month swung this by hundreds of points.
-    if (safeMonthly.length >= 3) {
+    // A month still running is left out (audit 19 Nov 2026): rent paid on the 1st
+    // sank its margin by mid-month and read as "fell last month".
+    const whole = isUnfinishedMonth(safeMonthly[safeMonthly.length - 1]?.Month) ? safeMonthly.slice(0, -1) : safeMonthly;
+    if (whole.length >= 3) {
       const marginOf = (m: any) => {
         const rev = Number(m?.Revenue) || 0;
         return rev > 0 ? ((rev - (Number(m?.Costs) || 0)) / rev) * 100 : 0;
       };
-      const delta = marginOf(safeMonthly[safeMonthly.length - 1]) - marginOf(safeMonthly[safeMonthly.length - 2]);
+      const delta = marginOf(whole[whole.length - 1]) - marginOf(whole[whole.length - 2]);
       if (delta <= -3) {
         out.push({
           id: 'margin', severity: 'warn', area: 'Spending',

@@ -155,7 +155,7 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
               <input
                 type="text" value={confirmText} onChange={e => setConfirmText(e.target.value)}
                 placeholder="RESET" autoComplete="off" spellCheck={false} aria-label="Type RESET to confirm"
-                style={{ width: 120, padding: '8px 12px', borderRadius: 6, border: `1px solid ${armed ? 'var(--red)' : 'var(--border-md)'}`, background: 'transparent', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 600, letterSpacing: '0.08em', outline: 'none' }}
+                style={{ width: 120, padding: '8px 12px', borderRadius: 6, border: `1px solid ${armed ? 'var(--red)' : 'var(--border-md)'}`, background: 'transparent', color: 'var(--text-1)', fontSize: 'var(--fs-data)', fontWeight: 600, letterSpacing: '0.08em' }}
               />
               <button type="button" className="touch-target" onClick={handleReset} disabled={!armed || busy}
                 style={{ padding: '8px 16px', minHeight: 44, borderRadius: 6, border: '1px solid var(--red)', background: armed ? 'var(--red)' : 'var(--red-dim)', color: armed ? '#fff' : 'var(--red)', fontSize: 'var(--fs-data)', fontWeight: 700, cursor: armed && !busy ? 'pointer' : 'not-allowed', opacity: busy ? 0.6 : 1 }}>

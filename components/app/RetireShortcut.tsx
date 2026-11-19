@@ -17,6 +17,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useModalFocus } from '@/hooks/useModalFocus';
 import { usePathname } from 'next/navigation';
 import { NoticeArt } from '@/components/kit';
 import AndroidSteps from './AndroidSteps';
@@ -32,6 +33,7 @@ export default function RetireShortcut() {
   const [state, setState] = useState<State>(null);
   const [downloaded, setDownloaded] = useState(false);
   const first = useRef<HTMLAnchorElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
 
   const check = useCallback(async () => {
     if (!inBrowserShortcut()) { setState(null); return; }
@@ -62,12 +64,13 @@ export default function RetireShortcut() {
     window.addEventListener('keydown', onKey);
     const before = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    first.current?.focus({ preventScroll: true });
     return () => {
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = before;
     };
   }, [state, later]);
+  // Focus starts on the first link, stays in the panel and goes back on close.
+  useModalFocus(panel, !!state, first);
 
   if (!state) return null;
 
@@ -79,7 +82,7 @@ export default function RetireShortcut() {
 
   return (
     <div className="whatsnew-backdrop" style={{ zIndex: 96 }}>
-      <div className="whatsnew retire-shortcut" role="dialog" aria-modal="true" aria-labelledby="retire-title" style={{ width: 'min(640px, 100%)' }}>
+      <div ref={panel} className="whatsnew retire-shortcut" role="dialog" aria-modal="true" aria-labelledby="retire-title" style={{ width: 'min(640px, 100%)' }}>
         <NoticeArt />
         <div className="whatsnew-body">
           <div>

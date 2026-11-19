@@ -7,6 +7,7 @@
 
 import { Activity, BedDouble, Bell, CalendarClock, CircleCheck, HandCoins, Info, Package, ReceiptText, TriangleAlert, Wallet, type LucideIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useModalFocus } from '@/hooks/useModalFocus';
 import { usePathname, useRouter } from 'next/navigation';
 import { openRecordSheet } from '@/lib/recordSheet';
 import Link from 'next/link';
@@ -211,6 +212,9 @@ export default function DashboardHeader() {
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  // Focus stays in search while it is open and goes back to its button after.
+  const searchPanelRef = useRef<HTMLDivElement>(null);
+  useModalFocus(searchPanelRef, open === 'search', searchInputRef);
 
   // Identity — sourced from the business profile first, then POS name, then the
   // auth metadata, then the email prefix.
@@ -409,6 +413,7 @@ export default function DashboardHeader() {
         {open === 'search' && (
           <motion.div
             key="search"
+            ref={searchPanelRef}
             role="dialog" aria-modal="true" aria-label="Search the dashboard"
             initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
@@ -426,7 +431,7 @@ export default function DashboardHeader() {
                 aria-activedescendant={options.length ? `dash-search-opt-${activeIdx}` : undefined}
                 placeholder="Find a page, a customer or a product, or ask a question…"
                 aria-label="Search pages, customers and products, or ask AIBOS"
-                style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)', outline: 'none' }}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
               />
             </div>
             <div id="dash-search-listbox" role="listbox" aria-label="Search results" style={{ maxHeight: 320, overflowY: 'auto', padding: 6 }}>
