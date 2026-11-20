@@ -6,6 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import FileDrop from '@/components/ui/FileDrop';
+import UrlImage, { LOGO_FIT } from '@/components/ui/UrlImage';
 import { confirmSheet } from '@/lib/confirm';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
@@ -233,8 +234,7 @@ export default function BusinessProfilePage() {
                  this is the preview of what the header and every customer-facing
                  page will show, so it must not flatter the file by cropping it. */
               <span style={{ height: 56, maxWidth: 200, padding: 8, borderRadius: 10, background: '#fff', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={form.logo_url} alt="" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
+                <UrlImage src={form.logo_url} alt="" width={200} height={56} style={LOGO_FIT} />
               </span>
             ) : (
               <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 'var(--radius-md)', flexShrink: 0, background: 'var(--pill-bg)', border: '1px solid var(--border-strong)', color: 'var(--text-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-body)', fontWeight: 600 }}>
@@ -886,12 +886,11 @@ function BriefDeliveryCard({ tier, emailEnabled, whatsappNumber, onSaved }: {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>
+          <label className="check-row" style={{ color: 'var(--text-1)' }}>
             <input
               type="checkbox"
               checked={emailOn}
               onChange={(e) => setEmailOn(e.target.checked)}
-              style={{ width: 18, height: 18, accentColor: 'var(--cyan)' }}
             />
             {fullBrief ? 'Email me the brief (to your account email)' : 'Email me my cash every morning, in one line'}
           </label>

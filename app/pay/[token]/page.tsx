@@ -15,6 +15,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
+import UrlImage, { LOGO_FIT } from '@/components/ui/UrlImage';
 import {
   getPublicInvoice, initiatePublicPayment, checkPublicPaymentStatus, PublicApiError,
   type PublicInvoice, type PayNetwork,
@@ -208,12 +209,13 @@ export default function PayInvoicePage() {
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   marginBottom: 12,
                 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <UrlImage
                     src={invoice.business_logo_url}
                     alt={invoice.business_name ?? ''}
+                    width={180}
+                    height={48}
                     onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }}
-                    style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }}
+                    style={LOGO_FIT}
                   />
                 </span>
               )}

@@ -191,6 +191,7 @@ export default function HomeTeam({ first = false }: { first?: boolean } = {}) {
   return (
     <div id="team" className={`home-team${first ? ' is-first' : ''}`} ref={ref} style={{ scrollMarginTop: 96 }}>
       <TeamScene workers={ready ? team.workers : asleep} recent={recent} auto={autoOn} checking={false}
+        lookedAt={ready ? team.looked_at : null}
         picked={sheet} locked={ready ? undefined : locked ?? <p className="scene-locked-text">Waking your team.</p>}
         onPick={(id) => (ready ? setSheet(id) : !hasTeam && !ios ? router.push(`/checkout?plan=${plan}`) : undefined)}
         onTalk={startTalk} onAsk={ask} />

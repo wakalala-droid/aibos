@@ -13,8 +13,9 @@ import { resetTimeline } from '@/lib/api';
 
 type Scope = 'all' | 'excel';
 
+// The whole row is the tap, at least 44px tall (audit 19 Nov 2026).
 const label: React.CSSProperties = {
-  display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer',
+  display: 'flex', alignItems: 'flex-start', gap: 10, minHeight: 44, cursor: 'pointer',
   fontSize: 'var(--fs-data)', color: 'var(--text-2)',
 };
 const hint: React.CSSProperties = {
@@ -100,7 +101,7 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <label style={label}>
               <input type="radio" name="reset-scope" checked={scope === 'all'} onChange={() => setScope('all')}
-                style={{ accentColor: 'var(--red)', marginTop: 2 }} />
+                style={{ accentColor: 'var(--red)', width: 22, height: 22, margin: 0, flexShrink: 0 }} />
               <span>
                 <strong style={{ color: 'var(--text-1)' }}>Everything</strong>: every recorded event, from every source
                 <div style={hint}>The timeline and every dashboard number derived from it, returns to zero.</div>
@@ -108,7 +109,7 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
             </label>
             <label style={label}>
               <input type="radio" name="reset-scope" checked={scope === 'excel'} onChange={() => setScope('excel')}
-                style={{ accentColor: 'var(--red)', marginTop: 2 }} />
+                style={{ accentColor: 'var(--red)', width: 22, height: 22, margin: 0, flexShrink: 0 }} />
               <span>
                 <strong style={{ color: 'var(--text-1)' }}>Only file imports</strong>: events created by Excel/CSV import
                 <div style={hint}>Undo a bad upload. Activity you recorded by hand, voice, receipt or QR stays.</div>
@@ -120,7 +121,7 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
             <label style={label}>
               <input type="checkbox" checked={wipeMemory} onChange={e => setWipeMemory(e.target.checked)}
-                style={{ accentColor: 'var(--red)', marginTop: 2 }} />
+                style={{ accentColor: 'var(--red)', width: 22, height: 22, margin: 0, flexShrink: 0 }} />
               <span>
                 Forget learned import mappings &amp; name aliases
                 <div style={hint}>Recommended after a wrong mapping: otherwise the next import re-applies it.</div>
@@ -128,17 +129,17 @@ export default function StartFresh({ onDone }: { onDone?: () => void }) {
             </label>
             <label style={label}>
               <input type="checkbox" checked={wipeProducts} onChange={e => setWipeProducts(e.target.checked)}
-                style={{ accentColor: 'var(--red)', marginTop: 2 }} />
+                style={{ accentColor: 'var(--red)', width: 22, height: 22, margin: 0, flexShrink: 0 }} />
               <span>Also delete the product catalog</span>
             </label>
             <label style={label}>
               <input type="checkbox" checked={wipeSchedule} onChange={e => setWipeSchedule(e.target.checked)}
-                style={{ accentColor: 'var(--red)', marginTop: 2 }} />
+                style={{ accentColor: 'var(--red)', width: 22, height: 22, margin: 0, flexShrink: 0 }} />
               <span>Also delete scheduled items</span>
             </label>
             <label style={label}>
               <input type="checkbox" checked={resetOpeningCash} onChange={e => setResetOpeningCash(e.target.checked)}
-                style={{ accentColor: 'var(--red)', marginTop: 2 }} />
+                style={{ accentColor: 'var(--red)', width: 22, height: 22, margin: 0, flexShrink: 0 }} />
               <span>
                 Also reset opening cash to 0
                 <div style={hint}>Leave unchecked to keep the opening balance you set during setup.</div>

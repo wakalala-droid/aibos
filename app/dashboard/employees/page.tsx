@@ -710,10 +710,10 @@ export default function EmployeesPage() {
                   ) : <div />}
                   {form.employment_type === 'contract' && (
                     <>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'end', paddingBottom: 8 }}>
-                        <input id="emp-grat" type="checkbox" checked={form.gratuity_eligible} onChange={e => set('gratuity_eligible', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
-                        <label htmlFor="emp-grat" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>Earns gratuity</label>
-                      </div>
+                      <label className="check-row" style={{ alignSelf: 'end' }}>
+                        <input id="emp-grat" type="checkbox" checked={form.gratuity_eligible} onChange={e => set('gratuity_eligible', e.target.checked)} />
+                        <span>Earns gratuity</span>
+                      </label>
                       <div><label className="field-label" htmlFor="emp-grate">Gratuity rate (%)</label><input id="emp-grate" type="number" min="0" max="100" value={form.gratuity_rate} onChange={e => set('gratuity_rate', e.target.value)} disabled={!form.gratuity_eligible} className="field" style={{ opacity: form.gratuity_eligible ? 1 : 0.5 }} /></div>
                       <div><label className="field-label" htmlFor="emp-gopen">Gratuity owed before AIBOS ({sym})</label><input id="emp-gopen" type="number" min="0" step="0.01" value={form.gratuity_opening} onChange={e => set('gratuity_opening', e.target.value)} placeholder="0" disabled={!form.gratuity_eligible} className="field" style={{ opacity: form.gratuity_eligible ? 1 : 0.5 }} /></div>
                       <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: form.gratuity_eligible && Number(form.gratuity_rate) < 25 ? 'var(--amber)' : 'var(--text-3)', lineHeight: 1.5 }}>
@@ -730,17 +730,17 @@ export default function EmployeesPage() {
                   <div><label className="field-label" htmlFor="emp-napsa">NAPSA number</label><input id="emp-napsa" value={form.napsa_number} onChange={e => set('napsa_number', e.target.value)} className="field" /></div>
                   <div><label className="field-label" htmlFor="emp-nhima">NHIMA number</label><input id="emp-nhima" value={form.nhima_number} onChange={e => set('nhima_number', e.target.value)} className="field" /></div>
                   <div><label className="field-label" htmlFor="emp-dob">Date of birth</label><input id="emp-dob" type="date" value={form.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} className="field" /></div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'end', paddingBottom: 8 }}>
-                    <input id="emp-napsa65" type="checkbox" checked={form.napsa_to_65} onChange={e => set('napsa_to_65', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
-                    <label htmlFor="emp-napsa65" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>Retiring at 65, agreed</label>
-                  </div>
+                  <label className="check-row" style={{ alignSelf: 'end' }}>
+                    <input id="emp-napsa65" type="checkbox" checked={form.napsa_to_65} onChange={e => set('napsa_to_65', e.target.checked)} />
+                    <span>Retiring at 65, agreed</span>
+                  </label>
                   <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
                     With a date of birth NAPSA stops at 60 by itself, or at 65 when they chose to retire then and you agreed (National Pension Scheme Act 2026, s.29).
                   </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1 / -1' }}>
-                    <input id="emp-napsa-exempt" type="checkbox" checked={form.napsa_exempt} onChange={e => set('napsa_exempt', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
-                    <label htmlFor="emp-napsa-exempt" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>No NAPSA for them (aged 60 or over, no date of birth here)</label>
-                  </div>
+                  <label className="check-row" style={{ gridColumn: '1 / -1' }}>
+                    <input id="emp-napsa-exempt" type="checkbox" checked={form.napsa_exempt} onChange={e => set('napsa_exempt', e.target.checked)} />
+                    <span>No NAPSA for them (aged 60 or over, no date of birth here)</span>
+                  </label>
                   {form.employment_type !== 'casual' && (
                     <>
                       <div><label className="field-label" htmlFor="emp-lrate">Leave days a month</label><input id="emp-lrate" type="number" min="2" max="31" step="0.5" value={form.leave_rate} onChange={e => set('leave_rate', e.target.value)} className="field" /></div>
@@ -776,15 +776,15 @@ export default function EmployeesPage() {
                         : ': housing at 30% of basic unless you house them, K200 transport beyond 3 km unless you transport them, K180 lunch unless you give a free meal.'}
                     </p>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1 / -1' }}>
-                    <input id="emp-guard" type="checkbox" checked={form.guard} onChange={e => set('guard', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
-                    <label htmlFor="emp-guard" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>A watchperson or guard: overtime after 60 hours a week, hourly rate on 240 hours</label>
-                  </div>
+                  <label className="check-row" style={{ gridColumn: '1 / -1' }}>
+                    <input id="emp-guard" type="checkbox" checked={form.guard} onChange={e => set('guard', e.target.checked)} />
+                    <span>A watchperson or guard: overtime after 60 hours a week, hourly rate on 240 hours</span>
+                  </label>
                   {form.employment_type !== 'casual' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1 / -1' }}>
-                      <input id="emp-second" type="checkbox" checked={form.second_job} onChange={e => set('second_job', e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
-                      <label htmlFor="emp-second" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>This is a second job for them: PAYE at 37% on all of it</label>
-                    </div>
+                    <label className="check-row" style={{ gridColumn: '1 / -1' }}>
+                      <input id="emp-second" type="checkbox" checked={form.second_job} onChange={e => set('second_job', e.target.checked)} />
+                      <span>This is a second job for them: PAYE at 37% on all of it</span>
+                    </label>
                   )}
                   <div><label htmlFor="emp-loan" className="field-label">Staff loan balance ({sym})</label><input id="emp-loan" type="number" min="0" value={form.loan_balance} onChange={e => set('loan_balance', e.target.value)} placeholder="0" className="field" /></div>
                   <div><label htmlFor="emp-loan-monthly" className="field-label">Deduct per month ({sym})</label><input id="emp-loan-monthly" type="number" min="0" value={form.loan_monthly} onChange={e => set('loan_monthly', e.target.value)} placeholder="0" className="field" /></div>
@@ -1003,13 +1003,11 @@ export default function EmployeesPage() {
                                 </button>
                               )}
                               {((s.gratuity_owed_before ?? 0) + (s.gratuity_accrued ?? 0) > 0) && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+                                <label className="check-row" style={{ marginTop: 12 }}>
                                   <input id={`ch-grat-${id}`} type="checkbox" checked={ch.pay_gratuity}
-                                    onChange={e => setChange(id, { pay_gratuity: e.target.checked })} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
-                                  <label htmlFor={`ch-grat-${id}`} style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>
-                                    Pay their gratuity with this pay: {money((s.gratuity_owed_before ?? 0) + (s.gratuity_accrued ?? 0))}, tax-free
-                                  </label>
-                                </div>
+                                    onChange={e => setChange(id, { pay_gratuity: e.target.checked })} />
+                                  <span>Pay their gratuity with this pay: {money((s.gratuity_owed_before ?? 0) + (s.gratuity_accrued ?? 0))}, tax-free</span>
+                                </label>
                               )}
                               <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
                                 {s.started_on ? `Started on ${s.started_on}: type the basic for the days worked. ` : ''}

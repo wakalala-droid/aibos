@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { EyeOff, MessageCircle, Earth, HeartHandshake } from 'lucide-react';
 import { BentoCard } from '@/components/kit';
 import StartFree from '@/components/marketing/StartFree';
@@ -73,11 +74,16 @@ export default function AboutPage() {
         <div className="mkt-wrap">
           <article className="bento mkt-founder" aria-labelledby="founder-h">
             {FOUNDER.photo ? (
-              // eslint-disable-next-line @next/next/no-img-element -- founder portrait served from /public
-              <img
+              // Sized for the screen by next/image (audit 19 Nov 2026): the
+              // portrait is 337 KB as a file.
+              <Image
                 src={FOUNDER.photo}
                 alt={FOUNDER.name ? `${FOUNDER.name}, ${FOUNDER.title}` : 'AIBOS founder'}
                 className="mkt-founder-photo"
+                width={756}
+                height={843}
+                sizes="(min-width: 760px) 440px, 100vw"
+                style={{ height: 'auto' }}
               />
             ) : (
               <div aria-hidden className="mkt-founder-photo mkt-founder-empty">Founder photo or “Our Story” video</div>

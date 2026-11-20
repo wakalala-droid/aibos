@@ -28,6 +28,7 @@ import ReminderPopup from '@/components/schedule/ReminderPopup';
 import CurrencySelector from '@/components/ui/CurrencySelector';
 import BusinessSwitcher from '@/components/layout/BusinessSwitcher';
 import AutoSwitch from '@/components/layout/AutoSwitch';
+import UrlImage, { LOGO_FIT } from '@/components/ui/UrlImage';
 
 // Bell read-state: the dot shows only for alerts the user hasn't opened the
 // tray for. On-device signature — the alert list itself stays server-driven.
@@ -394,13 +395,11 @@ export default function DashboardHeader() {
              logo drawn in dark ink would otherwise disappear into a dark
              header. */
           <span style={{ height: 28, maxWidth: 84, padding: 4, borderRadius: 6, background: '#fff', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={avatarUrl} alt="" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
+            <UrlImage src={avatarUrl} alt="" width={84} height={28} style={LOGO_FIT} />
           </span>
         ) : avatarUrl ? (
           // A Google profile photo is a face: round and cropped is right here.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatarUrl} alt="" width={28} height={28} style={{ borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
+          <UrlImage src={avatarUrl} alt="" width={28} height={28} style={{ borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
         ) : (
           <span style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'var(--pill-bg)', border: '1px solid var(--border-strong)', color: 'var(--text-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-label)', fontWeight: 800 }}>
             {initials}
@@ -588,6 +587,10 @@ export default function DashboardHeader() {
               )}
               <Link href="/dashboard/profile" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
                 Your business data
+              </Link>
+              {/* The review centre (20 Nov 2026): stars, words and who sees them. */}
+              <Link href="/dashboard/reviews" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
+                Review AIBOS
               </Link>
               <button type="button" role="menuitem" onClick={() => setOpen('shortcuts')} className="dash-row" style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
                 Keyboard shortcuts &amp; tips

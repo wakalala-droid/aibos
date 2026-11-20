@@ -601,8 +601,10 @@ export default function SchedulePage() {
               <input id="sched-time" type="time" value={form.time} onChange={e => set('time', e.target.value)} disabled={form.allDay} className="field" style={{ opacity: form.allDay ? 0.5 : 1 }} />
             </div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input id="sched-allday" type="checkbox" checked={form.allDay} onChange={e => setAllDay(e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
-              <label htmlFor="sched-allday" style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', cursor: 'pointer' }}>All day</label>
+              <label className="check-row">
+                <input id="sched-allday" type="checkbox" checked={form.allDay} onChange={e => setAllDay(e.target.checked)} />
+                <span>All day</span>
+              </label>
               <button type="button" className="pill pill-quiet" aria-expanded={moreOpen} onClick={() => setMoreOpen(o => !o)} style={{ marginLeft: 'auto' }}>
                 {moreOpen ? 'Fewer options' : 'More options'}
               </button>
@@ -676,13 +678,12 @@ export default function SchedulePage() {
                 {devices && !devices.some(isPhone) && ' To get them on your phone, open AIBOS on the phone, tap the bell, then tap Turn on.'}
               </p>
               <PhoneAlerts embedded onChange={() => void loadDevices()} />
-              <label htmlFor="sched-sound" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-2)', cursor: 'pointer' }}>
+              <label htmlFor="sched-sound" className="check-row" style={{ marginTop: 8 }}>
                 <input id="sched-sound" type="checkbox" checked={sound}
-                  onChange={e => { const on = e.target.checked; setSound(on); setSoundOn(on); if (on) void playReminderSound(true); }}
-                  style={{ width: 22, height: 22, accentColor: 'var(--cyan)' }} />
+                  onChange={e => { const on = e.target.checked; setSound(on); setSoundOn(on); if (on) void playReminderSound(true); }} />
                 Play a sound when a notification arrives
               </label>
-              <p style={{ margin: '4px 0 0 30px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
+              <p style={{ margin: '0 0 0 32px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
                 AIBOS plays it itself wherever it is open, the installed app included and keeps the
                 notification quiet so you hear it once. With AIBOS closed your phone uses its own sound.
               </p>

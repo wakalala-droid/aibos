@@ -14,6 +14,7 @@ import HowItWorks from '@/components/marketing/HowItWorks';
 import StartFree from '@/components/marketing/StartFree';
 import { BentoCard } from '@/components/kit';
 import Rise from '@/components/marketing/Rise';
+import OwnerReviews from '@/components/marketing/OwnerReviews';
 
 // The landing page, built from the AI-BOS UI kit (docs/AIBOS_UI_KIT.md): the
 // same bento cards, notices, money figures, rows and pills as the app, so
@@ -70,6 +71,10 @@ export default function MarketingHome() {
           </Rise>
         </div>
       </section>
+
+      {/* What owners said, shared by them from Review AIBOS (20 Nov 2026). Not
+          drawn at all until a real owner shares a review. */}
+      <OwnerReviews />
 
       <TheGoal />
 

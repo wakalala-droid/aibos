@@ -21,6 +21,7 @@
  */
 import { AnimatePresence, motion } from 'framer-motion';
 import { CircleCheck } from 'lucide-react';
+import UrlImage from '@/components/ui/UrlImage';
 import BorderGlow from '@/components/ui/BorderGlow';
 import type { BusinessMatch } from '@/lib/api';
 
@@ -153,8 +154,7 @@ export default function BusinessMatchCard({
                 <Shell key={m.place_id}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                     {m.logo_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <UrlImage
                         src={m.logo_url} alt="" width={40} height={40}
                         style={{ borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border)' }}
                       />

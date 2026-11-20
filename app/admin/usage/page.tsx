@@ -39,6 +39,7 @@ export default function AdminUsagePage() {
       <Link href="/admin" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)' }}>Accounts</Link>
       <Link href="/admin/usage" aria-current="page" style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Usage</Link>
       <Link href="/admin/proposals" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)' }}>Proposals</Link>
+      <Link href="/admin/reviews" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)' }}>Reviews</Link>
     </nav>
   );
 

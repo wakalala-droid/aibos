@@ -35,10 +35,17 @@ export const WORKER_ICONS: Record<string, typeof Users> = {
   payroll: Users, scout: Telescope, guest_desk: BedDouble,
 };
 
+/** A quiet worker says what it went through today (workers.py looked_*), not "Watching" six times over. */
 export function workerState(w: AiWorker): { word: string; tone: 'ask' | 'watch' | 'off' } {
   if (!w.on) return { word: w.off_reason || 'Not on your plan', tone: 'off' };
   if (w.waiting > 0) return { word: `${w.waiting} ${w.waiting === 1 ? 'needs' : 'need'} you`, tone: 'ask' };
-  return { word: 'Watching', tone: 'watch' };
+  return { word: w.looked || 'Watching', tone: 'watch' };
+}
+
+/** Whether an ISO time falls on today's date where the owner is. */
+function isToday(at?: string | null): boolean {
+  const d = new Date(at ?? '');
+  return !!at && !Number.isNaN(d.getTime()) && d.toDateString() === new Date().toDateString();
 }
 
 // Three down each side: [x of the badge, y], in % of the stage.
@@ -79,9 +86,11 @@ function Meter({ done }: { done: number }) {
   );
 }
 
-export default function TeamScene({ workers, recent, auto, checking, picked, onPick, onTalk, onAsk, locked, ask = true }: {
+export default function TeamScene({ workers, recent, auto, checking, picked, onPick, onTalk, onAsk, locked, ask = true, lookedAt }: {
   workers: AiWorker[];
   recent: AiAction[];
+  /** When the team last went through the books (GET /workers looked_at); said under the mark when it was today. */
+  lookedAt?: string | null;
   auto: boolean;
   checking: boolean;
   picked: string | null;
@@ -101,6 +110,7 @@ export default function TeamScene({ workers, recent, auto, checking, picked, onP
   const sub = locked ? 'Your team is asleep'
     : auto ? 'On auto. Asks only when it must'
     : waiting > 0 ? `${waiting} ${waiting === 1 ? 'thing needs' : 'things need'} you`
+    : isToday(lookedAt) ? `Checked your books at ${clock(lookedAt ?? undefined)}`
     : 'Watching your books';
 
   return (
@@ -160,7 +170,7 @@ export default function TeamScene({ workers, recent, auto, checking, picked, onP
                   <span className="scene-card-name">{w.name}</span>
                   <span className="scene-card-state">
                     <i className="scene-dot" aria-hidden="true" />
-                    {s.tone === 'watch' ? (auto ? 'Working' : 'Watching') : s.word}
+                    {s.tone === 'watch' && auto ? 'Working' : s.word}
                   </span>
                   {w.on && <Meter done={w.done_this_week} />}
                 </span>

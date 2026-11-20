@@ -69,6 +69,7 @@ export const ACCOUNT_DOORS: { href: string; label: string; keywords: string[] }[
   { href: '/dashboard/profile', label: 'Settings',       keywords: ['profile', 'business profile', 'logo', 'team', 'invite', 'mobile money', 'export', 'currency'] },
   { href: '/dashboard/teach',   label: 'Teach AIBOS your business', keywords: ['interview', 'about my business', 'story', 'goals', 'targets', 'learn', 'workbook', 'template', 'set up'] },
   { href: '/dashboard/billing', label: 'Plan & billing', keywords: ['plan', 'billing', 'subscription', 'receipt', 'upgrade', 'cancel'] },
+  { href: '/dashboard/reviews', label: 'Review AIBOS',   keywords: ['review', 'rate', 'rating', 'stars', 'feedback', 'testimonial', 'say what you think'] },
 ];
 
 /** Things the search box can DO, not just open. */
@@ -107,6 +108,8 @@ export type TeamRole = 'owner' | 'staff' | 'accountant' | string | null | undefi
 const STAFF_HREFS = new Set([
   '/dashboard', '/dashboard/record', '/dashboard/timeline', '/dashboard/schedule',
   '/dashboard/inventory', '/dashboard/hospitality', '/dashboard/clients',
+  // Everyone who uses AIBOS is asked for a review (aibos-api reviews.ask).
+  '/dashboard/reviews',
 ]);
 const ACCOUNTANT_HIDE = new Set(['/dashboard/record', '/dashboard/import', '/dashboard/employees']);
 

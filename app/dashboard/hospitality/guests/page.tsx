@@ -103,7 +103,7 @@ export default function GuestsPage() {
               <div><label htmlFor="guest-id-number" className="field-label">ID number (sealed)</label><input id="guest-id-number" className="field" value={form.id_document_number} onChange={e => setForm({ ...form, id_document_number: e.target.value })} placeholder="Encrypted at rest" /></div>
               <div style={{ gridColumn: '1 / -1' }}><label htmlFor="guest-notes" className="field-label">Staff notes (private)</label><input id="guest-notes" className="field" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Preferences, discretion notes…" /></div>
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 'var(--fs-data)', color: 'var(--text-2)', cursor: 'pointer' }}>
+            <label className="check-row" style={{ marginTop: 8 }}>
               <input type="checkbox" checked={form.vip_flag} onChange={e => setForm({ ...form, vip_flag: e.target.checked })} /> VIP guest
             </label>
             <div style={{ marginTop: 14 }}>

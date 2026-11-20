@@ -23,7 +23,10 @@ export type UsageEvent =
   // "Right" / "That's wrong" under an AI answer (UI/UX audit 2026-10 C7).
   | 'answer_feedback'
   // The AIBOS workbook taken from the Setup Wizard (22 Oct 2026).
-  | 'workbook_downloaded';
+  | 'workbook_downloaded'
+  // Home's welcome back after three days away (20 Nov 2026): meta.choice is
+  // 'shown', 'catch_up' or 'fresh_start', with meta.days_away.
+  | 'welcome_back';
 export type UsageEngine = 'engine1' | 'engine2' | 'engine3' | 'cross';
 
 interface LogOptions {

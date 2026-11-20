@@ -426,6 +426,8 @@ export async function sendTestWhatsAppBrief(): Promise<{ ok?: boolean; to?: stri
 export interface AnnounceResult {
   key: string; people: number; with_devices: number;
   told: number; already: number; pushed: number; not_pushed: number; errors: number;
+  /** Accounts the message leaves out on purpose (the review ask: whoever has reviewed). */
+  left_out?: number;
   dry_run?: boolean;
 }
 export async function announce(input: {
@@ -435,6 +437,66 @@ export async function announce(input: {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
   });
   return data as unknown as AnnounceResult;
+}
+
+// ── Reviews of AIBOS (aibos-api reviews.py, migration 0048) ───────────────────
+
+/** An owner's own review of AIBOS. `hidden`: an administrator took it off the
+ *  website (abuse, spam or private details only) and the owner is told. */
+export interface AibosReview {
+  rating: number; body: string; name: string; business: string; town: string;
+  show_on_site: boolean; show_logo: boolean; hidden: boolean;
+  created_at?: string | null; updated_at?: string | null;
+}
+/** What the review form starts with, from the owner's profile. */
+export interface ReviewSuggest { name: string; business: string; town: string; has_logo: boolean }
+/** `ready` false: migration 0048 has not been run, and `detail` says so. */
+export interface MyReview { ready: boolean; review: AibosReview | null; suggest: ReviewSuggest; detail?: string }
+export type ReviewInput = Pick<AibosReview,
+  'rating' | 'body' | 'name' | 'business' | 'town' | 'show_on_site' | 'show_logo'>;
+
+export async function getMyReview(): Promise<MyReview> {
+  return (await spineFetch('/reviews/mine')) as unknown as MyReview;
+}
+/** Writes or changes the owner's one review. A refusal throws in owner words. */
+export async function saveMyReview(input: ReviewInput): Promise<AibosReview> {
+  const data = await spineFetch('/reviews/mine', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  });
+  return (data as unknown as { review: AibosReview }).review;
+}
+/** Takes the review back, off the website too. */
+export async function removeMyReview(): Promise<boolean> {
+  const data = await spineFetch('/reviews/mine', { method: 'DELETE' });
+  return Boolean((data as { removed?: boolean }).removed);
+}
+
+/** Every review, for the review centre (admin only). */
+export interface AdminReview extends AibosReview { id: string; user_id: string; status: 'shown' | 'hidden' }
+export interface AdminReviews {
+  ready: boolean; reviews: AdminReview[]; count: number; on_site: number; average: number | null; detail?: string;
+}
+export async function listAllReviews(): Promise<AdminReviews> {
+  return (await spineFetch('/admin/reviews')) as unknown as AdminReviews;
+}
+/** Hide a review from the website, or show it again (admin only). */
+export async function setReviewStatus(id: string, status: 'shown' | 'hidden'): Promise<{ id: string; status: string }> {
+  const data = await spineFetch(`/admin/reviews/${encodeURIComponent(id)}/status`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }),
+  });
+  return data as unknown as { id: string; status: string };
+}
+/** The ask to review: every account that has not reviewed yet, once each.
+ *  `active_now`: of the accounts it would reach, those using AIBOS in the last
+ *  15 minutes (null: unknown). */
+export interface ReviewAskResult extends AnnounceResult {
+  reviewed: number; active_now: number | null; title: string; body: string; link: string;
+}
+export async function askForReviews(dryRun: boolean): Promise<ReviewAskResult> {
+  const data = await spineFetch('/admin/reviews/ask', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dry_run: dryRun }),
+  });
+  return data as unknown as ReviewAskResult;
 }
 
 /** The card payment reminder (admin): every account on a paid plan that a card
@@ -1268,6 +1330,8 @@ export interface AiWorker {
   /** False when the plan does not include it; off_reason says which plan does. */
   on: boolean; off_reason: string | null;
   waiting: number; done_this_week: number; last: AiAction | null;
+  /** What it went through on today's last pass, in a few words ("Checked 6 regulars"); none before a pass today. */
+  looked?: string | null;
   autopilot?: AiAutopilotKind[];
 }
 export interface AiTeam {

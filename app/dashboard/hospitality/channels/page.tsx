@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { confirmSheet } from '@/lib/confirm';
 import FileDrop from '@/components/ui/FileDrop';
+import UrlImage from '@/components/ui/UrlImage';
 import SectionCard from '@/components/ui/SectionCard';
 import { Chip, Note, type Tone } from '@/components/hospitality/kit';
 import { useAuth } from '@/hooks/useAuth';
@@ -515,8 +516,8 @@ function GuestEmailsForProperty({ property: p, last, onChange, onError }: {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
           {logo ? (
             // The email itself is white, so the preview is too: what the guest sees.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt={`${p.name} logo`} style={{ height: 56, maxWidth: 240, objectFit: 'contain', background: '#fff', borderRadius: 'var(--radius-md)', padding: 8, border: '1px solid var(--border-md)' }} />
+            <UrlImage src={logo} alt={`${p.name} logo`} width={240} height={56}
+              style={{ height: 56, width: 'auto', maxWidth: 240, objectFit: 'contain', background: '#fff', borderRadius: 'var(--radius-md)', padding: 8, border: '1px solid var(--border-md)' }} />
           ) : (
             <span style={{ ...BODY, color: 'var(--text-3)' }}>No logo yet, so your property&rsquo;s name is shown in its place.</span>
           )}

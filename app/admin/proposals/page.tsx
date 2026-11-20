@@ -251,6 +251,7 @@ export default function AdminProposalsPage() {
       <Link href="/admin" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)' }}>Accounts</Link>
       <Link href="/admin/usage" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)' }}>Usage</Link>
       <Link href="/admin/proposals" aria-current="page" style={{ fontSize: 'var(--fs-data)', fontWeight: 700, color: 'var(--text-1)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-badge)', border: '1px solid var(--border)' }}>Proposals</Link>
+      <Link href="/admin/reviews" style={{ fontSize: 'var(--fs-data)', fontWeight: 600, color: 'var(--text-3)', textDecoration: 'none', padding: '6px 12px', borderRadius: 'var(--radius-md)' }}>Reviews</Link>
     </nav>
   );
 

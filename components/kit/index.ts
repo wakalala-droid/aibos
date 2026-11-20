@@ -17,7 +17,8 @@ export type { DocFact, DocHeaderProps } from '@/components/ui/DocHeader';
 export { default as Notice } from '@/components/ui/Notice';
 
 // Cards: the bento card and its gap-free grid spans, the panel, the section.
-export { default as BentoCard, bentoSpans } from '@/components/ui/BentoCard';
+export { default as BentoCard } from '@/components/ui/BentoCard';
+export { bentoSpans } from '@/lib/bento-spans';
 export { default as Panel } from '@/components/home/Panel';
 export { default as SectionCard } from '@/components/ui/SectionCard';
 

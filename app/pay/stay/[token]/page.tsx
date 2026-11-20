@@ -16,6 +16,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
+import UrlImage, { LOGO_FIT } from '@/components/ui/UrlImage';
 import {
   getPublicStay, initiateStayPayment, checkStayPaymentStatus, PublicApiError,
   type PublicStay, type PayNetwork,
@@ -172,10 +173,9 @@ export default function PayStayPage() {
                 /* Whole and undistorted, on a white plate — same treatment as
                    the invoice page and the dashboard header. */
                 <span style={{ height: 48, maxWidth: 180, padding: 8, borderRadius: 10, background: '#fff', border: '1px solid var(--border)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={stay.business_logo_url} alt={stay.business_name ?? ''}
+                  <UrlImage src={stay.business_logo_url} alt={stay.business_name ?? ''} width={180} height={48}
                     onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }}
-                    style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
+                    style={LOGO_FIT} />
                 </span>
               )}
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 4px' }}>

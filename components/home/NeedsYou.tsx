@@ -13,6 +13,12 @@
 // list is empty that is the reward: nothing needs you, and what AIBOS
 // handled today, said in one line (the UX audit, 17 Nov 2026: an empty list
 // stood 225px tall). It sits right under the greeting.
+//
+// On a phone the list starts as one line too (owner, 20 Nov 2026, after the
+// 19 Nov audit): the count, the first thing and "See all", which opens the
+// list in place. Three cards stood 792px tall and pushed the money to 1,353px
+// on an 812px screen; two cards still left it at about 1,110px. With the
+// line the money is on the first screen, and Needs you is still first.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -122,12 +128,34 @@ export default function NeedsYou() {
     }
   }
 
-  // The bell's link is /dashboard#needs-you; the list arrives after the page draws.
+  // The bell's link is /dashboard#needs-you; the list arrives after the page
+  // draws. Whoever comes by the bell came to answer, so the list opens whole.
+  useEffect(() => {
+    if (window.location.hash === '#needs-you') setAll(true);
+  }, []);
   useEffect(() => {
     if (jobs && window.location.hash === '#needs-you') {
       document.getElementById('needs-you')?.scrollIntoView({ block: 'start' });
     }
   }, [jobs]);
+
+  // Opening or closing the list on a phone swaps the line and the panel, so
+  // the button that was pressed goes away: focus goes to what took its place.
+  // On wider screens the button stays and keeps focus.
+  const swapped = useRef<'open' | 'close' | null>(null);
+  useEffect(() => {
+    const way = swapped.current;
+    swapped.current = null;
+    if (!way) return;
+    const at = document.activeElement as HTMLElement | null;
+    if (at && at !== document.body && at.offsetParent !== null) return;
+    const to = document.getElementById(way === 'open' ? 'needs-you-title' : 'needs-you-peek-open');
+    if (to && to.offsetParent !== null) to.focus();
+  }, [all]);
+  function openAll(open: boolean) {
+    swapped.current = open ? 'open' : 'close';
+    setAll(open);
+  }
 
   // A worker already asking about the same thing stands for the home's signal.
   const asking = new Set((jobs ?? []).filter((j) => j.status === 'waiting').map((j) => j.kind));
@@ -137,9 +165,14 @@ export default function NeedsYou() {
     ...(jobs ?? []).map((j) => ({ key: j.id, job: j })),
     ...signals.filter((d) => d.severity !== 'crit').map((d) => ({ key: d.id, decision: d })),
   ];
-  const open = items.filter((i) => (i.job ? i.job.status === 'waiting' : true)).length;
+  const isOpen = (i: Item) => (i.job ? i.job.status === 'waiting' : true);
+  const open = items.filter(isOpen).length;
   const shown = all ? items : items.slice(0, SHOWN);
   const more = items.length - shown.length;
+  const first = items.find(isOpen);
+  const firstSaid = !first ? null
+    : first.job ? first.job.said
+    : first.decision!.severity === 'crit' ? `Cannot wait: ${first.decision!.headline}` : first.decision!.headline;
 
   // Nothing needs the owner: one line, not a panel.
   if (items.length === 0) {
@@ -165,7 +198,26 @@ export default function NeedsYou() {
   }
 
   return (
-    <div id="needs-you" data-tour="needs-you" style={{ scrollMarginTop: 96 }}>
+    <div id="needs-you" data-tour="needs-you" className={all ? 'is-all' : undefined} style={{ scrollMarginTop: 96 }}>
+      {/* Phones only (globals.css): the list as one line until it is opened. */}
+      <section className="needs-you-line needs-you-peek" aria-labelledby="needs-you-peek-title">
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h2 id="needs-you-peek-title" className="needs-you-line-title">
+            {open === 0 ? 'All answered' : 'Needs you'}
+            {open > 0 && <span className="needs-you-count">{open}</span>}
+          </h2>
+          <p className="needs-you-line-sub needs-you-peek-first">
+            {firstSaid ?? (handled > 0
+              ? `AIBOS handled ${handled} ${handled === 1 ? 'thing' : 'things'} today.`
+              : 'Nothing happens until you say yes.')}
+          </p>
+        </div>
+        <button type="button" id="needs-you-peek-open" className="pill" style={{ minHeight: 44, flexShrink: 0 }}
+          aria-controls="needs-you-full" aria-expanded={false} onClick={() => openAll(true)}>
+          {items.length === 1 ? 'See it' : `See all ${items.length}`}
+        </button>
+      </section>
+      <div id="needs-you-full" className="needs-you-full">
       <Panel labelledBy="needs-you-title"
         title={
           <div style={{ flex: '1 1 200px', minWidth: 0 }}>
@@ -198,12 +250,16 @@ export default function NeedsYou() {
               onDraft={draft} onFollowUpDone={followUpDone} onAdvice={answerAdvice} />
           ))}
         </div>
-        {(more > 0 || all) && items.length > SHOWN && (
-          <button type="button" className="pill pill-quiet" style={{ marginTop: 12, minHeight: 44 }} onClick={() => setAll((v) => !v)}>
+        {/* "Show fewer" also closes the list back to its line on a phone,
+            even when it holds three or fewer (then it shows on phones only). */}
+        {(more > 0 || all) && (items.length > SHOWN || all) && (
+          <button type="button" className={`pill pill-quiet${items.length > SHOWN ? '' : ' needs-you-phone-only'}`}
+            style={{ marginTop: 12, minHeight: 44 }} onClick={() => openAll(!all)}>
             {all ? 'Show fewer' : `See all ${items.length}`}
           </button>
         )}
       </Panel>
+      </div>
     </div>
   );
 }
