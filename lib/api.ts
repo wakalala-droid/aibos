@@ -1228,6 +1228,23 @@ export interface PaymentAccount {
   key_hint: string | null;
   connected_at: string | null;
   webhook_url: string | null;
+  /** Bank cards on stay payment links, through Lenco's own card window
+   *  (migration 0049). It opens with the Lenco PUBLIC key, which is safe to
+   *  show; the secret API key is refused as one. */
+  cards?: boolean;
+  public_key_hint?: string | null;
+  cards_available?: boolean;             // false until migration 0049 is run
+}
+
+export async function setPaymentPublicKey(publicKey: string): Promise<PaymentAccount> {
+  return (await spineFetch('/payments/account/public-key', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ public_key: publicKey }),
+  })) as unknown as PaymentAccount;
+}
+
+export async function clearPaymentPublicKey(): Promise<PaymentAccount> {
+  return (await spineFetch('/payments/account/public-key', { method: 'DELETE' })) as unknown as PaymentAccount;
 }
 
 export async function getPaymentAccount(): Promise<PaymentAccount> {
@@ -1543,13 +1560,58 @@ export interface PublicStay {
   is_deposit: boolean;
   payable: boolean;
   paid_in_full: boolean;
+  /** A website request not confirmed yet: paying it in full confirms it. */
+  awaiting_confirmation?: boolean;
+  status?: string | null;
 }
 
 export async function getPublicStay(token: string): Promise<{
-  stay: PublicStay; networks: Record<PayNetwork, boolean>;
+  stay: PublicStay; networks: Record<PayNetwork, boolean>; card: boolean; testMode: boolean;
 }> {
   const data = await publicFetch(`/pay/stay/${encodeURIComponent(token)}`);
-  return { stay: data.stay as unknown as PublicStay, networks: data.networks as Record<PayNetwork, boolean> };
+  return {
+    stay: data.stay as unknown as PublicStay,
+    networks: data.networks as Record<PayNetwork, boolean>,
+    card: data.card === true,
+    testMode: data.test_mode === true,
+  };
+}
+
+/** What Lenco's card window opens with. The amount and reference are the
+ *  server's; the booking records what Lenco says arrived, whatever the window
+ *  is told. */
+export interface StayCardStart {
+  reference: string;
+  amount: number;
+  currency: string;
+  label: string;
+  public_key: string;
+  script: string;
+  test_mode: boolean;
+}
+
+export async function startStayCardPayment(token: string): Promise<StayCardStart> {
+  const data = await publicFetch(`/pay/stay/${encodeURIComponent(token)}/card`, { method: 'POST' });
+  return data as unknown as StayCardStart;
+}
+
+/** A stay payment as the poll sees it. `confirmed` answers, once the money is
+ *  in, whether a website request became a confirmed booking (false: paid short,
+ *  or its nights went while the guest paid, and the property will be in touch). */
+export interface StayPaymentCheck {
+  status: 'pending' | 'successful' | 'failed';
+  confirmed: boolean | null;
+  bookingStatus: string | null;
+}
+
+export async function checkStayPayment(token: string, reference: string): Promise<StayPaymentCheck> {
+  const data = await publicFetch(
+    `/pay/stay/${encodeURIComponent(token)}/status/${encodeURIComponent(reference)}`);
+  return {
+    status: data.status as StayPaymentCheck['status'],
+    confirmed: typeof data.confirmed === 'boolean' ? data.confirmed : null,
+    bookingStatus: typeof data.booking_status === 'string' ? data.booking_status : null,
+  };
 }
 
 export async function initiateStayPayment(

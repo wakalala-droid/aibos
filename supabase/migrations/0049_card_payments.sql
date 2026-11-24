@@ -1,0 +1,31 @@
+-- ════════════════════════════════════════════════════════════════════════════
+-- AI-BOS: card payments on payment links  (migration 0049)
+-- ────────────────────────────────────────────────────────────────────────────
+-- Guests booking on a property's own website (Dunslim Apartments first) pay
+-- there and then: an Airtel, MTN or Zamtel prompt on their phone, or a bank
+-- card in Lenco's own secure card window. Any bank's Visa or Mastercard works.
+-- Paying a website request in full confirms it and puts the money in the
+-- books, with no matching by hand.
+--
+-- Lenco's card window opens in the payer's browser with the business's Lenco
+-- PUBLIC key. Unlike the secret API key (sealed in secret_enc, migration
+-- 0038) the public key is made to be shown, so it is kept as it is. The API
+-- refuses a "public key" that is really the secret key.
+--
+--   * payment_accounts.public_key  the business's Lenco public key, or null
+--                                  while card payments are off.
+--
+-- Card payments go in booking_payments with network 'card'. That table has
+-- no network check, so it needs nothing new.
+--
+-- Without this migration mobile money carries on exactly as before and
+-- Business profile says card payments are being switched on.
+--
+-- IDEMPOTENT & NON-DESTRUCTIVE. Run in the Supabase SQL editor.
+-- ════════════════════════════════════════════════════════════════════════════
+
+alter table public.payment_accounts add column if not exists public_key text;
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- End migration 0049
+-- ════════════════════════════════════════════════════════════════════════════

@@ -19,6 +19,7 @@ import {
   briefDeliveryConfig, sendTestWhatsAppBrief, listMembers, inviteMember, updateMemberRole, revokeMember,
   getMemorySummary, getMemoryMappings, forgetMapping, exportEventsCsv, exportPnlCsv,
   getPaymentAccount, connectPaymentAccount, disconnectPaymentAccount,
+  setPaymentPublicKey, clearPaymentPublicKey,
   type TeamMember, type TeamMemberRole, type PaymentAccount,
 } from '@/lib/api';
 import PageHeader from '@/components/ui/PageHeader';
@@ -384,7 +385,7 @@ export default function BusinessProfilePage() {
 }
 
 /*
-  Get paid by mobile money.
+  Get paid online: mobile money, and bank cards for bookings.
 
   Each business connects its OWN Lenco account here and its invoice and stay
   payment links collect straight into it. There used to be one set of keys for
@@ -446,6 +447,41 @@ function GetPaidCard() {
     }
   }
 
+  // Bank cards (migration 0049): Lenco's card window opens with the PUBLIC
+  // key. The server refuses the secret API key here, because whatever is saved
+  // is handed to every guest's browser.
+  const [pubKey, setPubKey] = useState('');
+  const [pubEditing, setPubEditing] = useState(false);
+  const [pubBusy, setPubBusy] = useState<'save' | 'clear' | null>(null);
+  const [pubError, setPubError] = useState<string | null>(null);
+
+  async function savePublicKey(e: React.FormEvent) {
+    e.preventDefault();
+    if (!pubKey.trim() || pubBusy) return;
+    setPubBusy('save'); setPubError(null);
+    try {
+      setAccount(await setPaymentPublicKey(pubKey.trim()));
+      setPubKey('');
+      setPubEditing(false);
+    } catch (err) {
+      setPubError((err as Error).message || 'That key could not be saved. Please try again.');
+    } finally {
+      setPubBusy(null);
+    }
+  }
+
+  async function stopCards() {
+    if (!(await confirmSheet({ title: 'Stop taking bank cards?', body: 'Guests will pay by mobile money only until you add the public key again.', confirmLabel: 'Stop', danger: true }))) return;
+    setPubBusy('clear'); setPubError(null);
+    try {
+      setAccount(await clearPaymentPublicKey());
+    } catch (err) {
+      setPubError((err as Error).message || 'Could not switch cards off. Please try again.');
+    } finally {
+      setPubBusy(null);
+    }
+  }
+
   async function copyWebhook(url: string) {
     try {
       await navigator.clipboard.writeText(url);
@@ -466,11 +502,12 @@ function GetPaidCard() {
   return (
     <section className="section-card" aria-labelledby="get-paid-title">
       <h2 id="get-paid-title" style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 8px' }}>
-        Get paid by mobile money
+        Get paid online
       </h2>
       <p style={{ ...text, marginBottom: 18 }}>
-        Your customers pay your invoices and bookings from their phone, by MTN, Airtel or Zamtel.
-        The money goes straight into your own Lenco account.
+        Your customers pay your invoices and bookings from their phone, by MTN, Airtel or Zamtel,
+        and guests can pay a booking by bank card too. The money goes straight into your own Lenco
+        account.
       </p>
 
       {loadError && (
@@ -531,6 +568,83 @@ function GetPaidCard() {
                 style={{ ...button, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--crit)' }}>
                 {busy === 'disconnect' ? 'Disconnecting…' : 'Disconnect'}
               </button>
+            </div>
+          )}
+          {account.usable && account.cards_available !== false && !replacing && (
+            <div style={{ display: 'grid', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 16, marginTop: 6 }}>
+              <h3 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: 0 }}>Bank cards</h3>
+              {account.cards ? (
+                <>
+                  <p style={{ ...text, color: 'var(--text-1)', fontWeight: 600 }}>
+                    <span aria-hidden="true" style={{ color: 'var(--good)', marginRight: 8 }}>●</span>
+                    Guests can pay for their stay by bank card
+                  </p>
+                  <p style={quiet}>
+                    Any bank&apos;s Visa or Mastercard, in Lenco&apos;s secure card window.
+                    {account.public_key_hint ? ` Public key ending ${account.public_key_hint}.` : ''}
+                  </p>
+                </>
+              ) : (
+                <p style={quiet}>
+                  Let guests pay for their stay by bank card too: any bank&apos;s Visa or Mastercard, typed into
+                  Lenco&apos;s secure card window. Paste your Lenco public key to switch it on.
+                </p>
+              )}
+              {(!account.cards || pubEditing) && (
+                <form onSubmit={savePublicKey} noValidate style={{ display: 'grid', gap: 12 }}>
+                  <div>
+                    <label htmlFor="lenco-public-key" className="field-label" style={{ fontSize: 'var(--fs-h3)', color: 'var(--text-1)' }}>
+                      Lenco public key
+                    </label>
+                    <input
+                      id="lenco-public-key"
+                      type="text"
+                      autoComplete="off"
+                      spellCheck={false}
+                      value={pubKey}
+                      onChange={(e) => { setPubKey(e.target.value); if (pubError) setPubError(null); }}
+                      aria-invalid={Boolean(pubError)}
+                      aria-describedby={pubError ? 'lenco-public-key-error' : undefined}
+                      className="field" style={{ minHeight: 48, fontSize: 'var(--fs-h3)' }}
+                      placeholder="The public key, not the API key"
+                    />
+                  </div>
+                  {pubError && (
+                    <p id="lenco-public-key-error" role="alert" style={{ ...text, color: 'var(--crit)' }}>{pubError}</p>
+                  )}
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <button type="submit" disabled={!pubKey.trim() || pubBusy !== null}
+                      style={{ ...button, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', opacity: !pubKey.trim() || pubBusy !== null ? 0.55 : 1, cursor: !pubKey.trim() || pubBusy !== null ? 'not-allowed' : 'pointer' }}>
+                      {pubBusy === 'save' ? 'Saving…' : account.cards ? 'Save new public key' : 'Switch on cards'}
+                    </button>
+                    {pubEditing && (
+                      <button type="button" onClick={() => { setPubEditing(false); setPubKey(''); setPubError(null); }}
+                        style={{ ...button, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--text-2)' }}>
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                  <p style={quiet}>
+                    The public key is safe to show: each guest&apos;s browser uses it to open the card window.
+                    Your API key stays secret and is never accepted here.
+                  </p>
+                </form>
+              )}
+              {account.cards && !pubEditing && (
+                <>
+                  {pubError && <p role="alert" style={{ ...text, color: 'var(--crit)' }}>{pubError}</p>}
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <button type="button" onClick={() => { setPubEditing(true); setPubError(null); }} disabled={pubBusy !== null}
+                      style={{ ...button, border: '1px solid var(--border-md)', background: 'var(--bg-badge)', color: 'var(--text-1)' }}>
+                      Use a different public key
+                    </button>
+                    <button type="button" onClick={() => void stopCards()} disabled={pubBusy !== null}
+                      style={{ ...button, border: '1px solid var(--border-md)', background: 'transparent', color: 'var(--crit)' }}>
+                      {pubBusy === 'clear' ? 'Stopping…' : 'Stop taking cards'}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

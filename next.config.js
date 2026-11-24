@@ -109,15 +109,18 @@ const nextConfig = {
             // opens its card form in a frame from buy.paddle.com (or
             // sandbox-buy.paddle.com while testing). Without frame-src the
             // form falls back to default-src 'self' and never appears.
+            // Lenco (guests paying for a stay by bank card, migration 0049):
+            // its card window script comes from pay.lenco.co (pay.sandbox.lenco.co
+            // with a test key) and opens its card form in a frame from there.
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.paddle.com",
-              "style-src 'self' 'unsafe-inline' https://*.paddle.com",
-              "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com https://*.paddle.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.paddle.com https://*.lenco.co",
+              "style-src 'self' 'unsafe-inline' https://*.paddle.com https://*.lenco.co",
+              "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com https://*.paddle.com https://*.lenco.co",
               "font-src 'self' data:",
-              "frame-src 'self' https://*.paddle.com",
-              `connect-src 'self' https://*.supabase.co https://*.paddle.com${API_ORIGIN ? ` ${API_ORIGIN}` : ''}`,
+              "frame-src 'self' https://*.paddle.com https://*.lenco.co",
+              `connect-src 'self' https://*.supabase.co https://*.paddle.com https://*.lenco.co${API_ORIGIN ? ` ${API_ORIGIN}` : ''}`,
               "media-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",
