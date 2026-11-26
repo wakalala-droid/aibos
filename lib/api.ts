@@ -515,6 +515,25 @@ export async function sendCardReminder(input: { key?: string; dry_run?: boolean 
   return data as unknown as CardReminderResult;
 }
 
+/** A plan given free for a set number of months (admin only, aibos-api
+ *  gifts.py). It ends on its own and the owner is welcomed by `name`. A gift
+ *  still running gets the months on its end: `extended_from` is where it ran
+ *  on from. `note` says why, for the admin history only. A refusal (the
+ *  account pays for its plan) throws in the API's words. */
+export interface PlanGiftInput {
+  target_user_id: string; plan: string; months: number; name: string; business?: string; note?: string;
+}
+export interface PlanGiftResult {
+  plan: string; months: number; until: string; extended_from: string | null; note?: string;
+  notification_id?: string | null; title: string; body: string;
+}
+export async function giftPlan(input: PlanGiftInput): Promise<PlanGiftResult> {
+  const data = await spineFetch('/admin/gift-plan', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  });
+  return data as unknown as PlanGiftResult;
+}
+
 /** One phone or computer that has notifications on, in plain words
  *  ("Chrome on an Android phone"). Reminders and alerts reach only these. */
 export interface PushDevice { id: string; device: string; since: string | null }

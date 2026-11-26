@@ -9,6 +9,7 @@ import { useParams } from 'next/navigation';
 import type { AdminAuditRow, UsageEventRow } from '@/lib/admin';
 import { TIERS, TIER_ORDER, isTier, type Tier } from '@/lib/tiers';
 import HospitalitySetup from '@/components/admin/HospitalitySetup';
+import GiftPlanCard from '@/components/admin/GiftPlanCard';
 
 interface DetailPayload {
   profile: Record<string, unknown> | null;
@@ -25,7 +26,18 @@ function fmtDateTime(v: string | null | undefined): string {
 /** Plain English for an audit row. Without this the new hospitality actions
  *  render as raw ids next to a sentence, which reads as a bug in the log. */
 function describeAudit(action: string, detail: unknown): string {
-  const d = (detail ?? {}) as { tier?: string; source?: string; billing?: string; paid_until?: string | null; schedule?: string; property?: string; units?: string[]; result?: string };
+  const d = (detail ?? {}) as {
+    tier?: string; source?: string; billing?: string; paid_until?: string | null; schedule?: string;
+    property?: string; units?: string[]; result?: string;
+    months?: number; note?: string; extended_from?: string; for?: string;
+  };
+  // A plan given free (aibos-api gifts.py, the Gift a plan card).
+  if (action === 'set_tier' && d.source === 'gift') {
+    const name = isTier(d.tier) ? TIERS[d.tier].name : String(d.tier ?? '');
+    const n = Number(d.months) || 1;
+    const span = d.extended_from ? (n === 1 ? 'one more month' : `${n} more months`) : (n === 1 ? 'one month' : `${n} months`);
+    return `Gave ${name} free for ${span}${d.paid_until ? `, until ${fmtDate(d.paid_until)}` : ''}${d.for ? `, welcoming ${d.for}` : ''}${d.note ? `. ${d.note}` : ''}`;
+  }
   if (action === 'set_tier' && d.schedule === 'join_date') {
     const name = isTier(d.tier) ? TIERS[d.tier].name : String(d.tier ?? '');
     return `Put on ${name}, billed ${d.billing === 'annual' ? 'yearly' : 'monthly'} from the day they joined${d.paid_until ? `. First renewal ${fmtDate(d.paid_until)}` : ''}`;
@@ -306,7 +318,9 @@ export default function AdminAccountDetailPage() {
               here is how a new tier ends up shown as a raw id. */}
           <Fact label="Plan" value={<span style={{ textTransform: 'uppercase' }}>{isTier(tier) ? TIERS[tier].name : tier}</span>} />
           <Fact label="Tier source" value={p.tier_source} />
-          <Fact label="Paid until" value={p.tier_source === 'payment' ? fmtDate(p.paid_until) : null} />
+          {p.tier_source === 'gift'
+            ? <Fact label="Gift ends" value={fmtDate(p.paid_until)} />
+            : <Fact label="Paid until" value={p.tier_source === 'payment' ? fmtDate(p.paid_until) : null} />}
           <Fact label="Referred by" value={p.referred_by} />
           <Fact label="Granted by" value={p.tier_granted_by} />
           <Fact label="Business type" value={p.business_type} />
@@ -320,6 +334,9 @@ export default function AdminAccountDetailPage() {
           <Fact label="Last active" value={fmtDateTime(p.last_active_at)} />
         </div>
       </div>
+
+      {/* A plan free for a while, and the same for whoever referred them. */}
+      {userId && <GiftPlanCard userId={userId} profile={data.profile} onGiven={() => void load(true)} />}
 
       {userId && (
         <BillingFromJoin
