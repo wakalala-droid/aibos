@@ -139,8 +139,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // download/ (the Android app) and .well-known/ (the app's link to this
-    // site) are plain files with no session to read.
-    '/((?!_next/static|_next/image|favicon.ico|icons|images|fonts|marketing|download/|\\.well-known/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4|webm|apk)$).*)',
+    // download/ (the Android app), .well-known/ (the app's link to this
+    // site), robots.txt and sitemap.xml are plain files with no session to read.
+    '/((?!_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|icons|images|fonts|marketing|download/|\\.well-known/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4|webm|apk)$).*)',
   ],
 };

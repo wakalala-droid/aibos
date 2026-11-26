@@ -42,7 +42,10 @@ const STORIES: Story[] = [
     id: 'payroll', tab: 'Payroll', icon: Briefcase, plan: planFor('payroll'),
     goal: 'Pay your people right, without the tax tables.',
     text: 'Add your staff once. Each month AIBOS works out PAYE, NAPSA and NHIMA at this year’s Zambian rates and shows every take-home figure. The payments to ZRA and NAPSA go straight on your schedule.',
-    values: ['The 2026 ZRA bands and NAPSA ceiling, kept current for you', 'Wages posted to your books in one tap'],
+    // No year written here: "The 2026 ZRA bands" would read stale from
+    // January. The payroll run itself warns while a new year's rates are
+    // still to be checked (payroll.rates_note).
+    values: ['ZRA’s PAYE bands and NAPSA’s ceiling, kept current for you', 'Wages posted to your books in one tap'],
     alt: 'Payroll for October: Mwila Banda’s payslip of K8,500.00 less NAPSA K425.00, PAYE K820.00 and NHIMA K85.00 leaves K7,170.00 take-home. PAYE, NAPSA and NHIMA due 10 November are added to the schedule.',
     ms: 7600, Scene: PayrollScene,
   },

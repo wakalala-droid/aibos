@@ -3,10 +3,17 @@ import {
 } from 'lucide-react';
 import { BentoCard } from '@/components/kit';
 import Rise from '@/components/marketing/Rise';
+import { TIERS, requiredTier, type Feature } from '@/lib/tiers';
 
 // Every part of AIBOS a business runs on, as the kit's bento grid. The tag on
-// each card is the plan it comes with (lib/tiers.ts is the truth: keep these
-// in step with what each plan unlocks).
+// each card is the plan it comes with. A gated card reads its plan from the
+// gates (lib/tiers.ts), as the feature theatre does: written out by hand, the
+// tags outlived the 22 Oct 2026 re-cut and sold Get paid on Free, payroll on
+// Pro and Rooms & Stays on Pro. Cards with no gate (recording, money,
+// customers, stock, the schedule itself) are Free on every plan.
+
+/** The plan a feature first comes with, read from the gates so the tag cannot drift. */
+const planFor = (f: Feature) => TIERS[requiredTier(f)].name;
 
 const RECEIPT = [
   ['Cooking oil, 20 litres', 'K1,150.00'],
@@ -63,7 +70,7 @@ export default function FeatureBento() {
             className="span-2"
             icon={<ReceiptText />}
             title="Get paid"
-            tag="Free"
+            tag={planFor('invoices')}
             text="Invoices with a payment link. Your customer pays by mobile money and the invoice marks itself paid."
           />
 
@@ -79,28 +86,28 @@ export default function FeatureBento() {
             icon={<CalendarClock />}
             title="Schedule"
             tag="Free"
-            text="Meetings, pick-ups, deliveries and tax deadlines in one list. With Pro+, the reminder comes to your phone."
+            text={`Meetings, pick-ups, deliveries and tax deadlines in one list. With ${planFor('schedule')}, the reminder comes to your phone.`}
           />
           <BentoCard
             className="span-2"
             icon={<Briefcase />}
             title="Staff and payroll"
-            tag="Pro"
-            text="A staff register on every plan. Pro works out PAYE, NAPSA, NHIMA and take-home pay, then posts the wages."
+            tag={planFor('payroll')}
+            text={`A staff register on every plan. ${planFor('payroll')} works out PAYE, NAPSA, NHIMA and take-home pay, then posts the wages.`}
           />
 
           <BentoCard
             className="span-3"
             icon={<BedDouble />}
             title="Rooms & Stays"
-            tag="Pro"
+            tag={planFor('hospitality')}
             text="For lodges and short lets: a week calendar, bookings, deposits and a payment link for every guest, with a reminder before they arrive."
           />
           <BentoCard
             className="span-3"
             icon={<Building2 />}
             title="Several businesses"
-            tag="Growth"
+            tag={planFor('multi_business')}
             text="A shop, a salon and a lodge under one login, each with its own books. Switch between them in one tap."
           />
         </Rise>

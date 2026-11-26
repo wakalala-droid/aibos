@@ -36,9 +36,9 @@ const FEATURE_GLOSSARY: { icon: React.ReactNode; term: string; plain: string }[]
   { icon: <CalendarRange />, term: 'The 13-week cash plan', plain: 'Growth works out your money day by day for the next 13 weeks from your own books: wages on payday, ZRA on the 10th, rent, and what customers owe and when they usually pay. It shows the chance you run short, what is safe to spend today and what fixes a shortfall, and warns your phone weeks ahead.' },
 ];
 
-const TRUST: { icon: React.ReactNode; title: string; body: string }[] = [
+const TRUST: { icon: React.ReactNode; title: string; body: React.ReactNode }[] = [
   { icon: <RefreshCw />, title: 'Renews automatically, cancel any time', body: 'Your plan renews automatically each month or year, so it never switches off by surprise. Cancel any time with two clicks on Plan & billing: it stays on to the end of what you paid and your card is not charged again.' },
-  { icon: <RotateCcw />, title: 'Your money back if it is not right', body: 'Every payment has a 30-day money-back guarantee, no reason needed. Our refund policy has the details.' },
+  { icon: <RotateCcw />, title: 'Your money back if it is not right', body: <>Every payment has a 30-day money-back guarantee, no reason needed. Our <Link href="/refunds" style={{ color: 'var(--cyan)' }}>refund policy</Link> has the details.</> },
   { icon: <Download />, title: 'Your data is yours', body: 'Export your full history on any plan, even after you cancel. We never hold it hostage.' },
   { icon: <ReceiptText />, title: 'No surprise fees', body: 'The price you see is the price you pay. No drip pricing, no pre-ticked add-ons at checkout.' },
   { icon: <BellRing />, title: 'Fair price changes', body: 'We give advance notice before any plan or price change. No silent increases.' },
