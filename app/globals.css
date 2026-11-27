@@ -3147,3 +3147,45 @@ html:not([data-app="ios"]) .when-ios-app { display: none !important; }
 .trusted-logos img { filter: grayscale(1); opacity: 0.85; transition: filter 0.2s ease, opacity 0.2s ease; }
 .trusted-logos li:hover img { filter: none; opacity: 1; }
 @media (max-width: 639px) { .trusted-logos { gap: 16px 24px; } .trusted-logos li { width: 120px; height: 48px; } }
+
+/* ── The live guide (27 Nov 2026, components/guide/GuideSphere.tsx) ──────────
+   A small AIBOS sphere the owner can put anywhere; while it talks it glides
+   beside what it explains and rings it. Above sheets (it can point into one),
+   under the full-screen Talk overlay and dialogs. */
+.guide-layer { position: fixed; inset: 0; pointer-events: none; z-index: 960; }
+.guide-orb {
+  position: fixed; pointer-events: auto; padding: 0; border: 0; border-radius: 50%; background: transparent;
+  cursor: grab; touch-action: none; display: inline-flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 22px rgba(5, 11, 24, 0.28); min-width: 44px; min-height: 44px;
+}
+.guide-orb:active { cursor: grabbing; }
+.guide-orb:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+.guide-orb.is-on { box-shadow: 0 0 0 3px var(--cyan), 0 8px 28px rgba(29, 78, 216, 0.45); }
+.guide-orb.is-muted { box-shadow: 0 0 0 3px var(--text-4), 0 6px 22px rgba(5, 11, 24, 0.28); }
+.guide-orb.is-gliding { transition: left 0.55s cubic-bezier(.2,.8,.2,1), top 0.55s cubic-bezier(.2,.8,.2,1); }
+.guide-ring {
+  position: fixed; pointer-events: none; border: 3px solid var(--cyan); border-radius: 12px;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--cyan) 22%, transparent);
+  animation: guide-ring 1.4s ease-in-out infinite;
+}
+.guide-ring.is-still { animation: none; }
+@keyframes guide-ring { 50% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--cyan) 8%, transparent); } }
+.guide-bubble {
+  position: fixed; pointer-events: auto; width: min(320px, calc(100vw - 32px)); padding: 14px 16px;
+  background: var(--bg-card); color: var(--text-1); border: 1px solid var(--border-md); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+.guide-phase { margin: 0 0 4px; font-size: var(--fs-label); font-weight: 600; color: var(--cyan); letter-spacing: 0.02em; }
+.guide-said { margin: 0; font-size: var(--fs-body); line-height: 1.45; color: var(--text-1); }
+.guide-heard { margin: 8px 0 0; font-size: var(--fs-label); color: var(--text-3); }
+.guide-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.guide-type { display: flex; gap: 8px; margin-top: 12px; }
+.guide-type input {
+  flex: 1; min-width: 0; min-height: 44px; padding: 8px 12px; font-size: var(--fs-body);
+  background: var(--bg-input); color: var(--text-1); border: 1px solid var(--border-md); border-radius: var(--radius-md);
+}
+@media (prefers-reduced-motion: reduce) {
+  .guide-orb.is-gliding { transition: none; }
+  .guide-ring { animation: none; }
+}
+@media print { .guide-layer { display: none; } }

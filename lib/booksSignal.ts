@@ -22,6 +22,8 @@ const QUIET: RegExp[] = [
   /^\/latest-analysis/, /^\/payroll\/preview/, /^\/hospitality\/properties\/[^/]+\/guest-emails/,
   // Find clients: businesses and drafts, never money.
   /^\/clients\//,
+  // The live guide: minutes and tokens, never the books.
+  /^\/live\//,
 ];
 
 let timer: ReturnType<typeof setTimeout> | null = null;

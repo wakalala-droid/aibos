@@ -18,6 +18,7 @@ import AppToaster from '@/components/ui/AppToaster';
 import ConfirmSheet from '@/components/ui/ConfirmSheet';
 import TableCards from '@/components/ui/TableCards';
 import RetireShortcut from '@/components/app/RetireShortcut';
+import GuideSphere from '@/components/guide/GuideSphere';
 
 // Routes that render full-screen WITHOUT the app chrome (sidebar + padded
 // main area). The login/auth screens are standalone and must not show the
@@ -153,6 +154,10 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
 
         {/* The Record form over any page (C3). */}
         <RecordSheet />
+
+        {/* The live guide: a sphere the owner puts anywhere, that talks,
+            reads the screen and points (components/guide/GuideSphere.tsx). */}
+        <GuideSphere />
       </div>
       <Helpers />
     </MotionConfig>

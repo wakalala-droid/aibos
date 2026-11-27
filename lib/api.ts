@@ -3638,3 +3638,41 @@ export async function markClientMessageSent(id: string, channel: ClientChannel):
 export async function discardClientMessage(id: string): Promise<void> {
   await clientsSend(`/clients/messages/${encodeURIComponent(id)}/discard`, 'POST', {});
 }
+
+// ── The live guide (aibos-api live_guide.py, 27 Nov 2026) ────────────────────
+export interface LiveAllowance { available: boolean; reason: string | null; minutes_month: number; minutes_left: number; seconds_left: number }
+export interface LiveSession { session_id: string; token: string; ws: string; model: string; setup: Record<string, unknown>; max_seconds: number; minutes_left: number }
+
+export async function getLiveAllowance(): Promise<LiveAllowance> {
+  const d = await spineFetch('/live/allowance');
+  return {
+    available: !!d.available, reason: (d.reason as string) ?? null, minutes_month: Number(d.minutes_month) || 0,
+    minutes_left: Number(d.minutes_left) || 0, seconds_left: Number(d.seconds_left) || 0,
+  };
+}
+
+export async function startLiveSession(): Promise<LiveSession> {
+  return (await spineFetch('/live/session', { method: 'POST' })) as unknown as LiveSession;
+}
+
+export async function endLiveSession(id: string, body: { seconds: number; usage?: unknown; error?: string | null }): Promise<{ minutes_left?: number }> {
+  // keepalive: the end still lands when it is sent as the tab closes or the
+  // owner signs out; without it the full reserved time would stand.
+  return (await spineFetch(`/live/session/${encodeURIComponent(id)}/end`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: true,
+  })) as { minutes_left?: number };
+}
+
+/** This month's live guide use across every owner (admin): app/admin/usage. */
+export interface LiveUsage { sessions: number; businesses: number; minutes: number; spend_usd: number; budget_usd: number; measured_sessions: number; cost_per_minute_usd: number | null; model: string }
+
+export async function getLiveUsage(): Promise<LiveUsage> {
+  return (await spineFetch('/live/usage')) as unknown as LiveUsage;
+}
+
+/** One short session held from the server, to prove Google takes the key and the model (admin). */
+export interface LiveCheck { model: string; token: boolean; setup_complete: boolean; tool_call: string[] | null; audio_bytes: number; transcript: string; error: string | null }
+
+export async function checkLiveGuide(): Promise<LiveCheck> {
+  return (await spineFetch('/live/check')) as unknown as LiveCheck;
+}

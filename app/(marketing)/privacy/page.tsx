@@ -30,6 +30,7 @@ const SECTIONS: { h: string; body: string[] }[] = [
     body: [
       'To run the product for you: compute your P&L, cashflow, forecasts, briefs and recommendations from your own recorded data.',
       'To answer your questions: when you use the AI chat, the relevant figures are sent to our AI provider (Google Gemini) solely to generate your answer. They are not used to train any model.',
+      'To guide you round the app: only when you start the live guide, your voice and a written outline of the screen you are on (page names, headings, figures in view and the names of buttons, never what you type into a field) go to Google Gemini so AIBOS can talk you through it. AIBOS keeps no recording or transcript, only how long the guide ran and how much it cost. It stops when you end it, leave the app or after ten minutes.',
       'To keep you informed: deliver the brief you asked for, by email or WhatsApp, if you opt in.',
       'We do NOT sell your data and we do NOT use your business records to train AI models or to advertise to you.',
     ],

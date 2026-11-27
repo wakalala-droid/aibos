@@ -120,7 +120,9 @@ const nextConfig = {
               "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com https://*.paddle.com https://*.lenco.co",
               "font-src 'self' data:",
               "frame-src 'self' https://*.paddle.com https://*.lenco.co",
-              `connect-src 'self' https://*.supabase.co https://*.paddle.com https://*.lenco.co${API_ORIGIN ? ` ${API_ORIGIN}` : ''}`,
+              // The live guide talks to Google's Live API straight from the
+              // browser over a WebSocket (lib/guide/live.ts, 27 Nov 2026).
+              `connect-src 'self' https://*.supabase.co https://*.paddle.com https://*.lenco.co wss://generativelanguage.googleapis.com${API_ORIGIN ? ` ${API_ORIGIN} ${API_ORIGIN.replace(/^http/, 'ws')}` : ''}`,
               "media-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",

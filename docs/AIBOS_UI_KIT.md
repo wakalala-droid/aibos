@@ -68,3 +68,10 @@ The owner, 17 Nov 2026: "maintain the very same AIBOS UI kit for the design, but
 - **The sphere:** the water runs fast and the bars follow a voice while AIBOS speaks, the water jumps each time a word is heard while it listens, it swirls slowly with the gold light brighter while it thinks. Drawn on one canvas. Small on a button it is a still picture.
 - With `prefers-reduced-motion` neither moves: the scene is still and the sphere is one picture.
 
+## The live guide (the one piece that floats)
+The owner, 27 Nov 2026: AIBOS talks the owner round the app live, reading the screen and pointing. `components/guide/GuideSphere.tsx`, styles `.guide-*` in `globals.css`.
+- **The guide sphere** is the only thing allowed to float over the content: a 56px `AibosSphere` the owner can drag anywhere (or move with the arrow keys, Shift for bigger steps; Alt G starts and ends it, Escape ends). Its place is kept per device. Layer `.guide-layer` at z-index 960, under dialogs.
+- **Pointing:** a cyan ring (`.guide-ring`, 3px, 12px corners) round the thing AIBOS means, for 9 seconds, following it as the page scrolls; the sphere glides beside it in 0.55s and goes back home when the guide ends.
+- **The bubble** (`.guide-bubble`, card colours, 320px at most) opens beside the sphere on the side with room, or above or below it on a phone; it says what AIBOS is doing (Listening, Thinking, pointing at ...) and writes every word AIBOS speaks, so it works with the sound off.
+- With `prefers-reduced-motion` the sphere jumps instead of gliding and the ring does not pulse. Never printed.
+

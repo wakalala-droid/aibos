@@ -9,6 +9,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import KPICard from '@/components/ui/KPICard';
 import SectionCard from '@/components/ui/SectionCard';
 import type { UsageAggregate } from '@/lib/admin';
+import LiveGuideUsage from '@/components/admin/LiveGuideUsage';
 
 export default function AdminUsagePage() {
   const [data, setData] = useState<UsageAggregate | null>(null);
@@ -165,6 +166,7 @@ export default function AdminUsagePage() {
       {header}
       {nav}
       {body}
+      <LiveGuideUsage />
     </div>
   );
 }
