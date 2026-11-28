@@ -1,7 +1,7 @@
 /**
- * Owners' reviews of AIBOS: the shapes and words the website and the app share
+ * Owners' reviews of AI-BOS: the shapes and words the website and the app share
  * (aibos-api reviews.py, migration 0048). No server or browser code here, so
- * the landing page and the Review AIBOS page draw a review the same way: what
+ * the landing page and the Review AI-BOS page draw a review the same way: what
  * an owner sees in "How it will look" is what a visitor sees.
  */
 

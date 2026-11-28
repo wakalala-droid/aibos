@@ -1,10 +1,10 @@
 'use client';
 
 // components/chat/ActionCard.tsx
-// A job AIBOS did or is waiting to do (Jarvis phase 2, aibos-api actions.py),
+// A job AI-BOS did or is waiting to do (Jarvis phase 2, aibos-api actions.py),
 // under the answer that brought it, or on the home page's "Needs you" list
-// when one of AIBOS's workers found it (phase 3, workers.py). Waiting: what
-// AIBOS will do, why it asks, with Yes and Not now. Done: what it did, with
+// when one of AI-BOS's workers found it (phase 3, workers.py). Waiting: what
+// AI-BOS will do, why it asks, with Yes and Not now. Done: what it did, with
 // Undo while it can still be taken back. The same answers work out loud in
 // the chat ("yes", "not now", "undo").
 
@@ -58,10 +58,10 @@ export default function ActionCard({ job, busy, onAnswer, offers = false }: {
   async function turnOn(kind: string) {
     try {
       await setAutopilot(kind, true);
-      setAutoSaid('Done. AIBOS records entries like these by itself now, each with an Undo.');
+      setAutoSaid('Done. AI-BOS records entries like these by itself now, each with an Undo.');
       teamChanged();
     } catch {
-      setAutoSaid('That did not go through. Try again from the Assistant on your AIBOS team.');
+      setAutoSaid('That did not go through. Try again from the Assistant on your AI-BOS team.');
     }
   }
   const state = job.status === 'done' && job.how === 'automatic' ? 'Done by itself' : STATE[job.status];
@@ -108,7 +108,7 @@ export default function ActionCard({ job, busy, onAnswer, offers = false }: {
       )}
       {earning && left > 0 && (
         <p className="ai-job-why">
-          {`${earning.approved_in_a_row} of ${earning.needs}: ${WORDS[left] ?? left} more ${left === 1 ? 'yes' : 'yeses'} like this and AIBOS can record these by itself.`}
+          {`${earning.approved_in_a_row} of ${earning.needs}: ${WORDS[left] ?? left} more ${left === 1 ? 'yes' : 'yeses'} like this and AI-BOS can record these by itself.`}
         </p>
       )}
       {offers && job.status === 'done' && job.offer_autopilot && (

@@ -1,5 +1,5 @@
 /**
- * AIBOS — API Client
+ * AI-BOS — API Client
  * All requests go through /api/proxy (Next.js server) → the FastAPI backend,
  * wherever that is hosted. The address is resolved once in lib/api-base.ts.
  * This avoids CORS entirely — server-to-server calls have no restrictions.
@@ -246,7 +246,7 @@ export interface Business {
   is_default: boolean;
 }
 
-// ── What AIBOS has learned (audit #57) ────────────────────────────────────────
+// ── What AI-BOS has learned (audit #57) ────────────────────────────────────────
 export interface MemorySummary {
   available: boolean;
   total?: number;
@@ -297,13 +297,13 @@ function saveBlob(blob: Blob, name: string): void {
   a.click();
   setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 30_000);
 }
-// ── Teach AIBOS your business: the owner interview (migration 0041) ─────────
+// ── Teach AI-BOS your business: the owner interview (migration 0041) ─────────
 export type InterviewKind = 'text' | 'money' | 'number' | 'month' | 'choice' | 'multi' | 'months';
 export interface InterviewQuestion {
   id: string;
   chapter: string;
   kind: InterviewKind;
-  /** Short name for the answer, as "What AIBOS knows" lists it. */
+  /** Short name for the answer, as "What AI-BOS knows" lists it. */
   label: string;
   ask: string;
   why: string;
@@ -373,7 +373,7 @@ export async function applyInterviewPlan(): Promise<{ written: number; kept: num
            first_month: data.first_month as string | undefined };
 }
 
-/** The AIBOS workbook, made for this business and named after it. */
+/** The AI-BOS workbook, made for this business and named after it. */
 export async function downloadWorkbook(): Promise<void> {
   const res = await fetch(`${PROXY}/templates/workbook.xlsx`, { headers: await authHeaders() });
   if (!res.ok) {
@@ -381,7 +381,7 @@ export async function downloadWorkbook(): Promise<void> {
     throw new Error(data.detail || `Download failed (${res.status})`);
   }
   const named = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '');
-  saveBlob(await res.blob(), named?.[1] || 'AIBOS workbook.xlsx');
+  saveBlob(await res.blob(), named?.[1] || 'AI-BOS workbook.xlsx');
 }
 // ── Notifications on the phone (upgrade 10) ──────────────────────────────────
 /** `apns`: the API can also reach the iPhone app's lock screen (Apple's key is set). */
@@ -439,9 +439,9 @@ export async function announce(input: {
   return data as unknown as AnnounceResult;
 }
 
-// ── Reviews of AIBOS (aibos-api reviews.py, migration 0048) ───────────────────
+// ── Reviews of AI-BOS (aibos-api reviews.py, migration 0048) ───────────────────
 
-/** An owner's own review of AIBOS. `hidden`: an administrator took it off the
+/** An owner's own review of AI-BOS. `hidden`: an administrator took it off the
  *  website (abuse, spam or private details only) and the owner is told. */
 export interface AibosReview {
   rating: number; body: string; name: string; business: string; town: string;
@@ -487,7 +487,7 @@ export async function setReviewStatus(id: string, status: 'shown' | 'hidden'): P
   return data as unknown as { id: string; status: string };
 }
 /** The ask to review: every account that has not reviewed yet, once each.
- *  `active_now`: of the accounts it would reach, those using AIBOS in the last
+ *  `active_now`: of the accounts it would reach, those using AI-BOS in the last
  *  15 minutes (null: unknown). */
 export interface ReviewAskResult extends AnnounceResult {
   reviewed: number; active_now: number | null; title: string; body: string; link: string;
@@ -1322,7 +1322,7 @@ export async function transcribeAudio(blob: Blob): Promise<string> {
   return ((data as { text?: string }).text || '').trim();
 }
 
-/** The brief AIBOS reads aloud when the owner presses Talk (Jarvis, phase 1).
+/** The brief AI-BOS reads aloud when the owner presses Talk (Jarvis, phase 1).
  *  `text` is for the screen, `speech` the same words for the voice. */
 export interface SpokenBrief {
   greeting: string; lines: string[]; question: string;
@@ -1332,14 +1332,14 @@ export async function getSpokenBrief(): Promise<SpokenBrief> {
   return (await spineFetch('/brief/spoken')) as unknown as SpokenBrief;
 }
 
-// ── Jobs AIBOS does (Jarvis phase 2, aibos-api actions.py) ───────────────────
+// ── Jobs AI-BOS does (Jarvis phase 2, aibos-api actions.py) ───────────────────
 // 'waiting' wants the owner's yes; 'done' can be undone when can_undo says so.
 export type AiActionStatus = 'waiting' | 'done' | 'declined' | 'undone' | 'failed' | 'expired';
 export interface AiAutopilotOffer { kind: string; approved_in_a_row: number; largest: number; said: string }
 export interface AiAction {
   id: string; kind: string; status: AiActionStatus;
   how: 'did' | 'asked' | 'automatic' | null;
-  /** What AIBOS will do, and the same in the past tense once done. */
+  /** What AI-BOS will do, and the same in the past tense once done. */
   said: string; did: string; can_undo: boolean; at?: string; number?: string;
   offer_autopilot?: AiAutopilotOffer;
   /** After a yes to a job that can earn automatic: how close it is (actions.py EARN_AFTER). */
@@ -1349,13 +1349,13 @@ export interface AiAction {
   why?: string;
   /** Button words where "Yes, do it" / "Not now" would not fit. */
   yes?: string; no?: string;
-  /** A note: the page of AIBOS where the owner deals with it. */
+  /** A note: the page of AI-BOS where the owner deals with it. */
   link?: { href: string; label: string };
   /** Once done: what came of it (the Collector's reminder, ready to send). */
   message?: string; whatsapp?: string;
 }
 
-/** A kind of job the owner can let AIBOS do by itself once earned. */
+/** A kind of job the owner can let AI-BOS do by itself once earned. */
 export interface AiAutopilotKind {
   kind: string; on: boolean; approved_in_a_row: number; earned: boolean; needs: number;
   largest: number; types: string[];
@@ -1374,11 +1374,11 @@ export interface AiTeam {
   workers: AiWorker[];
   /** When the workers last looked through these books, if this run of the API knows. */
   looked_at: string | null;
-  /** AIBOS auto is on for these books: the team looks every hour. */
+  /** AI-BOS auto is on for these books: the team looks every hour. */
   auto?: boolean;
   every_hours: number; day_from: number; day_to: number;
 }
-/** What AIBOS did lately, newest first, every status. */
+/** What AI-BOS did lately, newest first, every status. */
 export async function listRecentActions(limit = 40): Promise<AiAction[]> {
   return ((await spineFetch(`/actions?limit=${limit}`)).actions ?? []) as AiAction[];
 }
@@ -1395,7 +1395,7 @@ export async function getTeam(): Promise<AiTeam> {
   };
 }
 /** Ask the workers to look through the books now. */
-/** AIBOS auto (17 Nov 2026): the switch at the top of every page. */
+/** AI-BOS auto (17 Nov 2026): the switch at the top of every page. */
 export interface AutoState {
   /** False on a plan without the team; ready is false before migration 0047. */
   available: boolean; ready: boolean; on: boolean;
@@ -1478,7 +1478,7 @@ export async function invoicePayLink(id: string): Promise<string> {
 
 // ── The public payment page (migration 0025) ─────────────────────────────────
 // These are the ONLY calls in this file that must NOT carry auth: the caller is
-// the owner's customer, who has no AIBOS account and never will. The token in
+// the owner's customer, who has no AI-BOS account and never will. The token in
 // the path is the whole credential. Using spineFetch here would be a bug — it
 // awaits a Supabase session that doesn't exist.
 
@@ -1861,7 +1861,7 @@ export interface DocTable {
   mapping: Record<string, string>;
   confidence: number;
   counts?: Record<string, number>;
-  /** A sheet of the AIBOS workbook, known by its headings and filed exactly. */
+  /** A sheet of the AI-BOS workbook, known by its headings and filed exactly. */
   workbook?: WorkbookSheet;
   /** Products or Workers sheet: who or what is new, and how many are already on file. */
   records?: { new: string[]; new_count: number; known_count: number };
@@ -1921,7 +1921,7 @@ export interface DocScan {
   ai_note: string;
   known: { employees: number; products: number; parties: number };
   event_types: EventType[];
-  /** The file is, or holds sheets from, the AIBOS workbook. */
+  /** The file is, or holds sheets from, the AI-BOS workbook. */
   workbook?: boolean;
 }
 
@@ -2200,7 +2200,7 @@ export interface Employee {
   loan_monthly: number;
   notes?: string | null;
   /** Where their payslip goes (migration 0042): a WhatsApp number in full
-   *  international form, and an email AIBOS sends it to with the PDF. */
+   *  international form, and an email AI-BOS sends it to with the PDF. */
   phone?: string | null;
   email?: string | null;
   /** What the returns and leaving papers name them by (migration 0043). */
@@ -2208,9 +2208,9 @@ export interface Employee {
   nhima_number?: string | null;
   /** Not their main job: PAYE is the top rate on all of it (ZRA 5.6). */
   second_job?: boolean;
-  /** Gratuity owed from before AIBOS. */
+  /** Gratuity owed from before AI-BOS. */
   gratuity_opening?: number;
-  /** Pay and PAYE earlier in the year (before AIBOS, or a previous employer's
+  /** Pay and PAYE earlier in the year (before AI-BOS, or a previous employer's
    *  ITF/P13), so PAYE can use ZRA's cumulative tables. */
   paye_prior?: PayePrior | null;
   /** Migration 0044. A casual worker's hourly rate before the 25% casual loading. */
@@ -2218,7 +2218,7 @@ export interface Employee {
   /** NAPSA stops at 60 by itself (65 with napsa_to_65). */
   date_of_birth?: string | null;
   napsa_to_65?: boolean;
-  /** Leave days owed from before AIBOS, and the days earned a month (at least 2). */
+  /** Leave days owed from before AI-BOS, and the days earned a month (at least 2). */
   leave_opening?: number;
   leave_rate?: number;
   /** The minimum wage Order covering them and its category. */
@@ -2396,7 +2396,7 @@ export interface PayrollPreview {
   remittances: RemittanceDraft[];
   rates: PayrollRates | null;
   sdl?: SdlStatus;
-  /** Set when the pay date is in a year whose rates AIBOS has not checked. */
+  /** Set when the pay date is in a year whose rates AI-BOS has not checked. */
   rates_note?: string | null;
   notes?: string[];
   /** People who left before this month and are still owed gratuity. */
@@ -2764,7 +2764,7 @@ export async function emailPayslips(runId: string, again = false): Promise<Paysl
   return data as unknown as PayslipEmailResult;
 }
 
-/** The owner opened this person's payslip in WhatsApp from AIBOS. */
+/** The owner opened this person's payslip in WhatsApp from AI-BOS. */
 export async function markPayslipShared(runId: string, employeeId: string): Promise<{ sent_at: string }> {
   const data = await spineFetch(
     `/payroll/runs/${encodeURIComponent(runId)}/payslips/${encodeURIComponent(employeeId)}/shared`, {
@@ -2811,7 +2811,7 @@ export interface AdviceTrackRecord {
   acceptance_rate?: number | null;
 }
 
-/** AIBOS's own advice scoreboard — self-auditing intelligence (audit #20). */
+/** AI-BOS's own advice scoreboard — self-auditing intelligence (audit #20). */
 export async function getAdviceTrackRecord(): Promise<AdviceTrackRecord> {
   const data = await spineFetch('/recommendations/track-record');
   return data as unknown as AdviceTrackRecord;
@@ -2876,7 +2876,7 @@ export interface Outlook {
   softened?: string[];
   seasonal?: boolean;
   trend?: { revenue_per_month: number; direction: 'growing' | 'slowing' | 'steady' };
-  /** Where the busy and quiet months the owner told AIBOS change the reading. */
+  /** Where the busy and quiet months the owner told AI-BOS change the reading. */
   season_notes?: string[];
   /** Softened months the owner named as busy or quiet: their season, not one-offs. */
   softened_named?: string[];
@@ -2884,7 +2884,7 @@ export interface Outlook {
 
 // ── The owner's busy and quiet months in the reports (28 Oct 2026) ───────────
 // aibos-api seasons.py: Unusual spending and Month by month read with the
-// months the owner told AIBOS in Teach AIBOS, so a December they said runs
+// months the owner told AI-BOS in Teach AI-BOS, so a December they said runs
 // busy is not called unusual for being high.
 
 /** One month that broke the pattern, in the shape Unusual spending draws. */
@@ -2897,7 +2897,7 @@ export interface MonthFlag {
   zScore: number;
   severity: 'critical' | 'warning';
   direction: 'up' | 'down';
-  /** What the owner told AIBOS about this month, when they named it. */
+  /** What the owner told AI-BOS about this month, when they named it. */
   told?: string;
 }
 
@@ -2930,7 +2930,7 @@ export async function getOutlook(): Promise<Outlook> {
   return data.outlook as Outlook;
 }
 
-/** One forecast AIBOS kept before its month (or day) happened, and how it did. */
+/** One forecast AI-BOS kept before its month (or day) happened, and how it did. */
 export interface TrackRow {
   target: string;            // 'YYYY-MM' for sales, 'YYYY-MM-DD' for the cash plan's week 4
   kept_on: string | null;
@@ -2990,7 +2990,7 @@ export interface PlanItem {
   dir: 'in' | 'out';
   source: 'waiting' | 'schedule' | 'regular';
   key?: string;
-  /** For a regular payment: how sure AIBOS is that it comes round, in percent. */
+  /** For a regular payment: how sure AI-BOS is that it comes round, in percent. */
   chance?: number;
 }
 
@@ -3060,7 +3060,7 @@ export interface CashWatch {
   lowest?: { p50: number; day: string; p10: number };
   cash_now?: number;
   sym?: string;
-  /** The line the plan keeps above; 'cushion' when it is the cash the owner told AIBOS to keep. */
+  /** The line the plan keeps above; 'cushion' when it is the cash the owner told AI-BOS to keep. */
   floor?: number;
   floor_from?: 'cushion' | null;
   coming?: { day: string; label: string; amount: number; source: string }[];
@@ -3083,7 +3083,7 @@ export interface PlanCore {
   until: string;
   cash_now: number;
   floor: number;
-  /** 'cushion' when the floor is the cash the owner told AIBOS to keep (Teach AIBOS). */
+  /** 'cushion' when the floor is the cash the owner told AI-BOS to keep (Teach AI-BOS). */
   floor_from?: 'cushion' | null;
   chance_short_pct: number;
   chance_words: string;
@@ -3106,9 +3106,9 @@ export interface CashPlan extends Partial<PlanCore> {
   preview?: boolean;
   at_risk?: boolean;
   sym?: string;
-  /** The cash cushion the owner gave AIBOS, said even when they typed another floor. */
+  /** The cash cushion the owner gave AI-BOS, said even when they typed another floor. */
   cushion?: number;
-  /** A monthly loan repayment the owner told AIBOS about, counted while the books show none. */
+  /** A monthly loan repayment the owner told AI-BOS about, counted while the books show none. */
   told_loan?: number;
   levers?: PlanLever[];
   debts?: PlanDebt[];
@@ -3133,7 +3133,7 @@ export type PlanDecision =
   | { type: 'collect_faster'; days: number }
   | { type: 'move'; id: string; days: number };
 
-/** `floor` null: the server keeps the cash cushion the owner gave AIBOS (zero without one). */
+/** `floor` null: the server keeps the cash cushion the owner gave AI-BOS (zero without one). */
 function floorParam(floor: number | null): string {
   return floor === null ? '' : `floor=${Math.max(0, floor)}&`;
 }
@@ -3298,10 +3298,10 @@ export async function saveLatestAnalysis(engine: 'engine3' | 'engine2', filename
 
 
 // ── Find clients (every plan since 7 Nov 2026; aibos-api find_clients_routes.py)
-// AIBOS finds businesses that could buy from the owner, reads their websites,
+// AI-BOS finds businesses that could buy from the owner, reads their websites,
 // says which fit and writes the messages. It never sends: every message opens
 // in the owner's own email, WhatsApp or LinkedIn and they press send there.
-// LinkedIn since 10 Nov 2026 (migration 0046), the safe way: AIBOS never opens
+// LinkedIn since 10 Nov 2026 (migration 0046), the safe way: AI-BOS never opens
 // LinkedIn itself. It keeps the address a business links to, gives a search
 // that opens in the owner's own LinkedIn and writes the invitation note.
 
@@ -3427,7 +3427,7 @@ export interface ClientJob {
   blocked?: number;
   /** New ones past this press's limit: the next press brings them. */
   more?: number;
-  /** The public map is busy and AIBOS is asking again every 30 seconds. */
+  /** The public map is busy and AI-BOS is asking again every 30 seconds. */
   waiting?: boolean;
   note?: string | null;
   tries?: number;
@@ -3484,7 +3484,7 @@ interface ClientsBase {
   /** The credit packs anyone can buy by card. */
   topups?: ClientsTopup[];
   labels: Record<ClientLabel, string>;
-  /** The fit from which AIBOS writes the first message. */
+  /** The fit from which AI-BOS writes the first message. */
   write_from: number;
   can_write: boolean;
   is_owner: boolean;
@@ -3517,7 +3517,7 @@ export interface ClientsFull extends ClientsBase {
   /** Why the page is open: the plan, Free's free day, or credits bought. */
   via?: 'plan' | 'trial' | 'credits';
   job: ClientJob | null;
-  /** False when the AI is not connected: fit by rules, messages in AIBOS's own wording. */
+  /** False when the AI is not connected: fit by rules, messages in AI-BOS's own wording. */
   ai: boolean;
   business: string | null;
 }
@@ -3651,8 +3651,24 @@ export async function getLiveAllowance(): Promise<LiveAllowance> {
   };
 }
 
-export async function startLiveSession(): Promise<LiveSession> {
-  return (await spineFetch('/live/session', { method: 'POST' })) as unknown as LiveSession;
+export async function startLiveSession(person = ''): Promise<LiveSession> {
+  return (await spineFetch('/live/session', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ person }),
+  })) as unknown as LiveSession;
+}
+
+/** The sphere's settings for this person (aibos-api assistant_prefs.py, migration 0050). */
+export interface AssistantPrefs { voice: string; spoken_report: boolean; tips: boolean; saved: boolean }
+export interface VoiceChoice { name: string; sounds: string }
+
+export async function getAssistantPrefs(): Promise<AssistantPrefs & { voices: VoiceChoice[] }> {
+  return (await spineFetch('/assistant/prefs')) as unknown as AssistantPrefs & { voices: VoiceChoice[] };
+}
+
+export async function putAssistantPrefs(changes: Partial<Omit<AssistantPrefs, 'saved'>>): Promise<AssistantPrefs> {
+  return (await spineFetch('/assistant/prefs', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(changes),
+  })) as unknown as AssistantPrefs;
 }
 
 export async function endLiveSession(id: string, body: { seconds: number; usage?: unknown; error?: string | null }): Promise<{ minutes_left?: number }> {

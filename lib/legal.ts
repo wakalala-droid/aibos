@@ -1,5 +1,5 @@
 /**
- * Who AIBOS is, for the legal pages and the footer. One place, because
+ * Who AI-BOS is, for the legal pages and the footer. One place, because
  * Paddle's website review reads the business name, the support email and the
  * support phone off the Terms page, and a copy in a second file drifts.
  *
@@ -7,7 +7,7 @@
  * reach someone: Paddle's reviewers and card customers write to it.
  */
 export const LEGAL = {
-  name: 'AIBOS',
+  name: 'AI-BOS',
   city: 'Lusaka, Zambia',
   email: 'hello@ai-bos.website',
   phoneDisplay: '+260 973 759 352',

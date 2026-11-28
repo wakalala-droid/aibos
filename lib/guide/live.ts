@@ -2,9 +2,9 @@
 // The live guide's conversation with Google's Live API (27 Nov 2026), straight
 // from the browser over a WebSocket with a one-use token the API minted
 // (aibos-api live_guide.py). The microphone goes up as 16 kHz 16-bit PCM in
-// small pieces; AIBOS's voice comes back as 24 kHz PCM and is played in order.
+// small pieces; AI-BOS's voice comes back as 24 kHz PCM and is played in order.
 // When the owner talks over it, Google says "interrupted" and what was still
-// to play is dropped, so AIBOS stops at once, as a person would.
+// to play is dropped, so AI-BOS stops at once, as a person would.
 //
 // Tools are answered here (read_screen, point_at, go_to, aibos_manual,
 // end_guide) by whoever made the session (GuideSphere). Google's own token
@@ -67,7 +67,7 @@ export class LiveGuide {
 
   /** Start: call from a tap (browsers only allow sound and the microphone
    *  after one). Resolves to false when there is no microphone (refused or
-   *  none): the guide still runs, and the owner types while AIBOS speaks. */
+   *  none): the guide still runs, and the owner types while AI-BOS speaks. */
   async start(): Promise<boolean> {
     this.cb.onPhase('connecting');
     const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -117,7 +117,7 @@ export class LiveGuide {
 
   setMuted(m: boolean) { this.muted = m; }
 
-  /** Say something to AIBOS in writing (Type instead). */
+  /** Say something to AI-BOS in writing (Type instead). */
   sendText(text: string) {
     if (!this.ready) return;
     this.flush();
@@ -210,7 +210,7 @@ export class LiveGuide {
     };
   }
 
-  /** Stop what is still to play (the owner talked over AIBOS). */
+  /** Stop what is still to play (the owner talked over AI-BOS). */
   private flush() {
     for (const s of this.playing) { try { s.stop(); } catch { /* already done */ } }
     this.playing.clear();

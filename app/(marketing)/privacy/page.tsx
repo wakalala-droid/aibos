@@ -5,7 +5,7 @@ import { LEGAL } from '@/lib/legal';
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
-    'How AIBOS collects, uses, stores and protects your business data (including financial records, payroll and guest details) and the rights you have over it.',
+    'How AI-BOS collects, uses, stores and protects your business data (including financial records, payroll and guest details) and the rights you have over it.',
   alternates: { canonical: '/privacy' },
 };
 
@@ -30,7 +30,7 @@ const SECTIONS: { h: string; body: string[] }[] = [
     body: [
       'To run the product for you: compute your P&L, cashflow, forecasts, briefs and recommendations from your own recorded data.',
       'To answer your questions: when you use the AI chat, the relevant figures are sent to our AI provider (Google Gemini) solely to generate your answer. They are not used to train any model.',
-      'To guide you round the app: only when you start the live guide, your voice and a written outline of the screen you are on (page names, headings, figures in view and the names of buttons, never what you type into a field) go to Google Gemini so AIBOS can talk you through it. AIBOS keeps no recording or transcript, only how long the guide ran and how much it cost. It stops when you end it, leave the app or after ten minutes.',
+      'To guide you round the app: only when you start the live guide, your voice and a written outline of the screen you are on (page names, headings, figures in view and the names of buttons, never what you type into a field) go to Google Gemini so AI-BOS can talk you through it. AI-BOS keeps no recording or transcript, only how long the guide ran and how much it cost. It stops when you end it, leave the app or after ten minutes.',
       'To keep you informed: deliver the brief you asked for, by email or WhatsApp, if you opt in.',
       'We do NOT sell your data and we do NOT use your business records to train AI models or to advertise to you.',
     ],
@@ -69,13 +69,13 @@ const SECTIONS: { h: string; body: string[] }[] = [
     h: 'Third parties we rely on',
     body: [
       'Supabase (authentication and database), Google Gemini (AI question answering), Resend (email delivery, if enabled) and Meta WhatsApp Cloud API (WhatsApp brief and recording, if enabled). Each receives only what is needed to perform its function.',
-      'Paddle.com, our online reseller, which takes every plan payment. Paddle is the Merchant of Record for our payments: it collects your card details, billing address and email on its own secure form, charges any sales tax and keeps its own records under its own privacy notice (paddle.com/legal/privacy). AIBOS never sees or stores your card number. Paddle tells us which plan you paid for, the amount, the date and whether it renews.',
+      'Paddle.com, our online reseller, which takes every plan payment. Paddle is the Merchant of Record for our payments: it collects your card details, billing address and email on its own secure form, charges any sales tax and keeps its own records under its own privacy notice (paddle.com/legal/privacy). AI-BOS never sees or stores your card number. Paddle tells us which plan you paid for, the amount, the date and whether it renews.',
     ],
   },
   {
     h: 'Data processing (for business customers)',
     body: [
-      'When you record your customers’, suppliers’ or guests’ personal details in AIBOS, you are the data controller and AIBOS is your data processor. We process that data only on your instructions (to run the features you use) and never for our own purposes.',
+      'When you record your customers’, suppliers’ or guests’ personal details in AI-BOS, you are the data controller and AI-BOS is your data processor. We process that data only on your instructions (to run the features you use) and never for our own purposes.',
       'We keep it confidential, apply the security measures described above (RLS isolation, field encryption for guest IDs, TLS) and do not transfer it to anyone except the sub-processors listed below, each bound to equivalent terms.',
       'On request we will help you meet your own obligations to the people whose data you hold (including access, correction, export and deletion) and we return or delete the data when you close your account. For a signed Data Processing Agreement, contact us.',
     ],
@@ -83,7 +83,7 @@ const SECTIONS: { h: string; body: string[] }[] = [
   {
     h: 'Benchmarks and anonymised insights',
     body: [
-      'In future, AIBOS may offer benchmark insights: e.g. “restaurants like yours run a 62% food margin.” Any such benchmarks are built ONLY from data that has been aggregated and anonymised so no individual business can be identified and only from businesses that have explicitly opted in.',
+      'In future, AI-BOS may offer benchmark insights: e.g. “restaurants like yours run a 62% food margin.” Any such benchmarks are built ONLY from data that has been aggregated and anonymised so no individual business can be identified and only from businesses that have explicitly opted in.',
       'This is off by default. We will ask for your clear consent before your (anonymised) figures ever contribute to a benchmark and you can withdraw at any time. We never sell your data, benchmarked or otherwise.',
     ],
   },
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
           Plain language, because you should be able to read it. Last updated {LEGAL.termsUpdated}.
         </p>
         <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', marginBottom: 40 }}>
-          See also our <Link href="/trust" style={{ color: 'var(--cyan)' }}>Trust Center</Link> for the promises behind these mechanics. The rules for using AIBOS are in our <Link href="/terms" style={{ color: 'var(--cyan)' }}>Terms of Service</Link>.
+          See also our <Link href="/trust" style={{ color: 'var(--cyan)' }}>Trust Center</Link> for the promises behind these mechanics. The rules for using AI-BOS are in our <Link href="/terms" style={{ color: 'var(--cyan)' }}>Terms of Service</Link>.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>

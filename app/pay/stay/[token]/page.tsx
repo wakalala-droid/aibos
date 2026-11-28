@@ -3,7 +3,7 @@
  * Public stay payment page (upgrade 3): the guest's half of a booking's
  * payment link.
  *
- * The person here is a guest, not an AIBOS user, on a phone, probably on
+ * The person here is a guest, not an AI-BOS user, on a phone, probably on
  * mobile data, following a link the property sent on WhatsApp or the email
  * that came with a website booking. So, like the invoice page it is modelled
  * on (app/pay/[token]):
@@ -380,7 +380,7 @@ export default function PayStayPage() {
         )}
 
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '24px 0 0', textAlign: 'center' }}>
-          Payment page by AIBOS
+          Payment page by AI-BOS
         </p>
       </div>
     </main>

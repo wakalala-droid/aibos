@@ -18,7 +18,7 @@ export default function Hero() {
             Ask your business <span className="mkt-brand">anything.</span>
           </h1>
           <p className="mkt-lead">
-            Record a sale, send an invoice or drop in a spreadsheet. AIBOS keeps your books,
+            Record a sale, send an invoice or drop in a spreadsheet. AI-BOS keeps your books,
             watches your cash and answers your questions in Kwacha, in plain words.
           </p>
           {/* On an Android phone the app comes first: it downloads from here

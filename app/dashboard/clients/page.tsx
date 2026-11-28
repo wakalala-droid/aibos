@@ -1,11 +1,11 @@
 'use client';
 
-// Find clients (5 Nov 2026): AIBOS finds businesses that could buy from the
+// Find clients (5 Nov 2026): AI-BOS finds businesses that could buy from the
 // owner (from its own directory of places around a town, or a list they
 // paste), reads their websites, says which fit and why, and writes the first
 // message, the follow-ups and the answer to a reply. It never sends: each
 // message opens in the owner's own email, WhatsApp or LinkedIn (10 Nov 2026:
-// AIBOS never opens LinkedIn itself; it copies the note and opens their page
+// AI-BOS never opens LinkedIn itself; it copies the note and opens their page
 // or a search). The API is aibos-api find_clients_routes.py.
 //
 // Priced the way Explee prices it (9 Nov 2026): Free gets one free day
@@ -34,7 +34,7 @@ import { useStore } from '@/lib/store';
 
 type Tab = 'today' | 'businesses' | 'campaigns' | 'settings';
 
-const HEADLINE = 'AIBOS can find businesses that could buy from you';
+const HEADLINE = 'AI-BOS can find businesses that could buy from you';
 
 /**
  * A Free account's free day is over and nothing is left: what it found and
@@ -48,13 +48,13 @@ function FreeDayOver({ home, reload }: { home: ClientsPreview; reload: () => Pro
     <Panel title="Your free day has ended">
       <p className="rs-text">
         {trial && trial.used > 0
-          ? `On your free day AIBOS researched ${plural(trial.used, 'business', 'businesses')} and wrote to the ones that fit. `
+          ? `On your free day AI-BOS researched ${plural(trial.used, 'business', 'businesses')} and wrote to the ones that fit. `
           : ''}
         To carry on, top up {topupWords(home.topups ?? home.usage?.topups)}. They never run out.
       </p>
       {(kept.businesses > 0 || kept.drafts > 0) && (
         <p className="rs-text is-quiet">
-          AIBOS kept the {plural(kept.businesses, 'business', 'businesses')} it found
+          AI-BOS kept the {plural(kept.businesses, 'business', 'businesses')} it found
           {kept.drafts > 0 ? ` and the ${plural(kept.drafts, 'message')} it wrote` : ''}. They are here when you carry on.
         </p>
       )}

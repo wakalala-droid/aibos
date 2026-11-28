@@ -14,7 +14,7 @@
 //
 // Below Pro+ (28 Oct 2026) the switch is not locked: it turns on the one-line
 // brief, the owner's cash every morning (aibos-api notify.compose_one_line).
-// The plans that most need a reason to open AIBOS each day used to get none.
+// The plans that most need a reason to open AI-BOS each day used to get none.
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';

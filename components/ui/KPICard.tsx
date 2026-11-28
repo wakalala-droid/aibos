@@ -81,7 +81,7 @@ export default function KPICard({
         data-ai-explain={explainId}
         data-ai-label={explainId ? sentenceCase(label) : undefined}
         data-ai-value={explainId ? value : undefined}
-        title={explainId ? 'Hold (long-press) to have AIBOS explain this metric' : undefined}
+        title={explainId ? 'Hold (long-press) to have AI-BOS explain this metric' : undefined}
       >
 
         {/* Top row: icon + label + growth badge */}

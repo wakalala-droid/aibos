@@ -1,12 +1,12 @@
 'use client';
 
 // components/team/TeamScene.tsx
-// The AIBOS team as one scene (owner, 17 Nov 2026, from the reference picture
-// they sent): the AIBOS mark in its rings in the middle of a navy stage, the
+// The AI-BOS team as one scene (owner, 17 Nov 2026, from the reference picture
+// they sent): the AI-BOS mark in its rings in the middle of a navy stage, the
 // six workers around it, three each side, each a hexagon badge beside a small
 // card with its name, its state and a meter of the week's work, joined to the
 // middle by a line of light. Under the stage, the live activity in a row and
-// the bar to talk to AIBOS.
+// the bar to talk to AI-BOS.
 //
 // Second pass the same day (owner): it lives on Home now, edge to edge, not a
 // window on a page of its own (components/home/HomeTeam.tsx), and the mark
@@ -19,7 +19,7 @@
 // faded and dashed is not on the plan), Geist, 44px taps. The kit allows this
 // one scene to move (docs/AIBOS_UI_KIT.md, "The team scene"), and only when
 // something is happening: light runs along a worker's line into the middle
-// when it has found something, out along every line while AIBOS auto is on,
+// when it has found something, out along every line while AI-BOS auto is on,
 // the dashed ring turns while auto is on, a sweep crosses the badges while
 // the team looks, and a new line of live activity slides in. Nothing moves
 // with reduced motion.
@@ -115,7 +115,7 @@ export default function TeamScene({ workers, recent, auto, checking, picked, onP
 
   return (
     <section className={`scene${auto && !locked ? ' is-auto' : ''}${checking ? ' is-checking' : ''}${locked ? ' is-locked' : ''}`}
-      data-theme="dark" aria-label="Your AIBOS team">
+      data-theme="dark" aria-label="Your AI-BOS team">
       <div className="scene-inner">
         <div className="scene-stage">
           <span className="scene-orbits" aria-hidden="true"><i /><i /><i /></span>
@@ -146,12 +146,12 @@ export default function TeamScene({ workers, recent, auto, checking, picked, onP
           {/* The mark, dead centre: the rings and the disc share one middle; the words hang under the rings. */}
           <button type="button" className="scene-hub" aria-pressed={picked === 'assistant'}
             onClick={() => (locked ? onTalk() : onPick('assistant'))}
-            aria-label={locked ? 'Talk to AIBOS' : `AIBOS Assistant${assistant?.waiting ? `, ${assistant.waiting} waiting` : ''}`}>
+            aria-label={locked ? 'Talk to AI-BOS' : `AI-BOS Assistant${assistant?.waiting ? `, ${assistant.waiting} waiting` : ''}`}>
             <span className="scene-hub-outer" aria-hidden="true" />
             <span className="scene-hub-ring" aria-hidden="true"><i /></span>
             <span className="scene-hub-disc" aria-hidden="true"><BrandMark size={48} theme="light" /></span>
             <span className="scene-hub-text">
-              <span className="scene-hub-word">AIBOS</span>
+              <span className="scene-hub-word">AI-BOS</span>
               <span className="scene-hub-sub">{sub}</span>
             </span>
           </button>
@@ -205,12 +205,12 @@ export default function TeamScene({ workers, recent, auto, checking, picked, onP
         )}
 
         {ask && <form className="scene-ask" onSubmit={(e) => { e.preventDefault(); if (q.trim()) { onAsk(q.trim()); setQ(''); } }}>
-          <button type="button" className="scene-ask-sphere" onClick={onTalk} aria-label="Talk to AIBOS">
+          <button type="button" className="scene-ask-sphere" onClick={onTalk} aria-label="Talk to AI-BOS">
             <AibosSphere size={56} still />
           </button>
-          <label htmlFor="scene-ask-input" className="sr-only">Ask AIBOS anything</label>
+          <label htmlFor="scene-ask-input" className="sr-only">Ask AI-BOS anything</label>
           <input id="scene-ask-input" value={q} onChange={(e) => setQ(e.target.value)}
-            placeholder="Ask AIBOS anything, like “Who owes me the most?”" />
+            placeholder="Ask AI-BOS anything, like “Who owes me the most?”" />
           <button type="button" className="icon-pill scene-ask-mic" onClick={onTalk} aria-label="Talk instead"><Mic aria-hidden="true" /></button>
           <button type="submit" className="scene-ask-send" disabled={!q.trim()} aria-label="Ask"><Send aria-hidden="true" /></button>
         </form>}

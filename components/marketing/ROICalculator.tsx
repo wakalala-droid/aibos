@@ -102,7 +102,7 @@ export default function ROICalculator() {
             : <>. Pro costs ${PRO_USD} a month.</>}
         </p>
         <p className="mkt-preview-cap" style={{ marginTop: 12 }}>
-          Estimates, not promises. AIBOS will not invent a result it cannot see in your numbers.
+          Estimates, not promises. AI-BOS will not invent a result it cannot see in your numbers.
         </p>
       </BentoCard>
     </div>

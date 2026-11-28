@@ -1,8 +1,8 @@
 'use client';
 
-// TeachAibosCard: Home's nudge to teach AIBOS the business (22 Oct 2026).
+// TeachAibosCard: Home's nudge to teach AI-BOS the business (22 Oct 2026).
 // Until the owner has been through the interview (app/dashboard/teach), every
-// answer AIBOS gives is generic: it does not know how old the business is, what
+// answer AI-BOS gives is generic: it does not know how old the business is, what
 // a normal month looks like or what they are aiming for. Shown to the owner
 // only, with how far they got; gone once the interview is done, and quiet for a
 // week after "Not now".
@@ -42,7 +42,7 @@ export default function TeachAibosCard() {
         <span className="bento-icon" aria-hidden="true"><BookOpen /></span>
         <div className="bento-main">
           <div className="bento-titlerow">
-            <p className="bento-title">Teach AIBOS your business</p>
+            <p className="bento-title">Teach AI-BOS your business</p>
             <span className="bento-tag">{started ? `${progress.done} of ${progress.total}` : 'About 5 minutes'}</span>
           </div>
           {started && (
@@ -52,8 +52,8 @@ export default function TeachAibosCard() {
           )}
           <p className="bento-text">
             {started
-              ? 'Pick up where you left off. The more AIBOS knows, the more its answers are about your business and not a generic one.'
-              : 'Tell AIBOS how the business started, what a normal month looks like and what you are aiming for. Its answers and your monthly targets come from it.'}
+              ? 'Pick up where you left off. The more AI-BOS knows, the more its answers are about your business and not a generic one.'
+              : 'Tell AI-BOS how the business started, what a normal month looks like and what you are aiming for. Its answers and your monthly targets come from it.'}
           </p>
         </div>
       </div>

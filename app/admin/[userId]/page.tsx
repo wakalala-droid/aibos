@@ -66,7 +66,7 @@ function fmtDate(v: string | null | undefined): string {
 }
 
 /**
- * Record a payment taken by hand (a customer who paid AIBOS directly instead
+ * Record a payment taken by hand (a customer who paid AI-BOS directly instead
  * of by card). It sets a real end date, so the customer is asked to set up
  * card payment before it ends and the plan ends if they do not. Plans are
  * priced in US dollars (lib/tiers.ts) and the amount is recorded with it.
@@ -199,7 +199,7 @@ function BillingFromJoin({ userId, currentTier, joinedAt, scheduledUntil, onSave
     <div className="section-card" style={{ marginBottom: 16 }}>
       <p style={{ fontSize: 'var(--fs-caps)', color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>Bill from the day they joined</p>
       <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: '0 0 14px', lineHeight: 1.55 }}>
-        They joined on {fmtDate(joinedAt)}. The plan runs until {fmtDate(next.toISOString())}. AIBOS asks them to set up card payment
+        They joined on {fmtDate(joinedAt)}. The plan runs until {fmtDate(next.toISOString())}. AI-BOS asks them to set up card payment
         three days before, on the day and before it switches off; the card then renews {every} for ${price.toLocaleString()}. Nothing is charged now.
         {scheduledUntil ? ` Right now it renews on ${fmtDate(scheduledUntil)}.` : ''}
       </p>

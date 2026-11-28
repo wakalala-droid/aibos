@@ -1,6 +1,6 @@
 // lib/industryIntel.ts — Industry intelligence pack.
 //
-// Reference knowledge that makes AIBOS fluent in each vertical: what "good"
+// Reference knowledge that makes AI-BOS fluent in each vertical: what "good"
 // looks like for a restaurant, a lodge, an online store, a quarry. The owner
 // asks "is my margin okay?" and gets THEIR real number next to the industry
 // reference range — clearly labelled as a reference, never presented as their

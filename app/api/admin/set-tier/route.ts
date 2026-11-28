@@ -7,7 +7,7 @@
  * Admin-verified; writes `profiles` (tier, tier_source, tier_granted_by/at,
  * paid_until) and an `admin_audit` row, both via the service-role client.
  *
- * source 'payment' records a payment taken by hand (a customer who paid AIBOS
+ * source 'payment' records a payment taken by hand (a customer who paid AI-BOS
  * directly instead of by card). It records the amount and currency, in US
  * dollars like every plan price, and is bought for a period: `paid_until` is set a month or a year out,
  * and a renewal of the same plan before it ends extends from the old end date

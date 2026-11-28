@@ -1,8 +1,8 @@
 'use client';
 
-// The AIBOS team on the landing page (UX audit step 5, 17 Nov 2026): the
+// The AI-BOS team on the landing page (UX audit step 5, 17 Nov 2026): the
 // same navy scene owners see on Home, with a sample business, right after the
-// promise. Before, nothing before sign-up said that AIBOS has a team that
+// promise. Before, nothing before sign-up said that AI-BOS has a team that
 // works the books, talks and can run the safe jobs by itself.
 // Tapping a worker says what it does; there is no ask bar (nothing to ask
 // before there are books).
@@ -45,8 +45,8 @@ export default function TeamSection() {
   const worker = WORKERS.find((w) => w.id === picked);
   const values = [
     'They ask before they act. Nothing is sent and no money moves until you say yes',
-    'Talk to AIBOS: it says good morning, asks what you need and listens',
-    'Turn on AIBOS auto and the safe jobs get done by themselves, each with an Undo',
+    'Talk to AI-BOS: it says good morning, asks what you need and listens',
+    'Turn on AI-BOS auto and the safe jobs get done by themselves, each with an Undo',
   ];
 
   return (
@@ -54,7 +54,7 @@ export default function TeamSection() {
       <div className="mkt-wrap">
         <Rise className="mkt-head">
           <div>
-            <p className="mkt-eyebrow">Your AIBOS team</p>
+            <p className="mkt-eyebrow">Your AI-BOS team</p>
             <h2 id="team-h" className="mkt-h2">Six workers on your books, all day.</h2>
           </div>
           <p className="mkt-head-sub">

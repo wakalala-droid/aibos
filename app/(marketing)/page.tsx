@@ -20,18 +20,18 @@ import OwnerReviews from '@/components/marketing/OwnerReviews';
 // same bento cards, notices, money figures, rows and pills as the app, so
 // what a visitor sees here is what they get after signing up. In navy, in the
 // order of what an owner should feel (docs/LANDING_NAVY_PLAN_2026-10.md):
-// the promise, the AIBOS team at work, their week named, the jobs done for them, the proof, how easy
+// the promise, the AI-BOS team at work, their week named, the jobs done for them, the proof, how easy
 // it is, who it is for, the goal and the one action.
 
 export const metadata: Metadata = {
-  title: 'AIBOS · The brain behind every business',
+  title: 'AI-BOS · The brain behind every business',
   description:
-    'Record sales, send invoices with a mobile money payment link, find new customers and ask your business anything. AIBOS keeps your books, watches your cash and answers in Kwacha. Start free.',
+    'Record sales, send invoices with a mobile money payment link, find new customers and ask your business anything. AI-BOS keeps your books, watches your cash and answers in Kwacha. Start free.',
   alternates: { canonical: '/' },
 };
 
 const BUILT_FOR = [
-  { icon: <Smartphone />, title: 'Works on any phone', text: 'Get the AIBOS app for Android straight from this website, or add AIBOS to an iPhone home screen. Shortcuts record a sale, add a booking or ask a question, and reminders arrive even with it closed.' },
+  { icon: <Smartphone />, title: 'Works on any phone', text: 'Get the AI-BOS app for Android straight from this website, or add AI-BOS to an iPhone home screen. Shortcuts record a sale, add a booking or ask a question, and reminders arrive even with it closed.' },
   { icon: <Users />, title: 'Your team, your rules', text: 'Invite staff to record sales and your accountant to read the books. Staff never see the money pages.' },
   { icon: <Landmark />, title: 'Zambian rules built in', text: 'Kwacha first. PAYE, NAPSA and NHIMA at current rates. ZRA and NAPSA deadlines go straight on your schedule.' },
   { icon: <ShieldCheck />, title: 'Your data stays yours', text: 'Export your full history on any plan, even after you cancel. Your numbers never train anyone’s AI.' },
@@ -41,7 +41,7 @@ export default function MarketingHome() {
   return (
     <>
       <Hero />
-      {/* The AIBOS team right after the promise (UX audit, 17 Nov 2026): the
+      {/* The AI-BOS team right after the promise (UX audit, 17 Nov 2026): the
           thing no other books app here does, shown before anything else. */}
       <TeamSection />
       <PainPromise />
@@ -72,7 +72,7 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* What owners said, shared by them from Review AIBOS (20 Nov 2026). Not
+      {/* What owners said, shared by them from Review AI-BOS (20 Nov 2026). Not
           drawn at all until a real owner shares a review. */}
       <OwnerReviews />
 

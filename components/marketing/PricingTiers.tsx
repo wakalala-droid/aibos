@@ -78,7 +78,7 @@ export default function PricingTiers({ cardPrices = null, zmwRate }: {
         {[...TIER_ORDER].reverse().map((tier) => {
           const meta = TIERS[tier];
           const Icon = ICON[tier];
-          // Pro+ is the flagship: "AIBOS runs your day" is the story we lead with.
+          // Pro+ is the flagship: "AI-BOS runs your day" is the story we lead with.
           const lead = tier === 'proplus';
           const free = meta.priceMonthly === 0;
           const usd = usdPrice(tier, billing, cardPrices);

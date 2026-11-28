@@ -253,7 +253,7 @@ export default function CashPage() {
       {/* Every money record held against the books, to the ngwee. */}
       {fromBooks && <Suspense fallback={null}><BooksCheckCard /></Suspense>}
 
-      {/* The one figure AIBOS cannot work out: what was held before recording began. */}
+      {/* The one figure AI-BOS cannot work out: what was held before recording began. */}
       {fromBooks && <div id="what-you-hold" style={{ scrollMarginTop: 80 }}><OpeningBalance /></div>}
 
       {/* Runway status bar */}

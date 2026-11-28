@@ -26,7 +26,7 @@ export default function CashWatch() {
   if (!watch?.ok) return null;
   const sym = watch.sym || storeSym;
   const short = watch.chance_short_pct ?? 0;
-  // The line is the owner's cushion from Teach AIBOS when they gave one.
+  // The line is the owner's cushion from Teach AI-BOS when they gave one.
   const onCushion = watch.floor_from === 'cushion';
   const line = floorWords(watch.floor, onCushion, sym);
 

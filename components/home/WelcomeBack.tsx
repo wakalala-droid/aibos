@@ -4,13 +4,13 @@
 //
 // An owner who stopped for a few days came back to the same Home as ever,
 // with the gap in the books unsaid. A gap is where the habit ends: catching
-// up feels like a chore, so it waits, so the numbers drift, so AIBOS stops
+// up feels like a chore, so it waits, so the numbers drift, so AI-BOS stops
 // being opened. After three days without an entry, Home's one nudge says
 // welcome back and offers the two honest ways on: catch up the days missed
 // (the Record sheet takes a date), or start fresh from today. No count of
 // days lost and no warning colour: a fresh start, not a telling off.
 //
-// Counted (20 Nov 2026) in the usage log AIBOS already keeps, as
+// Counted (20 Nov 2026) in the usage log AI-BOS already keeps, as
 // 'welcome_back' with meta.choice: 'shown' once per time away on a device,
 // then 'catch_up' or 'fresh_start' on a tap, each with days_away. Shown
 // against tapped says whether the card brings owners back; the two taps say

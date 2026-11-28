@@ -14,7 +14,7 @@
 // forecast's real average miss on the owner's past months, beside what simply
 // repeating last month would have missed.
 //
-// Beside it, the track record: what AIBOS said before each month happened,
+// Beside it, the track record: what AI-BOS said before each month happened,
 // kept once a month and checked against the books once the month has closed.
 // The first is a backtest; the second is earned.
 
@@ -100,7 +100,7 @@ export default function ForecastPage() {
   const lastActual = outlook?.history?.length ? outlook.history[outlook.history.length - 1].revenue : 0;
   const change = next && lastActual > 0 ? ((next.revenue.p50 - lastActual) / lastActual) * 100 : 0;
   const spans = bentoSpans(record ? 2 : 1);
-  // A softened month the owner told AIBOS runs busy or quiet is their season,
+  // A softened month the owner told AI-BOS runs busy or quiet is their season,
   // not a one-off: the note under the chart says so instead.
   const oneOffs = (outlook?.softened ?? []).filter((m) => !(outlook?.softened_named ?? []).includes(m));
 
@@ -190,7 +190,7 @@ export default function ForecastPage() {
               </ResponsiveContainer>
             </div>
             {outlook?.accuracy_words && <p className="bento-note" style={{ marginTop: 12 }}>{outlook.accuracy_words}</p>}
-            {/* The busy and quiet months the owner told AIBOS, where they change the reading. */}
+            {/* The busy and quiet months the owner told AI-BOS, where they change the reading. */}
             {(outlook?.season_notes ?? []).map((note) => <Note key={note} tone="info">{note}</Note>)}
           </Panel>
 
@@ -219,7 +219,7 @@ export default function ForecastPage() {
           </div>
 
           <div className="bento-grid" style={{ marginTop: 20 }}>
-            <BentoCard className={spans[0]} icon={<ShieldCheck />} title="How AIBOS worked this out" tag="Your months only"
+            <BentoCard className={spans[0]} icon={<ShieldCheck />} title="How AI-BOS worked this out" tag="Your months only"
               text={[
                 outlook?.methods?.length
                   ? `Several methods were tested on your own past months; the best ${outlook.methods.length === 1 ? 'one is' : `${outlook.methods.length} are`} blended: ${outlook.methods.map((m) => `${m.label} (${Math.round(m.weight * 100)}%)`).join(', ')}.`

@@ -2,7 +2,7 @@
 
 // The home's own signals, worked out in the browser from what the store and
 // the catalog already hold (they used to be the "Decisions" band and the
-// "AIBOS prepared this" panel, 17 Nov 2026 cleanup): cash running short,
+// "AI-BOS prepared this" panel, 17 Nov 2026 cleanup): cash running short,
 // critical alerts, stock to reorder, a regular gone quiet, a margin that fell,
 // and the top piece of advice. They now feed the one "Needs you" list beside
 // the workers' questions, so the owner has one place to look.
@@ -148,7 +148,7 @@ export function useHomeDecisions() {
         id: 'alerts', severity: 'crit', area: 'Spending',
         headline: crit.length === 1 ? String(crit[0].title) : `${crit.length} things broke your usual pattern`,
         reason: crit.length === 1
-          ? String(crit[0].description || 'AIBOS spotted it breaking your usual pattern.')
+          ? String(crit[0].description || 'AI-BOS spotted it breaking your usual pattern.')
           : crit.slice(0, 2).map((a) => String(a.title)).join(', '),
         kind: 'link', href: '/dashboard/anomaly', actionLabel: 'See what happened',
       });
@@ -199,7 +199,7 @@ export function useHomeDecisions() {
     const top = advice.find((r) => r.status !== 'dismissed' && r.status !== 'accepted' && r.priority !== 'low');
     if (top) {
       out.push({
-        id: `ad-${top.rec_id ?? top.title}`, severity: 'warn', area: 'AIBOS suggests',
+        id: `ad-${top.rec_id ?? top.title}`, severity: 'warn', area: 'AI-BOS suggests',
         headline: top.title, reason: top.rationale,
         kind: 'advice', advice: top, href: '/dashboard/brief?tab=advisor', actionLabel: 'I will try it',
       });

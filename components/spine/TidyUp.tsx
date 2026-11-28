@@ -1,7 +1,7 @@
 'use client';
 /**
  * Tidy up (upgrade 16): test entries and mistakes that no longer carry any
- * money, cleared in one place. Trying AIBOS out left clutter nothing could
+ * money, cleared in one place. Trying AI-BOS out left clutter nothing could
  * remove: a K0 salary line, invoices sent and then undone, bookings called off
  * before any money moved, a payroll run whose wages were voided. None of it
  * changed a figure; all of it sat in the lists.

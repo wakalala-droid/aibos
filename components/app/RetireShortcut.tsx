@@ -5,7 +5,7 @@
  * downloading it, delete the shortcut version from the browser").
  *
  * A website cannot remove a home-screen icon itself; only the owner can, with
- * a long press. So whenever AIBOS is opened from the shortcut the browser made
+ * a long press. So whenever AI-BOS is opened from the shortcut the browser made
  * (Install app, Add to Home Screen), this screen comes up first:
  *   - no app yet: get it, with the steps, ending in "remove this icon"
  *   - the app is on the phone (it has opened here, or Chrome says so):
@@ -75,10 +75,10 @@ export default function RetireShortcut() {
   if (!state) return null;
 
   const title = state === 'android-have' ? 'Remove this old shortcut'
-    : state === 'ios-get' ? 'AIBOS has its own iPhone app now' : 'AIBOS has its own app now';
+    : state === 'ios-get' ? 'AI-BOS has its own iPhone app now' : 'AI-BOS has its own app now';
   const sub = state === 'android-have'
-    ? 'The AIBOS app is on your phone. This icon is the shortcut the browser made before, so you no longer need it.'
-    : 'This icon is a shortcut the browser made. The AIBOS app replaces it: full screen, with alerts and shortcuts, and every update arrives by itself.';
+    ? 'The AI-BOS app is on your phone. This icon is the shortcut the browser made before, so you no longer need it.'
+    : 'This icon is a shortcut the browser made. The AI-BOS app replaces it: full screen, with alerts and shortcuts, and every update arrives by itself.';
 
   return (
     <div className="whatsnew-backdrop" style={{ zIndex: 96 }}>
@@ -95,13 +95,13 @@ export default function RetireShortcut() {
           {state === 'android-have' && (
             <ol className="app-steps">
               <li>
-                <span className="step-title">Open the AIBOS app</span>
-                <span className="step-text">Tap the button below, or the new AIBOS icon. You stay signed in.</span>
+                <span className="step-title">Open the AI-BOS app</span>
+                <span className="step-text">Tap the button below, or the new AI-BOS icon. You stay signed in.</span>
               </li>
               <li>
                 <span className="step-title">Remove this shortcut</span>
                 <span className="step-text">
-                  Press and hold the AIBOS icon you opened this from, then tap <strong>Uninstall</strong> or <strong>Remove</strong>. Your account and your books stay exactly as they are.
+                  Press and hold the AI-BOS icon you opened this from, then tap <strong>Uninstall</strong> or <strong>Remove</strong>. Your account and your books stay exactly as they are.
                 </span>
               </li>
             </ol>
@@ -109,7 +109,7 @@ export default function RetireShortcut() {
           {state === 'ios-get' && (
             <ol className="app-steps">
               <li>
-                <span className="step-title">Get AIBOS from the App Store</span>
+                <span className="step-title">Get AI-BOS from the App Store</span>
                 <span className="step-text">Tap the button below, then <strong>Get</strong>.</span>
               </li>
               <li>
@@ -118,7 +118,7 @@ export default function RetireShortcut() {
               </li>
               <li>
                 <span className="step-title">Remove this shortcut</span>
-                <span className="step-text">Press and hold the AIBOS icon you opened this from and remove it. Your account and your books stay exactly as they are.</span>
+                <span className="step-text">Press and hold the AI-BOS icon you opened this from and remove it. Your account and your books stay exactly as they are.</span>
               </li>
             </ol>
           )}
@@ -130,7 +130,7 @@ export default function RetireShortcut() {
               </ApkLink>
             )}
             {state === 'android-have' && (
-              <a ref={first} href={androidAppLink(pathname)} className="pill pill-primary">Open the AIBOS app</a>
+              <a ref={first} href={androidAppLink(pathname)} className="pill pill-primary">Open the AI-BOS app</a>
             )}
             {state === 'ios-get' && (
               <a ref={first} href={IOS_APP_URL} className="pill pill-primary" rel="noopener">Get the iPhone app</a>

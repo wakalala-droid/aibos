@@ -53,7 +53,7 @@ export default function MarketingNav() {
         <Link
           href="/"
           style={{ display: 'flex', alignItems: 'center', gap: 9, minHeight: 44, textDecoration: 'none' }}
-          aria-label="AIBOS home"
+          aria-label="AI-BOS home"
         >
           {/* The white mark and wordmark: the website is navy (10 Oct 2026). */}
           <Image src="/brand/aibos-mark-white-glyph.png" alt="" aria-hidden width={30} height={30} style={{ width: 30, height: 30, objectFit: 'contain' }} priority />

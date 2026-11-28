@@ -3,11 +3,11 @@
 /**
  * Admin · Reviews: the review centre (20 Nov 2026).
  *
- * Every review owners wrote about AIBOS, newest first: what the website shows,
+ * Every review owners wrote about AI-BOS, newest first: what the website shows,
  * what went to the team only, and the ask that invites the rest. An
  * administrator can take a shared review off the website, and only for abuse,
  * spam or someone's private details; never because it is unhappy. Its writer
- * is told on their own Review AIBOS page. Nothing here writes or changes what
+ * is told on their own Review AI-BOS page. Nothing here writes or changes what
  * anyone said. The API is the gate (aibos-api reviews.py, admin only).
  */
 
@@ -59,7 +59,7 @@ export default function AdminReviewsPage() {
         const reviews = d.reviews.map((r) => (r.id === id ? { ...r, status: to, hidden: to === 'hidden' } : r));
         return { ...d, reviews, on_site: reviews.filter((r) => r.show_on_site && r.status === 'shown').length };
       });
-      setSaid(to === 'hidden' ? 'Taken off the website. Its writer is told on their Review AIBOS page.' : 'Back on the website within a minute.');
+      setSaid(to === 'hidden' ? 'Taken off the website. Its writer is told on their Review AI-BOS page.' : 'Back on the website within a minute.');
     } catch (e) {
       setSaid((e as Error).message);
     } finally {
@@ -76,7 +76,7 @@ export default function AdminReviewsPage() {
           Reviews
         </h1>
         <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>
-          What owners said about AIBOS. The website shows every review its writer shared, newest first, low stars too.
+          What owners said about AI-BOS. The website shows every review its writer shared, newest first, low stars too.
         </p>
       </header>
       <nav aria-label="Admin sections" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
@@ -123,7 +123,7 @@ export default function AdminReviewsPage() {
           {reviews.map((r) => {
             const who = whoSaid(r) || 'No name given';
             const where = whereWhen({ town: r.town, month: when(r.updated_at || r.created_at) });
-            const place = !r.show_on_site ? 'AIBOS team only' : r.status === 'hidden' ? 'Taken off the website' : 'On the website';
+            const place = !r.show_on_site ? 'AI-BOS team only' : r.status === 'hidden' ? 'Taken off the website' : 'On the website';
             return (
               <li key={r.id} style={{ padding: 18, borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-md)', background: r.status === 'hidden' ? 'var(--pill-bg)' : 'var(--bg-card)' }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>

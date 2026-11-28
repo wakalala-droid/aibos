@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * InstallPrompt — asks the owner to put AIBOS on their phone or computer.
+ * InstallPrompt — asks the owner to put AI-BOS on their phone or computer.
  *
- * Android phones get the AIBOS app itself (owner, 21 Oct 2026: "make sure
+ * Android phones get the AI-BOS app itself (owner, 21 Oct 2026: "make sure
  * every user installs the APK from the website"): it downloads from here and
  * the steps follow (components/app/). Once the app is on the phone, a browser
  * tab offers to open it instead. The old browser shortcut has its own screen
@@ -13,7 +13,7 @@
  * The app has been installable for a while (manifest, icons, a service worker
  * with an offline page) and almost nobody knew: Chrome's own hint is a small
  * icon in the address bar, Safari has none at all, and an owner who opens
- * AIBOS from a WhatsApp link or a bookmark each morning never finds either.
+ * AI-BOS from a WhatsApp link or a bookmark each morning never finds either.
  * An icon next to their other apps is how a tool becomes a habit.
  *
  * What it offers depends on what the browser can do:
@@ -167,20 +167,20 @@ export default function InstallPrompt() {
     }
   };
 
-  const title = mode === 'android-get' ? (downloaded ? 'Now install AIBOS' : 'Get the AIBOS app')
-    : mode === 'android-open' ? 'Open AIBOS in the app'
-    : mode === 'ios-get' ? 'Get the AIBOS iPhone app'
-    : mode === 'native' && !phone ? 'Install AIBOS on this computer'
-    : mode === 'mac-safari' ? 'Add AIBOS to your Dock' : 'Put AIBOS on your home screen';
+  const title = mode === 'android-get' ? (downloaded ? 'Now install AI-BOS' : 'Get the AI-BOS app')
+    : mode === 'android-open' ? 'Open AI-BOS in the app'
+    : mode === 'ios-get' ? 'Get the AI-BOS iPhone app'
+    : mode === 'native' && !phone ? 'Install AI-BOS on this computer'
+    : mode === 'mac-safari' ? 'Add AI-BOS to your Dock' : 'Put AI-BOS on your home screen';
   const tag = mode === 'android-get' || mode === 'android-open' ? 'Android' : mode === 'ios-get' ? 'iPhone' : 'App';
 
-  // The splash's pieces (the owner, 5 Oct 2026): the AIBOS mark in its
+  // The splash's pieces (the owner, 5 Oct 2026): the AI-BOS mark in its
   // round, a spaced-capital title and tag, the hairline art, the brand pill.
   return (
     <Notice
       brand art
       role="region"
-      ariaLabel="Install AIBOS as an app"
+      ariaLabel="Install AI-BOS as an app"
       // A promo: on a phone it shows as its title and buttons only, unless it
       // is showing the steps after a download.
       className={mode === 'android-get' && downloaded ? '' : 'nudge-promo'}
@@ -218,10 +218,10 @@ export default function InstallPrompt() {
         ? <div style={{ marginTop: 8 }}><AndroidSteps downloaded /></div>
         : <>It opens straight on your business, full screen, with alerts on your lock screen and shortcuts to record a sale or ask a question. {ANDROID_APP.size} from this website, installed once.</>)}
       {mode === 'android-open' && (
-        <>The AIBOS app is on this phone. It opens full screen with your alerts and shortcuts.</>
+        <>The AI-BOS app is on this phone. It opens full screen with your alerts and shortcuts.</>
       )}
       {mode === 'ios-get' && (
-        <>From the App Store. It opens straight on your business, full screen. Then remove any AIBOS you added to your Home Screen from Safari.</>
+        <>From the App Store. It opens straight on your business, full screen. Then remove any AI-BOS you added to your Home Screen from Safari.</>
       )}
       {mode === 'native' && (
         <>Open it with one {phone ? 'tap' : 'click'}, like any other app. It opens straight to your business, full screen and without the browser around it.</>
@@ -235,7 +235,7 @@ export default function InstallPrompt() {
         </ol>
       )}
       {mode === 'mac-safari' && (
-        <>In the menu bar choose <strong>File</strong>, then <strong>Add to Dock</strong>. AIBOS then opens from your Dock like any other app.</>
+        <>In the menu bar choose <strong>File</strong>, then <strong>Add to Dock</strong>. AI-BOS then opens from your Dock like any other app.</>
       )}
     </Notice>
   );

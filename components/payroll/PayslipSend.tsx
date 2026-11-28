@@ -1,10 +1,10 @@
 'use client';
 /**
- * AIBOS — send a payroll run's payslips to the staff themselves.
+ * AI-BOS — send a payroll run's payslips to the staff themselves.
  *
  * A payslip used to be a PDF the owner downloaded one person at a time, so
- * nobody on staff ever heard from AIBOS. This lists everyone on the run with
- * where their payslip can go: AIBOS emails it (the PDF attached, replies going
+ * nobody on staff ever heard from AI-BOS. This lists everyone on the run with
+ * where their payslip can go: AI-BOS emails it (the PDF attached, replies going
  * to the owner), or the owner sends it on WhatsApp from their own phone with
  * the payslip already written. It says who has theirs and who is waiting.
  * aibos-api payslip_delivery.py; the record needs migration 0042.
@@ -95,7 +95,7 @@ export default function PayslipSend({ runId, money }: { runId: string; money: (v
           </div>
           {!live && data.people.some((p) => p.email) && (
             <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-              Email from AIBOS is not switched on yet, so send these on WhatsApp for now.
+              Email from AI-BOS is not switched on yet, so send these on WhatsApp for now.
             </p>
           )}
           <div style={{ marginTop: 8 }}>
@@ -120,7 +120,7 @@ export default function PayslipSend({ runId, money }: { runId: string; money: (v
             ))}
           </div>
           <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
-            Email goes from AIBOS with the PDF attached and replies come to you. WhatsApp opens on your
+            Email goes from AI-BOS with the PDF attached and replies come to you. WhatsApp opens on your
             phone with the payslip already written: press send there.
           </p>
         </>

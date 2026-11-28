@@ -118,7 +118,7 @@ export default function MarketPage() {
       </SectionCard>
 
       {/* AI Brief */}
-      <SectionCard title="What AIBOS sees" subtitle="Read from your customer sales" delay={0.24} style={{ position: 'relative' }}>
+      <SectionCard title="What AI-BOS sees" subtitle="Read from your customer sales" delay={0.24} style={{ position: 'relative' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--e2)', borderRadius: '10px 10px 0 0', opacity: 0.6 }} />
         {briefLines.length > 0 ? (
           briefLines.map((line, i) => (
@@ -129,7 +129,7 @@ export default function MarketPage() {
             </motion.div>
           ))
         ) : (
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Add customers&apos; names to your sales and AIBOS reads your market here.</p>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', textAlign: 'center', padding: '20px 0' }}>Add customers&apos; names to your sales and AI-BOS reads your market here.</p>
         )}
         {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Needs your customer sales" description="Record sales with the customer's name, or upload a sales file, to see what each customer group brings in." />}
       </SectionCard>

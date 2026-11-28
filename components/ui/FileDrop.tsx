@@ -1,6 +1,6 @@
 'use client';
 
-// FileDrop: the one way to hand AIBOS a file (UI/UX audit 2026-10 A29, B6).
+// FileDrop: the one way to hand AI-BOS a file (UI/UX audit 2026-10 A29, B6).
 //
 // There were five separately built pickers (receipt on Record, Import, Stock,
 // the logo on Settings and on hospitality channels), each with its own look,

@@ -25,7 +25,7 @@ export default function AnomalyPage() {
   const sym = currencySymbol || 'K';
 
   // The months read on the server with the busy and quiet months the owner
-  // told AIBOS (aibos-api seasons.py): undefined while it is read, null when
+  // told AI-BOS (aibos-api seasons.py): undefined while it is read, null when
   // it could not be (the page then reads them itself, as it always did).
   // Keyed by the figures, so a fresh copy of the same months is not read again.
   const rowsKey = useMemo(() => JSON.stringify(monthly.map((m) => [String(m.Month), Number(m.Revenue) || 0, Number(m.Costs) || 0])), [monthly]);
@@ -112,7 +112,7 @@ export default function AnomalyPage() {
       colour="var(--cyan)"
       headline={derivedAnomalies.length > 0
         ? `We flagged ${derivedAnomalies.length} anomal${derivedAnomalies.length === 1 ? 'y' : 'ies'} in your numbers: ${critical.length} critical.`
-        : 'Nothing unusual yet. Keep recording and AIBOS spots any month that breaks your pattern.'}
+        : 'Nothing unusual yet. Keep recording and AI-BOS spots any month that breaks your pattern.'}
       detail="See exactly which months broke your normal pattern, how far each one went and the likely cause, across sales and costs."
     >
     <>
@@ -282,7 +282,7 @@ export default function AnomalyPage() {
         )
       )}
 
-      {/* The months the owner told AIBOS run busy or quiet, high or low the
+      {/* The months the owner told AI-BOS run busy or quiet, high or low the
           way they said: not counted as unusual; the page says why. */}
       {held.length > 0 && (
         <SectionCard title="Your busy and quiet months" subtitle="Not counted as unusual" delay={0.2} style={{ marginBottom: 20 }}>
@@ -298,7 +298,7 @@ export default function AnomalyPage() {
             ))}
           </ul>
           <Note tone="info">
-            From your answers in <Link href="/dashboard/teach" className="tap-link">Teach AIBOS</Link>. A busy month that comes in low,
+            From your answers in <Link href="/dashboard/teach" className="tap-link">Teach AI-BOS</Link>. A busy month that comes in low,
             or a quiet one that comes in high, is still flagged above.
           </Note>
         </SectionCard>

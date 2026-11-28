@@ -39,7 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Every page works off the same books. Count them again whenever they
   // change anywhere (lib/booksSignal.ts: any page here, another tab), when
-  // the owner comes back to AIBOS after a minute away, and every few minutes
+  // the owner comes back to AI-BOS after a minute away, and every few minutes
   // while it is open, so money that arrives by itself (a guest paying a link,
   // a staff member's entry, the phone) shows without a reload.
   useEffect(() => {
@@ -90,10 +90,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <PlanNotice />
         <InstallPrompt />
       </div>
-      {/* Says when a newer AIBOS is ready, for a tab or an installed app that
+      {/* Says when a newer AI-BOS is ready, for a tab or an installed app that
           has been open since before it shipped. */}
       <UpdatePrompt />
-      {/* The admin's "AIBOS is card only now" reminder, on screen like an update. */}
+      {/* The admin's "AI-BOS is card only now" reminder, on screen like an update. */}
       <CardReminderPrompt />
       {/* Once per release: what shipped, with the logo and its art. */}
       <WhatsNew />
@@ -101,7 +101,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <DashboardTour />
       {/* Shown once after an upgrade, and stays until it is closed. */}
       <WelcomeTour />
-      {/* A plan AIBOS gave free: the owner welcomed by name, once, on top. */}
+      {/* A plan AI-BOS gave free: the owner welcomed by name, once, on top. */}
       <GiftWelcome />
     </div>
   );

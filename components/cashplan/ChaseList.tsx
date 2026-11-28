@@ -6,7 +6,7 @@
 // before payday can matter more than a big one that lands after the low
 // point); otherwise the oldest and biggest. Each says why it is on the list
 // and carries the reminder, written for the owner with their payment link,
-// to send from their own WhatsApp. AIBOS never messages a customer itself.
+// to send from their own WhatsApp. AI-BOS never messages a customer itself.
 
 import { useState } from 'react';
 import { Copy, MessageCircle } from 'lucide-react';

@@ -90,7 +90,7 @@ export default function Sidebar() {
         }}>
           <Image
             src={isDark ? '/brand/aibos-mark-white-glyph.png' : '/brand/aibos-mark.png'}
-            alt="AIBOS"
+            alt="AI-BOS"
             width={30}
             height={30}
             style={{ width: 30, height: 30, objectFit: 'contain' }}
@@ -106,7 +106,7 @@ export default function Sidebar() {
             >
               <Image
                 src={isDark ? '/brand/aibos-wordmark-white.png' : '/brand/aibos-wordmark.png'}
-                alt="AIBOS"
+                alt="AI-BOS"
                 width={74}
                 height={19}
                 style={{ width: 74, height: 'auto', objectFit: 'contain' }}
@@ -200,14 +200,14 @@ export default function Sidebar() {
           );
         })()}
 
-        {/* Ask AIBOS: the menu's front door to the assistant, in both modes. */}
+        {/* Ask AI-BOS: the menu's front door to the assistant, in both modes. */}
         {(
           <button
             type="button"
             data-tour="ask-aibos"
             onClick={() => { setAssistantOpen(true); setMobileNav(false); }}
-            aria-label="Ask AIBOS anything about your business"
-            title={col ? 'Ask AIBOS' : undefined}
+            aria-label="Ask AI-BOS anything about your business"
+            title={col ? 'Ask AI-BOS' : undefined}
             style={{ background: 'transparent', border: 'none', padding: 0, width: '100%', cursor: 'pointer', textAlign: 'left' }}
           >
             <div className="nav-item">
@@ -219,7 +219,7 @@ export default function Sidebar() {
                     exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.15 }}
                     className="nav-label" style={{ color: 'var(--text-2)', flex: 1 }}
                   >
-                    Ask AIBOS
+                    Ask AI-BOS
                   </motion.span>
                 )}
               </AnimatePresence>

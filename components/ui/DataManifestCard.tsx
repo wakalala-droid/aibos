@@ -1,6 +1,6 @@
 'use client';
 
-// DataManifestCard — "How AIBOS read your file" (SAFEGUARD.md Layer 1).
+// DataManifestCard — "How AI-BOS read your file" (SAFEGUARD.md Layer 1).
 // Shows column→role mappings with confidence, honesty flags, and (for
 // item-level files) the per-item economics breakdown. Read-only, transparency-
 // first: the user sees exactly how their data was interpreted.
@@ -42,11 +42,11 @@ export default function DataManifestCard({
   return (
     <BentoCard
       icon={<ScanSearch />}
-      title="How AIBOS read your file"
+      title="How AI-BOS read your file"
       tag={isCross ? 'By item' : 'Over time'}
       style={{ marginBottom: 20 }}
       motion="tilt"
-      text={<>Every column in your file, what AIBOS took it to be and how sure it is.
+      text={<>Every column in your file, what AI-BOS took it to be and how sure it is.
         {manifest.grouping_column ? <> Grouped by &ldquo;{manifest.grouping_column}&rdquo;.</> : null}</>}
     >
       {/* Honesty flags */}

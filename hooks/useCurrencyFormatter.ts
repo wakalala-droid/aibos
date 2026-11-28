@@ -1,5 +1,5 @@
 /**
- * AIBOS — useCurrencyFormatter hook
+ * AI-BOS — useCurrencyFormatter hook
  * Returns a formatCurrency function pre-bound to the current currency symbol
  * from Zustand. Any component using this hook will automatically re-render
  * when the currency changes after file upload.

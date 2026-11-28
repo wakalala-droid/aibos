@@ -5,7 +5,7 @@ import AppShell from '@/components/layout/AppShell';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AIBOS · Business Intelligence Platform',
+  title: 'AI-BOS · Business Intelligence Platform',
   description: 'Financial · Customer · Operations intelligence for Zambian SMEs',
   manifest: '/manifest.webmanifest',
   icons: {
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'AIBOS',
+    title: 'AI-BOS',
   },
 };
 
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" data-theme="light" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
-        {/* Marks an Android phone, an iPhone and the AIBOS apps on <html> before
+        {/* Marks an Android phone, an iPhone and the AI-BOS apps on <html> before
             anything paints, so "Get the app" shows only where it belongs. */}
         <script dangerouslySetInnerHTML={{ __html: APP_BOOT_SCRIPT }} />
         {/* The opening screen's mark, fetched with the page rather than after it. */}

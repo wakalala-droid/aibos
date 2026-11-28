@@ -6,7 +6,7 @@
 // "What I looked at" is one quiet line, the first lookup in words ("Read 214
 // sales from 1 to 30 September 2026"); open it for every lookup and a link to
 // the entries themselves. "Right" and "That's wrong" are logged to
-// usage_events (event "answer_feedback") for the AIBOS team, with the question
+// usage_events (event "answer_feedback") for the AI-BOS team, with the question
 // and the start of the answer. "That's wrong" points at the entries the answer
 // used, where each one has Fix (A9), because a wrong answer is usually a
 // wrong entry.
@@ -76,7 +76,7 @@ export default function AnswerCheck({ message, question, settled }: {
         <p role="status" style={{ margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>Thanks.</p>
       ) : (
         <p role="status" style={{ margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-2)', lineHeight: 1.5 }}>
-          Thanks, noted for the AIBOS team.{' '}
+          Thanks, noted for the AI-BOS team.{' '}
           {recordsHref ? (
             <>A wrong answer is often a wrong entry: <Link href={recordsHref} style={{ color: 'var(--cyan)', fontWeight: 600 }}>check the {ids.length} it used</Link> and fix any that are off.</>
           ) : (

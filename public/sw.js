@@ -1,4 +1,4 @@
-/* AIBOS service worker — deliberately conservative.
+/* AI-BOS service worker — deliberately conservative.
  *
  * Strategy (Devil's-Advocate-approved to avoid the classic stale-cache trap):
  *  - Hashed static assets (/_next/static, icons, brand, fonts): cache-first.
@@ -11,11 +11,11 @@
 
 // Bumped whenever a cached asset changes in place (v2: the icons became the
 // white logo; v3: notifications got their own picture and badge; v4: the
-// reminder tone is kept at install time; v5: AIBOS's own tone replaces the
+// reminder tone is kept at install time; v5: AI-BOS's own tone replaces the
 // device's sound while it is open), so installed apps drop the old copies.
 const VERSION = 'aibos-sw-v5';
 const OFFLINE_URL = '/offline.html';
-// Taken when AIBOS is added to a Home Screen, so the tone belongs to the
+// Taken when AI-BOS is added to a Home Screen, so the tone belongs to the
 // installed app and plays with no signal.
 const PRECACHE = [OFFLINE_URL, '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png',
   '/icons/notify-192.png', '/icons/badge-96.png', '/sounds/reminder.mp3'];
@@ -78,8 +78,8 @@ self.addEventListener('fetch', (event) => {
 
 /* ── Notifications on the phone (upgrade 10) ───────────────────────────────
  * The API sends an encrypted message; the browser hands it here and this
- * shows it, even with AIBOS closed. Tapping it opens the page the alert is
- * about, reusing an open AIBOS window when there is one.
+ * shows it, even with AI-BOS closed. Tapping it opens the page the alert is
+ * about, reusing an open AI-BOS window when there is one.
  *
  * The picture is the logo on its dark tile (the plain app icon is white on
  * clear and vanished on a light notification shade). The badge is the mark's
@@ -87,10 +87,10 @@ self.addEventListener('fetch', (event) => {
  * message's own `tag` keeps two reminders from replacing each other, and
  * `sticky` (schedule reminders) keeps it on screen until it is dealt with.
  *
- * THE SOUND IS AIBOS'S OWN WHEREVER IT CAN BE. No website can choose the sound
+ * THE SOUND IS AI-BOS'S OWN WHEREVER IT CAN BE. No website can choose the sound
  * a device plays for a notification (the Notification API's `sound` was never
- * built by any browser), but it can ask an open AIBOS to play the tone and then
- * keep the notification itself quiet, so the owner hears AIBOS and not the
+ * built by any browser), but it can ask an open AI-BOS to play the tone and then
+ * keep the notification itself quiet, so the owner hears AI-BOS and not the
  * device. One window is asked, the one in front, and the answer decides:
  *
  *   played  -> the notification is silent, because the tone was already heard
@@ -99,7 +99,7 @@ self.addEventListener('fetch', (event) => {
  *
  * A phone freezes a window that is not on screen, so on a phone only a window
  * ON SCREEN is asked. A computer plays audio from a window behind others, so
- * any window there will do. With AIBOS closed there is nobody to ask and the
+ * any window there will do. With AI-BOS closed there is nobody to ask and the
  * device's own sound is what there is.
  */
 const ON_A_PHONE = /Android|iPhone|iPad|iPod/i.test((self.navigator && self.navigator.userAgent) || '');
@@ -130,7 +130,7 @@ function askToPlay(client, message) {
 self.addEventListener('push', (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch { data = {}; }
-  const title = data.title || 'AIBOS';
+  const title = data.title || 'AI-BOS';
   const link = data.link || '/dashboard';
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true }).catch(() => []);

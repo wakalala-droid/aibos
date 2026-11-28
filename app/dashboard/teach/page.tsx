@@ -1,10 +1,10 @@
 'use client';
 /**
- * AIBOS — Teach AIBOS your business.
+ * AI-BOS — Teach AI-BOS your business.
  *
- * A new owner's books are empty, and empty books tell AIBOS nothing about the
+ * A new owner's books are empty, and empty books tell AI-BOS nothing about the
  * business behind them: how old it is, what sells, which months are busy, what
- * the owner is aiming for. So AIBOS asks, the way a good accountant does on the
+ * the owner is aiming for. So AI-BOS asks, the way a good accountant does on the
  * first visit: one question at a time, in five short chapters, every one of
  * them skippable, and says back what it took from each answer.
  *
@@ -13,7 +13,7 @@
  * owner presses the button, never over one they set by hand; the morning
  * brief paces the month against it; the cash plan keeps their cushion and
  * counts the loan repayment they named; Unusual spending, Month by month and
- * the Forecast read their busy and quiet months (seasons.py); and the AIBOS
+ * the Forecast read their busy and quiet months (seasons.py); and the AI-BOS
  * workbook offers their own ways of being paid and biggest costs first.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -95,7 +95,7 @@ export default function TeachPage() {
   const [other, setOther] = useState('');
   const [saving, setSaving] = useState(false);
   const [answerError, setAnswerError] = useState<string | null>(null);
-  // What AIBOS said back about each answer this visit.
+  // What AI-BOS said back about each answer this visit.
   const [said, setSaid] = useState<Record<string, string>>({});
   const [plan, setPlan] = useState<InterviewPlan | null>(null);
   const [planBusy, setPlanBusy] = useState(false);
@@ -215,11 +215,11 @@ export default function TeachPage() {
 
   const header = (
     <PageHeader
-      title="Teach AIBOS your business"
-      subtitle="AIBOS asks and you answer, one question at a time. Skip any you like. The AI chat, your cash plan and your reports use what you say."
+      title="Teach AI-BOS your business"
+      subtitle="AI-BOS asks and you answer, one question at a time. Skip any you like. The AI chat, your cash plan and your reports use what you say."
       actions={
         <button type="button" className="pill pill-quiet" onClick={() => void download()} disabled={downloading}>
-          <FileSpreadsheet aria-hidden="true" /> {downloading ? 'Making your workbook…' : 'Download your AIBOS workbook'}
+          <FileSpreadsheet aria-hidden="true" /> {downloading ? 'Making your workbook…' : 'Download your AI-BOS workbook'}
         </button>
       }
     />
@@ -273,7 +273,7 @@ export default function TeachPage() {
                 </span>
               </div>
               <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '4px 0 0' }}>
-                {chapter ? chapter.intro : 'AIBOS has what it needs. Change any answer at any time.'}
+                {chapter ? chapter.intro : 'AI-BOS has what it needs. Change any answer at any time.'}
               </p>
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function TeachPage() {
                 <p style={{ ...bubbleText, marginTop: 4, color: 'var(--text-3)', fontSize: 'var(--fs-data)' }}>{current.why}</p>
               </div>
             ) : (
-              <Notice brand art title={`AIBOS knows ${state.business || 'your business'}`} tag="Done">
+              <Notice brand art title={`AI-BOS knows ${state.business || 'your business'}`} tag="Done">
                 The AI chat now answers with all of this in mind: your normal month, your goals,
                 your busy and quiet months and what worries you. Your cash plan keeps your cushion
                 and your reports know your seasons. Change any answer from the list.
@@ -419,9 +419,9 @@ export default function TeachPage() {
           )}
         </section>
 
-        {/* What AIBOS knows, and what it does with it ------------------------ */}
+        {/* What AI-BOS knows, and what it does with it ------------------------ */}
         <div className="span-2" style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 }}>
-          <BentoCard icon={<Check />} title="What AIBOS knows" tag={`${progress.answered}`} motion="pulse"
+          <BentoCard icon={<Check />} title="What AI-BOS knows" tag={`${progress.answered}`} motion="pulse"
             text={progress.answered ? undefined : 'Your answers collect here. Tap any one to change it.'}>
             {progress.done > 0 && (
               <div style={{ marginTop: 8 }}>
@@ -451,8 +451,8 @@ export default function TeachPage() {
             )}
           </BentoCard>
 
-          <BentoCard icon={<FileSpreadsheet />} title="Your AIBOS workbook" tag="Excel" motion="tilt"
-            text="A spreadsheet laid out the way AIBOS reads, with your products, workers and ways of being paid already in it. Fill it in and upload it: every line lands in the right place."
+          <BentoCard icon={<FileSpreadsheet />} title="Your AI-BOS workbook" tag="Excel" motion="tilt"
+            text="A spreadsheet laid out the way AI-BOS reads, with your products, workers and ways of being paid already in it. Fill it in and upload it: every line lands in the right place."
             foot={<>
               <button type="button" className="pill pill-primary" onClick={() => void download()} disabled={downloading}>
                 {downloading ? 'Making it…' : 'Download'}

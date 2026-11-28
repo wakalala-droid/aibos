@@ -1,9 +1,9 @@
 'use client';
 
-// AIBOS auto (17 Nov 2026): the switch at the top right of every page.
+// AI-BOS auto (17 Nov 2026): the switch at the top right of every page.
 //
 // On: the team looks through the books every hour and the safe jobs do
-// themselves, each with an Undo. The owner touches nothing until AIBOS needs
+// themselves, each with an Undo. The owner touches nothing until AI-BOS needs
 // them: anything that goes to another person, marks money paid, settles tax,
 // refunds or is over the limit still waits in Needs you, and rings the bell.
 //
@@ -77,14 +77,14 @@ export default function AutoSwitch() {
     <div ref={wrap} className="auto-wrap">
       <button type="button" role="switch" aria-checked={on} disabled={busy}
         className={`auto-switch${on ? ' is-on' : ''}${!available ? ' is-locked' : ''}`}
-        onClick={flip} title={on ? 'AIBOS auto is on: the team works by itself and asks only when it needs you' : 'Turn on AIBOS auto'}>
-        <span className="auto-switch-word"><span className="auto-switch-brand">AIBOS </span>auto</span>
+        onClick={flip} title={on ? 'AI-BOS auto is on: the team works by itself and asks only when it needs you' : 'Turn on AI-BOS auto'}>
+        <span className="auto-switch-word"><span className="auto-switch-brand">AI-BOS </span>auto</span>
         <span className="auto-switch-track" aria-hidden="true"><span className="auto-switch-knob" /></span>
       </button>
 
       {pop === 'explain' && (
-        <div role="dialog" aria-label="AIBOS auto" className="dash-pop auto-pop">
-          <p className="bento-title" style={{ margin: 0 }}>Let AIBOS run the day</p>
+        <div role="dialog" aria-label="AI-BOS auto" className="dash-pop auto-pop">
+          <p className="bento-title" style={{ margin: 0 }}>Let AI-BOS run the day</p>
           <p className="auto-pop-text">Your team looks through your books every hour and does the safe jobs itself. You only hear from it when it needs you.</p>
           <p className="eyebrow" style={{ margin: '12px 0 4px' }}>Does by itself, with an Undo</p>
           <ul className="auto-pop-list">
@@ -103,18 +103,18 @@ export default function AutoSwitch() {
       )}
 
       {pop === 'not-ready' && (
-        <div role="dialog" aria-label="AIBOS auto" className="dash-pop auto-pop">
+        <div role="dialog" aria-label="AI-BOS auto" className="dash-pop auto-pop">
           <p className="bento-title" style={{ margin: 0 }}>Almost ready</p>
-          <p className="auto-pop-text">AIBOS auto needs one update on AIBOS&apos;s side first. Everything else works as it does now.</p>
+          <p className="auto-pop-text">AI-BOS auto needs one update on AI-BOS&apos;s side first. Everything else works as it does now.</p>
         </div>
       )}
 
       {pop === 'preview' && (
-        <div role="dialog" aria-label="AIBOS auto" className="dash-pop auto-pop">
+        <div role="dialog" aria-label="AI-BOS auto" className="dash-pop auto-pop">
           <p className="bento-title" style={{ margin: 0 }}>Your team, on your books</p>
           {preview === null ? <div className="skeleton" style={{ height: 64, marginTop: 12 }} /> : preview.total > 0 ? (
             <>
-              <p className="auto-pop-text">Right now, AIBOS auto would be handling:</p>
+              <p className="auto-pop-text">Right now, AI-BOS auto would be handling:</p>
               <ul className="auto-pop-list">
                 {Object.entries(preview.found).map(([w, n]) => (
                   <li key={w}><Check aria-hidden="true" />{n} {(FOUND_WORDS[w] ?? ['thing', 'things'])[n === 1 ? 0 : 1]}</li>

@@ -4,7 +4,7 @@
  * why it fits, write to it, paste what it wrote back, move it on, keep it
  * from ever being written to again, or delete its details for good.
  * Find on LinkedIn opens a search in the owner's own LinkedIn; the address
- * they find is pasted in Edit details (AIBOS never opens LinkedIn itself).
+ * they find is pasted in Edit details (AI-BOS never opens LinkedIn itself).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Panel from '@/components/home/Panel';
@@ -371,14 +371,14 @@ function ProspectDetail({ id, home, onChanged, onGone }: {
             <textarea className="field" rows={4} value={reply} onChange={(e) => setReply(e.target.value)} maxLength={20000} />
           </label>
           <p className="rs-text is-quiet" style={{ marginTop: 6 }}>
-            AIBOS says what it means, moves the business on and writes your answer. Asked to stop means never again.
+            AI-BOS says what it means, moves the business on and writes your answer. Asked to stop means never again.
           </p>
           <div className="rs-btns" style={{ marginTop: 12 }}>
             <button type="button" className="rs-btn is-quiet is-sm" disabled={!reply.trim() || busy !== null}
               onClick={() => void act('reply', async () => {
                 const got = await recordClientReply(id, reply);
                 setReply('');
-                return `AIBOS read it as: ${got.label_words}.${got.draft ? ' Your answer is ready on Today.' : ''}${
+                return `AI-BOS read it as: ${got.label_words}.${got.draft ? ' Your answer is ready on Today.' : ''}${
                   got.label === 'unsubscribe' ? ' They are on your do not contact list now.' : ''}`;
               })}>
               {busy === 'reply' ? 'Reading it' : 'Read their reply'}

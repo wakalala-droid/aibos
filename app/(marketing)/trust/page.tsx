@@ -6,7 +6,7 @@ import StartFree from '@/components/marketing/StartFree';
 export const metadata: Metadata = {
   title: 'Trust Center',
   description:
-    'Your numbers are yours and AIBOS keeps them that way. Export any time, private AI that never trains on your data, no fabricated trends and a free plan so you can prove it before you pay.',
+    'Your numbers are yours and AI-BOS keeps them that way. Export any time, private AI that never trains on your data, no fabricated trends and a free plan so you can prove it before you pay.',
   alternates: { canonical: '/trust' },
 };
 
@@ -26,7 +26,7 @@ const PROMISES: { icon: React.ReactNode; title: string; body: string }[] = [
   {
     icon: <Ban />,
     title: 'No made-up numbers',
-    body: 'AIBOS will not invent a trend it cannot see. If a file has no dates, it tells you instead of drawing a confident line through nothing.',
+    body: 'AI-BOS will not invent a trend it cannot see. If a file has no dates, it tells you instead of drawing a confident line through nothing.',
   },
   {
     icon: <FileSearch />,
@@ -62,7 +62,7 @@ export default function TrustPage() {
             Your numbers are yours. Here’s exactly how we keep them that way.
           </h1>
           <p className="mkt-lead" style={{ marginTop: 18, marginInline: 'auto', maxWidth: 560 }}>
-            The most sensitive thing you will ever upload is your own money. We built AIBOS so that trusting it with that is the easy part.
+            The most sensitive thing you will ever upload is your own money. We built AI-BOS so that trusting it with that is the easy part.
           </p>
         </div>
       </section>
@@ -84,11 +84,11 @@ export default function TrustPage() {
             <p className="mkt-eyebrow">The hardest promise and the most important</p>
             <h2 id="honest-h" className="mkt-h2">It would rather say “I don’t know” than lie to you.</h2>
             <p className="mkt-lead" style={{ marginTop: 18 }}>
-              Many AI tools will happily invent a confident answer. AIBOS has a hard rule against it: if your
+              Many AI tools will happily invent a confident answer. AI-BOS has a hard rule against it: if your
               numbers cannot support a trend, a forecast or a figure, it says so and shows you why.
             </p>
           </div>
-          <BentoCard icon={<FileSearch />} title="How AIBOS read your file" tag="Sample" titleAs="h3">
+          <BentoCard icon={<FileSearch />} title="How AI-BOS read your file" tag="Sample" titleAs="h3">
             <div style={{ marginTop: 12 }}>
               {READ_OUT.map(([column, reading]) => (
                 <div key={column} className="row" style={{ minHeight: 44 }}>

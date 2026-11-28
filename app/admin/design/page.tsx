@@ -125,7 +125,7 @@ export default function DesignGalleryPage() {
             <EmptyState
               colour="var(--e2)"
               chip="Needs named sales"
-              text="Add the customer's name when you record a sale. After about 10 named sales, AIBOS shows who your best customers are."
+              text="Add the customer's name when you record a sale. After about 10 named sales, AI-BOS shows who your best customers are."
               action={{ label: 'Record a sale', href: '/dashboard/record' }}
               secondary={{ label: 'Or upload a file', href: '/dashboard/import' }}
             />

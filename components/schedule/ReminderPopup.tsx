@@ -6,7 +6,7 @@
  * in the bell, a notification on every phone and computer the owner turned them
  * on in and an email when no device got it. The bell polls that feed; this
  * shows each new reminder from it as a card in the corner, so an owner working
- * in AIBOS sees it without opening the bell. It stays until it is opened or
+ * in AI-BOS sees it without opening the bell. It stays until it is opened or
  * dismissed. Either one settles it in the bell as well.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';

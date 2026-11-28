@@ -1,6 +1,6 @@
 'use client';
 /**
- * AIBOS — Inventory catalog (Evolution Initiative 3, Slice A).
+ * AI-BOS — Inventory catalog (Evolution Initiative 3, Slice A).
  * The product master list: name, prices, opening stock, reorder level, supplier.
  * On-hand is derived from events (Slice B). Low-stock items are flagged and also
  * drive the Advisor's LowStockEngine.
@@ -168,7 +168,7 @@ export default function InventoryPage() {
       </div>
 
       {takeMode && (
-        <SectionCard title="Count your stock" subtitle="Count what is on the shelf. AIBOS changes only the ones that differ." style={{ marginBottom: 16 }}>
+        <SectionCard title="Count your stock" subtitle="Count what is on the shelf. AI-BOS changes only the ones that differ." style={{ marginBottom: 16 }}>
           {takeMsg && <p role="status" style={{ fontSize: 'var(--fs-body)', color: 'var(--good)', margin: '0 0 12px' }}>{takeMsg}</p>}
           <div>
             {items.map(p => {
@@ -178,7 +178,7 @@ export default function InventoryPage() {
                   <span className="avatar" aria-hidden="true"><Package /></span>
                   <span className="row-main">
                     <span className="row-title">{p.name}</span>
-                    <span className="row-sub">AIBOS has {onHand.toLocaleString()} {p.unit}</span>
+                    <span className="row-sub">AI-BOS has {onHand.toLocaleString()} {p.unit}</span>
                   </span>
                   <input type="number" inputMode="decimal" aria-label={`Counted ${p.name}`} placeholder="Count"
                     value={counts[p.name] ?? ''} onChange={e => setCounts(c => ({ ...c, [p.name]: e.target.value }))}

@@ -1,11 +1,11 @@
 'use client';
 /**
- * Find clients: one message waiting for the owner. AIBOS never sends it:
+ * Find clients: one message waiting for the owner. AI-BOS never sends it:
  * Open in email, Gmail or WhatsApp puts it in the owner's own app with
- * everything filled in, they press send there, then I sent it here so AIBOS
+ * everything filled in, they press send there, then I sent it here so AI-BOS
  * knows to follow up.
  *
- * LinkedIn (10 Nov 2026) the safe way: AIBOS never opens LinkedIn itself.
+ * LinkedIn (10 Nov 2026) the safe way: AI-BOS never opens LinkedIn itself.
  * The LinkedIn button copies the note (or the message) and opens their page
  * in the owner's own LinkedIn, or a search for them when the page is not
  * known. The owner pastes it, presses send there, then I sent it here.
@@ -258,13 +258,13 @@ export default function DraftCard({ draft, kinds, canWrite, onDone }: {
                   {copied === false
                     ? `Copy the ${what} below. `
                     : `The ${what} is copied. `}
-                  {linkedInSteps} Then press I sent it here so AIBOS knows when to follow up.
+                  {linkedInSteps} Then press I sent it here so AI-BOS knows when to follow up.
                 </p>
                 {copied === false && <div className="rs-quote is-plain" style={{ userSelect: 'all' }}>{liText}</div>}
               </>
             ) : opened && (
               <p className="rs-text is-quiet">
-                Once you have pressed send in {opened === 'whatsapp' ? 'WhatsApp' : 'your email'}, press I sent it so AIBOS
+                Once you have pressed send in {opened === 'whatsapp' ? 'WhatsApp' : 'your email'}, press I sent it so AI-BOS
                 knows when to follow up.
               </p>
             )}

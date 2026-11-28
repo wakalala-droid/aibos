@@ -1,7 +1,7 @@
 // What shipped, in the owner's words, for the "What's new" screen
 // (components/pwa/WhatsNew.tsx). Newest first. The screen shows the newest
-// entry once to anyone who used AIBOS before it shipped: after "Get it now"
-// on the update bar, or on their next visit. Someone opening AIBOS for the
+// entry once to anyone who used AI-BOS before it shipped: after "Get it now"
+// on the update bar, or on their next visit. Someone opening AI-BOS for the
 // first time is not shown it.
 //
 // To announce a release: add an entry at the top with a new id. Keep each
@@ -23,26 +23,38 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-28-aibos-out-loud',
+    date: '2026-11-28',
+    title: 'AI-BOS, out loud and hands on',
+    intro: 'The sphere and the chat are now one AI-BOS. Tap the sphere at the bottom right and talk: it shows you round, answers anything and does the job for you.',
+    items: [
+      { icon: 'decide', title: 'Say it and it is done', text: 'Ask it to open a page, record a sale or fill in a form and it does it on your screen, and anything that pays, sends or deletes waits for your yes.' },
+      { icon: 'assistant', title: 'One AI-BOS that knows it all', text: 'Ask the sphere about your figures, or why AI-BOS works something out the way it does, and it answers from your books and its own rules, like the chat.' },
+      { icon: 'line', title: 'Your spoken report', text: 'Turn it on in Settings and the first time you open AI-BOS each day it tells you how the business is doing and what to do next.' },
+      { icon: 'words', title: 'Pick its voice', text: 'Choose from eight voices in Settings, under The AI-BOS sphere, where tips on new pages can be turned off too.' },
+    ],
+  },
+  {
     id: '2026-11-10-find-clients-linkedin',
     date: '2026-11-10',
     title: 'Find clients on LinkedIn',
-    intro: 'Find clients now works with LinkedIn too, and your LinkedIn account stays yours: AIBOS never signs in to it or sends for you.',
+    intro: 'Find clients now works with LinkedIn too, and your LinkedIn account stays yours: AI-BOS never signs in to it or sends for you.',
     items: [
-      { icon: 'assistant', title: 'Their LinkedIn, kept for you', text: 'When a business links to its LinkedIn page from its website, AIBOS keeps it. You can also paste one or bring it in with a list.' },
-      { icon: 'group', title: 'Find the person who decides', text: 'Find on LinkedIn opens a search in your own LinkedIn. Paste the profile you pick in Edit details and AIBOS writes to them.' },
+      { icon: 'assistant', title: 'Their LinkedIn, kept for you', text: 'When a business links to its LinkedIn page from its website, AI-BOS keeps it. You can also paste one or bring it in with a list.' },
+      { icon: 'group', title: 'Find the person who decides', text: 'Find on LinkedIn opens a search in your own LinkedIn. Paste the profile you pick in Edit details and AI-BOS writes to them.' },
       { icon: 'words', title: 'A note ready to paste', text: 'Each first message comes with a short note for a LinkedIn invitation. Open in LinkedIn copies it, so you paste it and press send.' },
-      { icon: 'line', title: 'Follow-ups as before', text: 'Press I sent it after you send on LinkedIn, and AIBOS tells you when to follow up.' },
+      { icon: 'line', title: 'Follow-ups as before', text: 'Press I sent it after you send on LinkedIn, and AI-BOS tells you when to follow up.' },
     ],
   },
   {
     id: '2026-11-09-find-clients-credits',
     date: '2026-11-09',
     title: 'Find clients answers in seconds',
-    intro: "Searches now read AIBOS's own list of places, and Find clients is priced the simple way: try it free, then top up.",
+    intro: "Searches now read AI-BOS's own list of places, and Find clients is priced the simple way: try it free, then top up.",
     items: [
-      { icon: 'accuracy', title: 'No more timeouts', text: 'AIBOS keeps its own list of places around every town, so a search answers in seconds. If a place is new, AIBOS keeps asking the map for you.' },
+      { icon: 'accuracy', title: 'No more timeouts', text: 'AI-BOS keeps its own list of places around every town, so a search answers in seconds. If a place is new, AI-BOS keeps asking the map for you.' },
       { icon: 'assistant', title: 'New businesses every time', text: 'Each search adds the nearest businesses you do not have yet, so pressing it again brings the next ones.' },
-      { icon: 'plan', title: 'Free for a day', text: 'On Free, AIBOS researches and writes to 10 businesses in the 24 hours after your first search. Pro researches 50 a month, Pro+ 100 and Growth 300.' },
+      { icon: 'plan', title: 'Free for a day', text: 'On Free, AI-BOS researches and writes to 10 businesses in the 24 hours after your first search. Pro researches 50 a month, Pro+ 100 and Growth 300.' },
       { icon: 'words', title: 'Top up any time', text: 'Buy 100 businesses for $5, 300 for $12 or 1,000 for $35 by card, on any plan. They never run out. Finding businesses costs nothing.' },
     ],
   },
@@ -52,7 +64,7 @@ export const RELEASES: Release[] = [
     title: 'Find clients is on your plan',
     intro: 'Every plan now finds businesses that could buy from you, Free included. The plans differ in how many a month.',
     items: [
-      { icon: 'assistant', title: 'Show me who could buy from me', text: 'Say in a line what you sell and who to, press once, and AIBOS finds businesses near you, reads the first few and writes to the ones that fit.' },
+      { icon: 'assistant', title: 'Show me who could buy from me', text: 'Say in a line what you sell and who to, press once, and AI-BOS finds businesses near you, reads the first few and writes to the ones that fit.' },
       { icon: 'plan', title: 'How many a month', text: 'Free researches 20 businesses a month, Pro 50, Pro+ 100 and Growth 300. Finding them on the map does not count.' },
       { icon: 'accuracy', title: 'A faster, steadier map search', text: 'The search now asks several map servers at once and carries on while you wait, so it no longer stops with an error.' },
       { icon: 'words', title: 'Still sent by you', text: 'Nothing goes out until you press send in your own email or WhatsApp.' },
@@ -62,12 +74,12 @@ export const RELEASES: Release[] = [
     id: '2026-11-05-find-clients',
     date: '2026-11-05',
     title: 'Find your next customers',
-    intro: 'On Growth, AIBOS now looks for businesses that could buy from you and writes to them for you to send.',
+    intro: 'On Growth, AI-BOS now looks for businesses that could buy from you and writes to them for you to send.',
     items: [
-      { icon: 'assistant', title: 'Businesses found for you (Growth)', text: 'Pick a kind of business and a town, or paste your own list, and AIBOS adds them without finding anyone twice.' },
-      { icon: 'decide', title: 'Which ones fit, and why', text: 'AIBOS reads each website, scores the fit and writes the first message to the ones worth writing to: 300 a month.' },
+      { icon: 'assistant', title: 'Businesses found for you (Growth)', text: 'Pick a kind of business and a town, or paste your own list, and AI-BOS adds them without finding anyone twice.' },
+      { icon: 'decide', title: 'Which ones fit, and why', text: 'AI-BOS reads each website, scores the fit and writes the first message to the ones worth writing to: 300 a month.' },
       { icon: 'words', title: 'Sent from your own email or WhatsApp', text: 'Nothing goes out until you press send there, and anyone who asks you to stop is never written to again.' },
-      { icon: 'line', title: 'Replies and follow-ups', text: 'Paste what they wrote back and AIBOS says what it means, drafts your answer and tells you when a follow-up is due.' },
+      { icon: 'line', title: 'Replies and follow-ups', text: 'Paste what they wrote back and AI-BOS says what it means, drafts your answer and tells you when a follow-up is due.' },
     ],
   },
   {
@@ -76,7 +88,7 @@ export const RELEASES: Release[] = [
     title: 'Who to ask for money first',
     intro: 'Your plan now acts: on Home, in your pocket every Monday, and on your monthly targets.',
     items: [
-      { icon: 'plan', title: 'The next 13 weeks on Home (Growth)', text: 'What is safe to spend today, the chance of running short and what is due out in the next two weeks, the moment you open AIBOS.' },
+      { icon: 'plan', title: 'The next 13 weeks on Home (Growth)', text: 'What is safe to spend today, the chance of running short and what is due out in the next two weeks, the moment you open AI-BOS.' },
       { icon: 'assistant', title: 'Ask for money first (Growth)', text: 'Debts in the order that helps your money most, each with the reminder and your payment link ready to send on WhatsApp.' },
       { icon: 'warn', title: 'Your week ahead (Growth)', text: 'Every Monday morning on your phone: what goes out and when, what is likely to come in, and who to ask first.' },
       { icon: 'line', title: 'Targets judged on pace', text: 'Halfway through the month your plan no longer reads red for half a month of sales: it says what the month is on pace for and the chance you hit it.' },
@@ -99,14 +111,14 @@ export const RELEASES: Release[] = [
   {
     id: '2026-10-05-bento',
     date: '2026-10-05',
-    title: 'AIBOS has a new look',
+    title: 'AI-BOS has a new look',
     intro: 'Cleaner cards, one colour for numbers and reports that speak plainly. Here is what changed.',
     items: [
       { icon: 'bento', title: 'New cards everywhere', text: 'Home, the briefs, the reports and the small cards now share one calm card style, and dark mode is a true black.' },
       { icon: 'ink', title: 'One colour for numbers', text: 'Every figure is in the same ink. Red now means one thing only: something went the wrong way.' },
       { icon: 'breakeven', title: 'A clearer breakeven', text: 'See where your sales cross your costs, how much room you have and each month against the line.' },
       { icon: 'words', title: 'Reports in plain words', text: 'How you compare, Till sales and Month by month say what they mean, with no jargon.' },
-      { icon: 'assistant', title: 'Ask AIBOS, restyled', text: 'Both assistant panels match the new cards, with bigger buttons that are easy to tap.' },
+      { icon: 'assistant', title: 'Ask AI-BOS, restyled', text: 'Both assistant panels match the new cards, with bigger buttons that are easy to tap.' },
       { icon: 'menu', title: 'A tidier side menu', text: 'New icons in one style, and the light and dark switch no longer gets cut off.' },
       { icon: 'line', title: 'Money line fixed', text: 'The shading on the Home money line now always sits under the line, even when the balance dips below zero.' },
       { icon: 'studio', title: 'Data Studio retired', text: 'What it did now lives on Home and in the reports. Old links open Home.' },

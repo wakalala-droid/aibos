@@ -1,11 +1,11 @@
 'use client';
 
 // components/talk/TalkOverlay.tsx
-// Talking to AIBOS, full screen (owner, 17 Nov 2026): the AIBOS sphere comes
+// Talking to AI-BOS, full screen (owner, 17 Nov 2026): the AI-BOS sphere comes
 // up in the middle of a navy screen while the conversation runs. Under it,
-// what AIBOS is doing in one word, the words it just heard or the start of
+// what AI-BOS is doing in one word, the words it just heard or the start of
 // its answer, and a job waiting for a yes, so it can be tapped as well as
-// said. Tapping the sphere (or Talk now) stops AIBOS and listens; after a
+// said. Tapping the sphere (or Talk now) stops AI-BOS and listens; after a
 // quiet spell it rests here until tapped. End goes back to the page; Type
 // instead keeps the chat open without the voice. Escape ends.
 
@@ -66,10 +66,10 @@ export default function TalkOverlay({ phase, heard, answer, error, job, busy, on
   const canTap = phase === 'speaking' || phase === 'briefing' || resting;
 
   return (
-    <div ref={panel} className="talk-overlay" data-theme="dark" role="dialog" aria-modal="true" aria-label="Talking to AIBOS">
+    <div ref={panel} className="talk-overlay" data-theme="dark" role="dialog" aria-modal="true" aria-label="Talking to AI-BOS">
       <div className="talk-overlay-body">
         <button type="button" className="talk-sphere-btn" onClick={onInterrupt} disabled={!canTap}
-          aria-label={canTap ? 'Talk now' : `AIBOS is ${WORDS[phase].toLowerCase()}`}>
+          aria-label={canTap ? 'Talk now' : `AI-BOS is ${WORDS[phase].toLowerCase()}`}>
           <AibosSphere size={size} bars width={w} phase={resting ? 'idle' : phase} pulse={said} />
         </button>
         <p className="talk-phase" role="status" aria-live="polite">{WORDS[phase]}</p>

@@ -1,7 +1,7 @@
 {
-  "name": "AIBOS",
-  "short_name": "AIBOS",
-  "description": "Record what happens, ask anything and let AIBOS run the numbers. Built for African businesses.",
+  "name": "AI-BOS",
+  "short_name": "AI-BOS",
+  "description": "Record what happens, ask anything and let AI-BOS run the numbers. Built for African businesses.",
   "id": "/dashboard",
   "start_url": "/dashboard",
   "scope": "/",
@@ -36,7 +36,7 @@
     {
       "name": "Record a sale",
       "short_name": "Record",
-      "description": "Say what happened and AIBOS keeps the books",
+      "description": "Say what happened and AI-BOS keeps the books",
       "url": "/dashboard/record",
       "icons": [
         {
@@ -60,7 +60,7 @@
       ]
     },
     {
-      "name": "Ask AIBOS",
+      "name": "Ask AI-BOS",
       "short_name": "Ask",
       "description": "Ask anything about your business",
       "url": "/dashboard?ask=1",

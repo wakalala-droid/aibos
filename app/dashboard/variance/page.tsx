@@ -28,7 +28,7 @@ export default function VariancePage() {
   const sym = currencySymbol || 'K';
 
   // Each month's change read with the busy and quiet months the owner told
-  // AIBOS (aibos-api seasons.py): a fall into a quiet January is not the
+  // AI-BOS (aibos-api seasons.py): a fall into a quiet January is not the
   // wrong way. Until it is read, or if it cannot be, the page reads as before.
   // Keyed by the figures, so a fresh copy of the same months is not read again.
   const rowsKey = useMemo(() => JSON.stringify(monthly.map((m) => [String(m.Month), Number(m.Revenue) || 0, Number(m.Costs) || 0])), [monthly]);

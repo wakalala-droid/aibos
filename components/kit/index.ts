@@ -1,5 +1,5 @@
 /**
- * AI-BOS UI kit: the AIBOS x Mercury pieces every screen, notice and email is
+ * AI-BOS UI kit: the AI-BOS x Mercury pieces every screen, notice and email is
  * built from (owner, 7 Oct 2026). Import from here, never build a one-off.
  * The guide is docs/AIBOS_UI_KIT.md.
  */

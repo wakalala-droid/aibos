@@ -1,7 +1,7 @@
 'use client';
 /**
- * AIBOS — Growth Journey (Progressive Intelligence · Initiative 6 / Bible Ch.16).
- * A calm 5-stage stepper that shows where the business is on its AIBOS journey and
+ * AI-BOS — Growth Journey (Progressive Intelligence · Initiative 6 / Bible Ch.16).
+ * A calm 5-stage stepper that shows where the business is on its AI-BOS journey and
  * the single next action. Reveals capability as data accrues — never overwhelms.
  */
 import { useStore } from '@/lib/store';

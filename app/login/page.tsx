@@ -35,7 +35,7 @@ function Logo() {
     // sits in a landmark a screen reader can move between (audit 19 Nov 2026).
     <header className="login-logo">
       <Image src="/brand/aibos-mark-white-glyph.png" alt="" aria-hidden width={34} height={34} style={{ width: 34, height: 34, objectFit: 'contain' }} priority />
-      <Image src="/brand/aibos-wordmark-white.png" alt="AIBOS" width={92} height={24} style={{ width: 92, height: 'auto', objectFit: 'contain' }} priority />
+      <Image src="/brand/aibos-wordmark-white.png" alt="AI-BOS" width={92} height={24} style={{ width: 92, height: 'auto', objectFit: 'contain' }} priority />
     </header>
   );
 }
@@ -129,7 +129,7 @@ function LoginForm() {
     <main className={`notice notice-floating login-card${errorMsg ? ' is-error' : ''}${shaking ? ' shake' : ''}`}>
       <NoticeArt theme="dark" />
       <div className="login-body">
-        <h1 className="login-title">Sign in to AIBOS</h1>
+        <h1 className="login-title">Sign in to AI-BOS</h1>
         <p className="login-text">Use your Google account. There is no password to remember.</p>
 
         {errorMsg && <p role="alert" className="login-error">{errorMsg}</p>}
@@ -169,8 +169,8 @@ export default function LoginPage() {
         <LoginForm />
       </Suspense>
       {/* An Android phone in a browser: the app is one tap from here too (lib/nativeApp.ts). */}
-      <aside className="login-app when-android" aria-label="The AIBOS app">
-        <GetAndroidApp className="pill pill-quiet">Get the AIBOS app for Android</GetAndroidApp>
+      <aside className="login-app when-android" aria-label="The AI-BOS app">
+        <GetAndroidApp className="pill pill-quiet">Get the AI-BOS app for Android</GetAndroidApp>
       </aside>
       <footer className="login-foot">Artificial Intelligence Business Operating System</footer>
     </div>

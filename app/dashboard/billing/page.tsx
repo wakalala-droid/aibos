@@ -1,6 +1,6 @@
 'use client';
 /**
- * AIBOS: Plan & billing (upgrades 1 and 2).
+ * AI-BOS: Plan & billing (upgrades 1 and 2).
  *
  * Only the admin could see when a customer's plan ends and what they had paid.
  * An owner learned their plan was ending from a reminder, had nowhere to check
@@ -34,7 +34,7 @@ const STATE: Record<PlanState, { label: string; colour: string }> = {
   active:   { label: 'Paid up',          colour: 'var(--good)' },
   grace:    { label: 'Payment due',      colour: 'var(--warn)' },
   expired:  { label: 'Ended',            colour: 'var(--crit)' },
-  included: { label: 'Set up by AIBOS',  colour: 'var(--cyan)' },
+  included: { label: 'Set up by AI-BOS',  colour: 'var(--cyan)' },
   free:     { label: 'Free plan',        colour: 'var(--text-3)' },
 };
 

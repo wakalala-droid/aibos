@@ -44,9 +44,9 @@ export default function ActivationProgress() {
   const dismiss = () => { try { window.localStorage.setItem(DISMISS_KEY, '1'); } catch { /* private mode */ } setDone(true); };
 
   const text = !reached
-    ? `Record a sale or expense on ${GOAL_DAYS} different days. That is enough for AIBOS to spot your first patterns.`
+    ? `Record a sale or expense on ${GOAL_DAYS} different days. That is enough for AI-BOS to spot your first patterns.`
     : trial.owned
-      ? 'Every morning at 06:30 AIBOS sums up your day, and the one thing to do sits under your greeting.'
+      ? 'Every morning at 06:30 AI-BOS sums up your day, and the one thing to do sits under your greeting.'
       : trial.active && trial.endsOn
         ? `For the next ${TRIAL_DAYS} days, free until ${dayWords(trial.endsOn)}: the one thing to do each day sits under your greeting.`
         : 'The one thing to do each day sits under your greeting.';

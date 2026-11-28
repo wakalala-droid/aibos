@@ -1,6 +1,6 @@
 'use client';
 /**
- * AIBOS — the annual leave each person is owed.
+ * AI-BOS — the annual leave each person is owed.
  *
  * At least 2 days a month on full pay (Employment Code Act 2019, s.36(1)),
  * earned with every payroll run for the month worked; the days taken and paid
@@ -44,7 +44,7 @@ export default function LeaveCard({ book, money }: { book: LeaveBook; money: (v:
               {p.status === 'left' && p.owed > 0 ? <Chip tone="bad">Left, unpaid</Chip> : p.owed > 24 ? <Chip tone="wait">Over a year&rsquo;s</Chip> : null}
             </span>
             <span className="row-sub" style={{ whiteSpace: 'normal' }}>
-              {p.rate} days a month · {p.earned} earned{p.opening > 0 ? ` + ${p.opening} from before AIBOS` : ''}
+              {p.rate} days a month · {p.earned} earned{p.opening > 0 ? ` + ${p.opening} from before AI-BOS` : ''}
               {p.taken > 0 ? ` · ${p.taken} taken` : ''}{p.paid_out > 0 ? ` · ${p.paid_out} paid out` : ''}
             </span>
           </span>

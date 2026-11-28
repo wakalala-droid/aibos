@@ -1,4 +1,4 @@
-// lib/aiKnowledge.ts — AIBOS assistant knowledge base.
+// lib/aiKnowledge.ts — AI-BOS assistant knowledge base.
 //
 // This is the "pre-recorded dataset" that lets the floating assistant answer the
 // most common questions WITHOUT hitting the Grok backend:
@@ -187,14 +187,14 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     id: 'card.unifiedIntelligence',
     title: 'Unified Engine Intelligence',
     what: 'AI-synthesised insights drawn across all three engines at once (Financial, Customer and Operations) ranked by priority.',
-    why: "This is where AIBOS connects dots a human would miss: e.g. a margin dip explained by a churn spike in your best segment. It's the cross-engine reasoning that single dashboards can't give you.",
+    why: "This is where AI-BOS connects dots a human would miss: e.g. a margin dip explained by a churn spike in your best segment. It's the cross-engine reasoning that single dashboards can't give you.",
     how: 'Real cross-engine insights are used when two or more engines have data; otherwise signals are derived from whichever engine is loaded. High-priority items always surface first.',
     followups: ['What is my single most urgent action?', 'Give me the full brief'],
   },
   'card.executiveBrief': {
     id: 'card.executiveBrief',
     title: 'Executive Action Plan',
-    what: 'A short, ranked list of the concrete actions AIBOS recommends right now, drawn from your unified intelligence brief.',
+    what: 'A short, ranked list of the concrete actions AI-BOS recommends right now, drawn from your unified intelligence brief.',
     why: 'Insight without action is just trivia. This turns everything the engines found into a prioritised to-do list you can act on today.',
     followups: ['Why is this the top action?', 'Open the full brief'],
   },
@@ -202,7 +202,7 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     id: 'card.upload',
     title: 'Upload & Analyse',
     what: 'Where you bring data in: a CSV or Excel file with month, revenue and cost columns, or a POS / customer export.',
-    why: "Everything on this dashboard comes from what you upload. The more engines you feed (financial, customer, operations), the more cross-engine intelligence AIBOS can give you.",
+    why: "Everything on this dashboard comes from what you upload. The more engines you feed (financial, customer, operations), the more cross-engine intelligence AI-BOS can give you.",
     followups: ['What file format do you need?', 'What columns should my file have?'],
   },
   'card.quickAccess': {
@@ -214,15 +214,15 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
   'card.alerts': {
     id: 'card.alerts',
     title: 'Active Alerts',
-    what: 'Variance and anomaly flags AIBOS has raised: unusual movements in your numbers that are worth a look.',
+    what: 'Variance and anomaly flags AI-BOS has raised: unusual movements in your numbers that are worth a look.',
     why: 'These are the things you would want someone to tap you on the shoulder about: a cost that jumped, a month that broke pattern. Catching them early is the whole point.',
     followups: ['What caused this alert?', 'Show me my anomalies'],
   },
   'card.dataManifest': {
     id: 'card.dataManifest',
-    title: 'How AIBOS Read Your File',
-    what: 'A transparent breakdown of how AIBOS interpreted each column of your upload: what it thinks each one means and how confident it is.',
-    why: "Trust comes from showing the work. Before you rely on a single number, this card lets you confirm AIBOS read your file the way you intended.",
+    title: 'How AI-BOS Read Your File',
+    what: 'A transparent breakdown of how AI-BOS interpreted each column of your upload: what it thinks each one means and how confident it is.',
+    why: "Trust comes from showing the work. Before you rely on a single number, this card lets you confirm AI-BOS read your file the way you intended.",
   },
 
   // ── Scheduler ───────────────────────────────────────────────────────────────
@@ -231,7 +231,7 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     title: 'Your Schedule',
     what: 'Every commitment with a date on it: meetings, customer pick-ups, deliveries, ZRA and NAPSA deadlines, payments due: grouped into Overdue, Today, Tomorrow and beyond.',
     why: 'Missed pick-ups cost sales and missed statutory deadlines cost penalties. One glance here tells you what the day demands before it demands it.',
-    how: 'Add items with Quick add, tap Done as they happen. When a pick-up or payment with an amount is done, AIBOS offers to record it straight into your books so the schedule and the numbers stay one story. Recurring items (Pro+) roll to their next date automatically.',
+    how: 'Add items with Quick add, tap Done as they happen. When a pick-up or payment with an amount is done, AI-BOS offers to record it straight into your books so the schedule and the numbers stay one story. Recurring items (Pro+) roll to their next date automatically.',
     followups: ['What is overdue right now?', 'How do recurring items work?'],
   },
   'schedule.quickadd': {
@@ -248,7 +248,7 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     title: 'Your People',
     what: 'The register of everyone the company pays: their role, basic pay, allowances, pay day, staff loan balance and, for fixed-term staff, gratuity terms.',
     why: 'Payroll can only be as right as the register behind it. Keeping people here means PAYE, NAPSA and net pay are worked out from real details, not guessed each month.',
-    how: 'Add a person with a name and basic pay to start, and their allowances (housing, transport and other cash paid every month) if they have any: PAYE and NAPSA count allowances, NHIMA does not. Open "Dates, gratuity, IDs and loan" for the day they started, when a contract ends, gratuity (on by law for a fixed-term contract, at least 25% of basic pay), their NRC, TPIN, NAPSA and NHIMA numbers, a second job (PAYE at 37%), pay and PAYE earlier in the year (so PAYE uses ZRA’s cumulative tables), staff loans and to mark someone aged 60 or over, who no longer pays NAPSA. When someone leaves, set "Left on": their last month is paid as their final pay and their leaving papers are one tap away. A casual worker is paid by the hour with the 25% casual loading and taxed on ZRA’s daily tables. A date of birth stops NAPSA at 60 by itself (65 if they chose it and you agreed). Choose the minimum wage Order that covers someone (General, Shop Workers or Domestic Workers, 2023) and AIBOS checks their pay against it. The register is free: running payroll is the Pro+ step.',
+    how: 'Add a person with a name and basic pay to start, and their allowances (housing, transport and other cash paid every month) if they have any: PAYE and NAPSA count allowances, NHIMA does not. Open "Dates, gratuity, IDs and loan" for the day they started, when a contract ends, gratuity (on by law for a fixed-term contract, at least 25% of basic pay), their NRC, TPIN, NAPSA and NHIMA numbers, a second job (PAYE at 37%), pay and PAYE earlier in the year (so PAYE uses ZRA’s cumulative tables), staff loans and to mark someone aged 60 or over, who no longer pays NAPSA. When someone leaves, set "Left on": their last month is paid as their final pay and their leaving papers are one tap away. A casual worker is paid by the hour with the 25% casual loading and taxed on ZRA’s daily tables. A date of birth stops NAPSA at 60 by itself (65 if they chose it and you agreed). Choose the minimum wage Order that covers someone (General, Shop Workers or Domestic Workers, 2023) and AI-BOS checks their pay against it. The register is free: running payroll is the Pro+ step.',
     followups: ['How is a staff loan deducted?', 'Who accrues gratuity?'],
   },
   'payroll.checks': {
@@ -264,7 +264,7 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     title: 'Leave',
     what: 'The annual leave each person is owed: at least 2 days a month on full pay (Employment Code Act 2019, s.36), earned with every payroll run, less the days taken and paid out, and what paying them out would cost (full pay × days ÷ 26).',
     why: 'Leave not taken is still owed and is paid when someone leaves (s.36(5)), so the days owed are money owed. Seeing them every month keeps leave planned and the last pay right.',
-    how: 'Type the days someone takes in that month’s run (they are paid as normal). Their last pay offers to pay out the days still owed. Leave owed from before AIBOS, or more than 2 days a month in a contract, goes in the person’s details. Casual workers earn no annual leave.',
+    how: 'Type the days someone takes in that month’s run (they are paid as normal). Their last pay offers to pay out the days still owed. Leave owed from before AI-BOS, or more than 2 days a month in a contract, goes in the person’s details. Casual workers earn no annual leave.',
     followups: ['How is leave pay worked out?', 'What happens to leave when someone leaves?'],
   },
   'payroll.gratuity': {
@@ -272,16 +272,16 @@ export const COMPONENT_KNOWLEDGE: Record<string, ComponentDoc> = {
     title: 'Gratuity',
     what: 'What you owe each person in gratuity: at least 25% of the basic pay they earn over a fixed-term contract (Employment Code Act 2019, s.73), set aside with every payroll run, when it falls due and what is overdue.',
     why: 'Gratuity is owed money that builds up quietly for a year or two and then falls due all at once. Seeing it every month means the cash is there when the contract ends, and nobody leaves without it.',
-    how: 'AIBOS sets each month’s share aside on the basic pay earned that month and counts it in what each person costs you. When a contract ends, or someone leaves, the run ticks Pay gratuity for them: it is paid with that pay, tax-free (no PAYE, NAPSA or NHIMA; the Skills Development Levy is added on it). Gratuity owed from before AIBOS goes in the person’s details.',
+    how: 'AI-BOS sets each month’s share aside on the basic pay earned that month and counts it in what each person costs you. When a contract ends, or someone leaves, the run ticks Pay gratuity for them: it is paid with that pay, tax-free (no PAYE, NAPSA or NHIMA; the Skills Development Levy is added on it). Gratuity owed from before AI-BOS goes in the person’s details.',
     followups: ['Is gratuity taxed?', 'What if a contract ends early?'],
   },
   'payroll.run': {
     id: 'payroll.run',
     title: 'Run Payroll',
-    what: 'Pick a month and AIBOS computes each active employee’s payslip (gross, NAPSA, NHIMA, PAYE and take-home pay) and what you pay on top as the employer (your own 5% NAPSA, 1% NHIMA and, if your business pays it, the 0.5% Skills Development Levy), using the Zambian statutory rates it keeps up to date for you.',
+    what: 'Pick a month and AI-BOS computes each active employee’s payslip (gross, NAPSA, NHIMA, PAYE and take-home pay) and what you pay on top as the employer (your own 5% NAPSA, 1% NHIMA and, if your business pays it, the 0.5% Skills Development Levy), using the Zambian statutory rates it keeps up to date for you.',
     why: 'Payroll is monthly, error-prone hard maths with real penalties for getting NAPSA or PAYE wrong. Doing it for you (and posting each salary into your books) keeps the numbers and the law in one place.',
     how: 'Preview is free and shows the full table with totals. Tap the sliders beside a person for their month as it really was: the basic for part of a month, extra pay such as overtime or a bonus, leave days paid out (full pay × days ÷ 26) and paying their gratuity. PAYE follows ZRA’s cumulative tables, so a bonus or a raise is taxed over the year; someone who started part-way through the year without an ITF/P13 is taxed month by month. Running it (Pro+) posts one confirmed Salary event per employee (at their NET pay, any gratuity paid included) into your P&L and cashflow, decrements staff loans and records the run. It also drafts what goes to each authority by the 10th of next month: PAYE (and the levy) to ZRA, NAPSA (your staff 5% plus your 5%) and NHIMA (their 1% plus your 1%), as payments waiting for you; you confirm each when you actually pay, so the money is never counted twice. The tax pack lists each person as each return does. Each month can only be run once, so nothing is paid twice.',
-    followups: ['What rates is AIBOS using?', 'How does NAPSA get calculated?', 'Where do the salaries and remittances show in my books?'],
+    followups: ['What rates is AI-BOS using?', 'How does NAPSA get calculated?', 'Where do the salaries and remittances show in my books?'],
   },
   'dash.upcoming': {
     id: 'dash.upcoming',
@@ -347,7 +347,7 @@ const GLOSSARY: GlossaryEntry[] = [
   { keys: ['breakeven', 'break even', 'break-even'], term: 'Breakeven',
     def: 'Breakeven is the revenue level where you exactly cover your costs: below it you lose money, above it you profit. It tells you the minimum you must sell.' },
   { keys: ['anomaly', 'anomalies'], term: 'Anomaly',
-    def: 'An anomaly is a number that breaks your normal pattern: an unusual spike or drop. AIBOS flags them so genuine problems and opportunities do not slip past unnoticed.' },
+    def: 'An anomaly is a number that breaks your normal pattern: an unusual spike or drop. AI-BOS flags them so genuine problems and opportunities do not slip past unnoticed.' },
   { keys: ['variance'], term: 'Variance',
     def: 'Variance is the gap between what you expected and what actually happened. Tracking it shows whether your business is drifting off plan and by how much.' },
   { keys: ['forecast', 'projection'], term: 'Forecast',
@@ -411,10 +411,10 @@ export function localAnswer(rawQuery: string, lv: LiveMetrics): string | null {
 
   // Greetings & capability questions — always local.
   if (/^(hi|hey|hello|yo|hiya|good (morning|afternoon|evening))\b/.test(q)) {
-    return "Hello! I'm your AIBOS assistant. I can explain anything on your dashboard, define any term and pull up your live numbers. Long-press any card to have me break it down: or just ask.";
+    return "Hello! I'm your AI-BOS assistant. I can explain anything on your dashboard, define any term and pull up your live numbers. Long-press any card to have me break it down: or just ask.";
   }
   if (has(q, 'what can you do', 'how do you work', 'who are you', 'what are you', 'how can you help', 'help me')) {
-    return "I'm built into your AIBOS dashboard. I can:\n\n• **Answer business questions**: “how much cash do I have?”, “what's my current inventory?”, “how much did I make today?”.\n• **Explain any component**: long-press a card and I'll tell you what it is and why it matters.\n• **Define any term**: ask “what is net margin?” or “explain RFM”.\n• **Reason across your data**: deeper “why” and “what should I do” questions go to the full AI CFO.";
+    return "I'm built into your AI-BOS dashboard. I can:\n\n• **Answer business questions**: “how much cash do I have?”, “what's my current inventory?”, “how much did I make today?”.\n• **Explain any component**: long-press a card and I'll tell you what it is and why it matters.\n• **Define any term**: ask “what is net margin?” or “explain RFM”.\n• **Reason across your data**: deeper “why” and “what should I do” questions go to the full AI CFO.";
   }
 
   // How to upload / add data — always useful, answered locally.
@@ -458,10 +458,10 @@ export function localAnswer(rawQuery: string, lv: LiveMetrics): string | null {
 }
 
 const RECORD_HOWTO =
-  "Recording is how AIBOS learns your business: one line at a time:\n\n1. Open the **Record** page.\n2. Type (or speak) what happened in plain words: “sold 3 bags of mealie meal for K450”, “paid K200 for transport”, “received 50kg sugar from Kasama Traders, K900”.\n3. Check the preview and confirm.\n\nThat's it. Each event updates your cash, stock and money owed automatically: and the more you record, the smarter my answers get.";
+  "Recording is how AI-BOS learns your business: one line at a time:\n\n1. Open the **Record** page.\n2. Type (or speak) what happened in plain words: “sold 3 bags of mealie meal for K450”, “paid K200 for transport”, “received 50kg sugar from Kasama Traders, K900”.\n3. Check the preview and confirm.\n\nThat's it. Each event updates your cash, stock and money owed automatically: and the more you record, the smarter my answers get.";
 
 const UPLOAD_HOWTO =
-  "Two ways to bring in your data:\n\n• **Record it**: open **Record**, type what happened (“sold 3 bags of mealie meal for K450”), confirm, done. AIBOS keeps the books from there.\n• **Upload a file**: on the **Overview** page, drop a CSV or Excel file (financials with month, revenue and cost columns, a POS export, or a customer file).\n\nAs soon as either is in, I can answer with your real numbers: until then I won't make any up.";
+  "Two ways to bring in your data:\n\n• **Record it**: open **Record**, type what happened (“sold 3 bags of mealie meal for K450”), confirm, done. AI-BOS keeps the books from there.\n• **Upload a file**: on the **Overview** page, drop a CSV or Excel file (financials with month, revenue and cost columns, a POS export, or a customer file).\n\nAs soon as either is in, I can answer with your real numbers: until then I won't make any up.";
 
 function capitalise(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);

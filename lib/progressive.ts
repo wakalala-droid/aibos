@@ -3,7 +3,7 @@
 // The platform reveals capability as the business matures — Observe → Understand →
 // Predict → Recommend → Optimize. This is a SEPARATE axis from paid tiers
 // (lib/tiers.ts): tiers gate by plan, stages gate by how much the business has
-// taught AIBOS. Thresholds are grounded in real engine capability — e.g. the
+// taught AI-BOS. Thresholds are grounded in real engine capability — e.g. the
 // Financial engine needs >= 3 periods before a forecast is honest (engine.py
 // n_periods >= 3), so "Predict" unlocks at 3 months of data, never sooner
 // (SAFEGUARD §0.1: no fabricated trends).
@@ -25,7 +25,7 @@ export const STAGES: Stage[] = [
   { id: 1, key: 'record',     title: 'Record',     blurb: 'Capture what happens, effortlessly.',        monthsNeeded: 0 },
   { id: 2, key: 'understand', title: 'Understand', blurb: 'See your P&L, cash and health.',             monthsNeeded: 1 },
   { id: 3, key: 'predict',    title: 'Predict',    blurb: 'Forecasts, anomalies & variance unlock.',    monthsNeeded: 3 },
-  { id: 4, key: 'recommend',  title: 'Recommend',  blurb: 'AIBOS suggests actions on your numbers.',    monthsNeeded: 6 },
+  { id: 4, key: 'recommend',  title: 'Recommend',  blurb: 'AI-BOS suggests actions on your numbers.',    monthsNeeded: 6 },
   { id: 5, key: 'optimize',   title: 'Optimize',   blurb: 'Continuous optimisation across the business.', monthsNeeded: 12 },
 ];
 
@@ -69,7 +69,7 @@ export function computeProgress(twin: Twin | null): Progress {
       ? `Keep recording: ${need} more month${need === 1 ? '' : 's'} of activity unlocks ${next.title}.`
       : `You're ready for ${next.title}.`;
   } else {
-    nextAction = 'Your AIBOS is fully matured: every engine is live.';
+    nextAction = 'Your AI-BOS is fully matured: every engine is live.';
   }
 
   return { stage: current, next, months, events, pctToNext, nextAction };

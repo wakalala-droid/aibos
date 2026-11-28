@@ -1,8 +1,8 @@
 'use client';
 /**
- * AIBOS — "Is this you?" — the Setup Wizard's identity match.
+ * AI-BOS — "Is this you?" — the Setup Wizard's identity match.
  *
- * The owner types their business name. If AIBOS can find their existing public
+ * The owner types their business name. If AI-BOS can find their existing public
  * listing, it offers it back as ONE TAP that fills industry, location, hours,
  * phone, website and logo. Eight fields for one tap, on a phone, on mobile data.
  *
@@ -218,7 +218,7 @@ export default function BusinessMatchCard({
               </p>
               <p style={{ ...metaText, marginTop: 4 }}>
                 That&apos;s normal: most small businesses aren&apos;t listed yet. Carry on
-                filling this in and once you&apos;re set up AIBOS can help you get on
+                filling this in and once you&apos;re set up AI-BOS can help you get on
                 Google Maps so customers can find you.
               </p>
             </Shell>

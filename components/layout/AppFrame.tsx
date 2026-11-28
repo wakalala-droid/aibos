@@ -24,7 +24,7 @@ import GuideSphere from '@/components/guide/GuideSphere';
 // main area). The login/auth screens are standalone and must not show the
 // navigation — you aren't signed in yet.
 // '/pay' is the customer-facing invoice payment page (migration 0025). The
-// person on it has no AIBOS account and never will — showing them the product
+// person on it has no AI-BOS account and never will — showing them the product
 // sidebar would be nonsense.
 // '/checkout' is a focused payment page, like a Stripe or Linear checkout: no
 // sidebar, bottom tabs or floating assistant sitting over the card form.
@@ -58,7 +58,7 @@ function MoonIcon() {
 // The app's own helpers, on every app screen (they used to load on the public
 // website too): offline sync and the service worker, toasts, the confirm
 // sheet and phone card tables. And the old home-screen shortcut's screen,
-// which asks for the AIBOS app instead (components/app/RetireShortcut.tsx).
+// which asks for the AI-BOS app instead (components/app/RetireShortcut.tsx).
 function Helpers() {
   return <><OfflineSync /><AppToaster /><ConfirmSheet /><TableCards /><RetireShortcut /></>;
 }
@@ -126,7 +126,7 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
                 phone it used to take a line of its own under this bar. */}
             <BusinessSwitcher fallback={
               <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.02em' }}>
-                AIBOS
+                AI-BOS
               </span>
             } />
 
@@ -143,7 +143,7 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
           <main id="main" tabIndex={-1} style={{ outline: 'none' }}>{children}</main>
         </div>
 
-        {/* Floating AI assistant — available across the dashboard chrome. */}
+        {/* The written chat with AI-BOS: it opens above the sphere below. */}
         <FloatingAiAssistant />
 
         {/* Thumb-reach bottom tabs on phones (hidden at lg+). */}
@@ -155,8 +155,9 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
         {/* The Record form over any page (C3). */}
         <RecordSheet />
 
-        {/* The live guide: a sphere the owner puts anywhere, that talks,
-            reads the screen and points (components/guide/GuideSphere.tsx). */}
+        {/* AI-BOS itself (28 Nov 2026): one sphere the owner puts anywhere,
+            that talks, reads the screen, points, does jobs and opens the
+            written chat above (components/guide/GuideSphere.tsx). */}
         <GuideSphere />
       </div>
       <Helpers />

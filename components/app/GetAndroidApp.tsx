@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * "Get the app": downloads the AIBOS Android app straight from this website,
+ * "Get the app": downloads the AI-BOS Android app straight from this website,
  * then shows what to tap next (owner, 21 Oct 2026: "make sure every user
  * installs the APK from the website").
  *
@@ -35,7 +35,7 @@ export function ApkLink({ className = 'pill pill-primary', style, children, onDo
     <a
       ref={linkRef}
       href={ANDROID_APP.apk}
-      download="AIBOS.apk"
+      download="AI-BOS.apk"
       type="application/vnd.android.package-archive"
       className={className}
       style={style}
@@ -73,8 +73,8 @@ export default function GetAndroidApp({ className = 'pill pill-primary', style, 
           <Notice
             brand art floating
             role="dialog"
-            ariaLabel="Install the AIBOS app"
-            title="Now install AIBOS"
+            ariaLabel="Install the AI-BOS app"
+            title="Now install AI-BOS"
             tag="Android"
             onClose={() => setOpen(false)}
             closeLabel="Close the install steps"

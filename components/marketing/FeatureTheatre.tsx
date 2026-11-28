@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * The feature theatre (docs/LANDING_NAVY_PLAN_2026-10.md): five jobs AIBOS
+ * The feature theatre (docs/LANDING_NAVY_PLAN_2026-10.md): five jobs AI-BOS
  * takes off an owner's hands, each a short scene of the light product at work
  * on the navy stage (theatre/scenes.tsx).
  *
@@ -41,7 +41,7 @@ const STORIES: Story[] = [
   {
     id: 'payroll', tab: 'Payroll', icon: Briefcase, plan: planFor('payroll'),
     goal: 'Pay your people right, without the tax tables.',
-    text: 'Add your staff once. Each month AIBOS works out PAYE, NAPSA and NHIMA at this year’s Zambian rates and shows every take-home figure. The payments to ZRA and NAPSA go straight on your schedule.',
+    text: 'Add your staff once. Each month AI-BOS works out PAYE, NAPSA and NHIMA at this year’s Zambian rates and shows every take-home figure. The payments to ZRA and NAPSA go straight on your schedule.',
     // No year written here: "The 2026 ZRA bands" would read stale from
     // January. The payroll run itself warns while a new year's rates are
     // still to be checked (payroll.rates_note).
@@ -52,7 +52,7 @@ const STORIES: Story[] = [
   {
     id: 'paid', tab: 'Get paid', icon: ReceiptText, plan: planFor('invoices'),
     goal: 'Get paid the same day, not the same month.',
-    text: 'Every invoice carries a mobile money payment link. Your customer pays from their own phone, AIBOS marks the invoice paid and your money figure moves by itself.',
+    text: 'Every invoice carries a mobile money payment link. Your customer pays from their own phone, AI-BOS marks the invoice paid and your money figure moves by itself.',
     values: ['No app for your customer to install', 'See who still owes you and for how long'],
     alt: 'Invoice 0142 for K4,800.00 goes to Lusaka Hotels with a mobile money link. They pay from their phone, the invoice turns to Paid and money right now rises from K48,230.50 to K53,030.50.',
     ms: 7000, Scene: GetPaidScene,
@@ -60,7 +60,7 @@ const STORIES: Story[] = [
   {
     id: 'deadlines', tab: 'Deadlines', icon: CalendarClock, plan: planFor('schedule'),
     goal: 'No more penalties. No more “I forgot”.',
-    text: 'NAPSA, PAYE, rent and supplier pick-ups sit in one list. A reminder reaches your phone days before each one is due, even with AIBOS closed.',
+    text: 'NAPSA, PAYE, rent and supplier pick-ups sit in one list. A reminder reaches your phone days before each one is due, even with AI-BOS closed.',
     values: ['ZRA and NAPSA dates added for you when you run payroll', 'Mark it paid straight from the reminder'],
     alt: 'The coming up list with a supplier pick-up, NAPSA K1,950.00 and PAYE K1,040.00 due 10 November and rent. A reminder arrives that NAPSA is due on Tuesday and it is marked paid.',
     ms: 7000, Scene: DeadlinesScene,
@@ -68,15 +68,15 @@ const STORIES: Story[] = [
   {
     id: 'stock', tab: 'Stock', icon: Package, plan: planFor('automation'),
     goal: 'Never tell a customer “we’ve run out”.',
-    text: 'Set a reorder level once. When something runs low, AIBOS drafts the order with the right amount from the right supplier and you approve it in one tap.',
+    text: 'Set a reorder level once. When something runs low, AI-BOS drafts the order with the right amount from the right supplier and you approve it in one tap.',
     values: ['Tops you back up to twice your reorder level', 'Approved orders wait under Expected deliveries until they arrive'],
-    alt: 'Cooking oil falls to 2 left, under its reorder level of 6. AIBOS drafts 10 more from Kasama Traders and the draft is approved.',
+    alt: 'Cooking oil falls to 2 left, under its reorder level of 6. AI-BOS drafts 10 more from Kasama Traders and the draft is approved.',
     ms: 7400, Scene: StockScene,
   },
   {
     id: 'rooms', tab: 'Rooms & Stays', icon: BedDouble, plan: planFor('hospitality'),
     goal: 'Fill your rooms with the deposit already paid.',
-    text: 'The whole week of rooms at a glance. Each booking gets its own payment link, the deposit confirms the stay and AIBOS reminds you before every guest arrives.',
+    text: 'The whole week of rooms at a glance. Each booking gets its own payment link, the deposit confirms the stay and AI-BOS reminds you before every guest arrives.',
     values: ['Requests, stays and finished stays in one picture', 'Every deposit lands in your books'],
     alt: 'The week calendar: a request from Mrs Tembo for Room 2, Thursday to Saturday. Her K650.00 deposit arrives through the payment link, the stay is confirmed and a reminder is set for her arrival.',
     ms: 7000, Scene: RoomsScene,
@@ -150,11 +150,11 @@ export default function FeatureTheatre() {
             <h2 id="jobs-h" className="mkt-h2">Less paperwork. More business.</h2>
           </div>
           <p className="mkt-head-sub">
-            Five jobs that eat an owner&apos;s week, shown the way AIBOS does them. Pick one, or let them play.
+            Five jobs that eat an owner&apos;s week, shown the way AI-BOS does them. Pick one, or let them play.
           </p>
         </div>
 
-        <div className="story-tabs" role="tablist" aria-label="Jobs AIBOS does for you" onKeyDown={onKey}>
+        <div className="story-tabs" role="tablist" aria-label="Jobs AI-BOS does for you" onKeyDown={onKey}>
           {STORIES.map((s, i) => {
             const on = i === active;
             const Icon = s.icon;

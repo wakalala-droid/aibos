@@ -1,6 +1,6 @@
 'use client';
 
-// BentoCard: the owner's monochrome bento (5 Oct 2026), in AIBOS's sizes.
+// BentoCard: the owner's monochrome bento (5 Oct 2026), in AI-BOS's sizes.
 // A hairline card with a soft shadow and one faint wash of light from its
 // top-left corner; a round outlined icon; a spaced-capitals title with a
 // small tag on the right; plain words under it; anything else (buttons,
@@ -8,7 +8,7 @@
 // hand without moving on its own. Sits in a .bento-grid with span-2/3/4/6
 // and rows-2 to make the modular layout.
 //
-// Text follows the AIBOS floor: the title is spaced capitals at 18px, the tag
+// Text follows the AI-BOS floor: the title is spaced capitals at 18px, the tag
 // 16px, the words 18px (the reference used 10 to 14px).
 
 import Link from 'next/link';

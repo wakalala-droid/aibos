@@ -86,20 +86,20 @@ export default function OpsBriefView() {
       )}
 
       {/* Operations AI Brief */}
-      <SectionCard title="The till, read by AIBOS" subtitle="What your till's sales say, in plain words." style={{ marginBottom: 16 }}>
+      <SectionCard title="The till, read by AI-BOS" subtitle="What your till's sales say, in plain words." style={{ marginBottom: 16 }}>
         {opsBriefLines.length > 0
           ? opsBriefLines.map((l, i) => <BriefPoint key={i} text={l} index={i} />)
-          : <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>Upload your till&apos;s sales report and AIBOS reads it here.</p>
+          : <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0 }}>Upload your till&apos;s sales report and AI-BOS reads it here.</p>
         }
       </SectionCard>
 
       {/* Cross-engine insights */}
       {orderedInsights.length > 0 && (
-        <section className="bento-section" style={{ marginTop: 24, marginBottom: 24 }} aria-label="What AIBOS found">
+        <section className="bento-section" style={{ marginTop: 24, marginBottom: 24 }} aria-label="What AI-BOS found">
           <header className="bento-section-head">
             <div>
               <p className="eyebrow">Across your business</p>
-              <h2 className="bento-section-title">What AIBOS found</h2>
+              <h2 className="bento-section-title">What AI-BOS found</h2>
             </div>
             <p className="bento-section-sub">Money, customers and the till read together, the most pressing first.</p>
           </header>
@@ -114,7 +114,7 @@ export default function OpsBriefView() {
 
       {/* Unified executive brief */}
       {unifiedLines.length > 0 && (
-        <SectionCard title="What to do next" subtitle="From everything AIBOS has read: money, customers and the till.">
+        <SectionCard title="What to do next" subtitle="From everything AI-BOS has read: money, customers and the till.">
           {unifiedLines.map((l, i) => <BriefPoint key={i} text={l} index={i} />)}
         </SectionCard>
       )}

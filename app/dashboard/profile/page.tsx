@@ -23,6 +23,7 @@ import {
   type TeamMember, type TeamMemberRole, type PaymentAccount,
 } from '@/lib/api';
 import PageHeader from '@/components/ui/PageHeader';
+import SphereSettings from '@/components/guide/SphereSettings';
 
 const BUSINESS_TYPES = [
   'Restaurant',
@@ -358,7 +359,7 @@ export default function BusinessProfilePage() {
             Owners only: the key is the business's money. */}
         {teamRole === 'owner' && <GetPaidCard />}
 
-        {/* Referral loop — owners recommending AIBOS to owners is the growth
+        {/* Referral loop — owners recommending AI-BOS to owners is the growth
             engine that costs nothing and carries trust no ad can buy. */}
         {/* Morning Brief delivery — the day's numbers arrive before the day
             starts. Preferences save now; sending activates with the keys. */}
@@ -372,7 +373,10 @@ export default function BusinessProfilePage() {
         {/* Team — owners only (audit #27/#28). */}
         {teamRole === 'owner' && <TeamCard tier={tier} />}
 
-        {/* What AIBOS has learned (audit #57) — the correction loop made visible. */}
+        {/* The AI-BOS sphere (28 Nov 2026): its voice, the spoken report, tips. */}
+        <SphereSettings />
+
+        {/* What AI-BOS has learned (audit #57) — the correction loop made visible. */}
         <MemoryLearnedCard />
 
         {/* Export your books (audit #27/#28) — data is yours, in CSV. */}
@@ -389,7 +393,7 @@ export default function BusinessProfilePage() {
 
   Each business connects its OWN Lenco account here and its invoice and stay
   payment links collect straight into it. There used to be one set of keys for
-  the whole of AIBOS, which would have paid every business's customers into
+  the whole of AI-BOS, which would have paid every business's customers into
   one account. The key is checked with Lenco before it is kept, locked away on
   the server and never shown again: only its last four characters come back.
 
@@ -718,7 +722,7 @@ function MemoryLearnedCard() {
     setManaging(true);
     setManageError(null);
     try { setMappings(await getMemoryMappings()); }
-    catch (e) { setManageError(`Could not load what AIBOS has learned: ${(e as Error).message}`); }
+    catch (e) { setManageError(`Could not load what AI-BOS has learned: ${(e as Error).message}`); }
   }
   async function forget(id: string) {
     setManageError(null);
@@ -738,11 +742,11 @@ function MemoryLearnedCard() {
     <div className="section-card" style={{ marginTop: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>What AIBOS has learned</h2>
+          <h2 style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)', margin: '0 0 4px' }}>What AI-BOS has learned</h2>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 14px' }}>
-            Every correction you make teaches AIBOS, so you never enter the same thing twice.
+            Every correction you make teaches AI-BOS, so you never enter the same thing twice.
             {' '}What you told it about the business, your goals and your seasons is on{' '}
-            <Link href="/dashboard/teach" style={{ color: 'var(--text-1)' }}>Teach AIBOS your business</Link>.
+            <Link href="/dashboard/teach" style={{ color: 'var(--text-1)' }}>Teach AI-BOS your business</Link>.
           </p>
         </div>
         <button type="button" onClick={() => managing ? setManaging(false) : void openManage()}
@@ -770,7 +774,7 @@ function MemoryLearnedCard() {
         </>
       ) : (
         <div style={{ display: 'grid', gap: 6 }}>
-          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px' }}>Wrong? Remove it and AIBOS forgets: you correct it, not the other way round.</p>
+          <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '0 0 6px' }}>Wrong? Remove it and AI-BOS forgets: you correct it, not the other way round.</p>
           {manageError && <p role="alert" style={{ color: 'var(--crit)', fontSize: 'var(--fs-label)', margin: '0 0 6px' }}>{manageError}</p>}
           {manageError && mappings.length === 0 ? null : mappings.length === 0 ? (
             <span style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)' }}>Nothing learned yet.</span>
@@ -1079,7 +1083,7 @@ function InviteCard({ userId }: { userId: string }) {
   const [copied, setCopied] = useState(false);
   const code = userId.replace(/-/g, '').slice(0, 8);
   const link = typeof window !== 'undefined' ? `${window.location.origin}/login?ref=${code}` : `/login?ref=${code}`;
-  const waText = `I run my business on AIBOS: it keeps the books, watches my stock and answers questions about my numbers. Try it free: ${link}`;
+  const waText = `I run my business on AI-BOS: it keeps the books, watches my stock and answers questions about my numbers. Try it free: ${link}`;
 
   async function copy() {
     try {

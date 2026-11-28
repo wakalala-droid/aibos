@@ -31,7 +31,7 @@ export default function EngineScoreCard({
         data-ai-explain={explainId}
         data-ai-label={explainId ? sentenceCase(label) : undefined}
         data-ai-value={explainId && !blank ? String(score) : undefined}
-        title={explainId ? 'Hold (long-press) to have AIBOS explain this score' : undefined}
+        title={explainId ? 'Hold (long-press) to have AI-BOS explain this score' : undefined}
         style={{ ...bloom.style, cursor: locked ? 'default' : 'pointer' }}
       >
 

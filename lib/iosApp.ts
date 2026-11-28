@@ -41,7 +41,7 @@ export const NOT_ON_PLAN_SHORT = 'Not on your plan';
 /** What a question about prices or plans is answered with in the iPhone app. */
 export const NOT_SOLD_HERE = 'Plans are not sold in the iPhone app. Your plan and everything in it work here, whichever device it was bought on.';
 
-/** A question about buying AIBOS, its plans or their price (not "how much did I spend"). */
+/** A question about buying AI-BOS, its plans or their price (not "how much did I spend"). */
 export const ASKS_TO_BUY = /\b(?:upgrad(?:e|es|ing)|pricing|subscri(?:be|ption)s?|(?:pro\+?|growth)\s+(?:plan|tier)|(?:which|what|compare|cheapest|best)\s+(?:aibos\s+)?(?:plans?|tiers?)\b|plans?\s+(?:cost|price|prices)|how much\s+(?:is|does|are|do|will)\s+(?:the\s+|your\s+|an?\s+)?(?:aibos|pro\+?|growth|plans?|subscription)|(?:buy|purchase|pay for)\s+(?:aibos|pro|growth)|checkout)/i;
 
 /** Does this address lead to the plans, the prices or a checkout? */
@@ -54,7 +54,7 @@ export function isSalesHref(href: string): boolean {
  *  its tag (Pro+, "the Pro plan", "on Growth") and never by a bare word: "Growth in costs"
  *  is the owner's business, not a plan. */
 const PLAN_NAME = /\bPro\+|\b(?:Pro|Growth) (?:plan|tier)s?\b|\b(?:on|with|to|for|into|from) (?:Pro|Growth)\b/;
-const PLAN_PHRASE = /\b(?:free|paid|AIBOS|AI-BOS) (?:plans?|tiers?)\b|\byour (?:AIBOS|current|paid|free) plan\b/i;
+const PLAN_PHRASE = /\b(?:free|paid|AI-BOS|AI-BOS) (?:plans?|tiers?)\b|\byour (?:AI-BOS|current|paid|free) plan\b/i;
 const BUYING = /\b(?:subscri(?:be|bes|bing|ption)|card payment|sign up|buy|purchase|unlock|prices?|costs?)\b/i;
 const A_PRICE = /(?:\$|US\$|K|ZMW)\s?\d[\d,.]*\s*(?:\/|a |per )\s*(?:month|mo|year|yr)\b/i;
 const A_PLAN_WORD = /\b(?:Pro\+?|Growth|plans?|subscription)\b/;

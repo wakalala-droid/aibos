@@ -42,7 +42,7 @@ export default function TheGoal() {
           ))}
         </div>
         <p className="mkt-lead mkt-goal-sub">
-          AIBOS does the counting, the chasing and the remembering, so you can build the business you meant to build.
+          AI-BOS does the counting, the chasing and the remembering, so you can build the business you meant to build.
         </p>
       </div>
     </section>

@@ -1,6 +1,6 @@
 // lib/industries.ts — Industry profiles (Business Proposal §5: target markets).
 //
-// AIBOS speaks each business's language: a lodge owner thinks in guests and
+// AI-BOS speaks each business's language: a lodge owner thinks in guests and
 // bookings, a miner in output and equipment, a shop owner in stock and
 // customers. One registry tailors terminology, suggested questions and record
 // examples per vertical — with a generic fallback so NO business is left out.

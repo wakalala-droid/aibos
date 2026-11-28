@@ -1,9 +1,9 @@
 'use client';
 /**
- * AIBOS — what the business owes its staff in gratuity.
+ * AI-BOS — what the business owes its staff in gratuity.
  *
  * A fixed-term contract earns at least 25% of the basic pay earned over it
- * (Employment Code Act 2019, s.73), paid when it ends. AIBOS sets each month's
+ * (Employment Code Act 2019, s.73), paid when it ends. AI-BOS sets each month's
  * share aside with every run; this is the running total per person, when each
  * falls due and what is overdue (aibos-api payroll.gratuity_book). It is paid
  * tax-free with the final pay: tick "Pay gratuity" in that month's run.
@@ -54,9 +54,9 @@ export default function GratuityCard({ book, money, onPapers, papersBusy }: {
             </span>
             <span className="row-sub" style={{ whiteSpace: 'normal' }}>
               {Math.round(p.rate * 100)}% of basic pay
-              {p.months_since > 0 ? ` · ${p.months_since} month${p.months_since === 1 ? '' : 's'} since ${p.last_paid_on ? `last paid ${day(p.last_paid_on)}` : 'AIBOS began'}` : ''}
+              {p.months_since > 0 ? ` · ${p.months_since} month${p.months_since === 1 ? '' : 's'} since ${p.last_paid_on ? `last paid ${day(p.last_paid_on)}` : 'AI-BOS began'}` : ''}
               {p.due_on ? ` · ${p.status === 'left' ? 'left' : 'contract ends'} ${day(p.due_on)}` : ''}
-              {p.opening > 0 ? ` · ${money(p.opening)} from before AIBOS` : ''}
+              {p.opening > 0 ? ` · ${money(p.opening)} from before AI-BOS` : ''}
             </span>
           </span>
           <span className="row-amount">{money(p.owed)}</span>

@@ -388,7 +388,7 @@ h1, h2, h3, h4 { line-height: 1.25; }
 }
 /* Phones and tablets (17 Nov 2026): the business name sits in the top bar
    where the wordmark was (AppFrame), so this header is one row: search,
-   money format, AIBOS auto, the bell and the account. It used to wrap to a
+   money format, AI-BOS auto, the bell and the account. It used to wrap to a
    second line just for the name, a quarter of a phone screen of toolbar. */
 @media (max-width: 1023px) {
   .dash-header .biz-switch { display: none; }
@@ -1037,7 +1037,7 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
 }
 
 /* ============================================================
-   AIBOS × MERCURY (redesign pilot, 4 October 2026)
+   AI-BOS × MERCURY (redesign pilot, 4 October 2026)
    Light and snappy: flat white panels on a warm canvas, hairline
    borders, pill actions that press, big light-weight money figures with
    small raised cents, the cyan gradient under every money line, and
@@ -1249,7 +1249,7 @@ dialog.record-sheet[open] { animation: sheet-in 200ms ease-out both; }
 .icon-pill.danger:hover { color: var(--red); }
 
 /* ── MONOCHROME BENTO (5 Oct 2026, the owner's reference) ──────────
-   For the parts of AIBOS that were still stiff: findings, recommendations,
+   For the parts of AI-BOS that were still stiff: findings, recommendations,
    decisions, briefs, locked previews and the assistant. A hairline card with
    a soft shadow and one faint wash of light from its top-left corner, a
    round outlined icon, a spaced-capitals title, a small tag on the right
@@ -1337,7 +1337,7 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 .bento-section-title { margin: 0; font-size: var(--fs-display); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; color: var(--text-1); }
 .bento-section-sub { margin: 0; max-width: 420px; font-size: var(--fs-body); line-height: 1.6; color: var(--text-3); }
 
-/* The Ask AIBOS panel: a bento surface, solid, with the same corner light. */
+/* The Ask AI-BOS panel: a bento surface, solid, with the same corner light. */
 .ai-panel {
   position: relative; isolation: isolate; overflow: hidden;
   display: flex; flex-direction: column;
@@ -1359,7 +1359,7 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
   .ai-panel-head .ai-panel-tier { display: none; }
 }
 
-/* A job AIBOS did or is waiting to do (components/chat/ActionCard.tsx): a
+/* A job AI-BOS did or is waiting to do (components/chat/ActionCard.tsx): a
    small card under the answer, the corner wash like every card, Yes as the
    one brand pill. */
 .ai-job {
@@ -1483,7 +1483,7 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 .today-switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 20px 0 8px; padding-top: 16px; border-top: 1px solid var(--border); }
 .today-switch .chip { min-height: 44px; }
 
-/* ── AIBOS auto: the switch at the top right of every page ─────────────────── */
+/* ── AI-BOS auto: the switch at the top right of every page ─────────────────── */
 .auto-wrap { position: relative; display: flex; }
 .auto-switch {
   display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 8px 6px 16px;
@@ -1698,7 +1698,7 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 .scene-locked-text { margin: 0; font-size: var(--fs-body); line-height: 1.5; color: rgba(226,232,240,0.8); }
 .scene-locked .pill { min-height: 44px; }
 
-/* The bar to talk to AIBOS, centred under the mark. */
+/* The bar to talk to AI-BOS, centred under the mark. */
 .scene-ask {
   display: flex; align-items: center; gap: 12px; max-width: 760px; margin: 20px auto 0; padding: 8px;
   border-radius: 16px; background: rgba(11,22,41,0.9); border: 1px solid rgba(96,165,250,0.3);
@@ -1785,7 +1785,7 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 .sheet-block .pill { min-height: 44px; margin-top: 12px; }
 .sheet .ai-job { width: auto; }
 
-/* ── Talking to AIBOS: the sphere, full screen (components/talk) ──────────── */
+/* ── Talking to AI-BOS: the sphere, full screen (components/talk) ──────────── */
 .aibos-sphere { position: relative; flex-shrink: 0; }
 .aibos-sphere-mark { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; pointer-events: none; }
 .talk-overlay {
@@ -1801,7 +1801,7 @@ a.bento:focus-visible, button.bento:focus-visible { outline: 2px solid var(--cya
 .talk-job .ai-job { width: auto; }
 .talk-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; }
 .talk-acts .pill { min-height: 44px; min-width: 112px; justify-content: center; }
-/* The sphere is the button: tap it to talk over AIBOS or wake it from a rest. */
+/* The sphere is the button: tap it to talk over AI-BOS or wake it from a rest. */
 .talk-sphere-btn { padding: 0; border: 0; background: none; color: inherit; border-radius: 50%; cursor: pointer; }
 .talk-sphere-btn:disabled { cursor: default; }
 .talk-sphere-btn:focus-visible { outline: 2px solid var(--brand-fill); outline-offset: 4px; }
@@ -2027,6 +2027,13 @@ button, [role="button"], [role="tab"] { min-width: 44px; }
   }
   .app-shell .ai-fab-wrap {
     bottom: calc(84px + env(safe-area-inset-bottom)) !important;
+    right: 16px !important;
+  }
+  /* The chat opens above the sphere, which sits above the tabs: its top stops
+     8px under the 56px top bar, so the bar and the chat's close button both
+     stay clear (154px below it: the tabs' 84, the sphere's 56, the gap 14). */
+  .app-shell .ai-panel {
+    height: min(640px, calc(100dvh - 218px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))) !important;
   }
 }
 
@@ -2344,9 +2351,9 @@ html, body {
 
 /* ── NOTICE (components/ui/Notice.tsx) ─────────────────────────────────────
    Every message that interrupts the owner, built from the What's new
-   screen's pieces (the owner, 5 Oct 2026): round icon or the AIBOS mark,
+   screen's pieces (the owner, 5 Oct 2026): round icon or the AI-BOS mark,
    spaced-capital title and tag, plain 18px words, pills, the corner light,
-   and on news from AIBOS the hairline tiles and the money line. */
+   and on news from AI-BOS the hairline tiles and the money line. */
 .notice {
   position: relative; isolation: isolate; overflow: hidden;
   display: flex; flex-direction: column; gap: 16px;
@@ -3051,7 +3058,7 @@ html, body {
 
 /* ── THE PHONE APPS (lib/nativeApp.ts, components/app/) ────────────────────
    APP_BOOT_SCRIPT marks <html> with data-device (android, ios) and data-app
-   (inside the AIBOS app) before the first paint, so "Get the app" shows only
+   (inside the AI-BOS app) before the first paint, so "Get the app" shows only
    on an Android phone in a browser and never inside the app, with no flash
    and no script on the website. Each element keeps its own display. */
 html:not([data-device="android"]) .when-android,
@@ -3103,9 +3110,9 @@ html:not([data-app="ios"]) .when-ios-app { display: none !important; }
 .app-sheet .notice-actions { padding-left: 0; }
 @media (prefers-reduced-motion: reduce) { .app-sheet { animation: none; } }
 
-/* ── Owners' reviews of AIBOS (20 Nov 2026) ─────────────────────────────────
+/* ── Owners' reviews of AI-BOS (20 Nov 2026) ─────────────────────────────────
    The card (components/marketing/ReviewCard.tsx) on the landing page and in
-   "How it will look" on Review AIBOS, the star picker on that page and the
+   "How it will look" on Review AI-BOS, the star picker on that page and the
    strip of logos businesses agreed to show. Stars in ink, the kit's one
    colour for figures; an empty star is an outline. */
 .review-stars { display: inline-flex; align-items: center; gap: 4px; color: var(--text-3); }
@@ -3149,7 +3156,7 @@ html:not([data-app="ios"]) .when-ios-app { display: none !important; }
 @media (max-width: 639px) { .trusted-logos { gap: 16px 24px; } .trusted-logos li { width: 120px; height: 48px; } }
 
 /* ── The live guide (27 Nov 2026, components/guide/GuideSphere.tsx) ──────────
-   A small AIBOS sphere the owner can put anywhere; while it talks it glides
+   A small AI-BOS sphere the owner can put anywhere; while it talks it glides
    beside what it explains and rings it. Above sheets (it can point into one),
    under the full-screen Talk overlay and dialogs. */
 .guide-layer { position: fixed; inset: 0; pointer-events: none; z-index: 960; }

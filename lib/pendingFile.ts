@@ -1,4 +1,4 @@
-// A file handed to AIBOS on one page and read on another (UI/UX audit
+// A file handed to AI-BOS on one page and read on another (UI/UX audit
 // 2026-10 C4). A receipt photo dropped or pasted anywhere waits here while the
 // app opens Record, which reads it as a proposed entry; a spreadsheet waits for
 // the Upload a file page. Memory only: a reload drops it, which is safe.

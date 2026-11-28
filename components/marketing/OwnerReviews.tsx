@@ -1,6 +1,6 @@
-// What owners say about AIBOS, on the landing page (20 Nov 2026).
+// What owners say about AI-BOS, on the landing page (20 Nov 2026).
 //
-// Every review its writer chose to share from Review AIBOS in the app, newest
+// Every review its writer chose to share from Review AI-BOS in the app, newest
 // first and low stars too, as they wrote them (aibos-api reviews.public). The
 // average shows only once there are enough reviews to mean something. Under
 // them, the logos of businesses that said yes to showing theirs: the ones in
@@ -45,7 +45,7 @@ export default async function OwnerReviews() {
             <Rise className="mkt-head">
               <div>
                 <p className="mkt-eyebrow">From owners</p>
-                <h2 id="reviews-h" className="mkt-h2">What owners say about AIBOS.</h2>
+                <h2 id="reviews-h" className="mkt-h2">What owners say about AI-BOS.</h2>
               </div>
               <p className="mkt-head-sub">{sub}</p>
             </Rise>
@@ -60,8 +60,8 @@ export default async function OwnerReviews() {
         {logos.length > 0 && (
           <div className={reviews.length > 0 ? 'trusted-strip' : undefined}>
             {reviews.length > 0
-              ? <p className="mkt-eyebrow">Businesses that work with AIBOS</p>
-              : <h2 id="reviews-h" className="mkt-eyebrow">Businesses that work with AIBOS</h2>}
+              ? <p className="mkt-eyebrow">Businesses that work with AI-BOS</p>
+              : <h2 id="reviews-h" className="mkt-eyebrow">Businesses that work with AI-BOS</h2>}
             <ul className="trusted-logos">
               {logos.map((l) => (
                 <li key={l.logo}>

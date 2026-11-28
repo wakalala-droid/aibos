@@ -1,6 +1,6 @@
 'use client';
 /**
- * AIBOS — Employees & Payroll.
+ * AI-BOS — Employees & Payroll.
  * The company's people (a free register — master data, like the product catalog)
  * and a Zambian statutory payroll engine (Pro+). Running a period computes PAYE,
  * NAPSA, NHIMA and net pay for each active employee, decrements staff loans, and
@@ -448,7 +448,7 @@ export default function EmployeesPage() {
       const ahead = payday && payday > new Date();
       // The account's first run sets the statutory reminders by itself.
       const remindersLine = (run.reminders_set ?? []).length
-        ? ' AIBOS also put PAYE, NAPSA and NHIMA on your Schedule for the 10th of every month.'
+        ? ' AI-BOS also put PAYE, NAPSA and NHIMA on your Schedule for the 10th of every month.'
         : '';
       const grat = run.totals.gratuity_paid ?? 0;
       setRunOk(`Payroll for ${period} run: ${run.totals.headcount} paid, ${money(run.totals.net)} net to staff.` +
@@ -576,7 +576,7 @@ export default function EmployeesPage() {
               ) : (
                 <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.55 }}>
                   No one earns gratuity yet. Someone on a fixed-term contract does: set them as a fixed-term
-                  contract and AIBOS sets it aside with every run.
+                  contract and AI-BOS sets it aside with every run.
                 </p>
               )}
             </SectionCard>
@@ -693,7 +693,7 @@ export default function EmployeesPage() {
               <div><label className="field-label" htmlFor="emp-phone">Phone (WhatsApp)</label><input id="emp-phone" type="tel" inputMode="tel" autoComplete="off" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="097 712 3456" className="field" /></div>
               <div><label className="field-label" htmlFor="emp-email">Email</label><input id="emp-email" type="email" autoComplete="off" value={form.email} onChange={e => set('email', e.target.value)} placeholder="grace@example.com" className="field" /></div>
               <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: 'var(--text-3)', lineHeight: 1.5 }}>
-                Their payslip goes here every month: by email from AIBOS, or on WhatsApp from your phone.
+                Their payslip goes here every month: by email from AI-BOS, or on WhatsApp from your phone.
               </p>
 
               <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -715,7 +715,7 @@ export default function EmployeesPage() {
                         <span>Earns gratuity</span>
                       </label>
                       <div><label className="field-label" htmlFor="emp-grate">Gratuity rate (%)</label><input id="emp-grate" type="number" min="0" max="100" value={form.gratuity_rate} onChange={e => set('gratuity_rate', e.target.value)} disabled={!form.gratuity_eligible} className="field" style={{ opacity: form.gratuity_eligible ? 1 : 0.5 }} /></div>
-                      <div><label className="field-label" htmlFor="emp-gopen">Gratuity owed before AIBOS ({sym})</label><input id="emp-gopen" type="number" min="0" step="0.01" value={form.gratuity_opening} onChange={e => set('gratuity_opening', e.target.value)} placeholder="0" disabled={!form.gratuity_eligible} className="field" style={{ opacity: form.gratuity_eligible ? 1 : 0.5 }} /></div>
+                      <div><label className="field-label" htmlFor="emp-gopen">Gratuity owed before AI-BOS ({sym})</label><input id="emp-gopen" type="number" min="0" step="0.01" value={form.gratuity_opening} onChange={e => set('gratuity_opening', e.target.value)} placeholder="0" disabled={!form.gratuity_eligible} className="field" style={{ opacity: form.gratuity_eligible ? 1 : 0.5 }} /></div>
                       <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 'var(--fs-label)', color: form.gratuity_eligible && Number(form.gratuity_rate) < 25 ? 'var(--amber)' : 'var(--text-3)', lineHeight: 1.5 }}>
                         {form.gratuity_eligible
                           ? Number(form.gratuity_rate) < 25
@@ -744,7 +744,7 @@ export default function EmployeesPage() {
                   {form.employment_type !== 'casual' && (
                     <>
                       <div><label className="field-label" htmlFor="emp-lrate">Leave days a month</label><input id="emp-lrate" type="number" min="2" max="31" step="0.5" value={form.leave_rate} onChange={e => set('leave_rate', e.target.value)} className="field" /></div>
-                      <div><label className="field-label" htmlFor="emp-lopen">Leave days owed before AIBOS</label><input id="emp-lopen" type="number" min="0" step="0.5" value={form.leave_opening} onChange={e => set('leave_opening', e.target.value)} placeholder="0" className="field" /></div>
+                      <div><label className="field-label" htmlFor="emp-lopen">Leave days owed before AI-BOS</label><input id="emp-lopen" type="number" min="0" step="0.5" value={form.leave_opening} onChange={e => set('leave_opening', e.target.value)} placeholder="0" className="field" /></div>
                     </>
                   )}
 
@@ -796,8 +796,8 @@ export default function EmployeesPage() {
                     <div style={{ gridColumn: '1 / -1' }}>
                       <label className="field-label" htmlFor="emp-prior">Pay earlier this year</label>
                       <select id="emp-prior" value={form.prior_source} onChange={e => set('prior_source', e.target.value as FormState['prior_source'])} className="field">
-                        <option value="none">None, or all of it is in AIBOS</option>
-                        <option value="before_aibos">Paid by us before we used AIBOS</option>
+                        <option value="none">None, or all of it is in AI-BOS</option>
+                        <option value="before_aibos">Paid by us before we used AI-BOS</option>
                         <option value="p13">From a previous employer (their ITF/P13)</option>
                       </select>
                     </div>
@@ -1171,7 +1171,7 @@ export default function EmployeesPage() {
                         {docBusy === `pay:${r.id}` ? "Saving…" : "Paid them today"}
                       </button>
                     )}
-                    {/* Payslips to the staff themselves: email from AIBOS or
+                    {/* Payslips to the staff themselves: email from AI-BOS or
                         WhatsApp from the owner's phone, and who has theirs. */}
                     {pro && (
                       <button type="button" onClick={() => setSendOpen(o => o === r.id ? null : r.id)}

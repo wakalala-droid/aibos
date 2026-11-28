@@ -27,7 +27,7 @@ const SRC = {
   phone: { mp4: '/marketing/hero/phone.mp4', poster: '/marketing/hero/phone.jpg', w: 780, h: 1688 },
 };
 const WIDE = '(min-width: 768px)';
-const STORY = 'AIBOS in action: recording a sale, getting paid by mobile money, asking AIBOS a question and the morning brief';
+const STORY = 'AI-BOS in action: recording a sale, getting paid by mobile money, asking AI-BOS a question and the morning brief';
 // touchend and click count as a tap on a phone; touchstart and pointerdown
 // from a finger do not, so they cannot start a held-back video.
 const NUDGES = ['click', 'touchend', 'keydown', 'scroll'] as const;

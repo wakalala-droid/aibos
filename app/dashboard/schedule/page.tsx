@@ -1,6 +1,6 @@
 'use client';
 /**
- * AIBOS — Schedule (the Scheduler).
+ * AI-BOS — Schedule (the Scheduler).
  * Meetings, pick-ups, deliveries, deadlines, payments due — the owner's week in
  * one agenda. A schedule item is a commitment, not a business fact: completing a
  * pick-up or payment offers the record bridge, one tap creating the matching
@@ -672,10 +672,10 @@ export default function SchedulePage() {
                 Where your reminders arrive
               </h3>
               <p style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
-                In the bell and on screen while AIBOS is open.
+                In the bell and on screen while AI-BOS is open.
                 {devices && devices.length > 0 && ` Also as a notification on ${deviceList(devices)}.`}
                 {devices && devices.length === 0 && ' No phone or computer has notifications on yet, so each reminder is emailed to you as well.'}
-                {devices && !devices.some(isPhone) && ' To get them on your phone, open AIBOS on the phone, tap the bell, then tap Turn on.'}
+                {devices && !devices.some(isPhone) && ' To get them on your phone, open AI-BOS on the phone, tap the bell, then tap Turn on.'}
               </p>
               <PhoneAlerts embedded onChange={() => void loadDevices()} />
               <label htmlFor="sched-sound" className="check-row" style={{ marginTop: 8 }}>
@@ -684,8 +684,8 @@ export default function SchedulePage() {
                 Play a sound when a notification arrives
               </label>
               <p style={{ margin: '0 0 0 32px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)' }}>
-                AIBOS plays it itself wherever it is open, the installed app included and keeps the
-                notification quiet so you hear it once. With AIBOS closed your phone uses its own sound.
+                AI-BOS plays it itself wherever it is open, the installed app included and keeps the
+                notification quiet so you hear it once. With AI-BOS closed your phone uses its own sound.
               </p>
             </div>
           )}

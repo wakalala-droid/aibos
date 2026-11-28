@@ -1,5 +1,5 @@
 // components/ui/UrlImage.tsx
-// A picture from a web address AIBOS was given: an owner's logo, a Google
+// A picture from a web address AI-BOS was given: an owner's logo, a Google
 // profile photo, a business's logo from the setup lookup (audit 19 Nov 2026,
 // done 20 Nov). Through next/image, so a logo uploaded at 2,000px reaches a
 // phone at the size it is shown: the 28px logo in the dashboard header was the

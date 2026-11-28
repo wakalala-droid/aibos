@@ -49,7 +49,7 @@ export default function MarketingFooter() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
               <Image src="/brand/aibos-mark-white-glyph.png" alt="" aria-hidden width={32} height={32} style={{ width: 32, height: 32, objectFit: 'contain' }} />
-              <Image src="/brand/aibos-wordmark-white.png" alt="AIBOS" width={82} height={21} style={{ width: 82, height: 'auto', objectFit: 'contain' }} />
+              <Image src="/brand/aibos-wordmark-white.png" alt="AI-BOS" width={82} height={21} style={{ width: 82, height: 'auto', objectFit: 'contain' }} />
             </div>
             <p style={{ fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-1)', margin: '0 0 8px' }}>
               The brain behind every business.
@@ -84,7 +84,7 @@ export default function MarketingFooter() {
           }}
         >
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
-            © {new Date().getFullYear()} AIBOS · Lusaka, Zambia
+            © {new Date().getFullYear()} AI-BOS · Lusaka, Zambia
           </p>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: 0 }}>
             Your data stays yours · Export any time

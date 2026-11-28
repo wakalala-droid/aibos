@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * The AIBOS opening screen: the white mark, and under it the name in full,
+ * The AI-BOS opening screen: the white mark, and under it the name in full,
  * ARTIFICIAL INTELLIGENCE / BUSINESS OPERATING SYSTEM, between two brass rules.
  *
  * It covers the app from the first paint until the owner's account has been
@@ -33,7 +33,7 @@ export function BrandLockup({ markSize = 196 }: { markSize?: number }) {
       {/* eslint-disable-next-line @next/next/no-img-element -- the one brand mark, preloaded, nothing to optimise */}
       <img
         src="/brand/aibos-mark-white-glyph.png"
-        alt="AIBOS"
+        alt="AI-BOS"
         width={markSize}
         height={markSize}
         style={{ display: 'block', width: markSize, height: markSize }}
@@ -90,7 +90,7 @@ export default function BootSplash() {
       className={`boot-splash${phase === 'leaving' ? ' boot-splash--leaving' : ''}`}
       role="status"
       aria-live="polite"
-      aria-label="Opening AIBOS"
+      aria-label="Opening AI-BOS"
       style={{
         position: 'fixed', inset: 0, zIndex: 9999, background: BRAND_BG,
         display: 'flex', alignItems: 'center', justifyContent: 'center',

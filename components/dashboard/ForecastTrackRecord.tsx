@@ -1,10 +1,10 @@
 'use client';
 
-// The forecast's track record (16 October 2026): what AIBOS said before each
+// The forecast's track record (16 October 2026): what AI-BOS said before each
 // month happened, kept once a month and never rewritten, held against the
 // confirmed books once the month has closed (aibos-api track_record.py).
 //
-// "How accurate" beside it is a backtest, worked out today about months AIBOS
+// "How accurate" beside it is a backtest, worked out today about months AI-BOS
 // already knew. This one is earned: the forecast was on record first. Status
 // is told by the calendar's fill: navy came true, dashed is still to come, a
 // plain outline missed.
@@ -72,7 +72,7 @@ export default function ForecastTrackRecord({ record, sym, className }: {
   const cash = record.cash;
   const first = sales?.rows[0];
   const intro = !sales?.rows.length
-    ? 'Each month AIBOS keeps its forecast for the month ahead before it happens, and checks it against your books once that month closes. The first is kept this month.'
+    ? 'Each month AI-BOS keeps its forecast for the month ahead before it happens, and checks it against your books once that month closes. The first is kept this month.'
     : `${sales.words}${sales.judged ? ` The range is built to hold ${Math.round(sales.expected_pct / 10)} times in 10.` : ''}`;
   return (
     <BentoCard className={className} icon={<CalendarCheck />} title="Track record" tag="Kept in advance"

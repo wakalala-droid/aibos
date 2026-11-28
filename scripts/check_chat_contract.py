@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Client half of the chat contract — the half that keeps getting forgotten.
 
-AIBOS's recurring failure mode is a capability built on the server whose client
+AI-BOS's recurring failure mode is a capability built on the server whose client
 is never wired, with tests covering only the half that exists. This guards the
 two places where lib/aiAssistant.tsx must hold up its end of a server contract.
 

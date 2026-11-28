@@ -1,9 +1,9 @@
 'use client';
 /**
- * AIBOS — one question at a time, with the lines it is about in front of you.
+ * AI-BOS — one question at a time, with the lines it is about in front of you.
  *
  * The first version listed every question at once, each reading "Money came in
- * here, but AIBOS cannot tell what for. (2 lines, sheet Sheet1)". Nobody can
+ * here, but AI-BOS cannot tell what for. (2 lines, sheet Sheet1)". Nobody can
  * answer that. It names no figure, no day, and none of the words from their own
  * book, so the only ways through it are to guess or to skip — and guessing is
  * how a wrong figure gets into real books.
@@ -20,7 +20,7 @@ const TITLES: Record<string, string> = {
   unknown_worker: 'A payment to someone not on your worker list',
   unknown_product: 'A purchase of something not on your product list',
   missing_quantity: 'A purchase with no count',
-  uncategorised: 'A payment AIBOS could not place',
+  uncategorised: 'A payment AI-BOS could not place',
   money_in_kind: 'Money coming in',
 };
 
@@ -87,7 +87,7 @@ export default function QuestionFlow({
           Question {i + 1} of {total}
         </span>
         <span style={{ fontSize: 'var(--fs-data)', color: 'var(--text-3)' }}>
-          {answeredCount} answered · anything you skip is imported the way AIBOS read it
+          {answeredCount} answered · anything you skip is imported the way AI-BOS read it
         </span>
       </div>
       <div style={{ display: 'flex', gap: 4 }} aria-hidden>

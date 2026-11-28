@@ -170,7 +170,7 @@ export default function ReportsBento() {
             icon={<FileSearch />}
             title="It shows its working"
             tag="Every plan"
-            text="Before any answer, AIBOS says how it read your file. When your data cannot answer, it says so."
+            text="Before any answer, AI-BOS says how it read your file. When your data cannot answer, it says so."
           >
             <div style={{ marginTop: 12 }}>
               {READ_OUT.map(([what, sure]) => (

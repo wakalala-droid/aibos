@@ -1,7 +1,7 @@
 'use client';
 
 // components/home/HomeTeam.tsx
-// The AIBOS team on Home (owner, 17 Nov 2026): the whole team scene, edge to
+// The AI-BOS team on Home (owner, 17 Nov 2026): the whole team scene, edge to
 // edge across the page, in place of a strip that opened a page of its own.
 // "Expansive and immersive, not windowed", and part of Home, so the owner
 // works with the team where they already are. Tap a worker for its sheet; tap
@@ -103,7 +103,7 @@ export default function HomeTeam({ first = false }: { first?: boolean } = {}) {
       setRecent([...r].sort(byTime));
     } catch (e) {
       setFailed(e instanceof ApiError && e.status === 503 ? e.message
-        : 'Your AIBOS team could not be read just now. Try again in a moment.');
+        : 'Your AI-BOS team could not be read just now. Try again in a moment.');
     }
   }, [hasTeam, owner]);
 
@@ -145,8 +145,8 @@ export default function HomeTeam({ first = false }: { first?: boolean } = {}) {
     try {
       await setAutopilot(kind, on);
       setSaid({ tone: 'good', text: on
-        ? 'Done. AIBOS records entries like the ones you approved by itself now. Undo is always there.'
-        : 'Done. AIBOS asks you before every entry again.' });
+        ? 'Done. AI-BOS records entries like the ones you approved by itself now. Undo is always there.'
+        : 'Done. AI-BOS asks you before every entry again.' });
       setTeam(await getTeam());
     } catch (e) {
       setSaid({ tone: 'bad', text: e instanceof ApiError ? e.message : 'That did not go through. Try again in a moment.' });
@@ -194,7 +194,7 @@ export default function HomeTeam({ first = false }: { first?: boolean } = {}) {
         lookedAt={ready ? team.looked_at : null}
         picked={sheet} locked={ready ? undefined : locked ?? <p className="scene-locked-text">Waking your team.</p>}
         onPick={(id) => (ready ? setSheet(id) : !hasTeam && !ios ? router.push(`/checkout?plan=${plan}`) : undefined)}
-        onTalk={startTalk} onAsk={ask} />
+        onTalk={() => startTalk()} onAsk={ask} />
       {said && <div className="home-team-said"><Note tone={said.tone}>{said.text}</Note></div>}
       {ready && sheetWorker && (
         <WorkerSheet worker={sheetWorker} jobs={waiting.filter((j) => whose(j) === sheetWorker.id)}

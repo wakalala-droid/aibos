@@ -3,10 +3,10 @@
 /**
  * Admin · Ask for reviews (20 Nov 2026).
  *
- * One message to every account that has not reviewed AIBOS yet: a row in their
- * bell, which anyone using AIBOS sees within a minute (the bell checks every
+ * One message to every account that has not reviewed AI-BOS yet: a row in their
+ * bell, which anyone using AI-BOS sees within a minute (the bell checks every
  * minute), and a notification on every phone or computer that has them on.
- * It opens Review AIBOS (/dashboard/reviews).
+ * It opens Review AI-BOS (/dashboard/reviews).
  *
  * Two steps, like Tell everyone above it: "Who would get this" counts and sends
  * nothing; only then can it go, and it can only go once (the message carries
@@ -47,7 +47,7 @@ export default function ReviewAskCard({ ready = true }: { ready?: boolean }) {
         <Chip><Star aria-hidden="true" /> Everyone who has not reviewed</Chip>
       </div>
       <p className="rs-text is-quiet">
-        Goes to every account&apos;s bell, which anyone using AIBOS sees within a minute, and to every phone or
+        Goes to every account&apos;s bell, which anyone using AI-BOS sees within a minute, and to every phone or
         computer with notifications on. Whoever has already reviewed is left out. It can only go once.
       </p>
 
@@ -68,7 +68,7 @@ export default function ReviewAskCard({ ready = true }: { ready?: boolean }) {
               <Chip><Smartphone aria-hidden="true" /> {preview.with_devices} on a phone or computer</Chip>
             )}
             {preview.active_now !== null && preview.active_now > 0 && (
-              <Chip><Users aria-hidden="true" /> {preview.active_now} using AIBOS now</Chip>
+              <Chip><Users aria-hidden="true" /> {preview.active_now} using AI-BOS now</Chip>
             )}
             {preview.reviewed > 0 && (
               <Chip><UserCheck aria-hidden="true" /> {plural(preview.reviewed, 'has', 'have')} reviewed, left out</Chip>
@@ -78,7 +78,7 @@ export default function ReviewAskCard({ ready = true }: { ready?: boolean }) {
           <div style={{ padding: '14px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-md)', background: 'var(--bg-card)', maxWidth: 520 }}>
             <p className="rs-text is-strong">{preview.title}</p>
             <p className="rs-text" style={{ marginTop: 4 }}>{preview.body}</p>
-            <p className="rs-text is-quiet" style={{ marginTop: 6, fontSize: 'var(--fs-label)' }}>Opens Review AIBOS</p>
+            <p className="rs-text is-quiet" style={{ marginTop: 6, fontSize: 'var(--fs-label)' }}>Opens Review AI-BOS</p>
           </div>
           {preview.people === 0 && <Note tone="info">Everyone has reviewed already, or has been asked. Nothing would go.</Note>}
           {preview.people > 0 && preview.with_devices === 0 && (
@@ -90,7 +90,7 @@ export default function ReviewAskCard({ ready = true }: { ready?: boolean }) {
         <Note tone="good">
           Sent. {sent.told} told{sent.pushed > 0 ? `, ${plural(sent.pushed, 'device', 'devices')} buzzed` : ''}
           {sent.already > 0 ? `, ${sent.already} already had it` : ''}
-          {sent.not_pushed > 0 ? `. ${sent.not_pushed} will see it when they next open AIBOS.` : '.'}
+          {sent.not_pushed > 0 ? `. ${sent.not_pushed} will see it when they next open AI-BOS.` : '.'}
         </Note>
       )}
       {error && <Note tone="bad">{error}</Note>}

@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * The welcome for a plan AIBOS gave free (aibos-api gifts.py), greeting the
+ * The welcome for a plan AI-BOS gave free (aibos-api gifts.py), greeting the
  * owner by name. The owner, 17 Nov 2026: "give Mr Ryan Banda, owner of
  * Cookies & Coffee, 1 month free Growth tier, have a splash screen with his
  * name on it".
@@ -110,7 +110,7 @@ export function GiftWelcomePanel({ gift, onClose }: { gift: GiftMeta; onClose: (
           <div className="whatsnew-logo">
             <Image
               src={isDark ? '/brand/aibos-mark-white-glyph.png' : '/brand/aibos-mark.png'}
-              alt="AIBOS"
+              alt="AI-BOS"
               width={60}
               height={60}
               priority
@@ -122,14 +122,14 @@ export function GiftWelcomePanel({ gift, onClose }: { gift: GiftMeta; onClose: (
         </div>
 
         <div className="whatsnew-body">
-          <p className="eyebrow">A gift from AIBOS</p>
+          <p className="eyebrow">A gift from AI-BOS</p>
           {more ? (
             <>
               <h2 id="gift-title" className="whatsnew-title">
                 {moreSpan.charAt(0).toUpperCase() + moreSpan.slice(1)} of {planName}, {gift.name}
               </h2>
               <p className="whatsnew-sub">
-                {business ? `${business} stays` : 'You stay'} on AIBOS {planName}, free until {longDate(gift.until)}.
+                {business ? `${business} stays` : 'You stay'} on AI-BOS {planName}, free until {longDate(gift.until)}.
                 Everything below stays switched on. Nothing to pay and no card needed.
               </p>
             </>
@@ -137,7 +137,7 @@ export function GiftWelcomePanel({ gift, onClose }: { gift: GiftMeta; onClose: (
             <>
               <h2 id="gift-title" className="whatsnew-title">Welcome to {planName}, {gift.name}</h2>
               <p className="whatsnew-sub">
-                {business ? `${business} is` : 'You are'} on AIBOS {planName}, free for {spanWords(gift.months)} until{' '}
+                {business ? `${business} is` : 'You are'} on AI-BOS {planName}, free for {spanWords(gift.months)} until{' '}
                 {longDate(gift.until)}. Everything below is switched on now. Nothing to pay and no card needed.
               </p>
             </>

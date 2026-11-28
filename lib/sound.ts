@@ -1,10 +1,10 @@
-// lib/sound.ts — the short sound a reminder makes while AIBOS is open.
+// lib/sound.ts — the short sound a reminder makes while AI-BOS is open.
 //
 // WHAT A WEBSITE CAN AND CANNOT DO WITH SOUND. A notification that arrives with
-// AIBOS closed is played by the phone or computer itself, with whatever sound
+// AI-BOS closed is played by the phone or computer itself, with whatever sound
 // its owner has chosen for notifications. The Notification API has a `sound`
 // option that no browser ever implemented, so nothing here can change that one.
-// This sound is the one AIBOS plays itself, in the tab, the moment a reminder
+// This sound is the one AI-BOS plays itself, in the tab, the moment a reminder
 // card appears in front of the owner.
 //
 // A browser refuses to play anything until the person has clicked in the page,
@@ -52,11 +52,11 @@ export async function playReminderSound(force = false): Promise<boolean> {
   }
 }
 
-/** Play the tone the moment a notification lands, for as long as AIBOS is
+/** Play the tone the moment a notification lands, for as long as AI-BOS is
  *  open: on the installed app, in another tab, or behind other windows.
  *
  *  The service worker asks ONE window first and waits for the answer. Saying
- *  yes makes the notification itself silent, so the owner hears AIBOS's own
+ *  yes makes the notification itself silent, so the owner hears AI-BOS's own
  *  tone and nothing else; saying no (the sound is switched off here, the tab
  *  is frozen, or the browser will not play yet) leaves the notification to
  *  make the device's usual sound. Either way something is heard, once.

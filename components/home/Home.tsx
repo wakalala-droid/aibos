@@ -10,19 +10,19 @@
 //   1. the greeting, the one thing today, Record and Talk
 //   2. Needs you: the only to-do list, one line when nothing needs the owner
 //      (moved up by the UX audit the same day)
-//   3. the AIBOS team: the whole scene, edge to edge (HomeTeam), for owners
+//   3. the AI-BOS team: the whole scene, edge to edge (HomeTeam), for owners
 //      whose plan has it; on other plans it comes last, asleep. On a phone
 //      the money comes before it (the scene is most of a phone screen and
 //      the money is what the owner opens Home for).
 //   4. the money: the figure and its line, where it is, the 13-week watch
 //   5. Today: sales, money owed and stock, then coming up or just happened
 //
-// The AIBOS team page folded into Home the same day (/dashboard/team sends
+// The AI-BOS team page folded into Home the same day (/dashboard/team sends
 // here): the owner works with the team where they already are.
 //
 // The numbers (scores, the month figures, the chart, the findings) moved to
 // Your numbers (/dashboard/numbers). Above the five blocks, at most one
-// nudge (teach AIBOS, unlock the brief, a milestone), never three, and none
+// nudge (teach AI-BOS, unlock the brief, a milestone), never three, and none
 // while the layout shows a plan notice (globals.css .layout-nudge).
 
 import { useEffect, useMemo, useState } from 'react';
@@ -154,8 +154,8 @@ export default function Home() {
               <Plus aria-hidden="true" /> Record
             </button>
           )}
-          <button type="button" className="pill" onClick={startTalk} data-tour="ask-bar">
-            <Mic aria-hidden="true" /> Talk to AIBOS
+          <button type="button" className="pill" onClick={() => startTalk()} data-tour="ask-bar">
+            <Mic aria-hidden="true" /> Talk to AI-BOS
           </button>
         </div>
       </header>
@@ -164,7 +164,7 @@ export default function Home() {
           audit 17 Nov 2026). One line when nothing does. */}
       {seesMoney && <NeedsYou />}
 
-      {/* 3. The AIBOS team, edge to edge */}
+      {/* 3. The AI-BOS team, edge to edge */}
       {teamFirst && <HomeTeam first />}
 
       {/* 4. The money */}

@@ -1,4 +1,4 @@
-// lib/tiers.ts — AIBOS subscription tiers + feature gating.
+// lib/tiers.ts — AI-BOS subscription tiers + feature gating.
 // Single source of truth for what each plan unlocks and how it is priced.
 // Priced and billed in US dollars by card, renewing automatically, since
 // 25 September 2026 (the owner's decision, replacing the Kwacha-first rule in
@@ -8,7 +8,7 @@ export type Tier = 'free' | 'pro' | 'proplus' | 'growth';
 
 // Features gated across the app. Free includes Engine 1 P&L + cashflow always
 // AND the full recording spine (events, twin, Simple home, local assistant
-// answers) — recording is how AIBOS learns a business, so it is never gated.
+// answers) — recording is how AI-BOS learns a business, so it is never gated.
 // Everything below is gated. The ladder was re-cut on 22 Oct 2026 (owner's
 // decision) so value climbs with price: see the plan arrays further down.
 export type Feature =
@@ -25,7 +25,7 @@ export type Feature =
   | 'engine3'
   | 'invoices'         // create, send and mint a pay link (reading, settling and cancelling stay free)
   | 'team'             // invite staff and the accountant (listing and removing people stay free)
-  // Pro+ — "AIBOS runs your day": the assistant acts, not just answers.
+  // Pro+ — "AI-BOS runs your day": the assistant acts, not just answers.
   | 'schedule'         // recurrence + reminders on the Scheduler (core CRUD is free, like recording)
   | 'payroll'          // run a pay period: PAYE/NAPSA/net-pay engine + posting Salary events (register is free)
   | 'morning_brief'    // in-app daily digest composed from the twin
@@ -77,11 +77,11 @@ export const TIERS: Record<Tier, TierMeta> = {
     // receipts, customers, stock, the staff register and the schedule are
     // never gated. Anything not live yet says so in brackets.
     inclusions: [
-      'Find clients free for a day: AIBOS finds businesses that could buy from you and writes to 10 of them',
+      'Find clients free for a day: AI-BOS finds businesses that could buy from you and writes to 10 of them',
       'Record sales and expenses, or upload a spreadsheet or receipt',
       'Profit and cash for your last 30 days',
       'Customers, stock, a staff register and a schedule',
-      'Ask AIBOS: 3 questions a day',
+      'Ask AI-BOS: 3 questions a day',
       'A preview of forecasts, warnings and breakeven',
       'Export your data any time',
     ],
@@ -97,7 +97,7 @@ export const TIERS: Record<Tier, TierMeta> = {
       'Everything in Free',
       'Find clients: 50 businesses a month researched and written to, top up any time',
       'Your whole history, no 30-day limit',
-      'Unlimited Ask AIBOS that remembers the conversation',
+      'Unlimited Ask AI-BOS that remembers the conversation',
       'Forecasts, unusual-spending warnings, breakeven and month by month',
       'Monthly targets judged on pace, with the chance you hit them',
       'Best customers, quiet customers and till sales reports',
@@ -108,7 +108,7 @@ export const TIERS: Record<Tier, TierMeta> = {
   proplus: {
     id: 'proplus',
     name: 'Pro+',
-    tagline: 'AIBOS runs your day, you run the business',
+    tagline: 'AI-BOS runs your day, you run the business',
     priceMonthly: 39,
     priceAnnual: 390,
     accent: 'var(--e2)',
@@ -119,7 +119,7 @@ export const TIERS: Record<Tier, TierMeta> = {
       'The Morning Brief on Home: your day, ready before you ask',
       'The brief at 06:30 by email and on your phone, and on WhatsApp (rolling out)',
       'Reminders on your phone for NAPSA, ZRA, rent and meetings',
-      'Record sales and expenses just by telling AIBOS',
+      'Record sales and expenses just by telling AI-BOS',
       'Expected deliveries: what is arriving and when',
       'Reorder drafts when stock runs low, approved in one tap',
     ],

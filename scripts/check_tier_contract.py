@@ -2,7 +2,7 @@
 """
 The frontend half of the tier-contract guard.
 
-AIBOS is two repos that deploy independently and each kept its own copy of what
+AI-BOS is two repos that deploy independently and each kept its own copy of what
 a plan unlocks. Nothing compared them, so they drifted silently and shipped real
 bugs: 'multi_business' was granted by entitlements.py but missing from tiers.ts,
 locking paying Growth owners out of the switcher they'd bought; and the Free chat

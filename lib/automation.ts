@@ -2,7 +2,7 @@
 //
 // "Good software digitizes work. Great software automates work. Exceptional
 // software anticipates work." This module is the anticipation layer: it looks
-// at the live state AIBOS already holds and PREPARES the next piece of work as
+// at the live state AI-BOS already holds and PREPARES the next piece of work as
 // a proposal the owner approves with one tap.
 //
 // Design rules (Devil's-Advocate-approved):
@@ -24,7 +24,7 @@ export interface ReorderProposal {
   productId: string;
   /** What to order, in the owner's words: "Sugar — 16 kg from Kasama Traders". */
   headline: string;
-  /** Why AIBOS is proposing it: "4 left, reorder level is 10". */
+  /** Why AI-BOS is proposing it: "4 left, reorder level is 10". */
   reason: string;
   item: string;
   quantity: number;
@@ -71,9 +71,9 @@ export function reorderProposals(products: Product[]): ReorderProposal[] {
 
 // ── Customer follow-ups (Engine 2 × automation) ──────────────────────────────
 // The same anticipation pattern applied to people instead of stock: when a
-// valuable customer is drifting (high churn risk from the RFM engine), AIBOS
+// valuable customer is drifting (high churn risk from the RFM engine), AI-BOS
 // prepares the check-in — who, why, and a ready-to-send message. The owner
-// sends it from their own WhatsApp in one tap; AIBOS never messages anyone
+// sends it from their own WhatsApp in one tap; AI-BOS never messages anyone
 // itself (propose → confirm applies to relationships too).
 
 export interface FollowUpProposal {

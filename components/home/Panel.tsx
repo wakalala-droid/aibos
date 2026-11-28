@@ -1,6 +1,6 @@
 'use client';
 
-// Panel: the redesign's card. The same core chrome as every AIBOS card (the
+// Panel: the redesign's card. The same core chrome as every AI-BOS card (the
 // cursor BorderGlow, dark mode only, and the bento dot texture) around a flat
 // surface with generous inner space and an optional title row: a quiet title
 // on the left, one action on the right.

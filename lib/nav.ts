@@ -33,7 +33,7 @@ export interface NavDoor {
 }
 
 export const DOORS: NavDoor[] = [
-  // The AIBOS team lives on Home since 17 Nov 2026, so its words find Home.
+  // The AI-BOS team lives on Home since 17 Nov 2026, so its words find Home.
   { href: '/dashboard',             label: 'Home',          icon: 'overview',  group: 'main', keywords: ['today', 'overview', 'dashboard', 'start', 'morning brief', 'aibos team', 'workers', 'jarvis', 'needs you', 'jobs', 'automatic', 'autopilot', 'bookkeeper', 'collector', 'mission control', 'assistant'] },
   { href: '/dashboard/record',      label: 'Record',        icon: 'record',    group: 'main', keywords: ['add', 'sale', 'sold', 'expense', 'spent', 'enter', 'receipt'] },
   { href: '/dashboard/cash',        label: 'Money',         icon: 'cash',      group: 'main', keywords: ['cash', 'balance', 'bank', 'runway', 'profit', 'spending', 'cash intelligence'] },
@@ -67,9 +67,9 @@ export const DOORS: NavDoor[] = [
 /** Account pages: searchable, reached from the account menu, not the side menu. */
 export const ACCOUNT_DOORS: { href: string; label: string; keywords: string[] }[] = [
   { href: '/dashboard/profile', label: 'Settings',       keywords: ['profile', 'business profile', 'logo', 'team', 'invite', 'mobile money', 'export', 'currency'] },
-  { href: '/dashboard/teach',   label: 'Teach AIBOS your business', keywords: ['interview', 'about my business', 'story', 'goals', 'targets', 'learn', 'workbook', 'template', 'set up'] },
+  { href: '/dashboard/teach',   label: 'Teach AI-BOS your business', keywords: ['interview', 'about my business', 'story', 'goals', 'targets', 'learn', 'workbook', 'template', 'set up'] },
   { href: '/dashboard/billing', label: 'Plan & billing', keywords: ['plan', 'billing', 'subscription', 'receipt', 'upgrade', 'cancel'] },
-  { href: '/dashboard/reviews', label: 'Review AIBOS',   keywords: ['review', 'rate', 'rating', 'stars', 'feedback', 'testimonial', 'say what you think'] },
+  { href: '/dashboard/reviews', label: 'Review AI-BOS',   keywords: ['review', 'rate', 'rating', 'stars', 'feedback', 'testimonial', 'say what you think'] },
 ];
 
 /** Things the search box can DO, not just open. */
@@ -83,20 +83,20 @@ export const ACTIONS: { href: string; label: string; keywords: string[]; feature
 
 /**
  * The browser tab's title for a dashboard page (WCAG 2.4.2, audit 19 Nov
- * 2026). Every page was "AIBOS · Business Intelligence Platform", so the tabs,
+ * 2026). Every page was "AI-BOS · Business Intelligence Platform", so the tabs,
  * the history and a screen reader could not tell Staff from Money. The
  * longest door that holds the path names it: /dashboard/hospitality/units is
  * Rooms & Stays.
  */
 export function titleFor(pathname: string): string {
   const path = pathname.replace(/\/+$/, '') || '/';
-  if (path === '/dashboard') return 'Home · AIBOS';
+  if (path === '/dashboard') return 'Home · AI-BOS';
   let best: { href: string; label: string } | null = null;
   for (const d of [...DOORS, ...ACCOUNT_DOORS]) {
     if (d.href === '/dashboard') continue;
     if ((path === d.href || path.startsWith(`${d.href}/`)) && (!best || d.href.length > best.href.length)) best = d;
   }
-  return best ? `${best.label} · AIBOS` : 'AIBOS';
+  return best ? `${best.label} · AI-BOS` : 'AI-BOS';
 }
 
 export type TeamRole = 'owner' | 'staff' | 'accountant' | string | null | undefined;
@@ -108,7 +108,7 @@ export type TeamRole = 'owner' | 'staff' | 'accountant' | string | null | undefi
 const STAFF_HREFS = new Set([
   '/dashboard', '/dashboard/record', '/dashboard/timeline', '/dashboard/schedule',
   '/dashboard/inventory', '/dashboard/hospitality', '/dashboard/clients',
-  // Everyone who uses AIBOS is asked for a review (aibos-api reviews.ask).
+  // Everyone who uses AI-BOS is asked for a review (aibos-api reviews.ask).
   '/dashboard/reviews',
 ]);
 const ACCOUNTANT_HIDE = new Set(['/dashboard/record', '/dashboard/import', '/dashboard/employees']);

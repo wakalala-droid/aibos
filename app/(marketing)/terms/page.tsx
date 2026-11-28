@@ -5,7 +5,7 @@ import { LEGAL } from '@/lib/legal';
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description:
-    'The terms for using AIBOS: plans and prices, paying by card through our reseller Paddle, automatic renewal, refunds, your data and what we each promise.',
+    'The terms for using AI-BOS: plans and prices, paying by card through our reseller Paddle, automatic renewal, refunds, your data and what we each promise.',
   alternates: { canonical: '/terms' },
 };
 
@@ -34,7 +34,7 @@ const SECTIONS: { h: string; body: Part[][] }[] = [
   {
     h: 'Plans and prices',
     body: [
-      ['AIBOS has a Free plan and three paid plans: Pro, Pro+ and Growth. What each one includes and what it costs is on our ', { text: 'pricing page', href: '/pricing', after: '.' }],
+      ['AI-BOS has a Free plan and three paid plans: Pro, Pro+ and Growth. What each one includes and what it costs is on our ', { text: 'pricing page', href: '/pricing', after: '.' }],
       ['Prices are in US dollars, plus any sales tax that applies where you live. We may also show an amount in Kwacha as a guide, converted at a recent exchange rate. You are charged in US dollars, so your bank or card sets the exact Kwacha amount. The price you see at checkout is the price you pay.'],
       ['We tell you in advance before a price change affects a plan you already pay for.'],
     ],
@@ -71,28 +71,28 @@ const SECTIONS: { h: string; body: Part[][] }[] = [
   {
     h: 'Fair use',
     body: [
-      ['Do not use AIBOS to break the law, to store data you have no right to hold, to try to reach another customer’s records, to overload or attack the service, or to copy or resell the service itself.'],
+      ['Do not use AI-BOS to break the law, to store data you have no right to hold, to try to reach another customer’s records, to overload or attack the service, or to copy or resell the service itself.'],
       ['We may suspend an account that does any of these things. We will tell you why.'],
     ],
   },
   {
     h: 'Figures and AI answers',
     body: [
-      ['AIBOS works out figures and answers from the records you give it. They are there to help you decide. They do not replace an accountant, a tax adviser or a lawyer, so check anything important before you rely on it, such as a tax return.'],
+      ['AI-BOS works out figures and answers from the records you give it. They are there to help you decide. They do not replace an accountant, a tax adviser or a lawyer, so check anything important before you rely on it, such as a tax return.'],
       ['AI answers can be wrong. We show where every figure comes from so that you can check it.'],
     ],
   },
   {
     h: 'The service',
     body: [
-      ['We work to keep AIBOS running and your data safe, but we cannot promise it will never be interrupted.'],
+      ['We work to keep AI-BOS running and your data safe, but we cannot promise it will never be interrupted.'],
       ['We improve and change features over time. If we take away something you pay for, we tell you before we do.'],
     ],
   },
   {
     h: 'Ending',
     body: [
-      ['You can stop using AIBOS whenever you like. Cancel your plan’s renewal on Plan & billing and it ends at the end of the period you paid for.'],
+      ['You can stop using AI-BOS whenever you like. Cancel your plan’s renewal on Plan & billing and it ends at the end of the period you paid for.'],
       ['You can ask us to delete your account and your data at any time.'],
     ],
   },

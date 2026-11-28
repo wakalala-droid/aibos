@@ -38,7 +38,7 @@ export function OfflineSync() {
     // The browser offers installation on whichever page loads first; keep the
     // offer until the dashboard asks (components/pwa/InstallPrompt.tsx).
     const releaseInstall = captureInstallPrompt();
-    // A notification that lands while AIBOS is open plays the owner's own tone
+    // A notification that lands while AI-BOS is open plays the owner's own tone
     // (lib/sound.ts), on the installed app as well as in a tab.
     const stopSound = listenForNotifications();
     return () => {

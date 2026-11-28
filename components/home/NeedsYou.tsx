@@ -1,7 +1,7 @@
 'use client';
 
 // components/home/NeedsYou.tsx
-// "Needs you": the one list in AIBOS of what the owner should look at
+// "Needs you": the one list in AI-BOS of what the owner should look at
 // (17 Nov 2026 cleanup, Hick's law: one place to look, one thing at a time).
 // It used to be eight blocks on the home page. Now it holds:
 //   - the workers' questions (aibos-api workers.py), each waiting for a yes;
@@ -10,7 +10,7 @@
 //     the top piece of advice.
 // Anything that cannot wait comes first, then the workers' questions oldest
 // first, then the rest. Three show; the rest open with "See all". When the
-// list is empty that is the reward: nothing needs you, and what AIBOS
+// list is empty that is the reward: nothing needs you, and what AI-BOS
 // handled today, said in one line (the UX audit, 17 Nov 2026: an empty list
 // stood 225px tall). It sits right under the greeting.
 //
@@ -122,7 +122,7 @@ export default function NeedsYou() {
       if (!out.new) setSaid('Nothing new. Everything that needs you is here.');
       teamChanged();
     } catch (e) {
-      setSaid(e instanceof ApiError ? e.message : 'AIBOS could not look just now. Try again in a moment.');
+      setSaid(e instanceof ApiError ? e.message : 'AI-BOS could not look just now. Try again in a moment.');
     } finally {
       setChecking(false);
     }
@@ -184,8 +184,8 @@ export default function NeedsYou() {
           <h2 id="needs-you-title" tabIndex={-1} className="needs-you-line-title">Nothing needs you</h2>
           <p role="status" className="needs-you-line-sub">
             {said ?? (handled > 0
-              ? `AIBOS handled ${handled} ${handled === 1 ? 'thing' : 'things'} today and keeps looking.`
-              : 'All clear. AIBOS keeps looking.')}
+              ? `AI-BOS handled ${handled} ${handled === 1 ? 'thing' : 'things'} today and keeps looking.`
+              : 'All clear. AI-BOS keeps looking.')}
           </p>
         </div>
         {jobs !== null && (
@@ -208,7 +208,7 @@ export default function NeedsYou() {
           </h2>
           <p className="needs-you-line-sub needs-you-peek-first">
             {firstSaid ?? (handled > 0
-              ? `AIBOS handled ${handled} ${handled === 1 ? 'thing' : 'things'} today.`
+              ? `AI-BOS handled ${handled} ${handled === 1 ? 'thing' : 'things'} today.`
               : 'Nothing happens until you say yes.')}
           </p>
         </div>
@@ -228,7 +228,7 @@ export default function NeedsYou() {
             <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-data)', color: 'var(--text-2)' }}>
               {open === 0
                 ? handled > 0
-                  ? `AIBOS handled ${handled} ${handled === 1 ? 'thing' : 'things'} today. Enjoy the quiet.`
+                  ? `AI-BOS handled ${handled} ${handled === 1 ? 'thing' : 'things'} today. Enjoy the quiet.`
                   : 'Cash, stock, customers and spending are all inside their limits.'
                 : 'Nothing happens until you say yes.'}
             </p>

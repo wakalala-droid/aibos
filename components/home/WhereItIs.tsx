@@ -1,6 +1,6 @@
 'use client';
 
-// Where the money is (redesign pilot): Mercury's accounts list in AIBOS's
+// Where the money is (redesign pilot): Mercury's accounts list in AI-BOS's
 // words. The money right now, split by how it was paid (the drawer, the
 // mobile money wallet, the bank), then what customers owe and what the
 // business owes. Each row opens what is behind it: a place opens the entries

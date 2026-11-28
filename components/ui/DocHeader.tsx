@@ -67,7 +67,7 @@ export default function DocHeader({ name, tag, facts, className = '' }: DocHeade
           {/* eslint-disable-next-line @next/next/no-img-element -- fixed small brand files, nothing to optimise */}
           <img className="glyph" src="/brand/aibos-mark-white-glyph.png" alt="" />
           {/* eslint-disable-next-line @next/next/no-img-element -- the wordmark cropped to its bounds */}
-          <img className="word" src="/brand/aibos-wordmark-white-tight.png" alt="AIBOS" />
+          <img className="word" src="/brand/aibos-wordmark-white-tight.png" alt="AI-BOS" />
           <span className="rule" aria-hidden="true" />
           <span className="line">Business operating system</span>
         </div>

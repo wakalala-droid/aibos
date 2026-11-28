@@ -1,6 +1,6 @@
 # Tier contract guard — stops lib/tiers.ts drifting from the backend.
 #
-# AIBOS is two repos that deploy independently and each kept its own copy of what
+# AI-BOS is two repos that deploy independently and each kept its own copy of what
 # a plan unlocks. Nothing compared them, so they drifted and shipped real bugs:
 # paying Growth owners locked out of multi-business, and the Free chat taster
 # advertised on the pricing page while being unreachable. This fetches

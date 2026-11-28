@@ -71,26 +71,26 @@ export default function AICFOChat() {
   const hasUserMsg = messages.some((m) => m.role === 'user');
 
   return (
-    <section aria-label="Ask AIBOS" className="ai-panel" style={{ height: '100%', boxShadow: 'var(--shadow-card)' }}>
+    <section aria-label="Ask AI-BOS" className="ai-panel" style={{ height: '100%', boxShadow: 'var(--shadow-card)' }}>
       {/* Header: the bento head, round mark, spaced-capital title, one tag. */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '20px 24px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
         <span className="bento-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" /></svg>
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h2 className="bento-title">Ask AIBOS</h2>
+          <h2 className="bento-title">Ask AI-BOS</h2>
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: 0 }}>Answers from your own recorded figures</p>
         </div>
         {messages.length > 0 && (
           <button type="button" onClick={clearConversation} disabled={loading} className="pill pill-quiet"
-            title="Start a new conversation. AIBOS forgets this one.">
+            title="Start a new conversation. AI-BOS forgets this one.">
             New chat
           </button>
         )}
       </div>
 
       {/* Body */}
-      <div ref={scrollRef} onScroll={onBodyScroll} role="log" aria-live="polite" aria-atomic="false" aria-label="Conversation with AIBOS"
+      <div ref={scrollRef} onScroll={onBodyScroll} role="log" aria-live="polite" aria-atomic="false" aria-label="Conversation with AI-BOS"
         aria-busy={loading}
         style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
 
@@ -164,11 +164,11 @@ export default function AICFOChat() {
       {/* Input bar */}
       <div style={{ padding: '12px 16px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
         <div className="composer" style={{ display: 'flex', alignItems: 'flex-end', gap: 10, background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-lg)', padding: '8px 8px 8px 16px', boxShadow: 'var(--shadow-card)' }}>
-          <label htmlFor="cfo-chat-input" className="sr-only">Message to AIBOS</label>
+          <label htmlFor="cfo-chat-input" className="sr-only">Message to AI-BOS</label>
           <textarea
             id="cfo-chat-input" ref={inputRef} value={input}
             onChange={(e) => setInput(e.target.value)} onKeyDown={handleKey}
-            placeholder="Ask AIBOS anything…" aria-label="Message to AIBOS" rows={1} disabled={loading}
+            placeholder="Ask AI-BOS anything…" aria-label="Message to AI-BOS" rows={1} disabled={loading}
             style={{ flex: 1, background: 'transparent', border: 'none', resize: 'none', fontSize: 'var(--fs-body)', color: 'var(--text-1)', lineHeight: 1.5, maxHeight: 120, overflow: 'auto' }}
             onInput={(e) => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 120)}px`; }}
           />

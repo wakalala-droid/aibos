@@ -30,8 +30,8 @@ const MESH = ['#22d3ee', '#22d3ee', '#67e8f9']; // one hue (5 Oct 2026)
 
 // Your numbers (17 Nov 2026 cleanup): the analysis that used to sit under the
 // Full home, on a page of its own so Home asks for one thing at a time. The
-// health and engine scores, the month figures, how AIBOS read the file, the
-// figures the owner asked for, sales and profit by month, what AIBOS found
+// health and engine scores, the month figures, how AI-BOS read the file, the
+// figures the owner asked for, sales and profit by month, what AI-BOS found
 // across the business, customers and the till at a glance, and the reports.
 export default function NumbersPage() {
   return <OverviewPage />;
@@ -218,7 +218,7 @@ function OverviewPage() {
 
   return (
     <>
-      <PageHeader title="Your numbers" subtitle="The figures behind Home: scores, months, what AIBOS found and the reports." />
+      <PageHeader title="Your numbers" subtitle="The figures behind Home: scores, months, what AI-BOS found and the reports." />
 
       {/* ── Contextual upgrade trigger (only at moments of demonstrated value) ── */}
       <UpgradeTrigger />
@@ -292,7 +292,7 @@ function OverviewPage() {
         />
       </div>
 
-      {/* How AIBOS read your file, and any figures the owner asked for. */}
+      {/* How AI-BOS read your file, and any figures the owner asked for. */}
       <DataManifestCard />
       <CustomMetricsCard />
 
@@ -339,12 +339,12 @@ function OverviewPage() {
         </SectionCard>
       )}
 
-      {/* ── What AIBOS found: the owner's bento layout (5 Oct 2026) ─────── */}
+      {/* ── What AI-BOS found: the owner's bento layout (5 Oct 2026) ─────── */}
       <div className="bento-section">
         <header className="bento-section-head">
           <div>
             <p className="eyebrow">Across your business</p>
-            <h2 className="bento-section-title">What AIBOS found</h2>
+            <h2 className="bento-section-title">What AI-BOS found</h2>
           </div>
           <p className="bento-section-sub">
             Money, customers and the till read together, the most pressing first.
@@ -366,14 +366,14 @@ function OverviewPage() {
           </div>
         ) : (
           <BentoCard icon={<Aperture />} title="Nothing to read yet" tag="Start"
-            text="Record your sales and costs, or upload a file, and AIBOS puts what it finds across money, customers and operations here."
+            text="Record your sales and costs, or upload a file, and AI-BOS puts what it finds across money, customers and operations here."
             foot={<><Link href="/dashboard/record" className="pill pill-primary">Record a sale</Link><Link href="/dashboard/import" className="pill pill-quiet">Upload a file</Link></>} />
         )}
         {activeEngineCount < 3 && unifiedInsights.length > 0 && (
           <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '12px 0 0', lineHeight: 1.6 }}>
             {activeEngineCount === 1
-              ? "Add customers' names or your till's sales report and AIBOS reads all three together."
-              : 'Add the last one and AIBOS reads all three together.'}
+              ? "Add customers' names or your till's sales report and AI-BOS reads all three together."
+              : 'Add the last one and AI-BOS reads all three together.'}
           </p>
         )}
       </div>
@@ -389,7 +389,7 @@ function OverviewPage() {
         <div className="bento-grid">
           <BentoCard className={gSpan('customers')} icon={<Users />} title="Customers" tag="People" explainId="card.customer"
             href={hasEngine2Data ? '/dashboard/customers' : undefined}
-            text={hasEngine2Data ? undefined : "Add the customer's name when you record a sale. After about 10, AIBOS shows who buys most and who has gone quiet."}
+            text={hasEngine2Data ? undefined : "Add the customer's name when you record a sale. After about 10, AI-BOS shows who buys most and who has gone quiet."}
             foot={hasEngine2Data ? undefined : <Link href="/dashboard/record" className="pill">Record a sale</Link>}>
             {hasEngine2Data && (
               <div className="mini-stats" style={{ marginTop: 12 }}>
@@ -474,7 +474,7 @@ function OverviewPage() {
           title="Morning brief"
           colour="var(--cyan)"
           headline="Get the one number that matters, every morning."
-          detail="A brief lands in your inbox leading with what changed: “Your cash runway dropped to 12 days.” Every line links straight back into AIBOS."
+          detail="A brief lands in your inbox leading with what changed: “Your cash runway dropped to 12 days.” Every line links straight back into AI-BOS."
         >
           <BriefSubscribe />
         </FeatureGate>

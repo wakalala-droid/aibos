@@ -172,7 +172,7 @@ export default function WhatsNew() {
           <div className="whatsnew-logo">
             <Image
               src={isDark ? '/brand/aibos-mark-white-glyph.png' : '/brand/aibos-mark.png'}
-              alt="AIBOS"
+              alt="AI-BOS"
               width={60}
               height={60}
               priority

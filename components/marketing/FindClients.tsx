@@ -27,12 +27,12 @@ export default function FindClients() {
           <p className="mkt-eyebrow">Find clients, free for a day</p>
           <h2 id="clients-h" className="mkt-h2">Find your next customers.</h2>
           <p className="mkt-lead" style={{ marginTop: 20, maxWidth: 520 }}>
-            Say in one line what you sell and who to. AIBOS finds businesses near you that could buy,
+            Say in one line what you sell and who to. AI-BOS finds businesses near you that could buy,
             reads their websites, says how well each one fits and writes the first message, with a short
             note for LinkedIn. You read it and send it yourself.
           </p>
           <p className="mkt-lead" style={{ marginTop: 16, maxWidth: 520 }}>
-            Try it free for a day: AIBOS researches and writes to {FIND_CLIENTS_TRIAL.research} businesses.
+            Try it free for a day: AI-BOS researches and writes to {FIND_CLIENTS_TRIAL.research} businesses.
             Then Pro researches {PER.pro} a month, Pro+ {PER.proplus} and Growth {PER.growth}, and anyone can
             top up {LOW_PACK} more for ${FIND_CLIENTS_TOPUPS[LOW_PACK]}.
           </p>
@@ -82,12 +82,12 @@ export default function FindClients() {
               role="region"
               ariaLabel="A sample map search"
             >
-              <strong>45 lodges, guest houses and hotels</strong> around Livingstone. AIBOS read the first 10 and
+              <strong>45 lodges, guest houses and hotels</strong> around Livingstone. AI-BOS read the first 10 and
               wrote to the 6 that fit.
             </Notice>
           </Rise>
           <p className="mkt-preview-cap">
-            A sample business. AIBOS writes from your own line and each business&apos;s own website.
+            A sample business. AI-BOS writes from your own line and each business&apos;s own website.
           </p>
         </div>
       </div>

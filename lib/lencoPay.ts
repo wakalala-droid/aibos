@@ -1,7 +1,7 @@
 /**
  * Lenco's own secure card window (Lenco Pay inline, migration 0049).
  *
- * The guest types their card into Lenco's frame, never into AIBOS, so no card
+ * The guest types their card into Lenco's frame, never into AI-BOS, so no card
  * number ever reaches this app or its server. Any bank's Visa or Mastercard
  * works. The server hands over the reference, the amount and the business's
  * PUBLIC key (POST /pay/stay/{token}/card); when the window says it is done,

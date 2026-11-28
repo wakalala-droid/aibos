@@ -175,7 +175,7 @@ export default function TopUp({ packs, bought, reload, onCancel }: {
       )}
       {state === 'failed' && error && <Note tone="bad">{error}</Note>}
       {state === 'confirming' && (
-        <Note tone="info">Paid. AIBOS is adding the businesses to your account; this takes a few seconds.</Note>
+        <Note tone="info">Paid. AI-BOS is adding the businesses to your account; this takes a few seconds.</Note>
       )}
       {state === 'slow' && (
         <Note tone="info">

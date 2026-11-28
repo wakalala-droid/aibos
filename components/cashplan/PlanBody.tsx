@@ -22,11 +22,11 @@ import { BAD, signTone } from '@/lib/tone';
 const CADENCE: Record<string, string> = { monthly: 'Every month', weekly: 'Every week', fortnightly: 'Every two weeks' };
 const SOURCE: Record<string, string> = {
   waiting: 'Waiting to be paid', schedule: 'On your Schedule', regular: 'Usually paid',
-  told: 'From your answers in Teach AIBOS, on the 1st',
+  told: 'From your answers in Teach AI-BOS, on the 1st',
 };
 
 export function teaser(plan: CashPlan | null, sym = 'K'): { headline: string; detail: string } {
-  const detail = 'Every bill AIBOS knows is coming (wages, ZRA, rent), what customers owe and when they usually pay, '
+  const detail = 'Every bill AI-BOS knows is coming (wages, ZRA, rent), what customers owe and when they usually pay, '
     + 'the chance you run short each week, what is safe to spend today and what fixes a shortfall.';
   if (!plan?.ok) {
     return { headline: plan?.reason || 'See your money day by day for the next 13 weeks.', detail };
@@ -37,8 +37,8 @@ export function teaser(plan: CashPlan | null, sym = 'K'): { headline: string; de
     const line = floorWords(plan.floor, plan.floor_from === 'cushion', sym);
     return {
       headline: sure
-        ? `AIBOS sees your money going below ${line}${when}. See why and what fixes it.`
-        : `AIBOS sees a ${plan.chance_words} chance your money goes below ${line}${when}. See why and what fixes it.`,
+        ? `AI-BOS sees your money going below ${line}${when}. See why and what fixes it.`
+        : `AI-BOS sees a ${plan.chance_words} chance your money goes below ${line}${when}. See why and what fixes it.`,
       detail,
     };
   }
@@ -103,7 +103,7 @@ export default function PlanBody({ plan, sym, floor, floorText, setFloorText, se
   const risky = short >= 5;
   const salesAcc = p.accuracy?.sales_w;
   const spendAcc = p.accuracy?.out_w;
-  // The floor is the owner's cushion from Teach AIBOS until they type another.
+  // The floor is the owner's cushion from Teach AI-BOS until they type another.
   const onCushion = p.floor_from === 'cushion';
   const cushion = p.cushion ?? 0;
   const line = floorWords(floor, onCushion, sym);
@@ -149,24 +149,24 @@ export default function PlanBody({ plan, sym, floor, floorText, setFloorText, se
             {p.weeks.length} weeks from {dayWords(p.today)} to {dayWords(p.until)}. Likely end: <strong>{fmt(p.close.p50, true, sym)}</strong>,
             cautious {fmt(p.close.p10, true, sym)}, hopeful {fmt(p.close.p90, true, sym)}.
           </p>
-          {/* What the owner told AIBOS in Teach AIBOS, said where it shapes the plan. */}
+          {/* What the owner told AI-BOS in Teach AI-BOS, said where it shapes the plan. */}
           {onCushion ? (
             <Note tone="info">
-              The line is your {fmt(cushion, true, sym)} cushion: you told AIBOS to keep that much in the business at all times,
+              The line is your {fmt(cushion, true, sym)} cushion: you told AI-BOS to keep that much in the business at all times,
               so what is safe to spend keeps it. Type a figure in Keep at least to try another,
-              or change it in <Link href="/dashboard/teach" className="tap-link">Teach AIBOS</Link>.
+              or change it in <Link href="/dashboard/teach" className="tap-link">Teach AI-BOS</Link>.
             </Note>
           ) : cushion > 0 ? (
             <Note tone="info">
               <span style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-                <span style={{ flex: 1, minWidth: 200 }}>You told AIBOS to keep a {fmt(cushion, true, sym)} cushion. This plan keeps {line} instead.</span>
+                <span style={{ flex: 1, minWidth: 200 }}>You told AI-BOS to keep a {fmt(cushion, true, sym)} cushion. This plan keeps {line} instead.</span>
                 <button type="button" className="pill pill-quiet" onClick={backToCushion}>Keep my cushion</button>
               </span>
             </Note>
           ) : null}
           {typeof p.told_loan === 'number' && (
             <Note tone="info">
-              Your {fmt(p.told_loan, true, sym)} loan repayment from Teach AIBOS is counted on the 1st of each month:
+              Your {fmt(p.told_loan, true, sym)} loan repayment from Teach AI-BOS is counted on the 1st of each month:
               your books do not show it yet. Record the repayments and the plan reads them from your books instead.
             </Note>
           )}
@@ -177,7 +177,7 @@ export default function PlanBody({ plan, sym, floor, floorText, setFloorText, se
         <div style={{ marginTop: 20 }}>
           <Panel title="What fixes it">
             <p className="rs-text is-quiet" style={{ marginBottom: 8 }}>
-              Each one tried on the same futures as your plan. Never wages or ZRA late: AIBOS does not suggest that.
+              Each one tried on the same futures as your plan. Never wages or ZRA late: AI-BOS does not suggest that.
             </p>
             <ul style={{ margin: 0, padding: 0 }}>
               {(p.levers ?? []).map((lv) => (
@@ -252,7 +252,7 @@ export default function PlanBody({ plan, sym, floor, floorText, setFloorText, se
           )}
 
           {(p.regular ?? []).length > 0 && (
-            <Panel title="Regular payments AIBOS found" action={<span className="bento-icon" aria-hidden="true" style={{ width: 44, height: 44 }}><Repeat /></span>}>
+            <Panel title="Regular payments AI-BOS found" action={<span className="bento-icon" aria-hidden="true" style={{ width: 44, height: 44 }}><Repeat /></span>}>
               <ul style={{ margin: 0, padding: 0 }}>
                 {(p.regular ?? []).slice(0, 10).map((r) => (
                   <li key={r.key} className="row" style={{ listStyle: 'none' }}>
@@ -309,7 +309,7 @@ export default function PlanBody({ plan, sym, floor, floorText, setFloorText, se
       )}
 
       <div className="bento-grid" style={{ marginTop: 20 }}>
-        <BentoCard className="span-6" icon={<ShieldCheck />} title="How AIBOS worked this out" tag="Your books only"
+        <BentoCard className="span-6" icon={<ShieldCheck />} title="How AI-BOS worked this out" tag="Your books only"
           text={(p.assumptions ?? []).join(' ')}>
           {(salesAcc?.avg_miss_pct != null || spendAcc?.avg_miss_pct != null) && (
             <p className="bento-note" style={{ marginTop: 12 }}>

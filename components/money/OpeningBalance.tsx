@@ -1,9 +1,9 @@
 'use client';
 /**
- * "What you hold today": the one figure AIBOS cannot work out for itself.
+ * "What you hold today": the one figure AI-BOS cannot work out for itself.
  *
  * The money figure is the opening balance plus everything recorded since.
- * AIBOS only knows the opening balance if the owner typed it during setup;
+ * AI-BOS only knows the opening balance if the owner typed it during setup;
  * otherwise the books start from K0, and an owner who pays wages from money
  * that was already in the bank sees a figure below nothing. There was no way
  * to set it after setup. Here the owner says what they hold now, all together,
@@ -54,7 +54,7 @@ export default function OpeningBalance() {
     >
       {cash < 0 && (
         <p role="status" style={{ margin: '0 0 12px', fontSize: 'var(--fs-body)', lineHeight: 1.55, color: 'var(--amber)' }}>
-          Your books show {money(cash)}: more has been recorded going out than coming in. AIBOS counts only what
+          Your books show {money(cash)}: more has been recorded going out than coming in. AI-BOS counts only what
           is recorded, and your books start from {money(opening)} because it never knew what you had before. Tell
           it what you hold now and the figure will match.
         </p>

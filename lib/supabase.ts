@@ -1,5 +1,5 @@
 /**
- * AIBOS — Supabase Browser Client
+ * AI-BOS — Supabase Browser Client
  * Only the browser singleton lives here.
  * Safe to import from client components ('use client').
  */

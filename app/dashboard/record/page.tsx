@@ -1,7 +1,7 @@
 'use client';
 /**
- * AIBOS — Record (Evolution Initiative 1 + 12).
- * The everyday entry point for businesses running on AIBOS: say what happened, and
+ * AI-BOS — Record (Evolution Initiative 1 + 12).
+ * The everyday entry point for businesses running on AI-BOS: say what happened, and
  * the Digital Twin (cash / revenue / profit) updates live. No spreadsheet required.
  */
 import { useCallback, useEffect, useState } from 'react';
@@ -45,7 +45,7 @@ export default function RecordPage() {
       <div style={{ marginBottom: 8 }}>
         <PageHeader
           title="Record"
-          subtitle="Tell AIBOS what happened: it does the bookkeeping."
+          subtitle="Tell AI-BOS what happened: it does the bookkeeping."
           actions={<a href="/dashboard/import" className="pill">Upload a spreadsheet</a>}
         />
         <OutboxChip style={{ marginTop: -16, marginBottom: 8 }} />
@@ -67,7 +67,7 @@ export default function RecordPage() {
 
       <div className="grid-main">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <SectionCard title="What happened?" subtitle="In your own words. AIBOS fills in the details and you check them.">
+          <SectionCard title="What happened?" subtitle="In your own words. AI-BOS fills in the details and you check them.">
             <RecordActivity onSaved={loadRecent} />
           </SectionCard>
 
@@ -94,7 +94,7 @@ export default function RecordPage() {
           </div>
         </SectionCard>
 
-        <SectionCard title="What AIBOS can do for you" subtitle="It does more the more you record.">
+        <SectionCard title="What AI-BOS can do for you" subtitle="It does more the more you record.">
           <GrowthJourney />
         </SectionCard>
         </div>

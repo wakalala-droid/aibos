@@ -1,5 +1,5 @@
 /**
- * The AIBOS phone apps (owner, 21 Oct 2026): every Android user gets the AIBOS
+ * The AI-BOS phone apps (owner, 21 Oct 2026): every Android user gets the AI-BOS
  * app from this website, and the old browser shortcut goes once they have it.
  *
  * ANDROID. `website.aibos.app`, built by the private `aibos-android` repo: a
@@ -94,7 +94,7 @@ export async function hasAndroidApp(): Promise<boolean> {
   }
 }
 
-/** A link that opens a page of AIBOS in the Android app. Chrome hands it to
+/** A link that opens a page of AI-BOS in the Android app. Chrome hands it to
  *  the app, or opens the download page if the app has gone. */
 export function androidAppLink(path = '/dashboard'): string {
   const host = typeof window === 'undefined' ? 'ai-bos.website' : window.location.host;

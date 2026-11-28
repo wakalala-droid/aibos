@@ -69,7 +69,7 @@ function inGuide(el: Element): boolean {
 export function readScreen(pageLabel?: string): string {
   targets = new Map();
   const lines: string[] = [];
-  const title = pageLabel || document.title.replace(/\s*·\s*AIBOS.*$/, '');
+  const title = pageLabel || document.title.replace(/\s*·\s*AI-BOS.*$/, '');
   lines.push(`Page: ${title} (${location.pathname})`);
   lines.push(`Screen: ${window.innerWidth} by ${window.innerHeight}${window.innerWidth < 768 ? ', a phone' : ''}; scrolled ${Math.round(window.scrollY)} px down of ${Math.round(document.documentElement.scrollHeight)}.`);
   const dialog = document.querySelector('[role=dialog][aria-modal=true], [role=alertdialog]');

@@ -1,7 +1,7 @@
 'use client';
 /**
  * Find clients, Campaigns: what the owner sells and to whom, each with how
- * far it has got. AIBOS can draft one from a line; the owner checks it.
+ * far it has got. AI-BOS can draft one from a line; the owner checks it.
  */
 import { useState } from 'react';
 import Panel from '@/components/home/Panel';
@@ -103,7 +103,7 @@ export default function CampaignsTab({ home, reload }: { home: ClientsFull; relo
       <Panel title={`Your campaigns (${home.campaigns.length})`}>
         {home.campaigns.length === 0 ? (
           <p className="rs-text is-quiet">
-            None yet. A campaign tells AIBOS what you sell and who to, so it can judge each business and write to it.
+            None yet. A campaign tells AI-BOS what you sell and who to, so it can judge each business and write to it.
           </p>
         ) : (
           <div className="rs-list">

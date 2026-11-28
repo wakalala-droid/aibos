@@ -2,13 +2,13 @@
 /**
  * "Get these on your phone" (upgrade 10).
  *
- * The bell only speaks when the owner opens AIBOS. This asks the browser for
+ * The bell only speaks when the owner opens AI-BOS. This asks the browser for
  * permission once and remembers it on the server, so a booking request, a
  * guest's payment or a plan renewal arrives as a notification on the lock
- * screen with AIBOS closed.
+ * screen with AI-BOS closed.
  *
  * It says what it needs, in order, instead of failing:
- *   · on an iPhone, notifications only work once AIBOS is on the Home Screen
+ *   · on an iPhone, notifications only work once AI-BOS is on the Home Screen
  *   · a browser that does not do this at all is told so plainly
  *   · a refused permission is the person's choice; it says how to change it
  *
@@ -141,7 +141,7 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
   const turnOnIos = async () => {
     // Long enough for the owner to read iOS's question and answer it.
     const answer = await askIosApp(true, 120_000);
-    if (!answer) { setNote('The app did not answer. Close AIBOS, open it again and try once more.'); return; }
+    if (!answer) { setNote('The app did not answer. Close AI-BOS, open it again and try once more.'); return; }
     if (answer.status === 'denied') { setState('blocked'); return; }
     if (answer.status !== 'granted' || !answer.token) {
       setNote('This iPhone could not sign up for alerts just now. Check your connection and try again.');
@@ -152,7 +152,7 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
     setState('on');
     onChange?.(true);
     const { apns } = await getPushKey();
-    if (!apns) { setNote('Turned on. Alerts will reach this iPhone as soon as AIBOS finishes setting them up.'); return; }
+    if (!apns) { setNote('Turned on. Alerts will reach this iPhone as soon as AI-BOS finishes setting them up.'); return; }
     await sendTestPush();
     setNote('Turned on. A test alert is on its way to this iPhone.');
   };
@@ -209,13 +209,13 @@ export default function PhoneAlerts({ embedded = false, onChange }: {
 
   const line =
     state === 'on' ? 'Alerts also come to this device.'
-      : state === 'needs_install' ? 'Add AIBOS to your Home Screen first (Share, then Add to Home Screen), then turn these on.'
-        : state === 'ios_app' ? 'Update the AIBOS app to get these on your lock screen. Every alert still shows in the bell.'
+      : state === 'needs_install' ? 'Add AI-BOS to your Home Screen first (Share, then Add to Home Screen), then turn these on.'
+        : state === 'ios_app' ? 'Update the AI-BOS app to get these on your lock screen. Every alert still shows in the bell.'
         : state === 'unsupported' ? 'This browser cannot show notifications. Try Chrome, Edge or Safari.'
-          : state === 'blocked' && iosApp ? 'Alerts are off for AIBOS in your iPhone settings. Turn them on there, then come back.'
-          : state === 'blocked' ? 'Notifications are blocked for AIBOS in this browser. Allow them in the site settings, then come back.'
-            : iosApp ? 'Get these on your lock screen, even with AIBOS closed.'
-            : 'Get these on your phone, even with AIBOS closed.';
+          : state === 'blocked' && iosApp ? 'Alerts are off for AI-BOS in your iPhone settings. Turn them on there, then come back.'
+          : state === 'blocked' ? 'Notifications are blocked for AI-BOS in this browser. Allow them in the site settings, then come back.'
+            : iosApp ? 'Get these on your lock screen, even with AI-BOS closed.'
+            : 'Get these on your phone, even with AI-BOS closed.';
 
   return (
     <div style={{

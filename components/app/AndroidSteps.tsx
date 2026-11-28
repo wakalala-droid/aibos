@@ -1,5 +1,5 @@
 /**
- * How to put the AIBOS Android app on a phone, in the words the phone itself
+ * How to put the AI-BOS Android app on a phone, in the words the phone itself
  * uses (Chrome's "Download anyway", Android's "Allow from this source", Play
  * Protect's "Install anyway"), so nobody stops at a warning. The last step
  * removes the browser shortcut the app replaces (owner, 21 Oct 2026).
@@ -19,7 +19,7 @@ export default function AndroidSteps({ downloaded = false, shortcut = 'maybe' }:
   return (
     <ol className="app-steps">
       <li className={downloaded ? 'is-done' : undefined}>
-        <span className="step-title">Download AIBOS.apk ({ANDROID_APP.size})</span>
+        <span className="step-title">Download AI-BOS.apk ({ANDROID_APP.size})</span>
         <span className="step-text">
           If Chrome asks, tap <strong>Download anyway</strong>. It asks about every app that does not come from Play, and this one is ours.
         </span>
@@ -27,13 +27,13 @@ export default function AndroidSteps({ downloaded = false, shortcut = 'maybe' }:
       <li>
         <span className="step-title">Install it</span>
         <span className="step-text">
-          Open <strong>AIBOS.apk</strong> from the notification or your Downloads, then tap <strong>Install</strong>.
+          Open <strong>AI-BOS.apk</strong> from the notification or your Downloads, then tap <strong>Install</strong>.
           If the phone asks first, tap <strong>Settings</strong>, turn on <strong>Allow from this source</strong> and come back.
           If Play Protect asks, tap <strong>More details</strong>, then <strong>Install anyway</strong>.
         </span>
       </li>
       <li>
-        <span className="step-title">Open AIBOS</span>
+        <span className="step-title">Open AI-BOS</span>
         <span className="step-text">It opens on your business, full screen. If it asks, sign in with Google once.</span>
       </li>
       {shortcut !== 'none' && (
@@ -41,8 +41,8 @@ export default function AndroidSteps({ downloaded = false, shortcut = 'maybe' }:
           <span className="step-title">Remove the old shortcut</span>
           <span className="step-text">
             {shortcut === 'here'
-              ? <>Press and hold the AIBOS icon you opened this from, then tap <strong>Uninstall</strong> or <strong>Remove</strong>.</>
-              : <>If you added AIBOS to your home screen from the browser before, press and hold that old icon, then tap <strong>Uninstall</strong> or <strong>Remove</strong>.</>}
+              ? <>Press and hold the AI-BOS icon you opened this from, then tap <strong>Uninstall</strong> or <strong>Remove</strong>.</>
+              : <>If you added AI-BOS to your home screen from the browser before, press and hold that old icon, then tap <strong>Uninstall</strong> or <strong>Remove</strong>.</>}
             {' '}Your account and your books stay exactly as they are.
           </span>
         </li>

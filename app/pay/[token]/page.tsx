@@ -2,7 +2,7 @@
 /**
  * Public invoice payment page — the customer's half of the get-paid loop.
  *
- * The person here is NOT an AIBOS user. They followed a link from a WhatsApp
+ * The person here is NOT an AI-BOS user. They followed a link from a WhatsApp
  * message, on a phone, probably on mobile data, and they are about to be asked
  * for money. So this page:
  *   · needs no account, no login, no cookie — the token in the URL is all of it
@@ -368,7 +368,7 @@ export default function PayInvoicePage() {
         )}
 
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-4)', margin: '24px 0 0', textAlign: 'center' }}>
-          Invoice sent with AIBOS
+          Invoice sent with AI-BOS
         </p>
       </div>
     </main>

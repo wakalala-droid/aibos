@@ -165,7 +165,7 @@ export default function ChurnPage() {
             { label: 'Medium risk', predicate: (r: RfmRow) => r.churn_risk >= 40 && r.churn_risk < 70 },
             { label: 'Low risk',    predicate: (r: RfmRow) => r.churn_risk < 40 },
           ]}
-          emptyMessage="Add customers' names to your sales and AIBOS ranks who is likely to stop coming."
+          emptyMessage="Add customers' names to your sales and AI-BOS ranks who is likely to stop coming."
         />
         {!hasEngine2Data && <LockOverlay colour="var(--e2)" title="Needs your customer sales" description="Record sales with the customer's name, or upload a sales file, to see who has stopped coming." />}
       </SectionCard>

@@ -1,6 +1,6 @@
 'use client';
 /**
- * lib/voice.ts: AIBOS speaks and listens (Jarvis, phase 1, 16 Nov 2026).
+ * lib/voice.ts: AI-BOS speaks and listens (Jarvis, phase 1, 16 Nov 2026).
  *
  *  - speak(): the device's own voice (speechSynthesis). Free, instant, works
  *    offline, and costs none of the AI's daily requests. A British English
@@ -106,7 +106,7 @@ export function stopSpeaking(): void {
 }
 
 /** How the owner says the words a device voice gets wrong (17 Nov 2026):
- *  AIBOS is "AI boss", not "eye-boss"; ngwee is "ngwe", as in kwacha ngwe. */
+ *  AI-BOS is "AI boss", not "eye-boss"; ngwee is "ngwe", as in kwacha ngwe. */
 export function pronounce(text: string): string {
   return text
     .replace(/\bAI[\s-]?BOS\b/gi, 'A I boss')

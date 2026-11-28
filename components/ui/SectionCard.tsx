@@ -13,7 +13,7 @@ interface SectionCardProps {
 }
 
 // The redesign's card on every page (2026-10): the same surface as Home's
-// Panel, with the core chrome every AIBOS card keeps (the cursor BorderGlow,
+// Panel, with the core chrome every AI-BOS card keeps (the cursor BorderGlow,
 // dark mode only, and the bento dot texture), a quiet title on the left and
 // one action on the right. `style` stays on the outer div so margins and
 // sizes behave as before.
@@ -41,7 +41,7 @@ export default function SectionCard({
           className="section-card glow-inner"
           data-ai-explain={explainId}
           data-ai-label={explainId ? title : undefined}
-          title={explainId ? 'Hold (long-press) to have AIBOS explain this panel' : undefined}
+          title={explainId ? 'Hold (long-press) to have AI-BOS explain this panel' : undefined}
         >
 
           {(title || action) && (

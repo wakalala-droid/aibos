@@ -1,6 +1,6 @@
 'use client';
 /**
- * AIBOS — Record Business Activity (Evolution Initiative 1).
+ * AI-BOS — Record Business Activity (Evolution Initiative 1).
  * The single conversational entry point: the user says what happened in plain
  * language, AI proposes a structured Business Event, the user reviews/edits, then
  * confirms. Nothing is saved until confirmation (SAFEGUARD §0.4). Manual entry
@@ -434,7 +434,7 @@ export default function RecordActivity({ onSaved }: { onSaved?: () => void }) {
       {receiptSpotlight && phase === 'idle' && (
         <div role="status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: 16, marginBottom: 16, borderRadius: 'var(--radius-md)', background: 'var(--cyan-dim)' }}>
           <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)' }}>
-            <strong>Got a receipt nearby?</strong> Photograph it and AIBOS records the purchase for you: your first numbers in under a minute.
+            <strong>Got a receipt nearby?</strong> Photograph it and AI-BOS records the purchase for you: your first numbers in under a minute.
           </span>
           <span style={{ display: 'flex', gap: 8 }}>
             <button type="button" className="pill pill-primary"

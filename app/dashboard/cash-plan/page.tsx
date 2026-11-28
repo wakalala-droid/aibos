@@ -34,7 +34,7 @@ export default function CashPlanPage() {
   const [plan, setPlan] = useState<CashPlan | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   // null until the owner types a floor: the server then keeps the cash cushion
-  // they gave AIBOS in Teach AIBOS (zero without one) and says so.
+  // they gave AI-BOS in Teach AI-BOS (zero without one) and says so.
   const [floor, setFloor] = useState<number | null>(null);
   const [floorText, setFloorText] = useState('');
   const [tried, setTried] = useState<CashPlan | null>(null);

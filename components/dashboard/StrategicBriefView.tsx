@@ -82,8 +82,8 @@ export default function StrategicBriefView({
   if (recs.length === 0) {
     recs.push(
       { title: 'Keep costs in check', recommendation: 'Look at costs against sales once a month so you keep more than a quarter of every sale.', priority: 'low' },
-      { title: 'Get to know your customers', recommendation: "Add customers' names to your sales and AIBOS shows who buys most, what each is worth and who has gone quiet.", priority: 'medium' },
-      { title: 'Read your till', recommendation: "Upload your till's sales report and AIBOS compares you with businesses like yours and shows where sales are slipping.", priority: 'medium' },
+      { title: 'Get to know your customers', recommendation: "Add customers' names to your sales and AI-BOS shows who buys most, what each is worth and who has gone quiet.", priority: 'medium' },
+      { title: 'Read your till', recommendation: "Upload your till's sales report and AI-BOS compares you with businesses like yours and shows where sales are slipping.", priority: 'medium' },
     );
   }
 
@@ -158,7 +158,7 @@ export default function StrategicBriefView({
         <KPICard label="Profit" value={fmt(kpi.totalProfit, true, sym)} sub={`${kpi.avgMargin.toFixed(1)}% average margin`} change={profitChange}
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--cyan)" strokeWidth="1.5" fill="none" /><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H9m0 0h4.5a1.5 1.5 0 010 3H9" stroke="var(--cyan)" strokeWidth="1.4" strokeLinecap="round" /></svg>}
           iconBg="rgba(0,212,255,0.12)" sparkData={monthly.slice(-6).map((m) => (Number(m.Revenue) || 0) - (Number(m.Costs) || 0))} sparkColor="var(--cyan)" delay={0.12} />
-        <KPICard label="Things to do" value={String(recs.length)} sub="from what AIBOS read"
+        <KPICard label="Things to do" value={String(recs.length)} sub="from what AI-BOS read"
           icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="var(--purple)" strokeWidth="1.5" fill="none" strokeLinejoin="round" /><path d="M8 9h8M8 13h5M8 17h6" stroke="var(--purple)" strokeWidth="1.3" strokeLinecap="round" /></svg>}
           iconBg="rgba(167,139,250,0.15)" sparkColor="var(--purple)" delay={0.18} />
       </div>
@@ -277,7 +277,7 @@ export default function StrategicBriefView({
       <section className="bento-section" style={{ marginTop: 24, marginBottom: 24 }} aria-label="What to do about it">
         <header className="bento-section-head">
           <div>
-            <p className="eyebrow">AIBOS suggests</p>
+            <p className="eyebrow">AI-BOS suggests</p>
             <h2 className="bento-section-title">What to do about it</h2>
           </div>
           <p className="bento-section-sub">The most pressing first, worked out from your own records.</p>
@@ -291,7 +291,7 @@ export default function StrategicBriefView({
       </section>
 
       {briefLines.length > 0 && (
-        <SectionCard title="What to do next" subtitle="From everything AIBOS has read: money, customers and the till." style={{ marginBottom: 16 }}>
+        <SectionCard title="What to do next" subtitle="From everything AI-BOS has read: money, customers and the till." style={{ marginBottom: 16 }}>
           {briefLines.map((line, i) => (<BriefPoint key={i} text={line} index={i} colour="var(--cyan)" />))}
         </SectionCard>
       )}

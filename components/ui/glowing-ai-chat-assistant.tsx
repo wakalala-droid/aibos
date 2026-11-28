@@ -1,24 +1,27 @@
 'use client';
 
 // components/ui/glowing-ai-chat-assistant.tsx
-// FloatingAiAssistant — a floating, brand-marked launcher for the AI CFO.
+// FloatingAiAssistant: the written side of AI-BOS, a chat panel at the bottom
+// right (status, tier, close; the conversation; a composer with attach, voice
+// and send).
 //
-//  • Collapsed: a glowing circular button showing the AIBOS mark (light / dark
-//    variant for the active theme). Toggles to an X when open.
-//  • Expanded: a glassy chat panel (status · model · tier · close, big prompt,
-//    composer with attach / voice / send, char counter, footer).
+// Since 28 Nov 2026 AI-BOS is one (owner: "the sphere could be part of the AI
+// assistant ... it could be one thing"). The AI-BOS sphere
+// (components/guide/GuideSphere.tsx) took the place of this panel's round
+// button: tap the sphere to talk, tap Chat in its bubble (or Ctrl K, or Ask in
+// the header) to type here. A question the sphere is asked out loud comes into
+// this same conversation, so what was said can be read here after. The
+// panel's Talk button starts the sphere; the earlier Talk (the browser's own
+// speech, below) is only the fallback where the live sphere cannot run.
 //
-// This is the SAME assistant as the embedded AI CFO panel (chat/AICFOChat) — the
-// conversation is shared via AiAssistantProvider, so history persists between
-// the floating launcher and the dashboard panel. Long-press any [data-ai-explain]
-// card to have it explained instantly from the local knowledge base.
+// This is the SAME assistant as the embedded AI CFO panel (chat/AICFOChat): the
+// conversation is shared via AiAssistantProvider. Long-press any
+// [data-ai-explain] card to have it explained from the local knowledge base.
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
-import { useTheme } from '@/lib/theme';
 import { TIERS } from '@/lib/tiers';
 import { useAiAssistant, MAX_CHARS } from '@/lib/aiAssistant';
 import { DEFAULT_PROMPTS } from '@/lib/aiKnowledge';
@@ -26,11 +29,11 @@ import AnswerCheck from '@/components/chat/AnswerCheck';
 import ActionCard from '@/components/chat/ActionCard';
 import RichText from '@/components/chat/RichText';
 import { useTalkMode, type TalkPhase } from '@/lib/useTalkMode';
-import { TALK_EVENT } from '@/lib/talkEvent';
+import { TALK_EVENT, startTalk as talkToSphere } from '@/lib/talkEvent';
 import TalkOverlay from '@/components/talk/TalkOverlay';
 
-// How long a press on the AIBOS button counts as "hold to talk".
-const HOLD_MS = 450;
+// The sphere's size (GuideSphere SIZE): the panel opens just above it.
+const SPHERE = 56;
 
 const TALK_WORDS: Record<Exclude<TalkPhase, 'off'>, string> = {
   briefing: 'Getting your brief…',
@@ -75,11 +78,10 @@ const Icon = {
 export function FloatingAiAssistant() {
   const router = useRouter();
   const {
-    open, setOpen, toggle,
+    open, setOpen,
     messages, loading, status, online, suggestions, setSuggestions,
     sendMessage, pushAssistant, clearConversation, answerAction, setTalking,
   } = useAiAssistant();
-  const { isDark } = useTheme();
   const tier = useStore((s) => s.tier);
 
   const [input, setInput] = useState('');
@@ -91,39 +93,31 @@ export function FloatingAiAssistant() {
   const atBottomRef = useRef(true);
   const recognitionRef = useRef<any>(null);
 
-  // ── Talk mode: AIBOS says hello, listens, answers out loud ─────────────────
+  // ── The earlier Talk: the browser's own speech ─────────────────────────────
+  // Only where the live sphere cannot run (an old browser, no minutes left,
+  // Google resting): the sphere hands over with TALK_EVENT (lib/talkEvent.ts).
   const talk = useTalkMode({ messages, loading, sendMessage, pushAssistant, setSuggestions });
   const { start: talkStart, stop: talkStop } = talk;
   const talking = talk.phase !== 'off';
-  const startTalk = useCallback(() => {
+  const startBrowserTalk = useCallback(() => {
     recognitionRef.current?.stop();
     setOpen(true);
     talkStart();
   }, [setOpen, talkStart]);
-  // "Talk to AIBOS" on Home or the team scene starts the same conversation.
   useEffect(() => {
-    window.addEventListener(TALK_EVENT, startTalk);
-    return () => window.removeEventListener(TALK_EVENT, startTalk);
-  }, [startTalk]);
+    window.addEventListener(TALK_EVENT, startBrowserTalk);
+    return () => window.removeEventListener(TALK_EVENT, startBrowserTalk);
+  }, [startBrowserTalk]);
   // Closing the panel ends the conversation.
   useEffect(() => { if (!open && talking) talkStop(); }, [open, talking, talkStop]);
-  // Jobs asked for while talking are logged as spoken.
-  useEffect(() => { setTalking(talking); }, [talking, setTalking]);
-
-  // Hold the AIBOS button to talk; a quick tap still opens and closes the panel.
-  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const held = useRef(false);
-  const onLauncherDown = useCallback(() => {
-    held.current = false;
-    holdTimer.current = setTimeout(() => { held.current = true; startTalk(); }, HOLD_MS);
-  }, [startTalk]);
-  const onLauncherUp = useCallback(() => {
-    if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; }
-  }, []);
-  const onLauncherClick = useCallback(() => {
-    if (held.current) { held.current = false; return; }
-    toggle();
-  }, [toggle]);
+  // Jobs asked for while talking are logged as spoken. Only a change here is
+  // passed on, so this never talks over the sphere's own live talk.
+  const wasTalking = useRef(false);
+  useEffect(() => {
+    if (talking === wasTalking.current) return;
+    wasTalking.current = talking;
+    setTalking(talking);
+  }, [talking, setTalking]);
 
   const submit = useCallback((text: string) => {
     if (!text.trim() || loading) return;
@@ -193,9 +187,8 @@ export function FloatingAiAssistant() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(input); }
   };
 
-  const mark = isDark ? '/brand/aibos-mark-dark.png' : '/brand/aibos-mark-light.png';
   const hasUserMsg = messages.some((m) => m.role === 'user');
-  // While talking, the sphere reads along: AIBOS's latest answer and a job
+  // While talking, the sphere reads along: AI-BOS's latest answer and a job
   // from it that waits for a yes, so it can be tapped as well as said.
   const lastAnswer = [...messages].reverse().find((m) => m.role === 'assistant');
   const lastJob = lastAnswer?.actions?.find((j) => j.status === 'waiting') ?? null;
@@ -216,7 +209,7 @@ export function FloatingAiAssistant() {
           <motion.div
             key="panel"
             role="dialog"
-            aria-label="Ask AIBOS"
+            aria-label="Ask AI-BOS"
             initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.96 }}
@@ -232,21 +225,21 @@ export function FloatingAiAssistant() {
             <div className="ai-panel-head" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 16px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
               <span className="bento-icon" aria-hidden="true" style={{ width: 44, height: 44 }}>{Icon.spark}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <span className="bento-title ai-panel-name" style={{ display: 'block' }}>Ask AIBOS</span>
+                <span className="bento-title ai-panel-name" style={{ display: 'block' }}>Ask AI-BOS</span>
                 <span className="ai-panel-name" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-label)', color: 'var(--text-3)' }}>
                   <span aria-hidden style={{ width: 8, height: 8, borderRadius: '50%', background: online ? 'var(--text-1)' : 'var(--text-4)', flexShrink: 0 }} />
                   {online ? 'Ready' : 'Reconnecting…'}<span className="ai-panel-tier"> · {tierMeta.name}</span>
                 </span>
               </div>
-              <button type="button" onClick={talking ? talk.stop : startTalk} className="pill"
+              <button type="button" onClick={talking ? talk.stop : () => talkToSphere()} className="pill"
                 aria-pressed={talking}
-                title={talking ? 'Stop talking' : 'Talk to AIBOS: it asks what you need and listens'}
+                title={talking ? 'Stop talking' : 'Talk to AI-BOS out loud: the sphere listens, shows you round and does the job'}
                 style={talking ? { background: 'var(--text-1)', color: 'var(--bg-card)' } : undefined}>
                 {Icon.mic}<span>{talking ? 'End' : 'Talk'}</span>
               </button>
               {messages.length > 0 && !talking && (
                 <button type="button" onClick={clearConversation} disabled={loading} className="pill pill-quiet"
-                  title="Start a new conversation. AIBOS forgets this one.">
+                  title="Start a new conversation. AI-BOS forgets this one.">
                   New chat
                 </button>
               )}
@@ -267,13 +260,11 @@ export function FloatingAiAssistant() {
                     What would you like to know?
                   </p>
                   <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
-                    Ask about any number you see, or <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>hold your finger on any card</strong> and AIBOS explains what it is and why it matters.
+                    Ask about any number you see, or <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>hold your finger on any card</strong> and AI-BOS explains what it is and why it matters.
                   </p>
-                  {talk.supported && (
-                    <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '8px 0 0' }}>
-                      Or press <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>Talk</strong> and just speak. AIBOS asks what you need, answers out loud and does the job: a reminder, a sale, an invoice. Anything with money waits for your yes.
-                    </p>
-                  )}
+                  <p style={{ fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: '8px 0 0' }}>
+                    Or tap <strong style={{ color: 'var(--text-1)', fontWeight: 600 }}>Talk</strong>, or the sphere, and just speak. AI-BOS answers out loud, shows you round the screen and does the job: a sale, an invoice, a reminder. Anything with money waits for your yes.
+                  </p>
                 </div>
               )}
 
@@ -339,7 +330,7 @@ export function FloatingAiAssistant() {
               <div ref={bottomRef} />
             </div>
 
-            {/* Talk strip: what AIBOS is doing, what it heard */}
+            {/* Talk strip: what AI-BOS is doing, what it heard */}
             {(talking || talk.error) && (
               <div role="status" aria-live="polite"
                 style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
@@ -354,7 +345,7 @@ export function FloatingAiAssistant() {
                         {talk.heard && talk.heard !== '…' ? `“${talk.heard}”`
                           : talk.phase === 'listening' ? 'Speak now. Say “that’s all” to finish.'
                           : talk.phase === 'resting' ? (talk.error ?? 'Tap Talk now when you are ready.')
-                          : 'Tap Talk now to speak over AIBOS.'}
+                          : 'Tap Talk now to speak over AI-BOS.'}
                       </span>
                     </>
                   ) : (
@@ -373,7 +364,7 @@ export function FloatingAiAssistant() {
             {/* Composer */}
             <div style={{ padding: '12px 14px 14px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
               <div className="composer" style={{ display: 'flex', flexDirection: 'column', gap: 8, background: 'var(--bg-card)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-lg)', padding: '12px 12px 8px 16px', boxShadow: 'var(--shadow-card)' }}>
-                <label htmlFor="ai-assistant-input" className="sr-only">Ask AIBOS</label>
+                <label htmlFor="ai-assistant-input" className="sr-only">Ask AI-BOS</label>
                 <textarea id="ai-assistant-input" ref={inputRef} value={input} rows={2}
                   onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))} onKeyDown={handleKey}
                   placeholder="Ask anything, or long-press a card to learn about it…"
@@ -409,52 +400,15 @@ export function FloatingAiAssistant() {
         )}
       </AnimatePresence>
 
-      {/* ── Floating launcher ──────────────────────────────────────────────── */}
-      <motion.button
-        type="button"
-        onClick={onLauncherClick}
-        onPointerDown={onLauncherDown}
-        onPointerUp={onLauncherUp}
-        onPointerLeave={onLauncherUp}
-        onPointerCancel={onLauncherUp}
-        onContextMenu={(e) => e.preventDefault()}
-        title={open ? undefined : 'Tap to ask. Hold to talk.'}
-        aria-label={open ? 'Close Ask AIBOS' : 'Open Ask AIBOS. Hold to talk.'}
-        aria-expanded={open}
-        whileHover={{ scale: 1.06 }}
-        whileTap={{ scale: 0.94 }}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-        style={{
-          pointerEvents: 'auto',
-          width: 62, height: 62, borderRadius: '50%', border: 'none', cursor: 'pointer',
-          padding: 0, position: 'relative', flexShrink: 0,
-          background: isDark ? '#111112' : '#ffffff',
-          boxShadow: '0 0 0 1px var(--border-strong), var(--shadow-lg)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-        }}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          {open ? (
-            <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.18 }}
-              style={{ color: 'var(--text-1)', display: 'flex' }}>
-              {Icon.close}
-            </motion.span>
-          ) : (
-            <motion.span key="logo" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.18 }} style={{ display: 'flex' }}>
-              <Image src={mark} alt="AIBOS" width={62} height={62} style={{ width: 62, height: 62, objectFit: 'cover' }} priority />
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </motion.button>
+      {/* The sphere's place (components/guide/GuideSphere.tsx): the panel opens above it. */}
+      <div aria-hidden="true" style={{ width: SPHERE, height: SPHERE, flexShrink: 0 }} />
     </div>
     </>
   );
 }
 
 // The talk indicator: one ink dot that breathes while listening and pulses
-// while AIBOS speaks, still while it thinks.
+// while AI-BOS speaks, still while it thinks.
 function TalkOrb({ phase }: { phase: TalkPhase }) {
   const moving = phase === 'listening' || phase === 'speaking' || phase === 'briefing';
   return (

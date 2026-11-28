@@ -1,6 +1,6 @@
 'use client';
 /**
- * AIBOS — what the law asks of this payroll that is not done yet.
+ * AI-BOS — what the law asks of this payroll that is not done yet.
  *
  * The register can look complete while a contract earns no gratuity, a
  * contract has ended with its gratuity unpaid, or the numbers ZRA's, NAPSA's

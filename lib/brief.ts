@@ -3,7 +3,7 @@
 // A deterministic daily digest composed ENTIRELY from recorded data: the twin,
 // the product catalog and the event log. No model call, no fabrication — if a
 // line has no data behind it, the line is omitted (SAFEGUARD §0.1). This is
-// the "AIBOS runs your day" moment: the owner opens the chat and the day is
+// the "AI-BOS runs your day" moment: the owner opens the chat and the day is
 // already summarised, with one concrete thing to do next.
 
 import type { Twin, Product, BusinessEvent } from './api';

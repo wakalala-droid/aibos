@@ -61,12 +61,12 @@ export default function AnnounceCard() {
         <div>
           <label className="field-label" htmlFor="announce-title">What it says</label>
           <input id="announce-title" className="field" value={title} onChange={(e) => setTitle(e.target.value)}
-            placeholder="AIBOS has been updated" />
+            placeholder="AI-BOS has been updated" />
         </div>
         <div>
           <label className="field-label" htmlFor="announce-body">The detail</label>
           <textarea id="announce-body" className="field" value={body} onChange={(e) => setBody(e.target.value)} rows={3}
-            placeholder="Close AIBOS and open it again to get the new version." style={{ minHeight: 88, resize: 'vertical' }} />
+            placeholder="Close AI-BOS and open it again to get the new version." style={{ minHeight: 88, resize: 'vertical' }} />
         </div>
         <div>
           <label className="field-label" htmlFor="announce-link">Where it opens</label>
@@ -98,7 +98,7 @@ export default function AnnounceCard() {
         <Note tone="good">
           Sent. {sent.told} told{sent.pushed > 0 ? `, ${sent.pushed} device${sent.pushed === 1 ? '' : 's'} buzzed` : ''}
           {sent.already > 0 ? `, ${sent.already} already had it` : ''}
-          {sent.not_pushed > 0 ? `. ${sent.not_pushed} will see it when they next open AIBOS.` : '.'}
+          {sent.not_pushed > 0 ? `. ${sent.not_pushed} will see it when they next open AI-BOS.` : '.'}
         </Note>
       )}
       {error && <Note tone="bad">{error}</Note>}

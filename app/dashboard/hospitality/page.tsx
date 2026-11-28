@@ -1,12 +1,12 @@
 'use client';
 /**
- * AIBOS: Hospitality hub (short-let PMS).
+ * AI-BOS: Hospitality hub (short-let PMS).
  *
  * One screen to run the property day-to-day, per the build spec's north star:
  * the multi-unit availability calendar is the hero: the one place staff check
  * instead of opening Booking.com / RentByOwner / CASAI / FVRentals separately.
  *
- * Everything recorded here already lives inside AIBOS: a confirmed booking posts
+ * Everything recorded here already lives inside AI-BOS: a confirmed booking posts
  * a Sale and each expense posts an Expense to the event spine on the server, so the
  * numbers surface in Cash Intel, Timeline and the P&L with no extra entry. This page
  * keeps that promise visible (the "in your books" note) rather than feeling bolted on.
@@ -421,7 +421,7 @@ export default function HospitalityPage() {
           <LockedPreviewCard
             title="Hospitality: property operations"
             headline="Run your short-lets from one calendar."
-            detail="Multi-unit availability, direct bookings, guest records, channel sync and per-property profit, all feeding your existing AIBOS books automatically."
+            detail="Multi-unit availability, direct bookings, guest records, channel sync and per-property profit, all feeding your existing AI-BOS books automatically."
             ctaLabel={`Unlock with ${TIERS[need].name}`}
             ctaHref="/pricing"
             badge={TIERS[need].name.toUpperCase()}

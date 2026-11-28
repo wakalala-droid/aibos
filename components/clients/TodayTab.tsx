@@ -5,10 +5,10 @@
  *
  * Priced the way Explee prices it (9 Nov 2026): Free gets one free day, the
  * paid plans a month's businesses, and anyone can top up by card. Someone new
- * starts with one line and one press ("Show me who could buy from me"): AIBOS
+ * starts with one line and one press ("Show me who could buy from me"): AI-BOS
  * drafts the campaign from the line, finds businesses near them and
  * researches the first few, so the first visit ends with real messages to
- * read, not an empty list. Searches read AIBOS's own directory of places
+ * read, not an empty list. Searches read AI-BOS's own directory of places
  * first, so they answer in seconds.
  */
 import { useState } from 'react';
@@ -96,7 +96,7 @@ function SearchStatus({ job, kinds, fresh }: { job: ClientJob; kinds: Record<str
   if (job.phase === 'research') {
     return (
       <Note tone={job.written > 0 ? 'good' : 'info'}>
-        {foundLine} AIBOS researched {job.done} and wrote {plural(job.written, 'message')}.
+        {foundLine} AI-BOS researched {job.done} and wrote {plural(job.written, 'message')}.
         {job.written > 0
           ? ' Read them under Ready to send, change anything you like, then send them yourself.'
           : ' None fit well enough to write to yet. Research the rest below.'}
@@ -154,7 +154,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
   const fill = () => step('fill', async () => {
     setStartNote(null);
     setFilled(await fillClientCampaign(line.trim()));
-  }, (text) => setStartNote({ tone: 'bad', text }), 'AIBOS could not fill it in just now. Write it yourself or try again in a moment.');
+  }, (text) => setStartNote({ tone: 'bad', text }), 'AI-BOS could not fill it in just now. Write it yourself or try again in a moment.');
 
   async function saveFirst(fields: ClientCampaignFields) {
     const c = await saveClientCampaign(fields);
@@ -187,7 +187,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
     } finally {
       await reload();          // the campaign is saved either way
     }
-  }, (text) => setStartNote({ tone: 'bad', text }), 'AIBOS could not start just now. Try again in a moment.');
+  }, (text) => setStartNote({ tone: 'bad', text }), 'AI-BOS could not start just now. Try again in a moment.');
 
   const job = home.job;
   const running = Boolean(job?.running);
@@ -249,7 +249,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
     setFindNote(null);
     const got = await findClientsOnMap(kind, town, campaignId || null);
     if (got.already) {
-      setFindNote({ tone: 'info', text: 'AIBOS is still on the last search or research. Search again when it is done.' });
+      setFindNote({ tone: 'info', text: 'AI-BOS is still on the last search or research. Search again when it is done.' });
     } else {
       onStarted();
     }
@@ -304,7 +304,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
                 : busy === 'demo' && <p className="rs-text is-strong">Starting the search.</p>}
               {job && searching && !running && (
                 <p className="rs-text is-quiet" style={{ marginTop: 12 }}>
-                  AIBOS saved what you sell as your first campaign. Change it any time under Campaigns.
+                  AI-BOS saved what you sell as your first campaign. Change it any time under Campaigns.
                 </p>
               )}
               {!running && busy === null && (
@@ -317,7 +317,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
           ) : filled ? (
             <>
               <p className="rs-text" style={{ marginBottom: 18 }}>
-                Check what AIBOS filled in and change anything that is not right. Every message is written from this.
+                Check what AI-BOS filled in and change anything that is not right. Every message is written from this.
               </p>
               <CampaignForm initial={filled} kinds={home.kinds} towns={home.towns} saveLabel="Save the campaign"
                 onSave={saveFirst} onCancel={() => setFilled(null)} />
@@ -325,7 +325,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
           ) : (
             <>
               <p className="rs-text">
-                Say in a line what you sell and who to. AIBOS finds businesses near you that could buy, reads their
+                Say in a line what you sell and who to. AI-BOS finds businesses near you that could buy, reads their
                 websites and writes to the ones that fit. Nothing is sent until you send it yourself.
               </p>
               <div className="rs-form" style={{ marginTop: 14 }}>
@@ -403,7 +403,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
       {home.drafts.length > 0 && (
         <Panel title={`Ready to send (${home.drafts.length})`}>
           <p className="rs-text is-quiet" style={{ marginBottom: 14 }}>
-            AIBOS never sends for you. Each message opens in your own email, WhatsApp or LinkedIn and you press send there.
+            AI-BOS never sends for you. Each message opens in your own email, WhatsApp or LinkedIn and you press send there.
           </p>
           <div className="rs-list" style={{ gap: 12 }}>
             {drafts.map((d) => (
@@ -423,7 +423,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
       {home.followups_due > 0 && (
         <Panel title="Follow-ups due">
           <p className="rs-text">
-            {plural(home.followups_due, 'business', 'businesses')} did not answer yet. AIBOS can write the next message to
+            {plural(home.followups_due, 'business', 'businesses')} did not answer yet. AI-BOS can write the next message to
             {home.followups_due === 1 ? ' it' : ' each'}.
           </p>
           {canWrite && (
@@ -487,7 +487,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
           ) : (
             <>
               <p className="rs-text">
-                AIBOS reads each website, scores the fit from 0 to 100 and writes the first message to those that score
+                AI-BOS reads each website, scores the fit from 0 to 100 and writes the first message to those that score
                 {` ${home.write_from}`} or more.{' '}
                 {bal.left > 0
                   ? `Each business researched uses one of the ${bal.left.toLocaleString('en-GB')} you have left.`
@@ -517,7 +517,7 @@ export default function TodayTab({ home, reload, startedHere, onStarted }: {
           {researchNote && <Note tone={researchNote.tone}>{researchNote.text}</Note>}
           {!home.ai && (
             <Note tone="info">
-              The AI is not connected right now, so AIBOS judges the fit by its rules and writes in its standard words.
+              The AI is not connected right now, so AI-BOS judges the fit by its rules and writes in its standard words.
               Read each message before you send it.
             </Note>
           )}

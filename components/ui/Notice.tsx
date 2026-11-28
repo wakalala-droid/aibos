@@ -7,7 +7,7 @@
  * design using the elements in the splash screen for payment reminders,
  * update notices, scheduled meeting, low money, anything." So a notice is
  * built from the What's new screen's pieces (components/pwa/WhatsNew.tsx):
- *   - the round outlined icon, or the AIBOS mark itself for news from AIBOS
+ *   - the round outlined icon, or the AI-BOS mark itself for news from AI-BOS
  *   - a spaced-capitals title and a small spaced-capitals tag
  *   - plain 18px words
  *   - pill buttons: the brand pill for the one thing to do, a quiet pill
@@ -20,9 +20,9 @@ import { X, type LucideIcon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 
 export interface NoticeProps {
-  /** The round icon. Leave out with `brand` to show the AIBOS mark. */
+  /** The round icon. Leave out with `brand` to show the AI-BOS mark. */
   icon?: LucideIcon;
-  /** News from AIBOS itself (an update, the app): the mark in the round. */
+  /** News from AI-BOS itself (an update, the app): the mark in the round. */
   brand?: boolean;
   title: React.ReactNode;
   tag?: React.ReactNode;
@@ -45,7 +45,7 @@ export interface NoticeProps {
   style?: React.CSSProperties;
 }
 
-/** The AIBOS mark, white on the dark theme and navy on the light one.
+/** The AI-BOS mark, white on the dark theme and navy on the light one.
  *  `theme` fixes it for a surface that keeps its own theme whatever the
  *  owner picked (the public website's light page and dark bands). */
 export function BrandMark({ size = 26, theme }: { size?: number; theme?: 'dark' | 'light' }) {
@@ -60,7 +60,7 @@ export function BrandMark({ size = 26, theme }: { size?: number; theme?: 'dark' 
 
 /** The splash art as a strip across the top of the card, the way the What's
  *  new screen opens with its art panel: hairline tiles, the money line rising
- *  with its shading under it, the AIBOS mark in its rings in the middle and
+ *  with its shading under it, the AI-BOS mark in its rings in the middle and
  *  the rising double arrow at the right (owner, 7 Oct 2026). */
 export function NoticeArt({ theme }: { theme?: 'dark' | 'light' } = {}) {
   const { isDark: ownerDark } = useTheme();

@@ -1,5 +1,5 @@
 /**
- * AIBOS — Admin identity helpers (PURE / runtime-agnostic)
+ * AI-BOS — Admin identity helpers (PURE / runtime-agnostic)
  *
  * Admin is the ADMIN_EMAILS allowlist, for an address Google has proven the
  * account owns (isAdminUser). `profiles.role` is written for the database's
@@ -38,7 +38,7 @@ interface AuthUserLike {
  * The address on the auth user is not proof on its own: email sign-up is
  * switched on with auto-confirm, which also confirms an email change at once,
  * so an allowlisted address nobody has registered yet could be claimed by
- * anyone. AIBOS signs people in with Google only, and Google only signs someone
+ * anyone. AI-BOS signs people in with Google only, and Google only signs someone
  * in with an address it has checked, so a matching Google identity is the proof.
  */
 export function isAdminUser(user?: AuthUserLike | null): boolean {

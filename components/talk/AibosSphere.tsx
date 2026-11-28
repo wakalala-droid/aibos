@@ -1,9 +1,9 @@
 'use client';
 
 // components/talk/AibosSphere.tsx
-// The AIBOS sphere (owner, 17 Nov 2026): what the owner sees while they talk
-// to AIBOS. A glass sphere with water moving inside it, blue and white with
-// one gold light, the AIBOS mark in the middle, and the voice drawn either
+// The AI-BOS sphere (owner, 17 Nov 2026): what the owner sees while they talk
+// to AI-BOS. A glass sphere with water moving inside it, blue and white with
+// one gold light, the AI-BOS mark in the middle, and the voice drawn either
 // side as bars. Drawn on a canvas, so it is one element however lively it is.
 //
 // It moves with the conversation, never on its own clock for show:

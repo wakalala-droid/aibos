@@ -1,7 +1,7 @@
 /* ============================================================
    AI-BOS: MARKETING LAYER OF THE UI KIT
    ------------------------------------------------------------
-   The public website is built from the same AIBOS x Mercury pieces as the
+   The public website is built from the same AI-BOS x Mercury pieces as the
    product (docs/AIBOS_UI_KIT.md): monochrome surfaces, one faint blue light
    from each card's top-left corner, the page's own light high on the left,
    round outlined icons, spaced-capital titles, pill buttons and Geist only.
@@ -199,7 +199,7 @@
 .mkt-preview .money-chart { margin: 8px -24px -24px; height: 170px; }
 @media (max-width: 360px) { .mkt-preview .money-chart { margin: 8px -16px -16px; } }
 
-/* Chat in the Ask AIBOS panel. */
+/* Chat in the Ask AI-BOS panel. */
 .mkt-chat { display: flex; flex-direction: column; gap: 14px; padding: 20px; }
 .mkt-chat-q {
   align-self: flex-end; max-width: 88%; margin: 0;
@@ -475,7 +475,7 @@
 [data-rise-mode="stagger"][data-rise="in"] > :nth-child(8) { animation-delay: 420ms; }
 [data-rise-mode="stagger"][data-rise="in"] > :nth-child(n+9) { animation-delay: 480ms; }
 
-/* Ask AIBOS: the question, then the answer a paragraph at a time, then the
+/* Ask AI-BOS: the question, then the answer a paragraph at a time, then the
    follow-ups, the way the assistant answers. */
 .mkt-chat[data-rise="wait"] > * { opacity: 0; }
 .mkt-chat[data-rise="in"] > * { animation: mkt-in 300ms var(--mkt-ease) backwards; }
@@ -557,7 +557,7 @@
   }
 }
 
-/* The AIBOS team on the landing page (components/marketing/TeamSection.tsx):
+/* The AI-BOS team on the landing page (components/marketing/TeamSection.tsx):
    the app's own navy scene, edge to edge under the heading. */
 .mkt-team { margin-top: 32px; }
 .mkt-team-values { max-width: 760px; margin: 24px auto 0; }

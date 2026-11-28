@@ -3,7 +3,7 @@
 /**
  * "A new version is ready."
  *
- * AIBOS ships several times a day. A browser tab or an installed app that was
+ * AI-BOS ships several times a day. A browser tab or an installed app that was
  * opened this morning keeps running the version it loaded, so an owner can be
  * looking at old screens while the fix they asked for is already live.
  *
@@ -19,9 +19,9 @@
  *
  * WHAT THE OWNER SEES. A bar with "Get it now", which reloads into the new
  * version. "Later" hides it until the app is next opened. In the installed
- * app, when a new version lands while AIBOS is in the background and
+ * app, when a new version lands while AI-BOS is in the background and
  * notifications are allowed, the device also shows one notification per
- * version; tapping it brings AIBOS forward on the new version (the service
+ * version; tapping it brings AI-BOS forward on the new version (the service
  * worker's notificationclick navigates the window, which loads fresh pages).
  */
 
@@ -45,8 +45,8 @@ async function notifyDevice(build: string): Promise<void> {
     if (window.localStorage.getItem(NOTIFIED_KEY) === build) return;   // once per version
     const reg = await navigator.serviceWorker?.getRegistration();
     if (!reg) return;
-    await reg.showNotification('AIBOS has a new version', {
-      body: 'Tap to open AIBOS on the new version.',
+    await reg.showNotification('AI-BOS has a new version', {
+      body: 'Tap to open AI-BOS on the new version.',
       tag: 'aibos-update',
       icon: '/icons/notify-192.png',
       badge: '/icons/badge-96.png',
@@ -118,7 +118,7 @@ export default function UpdatePrompt() {
       .catch(() => { /* offline */ });
   };
 
-  // The splash's pieces (the owner, 5 Oct 2026): the AIBOS mark in its
+  // The splash's pieces (the owner, 5 Oct 2026): the AI-BOS mark in its
   // round, a spaced-capital title and tag, the hairline art and the money
   // line, the brand pill. Updating opens the What's new screen once.
   return (

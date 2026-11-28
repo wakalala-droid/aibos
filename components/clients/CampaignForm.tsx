@@ -1,6 +1,6 @@
 'use client';
 /**
- * Find clients: one campaign, what the owner sells and to whom. AIBOS judges
+ * Find clients: one campaign, what the owner sells and to whom. AI-BOS judges
  * the fit and writes every message from it, so each field says in plain
  * words what it is used for.
  */
@@ -82,7 +82,7 @@ export default function CampaignForm({ initial, kinds, towns, saveLabel = 'Save'
         <textarea className="field" rows={2} value={pain} onChange={(e) => setPain(e.target.value)} maxLength={600}
           placeholder="They do not know their profit until month end" />
       </Field>
-      <Field label="Proof" wide hint="A result or a customer you can name. AIBOS never makes one up: it uses only what you write here.">
+      <Field label="Proof" wide hint="A result or a customer you can name. AI-BOS never makes one up: it uses only what you write here.">
         <textarea className="field" rows={2} value={proof} onChange={(e) => setProof(e.target.value)} maxLength={600} />
       </Field>
       <Field label="Signs of a good fit" hint="One a line.">
@@ -105,7 +105,7 @@ export default function CampaignForm({ initial, kinds, towns, saveLabel = 'Save'
         <PickChips label="Towns" value={pickedTowns} onChange={setPickedTowns}
           options={towns.map((t) => ({ value: t, label: t }))} />
       </Group>
-      <Group label="Status" hint="A paused campaign keeps its businesses; AIBOS just stops adding to it.">
+      <Group label="Status" hint="A paused campaign keeps its businesses; AI-BOS just stops adding to it.">
         <Segmented label="Status" value={status} onChange={setStatus}
           options={[{ value: 'active', label: 'Active' }, { value: 'paused', label: 'Paused' }]} />
       </Group>

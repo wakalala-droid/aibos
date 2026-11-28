@@ -62,7 +62,7 @@ export default function SettingsTab({ home, reload }: { home: ClientsFull; reloa
   return (
     <Panel title="Settings">
       <Note tone="info">
-        AIBOS never sends for you. Each message opens in your own email or WhatsApp with everything filled in, or in
+        AI-BOS never sends for you. Each message opens in your own email or WhatsApp with everything filled in, or in
         your own LinkedIn with the note copied to paste. You press send there, so replies come straight to you.
       </Note>
       <form onSubmit={save} className="rs-form" style={{ alignItems: 'start', gap: 18, marginTop: 20 }}>
@@ -77,7 +77,7 @@ export default function SettingsTab({ home, reload }: { home: ClientsFull; reloa
         </Field>
         <Field label="Booking link" wide hint={
           'A page where they pick a time for a call. Google Calendar gives you one free: in Google Calendar press '
-          + 'Create, then Appointment schedule, then copy its booking page link. Leave it empty and AIBOS asks them '
+          + 'Create, then Appointment schedule, then copy its booking page link. Leave it empty and AI-BOS asks them '
           + 'which day suits.'
         }>
           <input className="field" type="url" value={link} onChange={(e) => setLink(e.target.value)} maxLength={300}
@@ -91,8 +91,8 @@ export default function SettingsTab({ home, reload }: { home: ClientsFull; reloa
           <input className="field" type="number" inputMode="numeric" min={2} max={21} value={days}
             onChange={(e) => setDays(e.target.value)} />
         </Field>
-        <Field label="Facts AIBOS may use in answers" wide
-          hint="Prices, opening hours, where you are, what is included. When they ask a question, AIBOS answers only from these and never guesses.">
+        <Field label="Facts AI-BOS may use in answers" wide
+          hint="Prices, opening hours, where you are, what is included. When they ask a question, AI-BOS answers only from these and never guesses.">
           <textarea className="field" rows={5} value={facts} onChange={(e) => setFacts(e.target.value)} maxLength={3000} />
         </Field>
         <Field label="Do not contact" wide

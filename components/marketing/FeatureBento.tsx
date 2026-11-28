@@ -5,7 +5,7 @@ import { BentoCard } from '@/components/kit';
 import Rise from '@/components/marketing/Rise';
 import { TIERS, requiredTier, type Feature } from '@/lib/tiers';
 
-// Every part of AIBOS a business runs on, as the kit's bento grid. The tag on
+// Every part of AI-BOS a business runs on, as the kit's bento grid. The tag on
 // each card is the plan it comes with. A gated card reads its plan from the
 // gates (lib/tiers.ts), as the feature theatre does: written out by hand, the
 // tags outlived the 22 Oct 2026 re-cut and sold Get paid on Free, payroll on
@@ -31,7 +31,7 @@ export default function FeatureBento() {
             <h2 id="features-h" className="mkt-h2">The whole business, in one app.</h2>
           </div>
           <p className="mkt-head-sub">
-            Every part of AIBOS and the plan it comes with. Free runs the day-to-day.
+            Every part of AI-BOS and the plan it comes with. Free runs the day-to-day.
             The paid plans add the thinking.
           </p>
         </Rise>
@@ -42,7 +42,7 @@ export default function FeatureBento() {
             icon={<PenLine />}
             title="Record"
             tag="Free"
-            text="A sale, an expense or a payment in three taps. Snap a receipt or drop in a spreadsheet and AIBOS reads it, asking one question at a time about anything only you know."
+            text="A sale, an expense or a payment in three taps. Snap a receipt or drop in a spreadsheet and AI-BOS reads it, asking one question at a time about anything only you know."
           >
             <div style={{ marginTop: 16 }}>
               {RECEIPT.map(([what, amount]) => (

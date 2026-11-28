@@ -1,9 +1,9 @@
 /**
- * AIBOS: the card checkout, through Paddle.
+ * AI-BOS: the card checkout, through Paddle.
  *
  * Paddle sells card plans as Merchant of Record, so the card form is theirs:
  * Paddle.js draws it in a secure frame and nothing about the card ever
- * touches AIBOS. What we decide, we decide on the server: the API
+ * touches AI-BOS. What we decide, we decide on the server: the API
  * makes the Paddle transaction (price, and whose account it pays for) and
  * the browser only opens it by its id.
  *
@@ -108,7 +108,7 @@ function theme(): 'light' | 'dark' {
  * Put the card form INSIDE the page, the way Stripe and Linear checkouts do,
  * instead of in a pop-up over it. `frameClass` is the class of an empty
  * element on the page; Paddle fills it with its secure frame (the card details
- * still never touch AIBOS). In this mode Paddle shows only the form: the page
+ * still never touch AI-BOS). In this mode Paddle shows only the form: the page
  * must show the item, subtotal, tax and total itself, which Paddle sends in
  * its checkout events (see checkoutTotals).
  *

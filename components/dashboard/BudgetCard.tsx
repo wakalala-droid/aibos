@@ -1,7 +1,7 @@
 'use client';
 
 // BudgetCard — actuals vs the owner's plan (audit #37). Set a monthly target
-// for revenue, costs and profit; AIBOS shows where you are against intent, not
+// for revenue, costs and profit; AI-BOS shows where you are against intent, not
 // just last month. Actuals are derived from recorded data (never invented).
 //
 // The month still running is judged on PACE (16 Oct 2026): half a month of
@@ -99,7 +99,7 @@ export default function BudgetCard() {
         </div>
       ) : !hasBudget ? (
         <p className="bento-note" style={{ marginTop: 12 }}>
-          Set what you plan to sell, spend and keep this month, and AIBOS tracks you against it, not just against last month.
+          Set what you plan to sell, spend and keep this month, and AI-BOS tracks you against it, not just against last month.
         </p>
       ) : (
         <div style={{ display: 'grid', gap: 20, marginTop: 20 }}>

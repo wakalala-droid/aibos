@@ -36,7 +36,7 @@ export default function UpgradeTrigger() {
     triggers.push({
       id: 'anomaly',
       headline: 'We spotted something in your numbers',
-      detail: 'AIBOS spotted a month that broke your pattern. See exactly what is driving it.',
+      detail: 'AI-BOS spotted a month that broke your pattern. See exactly what is driving it.',
       cta: 'Investigate with Pro',
       href: '/checkout?plan=pro',
       colour: 'var(--warn)',

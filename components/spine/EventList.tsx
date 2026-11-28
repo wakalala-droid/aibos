@@ -1,6 +1,6 @@
 'use client';
 /**
- * AIBOS — Event list (Evolution spine), as a statement (redesign 2026-10).
+ * AI-BOS — Event list (Evolution spine), as a statement (redesign 2026-10).
  * Entries read the way a bank shows them: grouped by day, a round in/out mark,
  * who or what on top, how it moved underneath and the amount in green or red,
  * with Confirm, Fix and Remove on the row. Used by Activity and the Record

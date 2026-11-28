@@ -1,7 +1,7 @@
 'use client';
 /**
- * AIBOS: Business Setup (Evolution Initiative 1).
- * Start a business on AIBOS with only a phone: a few essentials, everything else
+ * AI-BOS: Business Setup (Evolution Initiative 1).
+ * Start a business on AI-BOS with only a phone: a few essentials, everything else
  * optional. One screen since the UX audit (17 Nov 2026): name, industry and
  * cash on hand, the rest folded under "More about the business"; it used to
  * be four screens (Business, Money, Operations, Review) before any value.
@@ -189,9 +189,9 @@ export default function OnboardingPage() {
         phone: form.phone || null,
         website: form.website || null,
         logo_url: form.logo_url || null,
-        // Provenance (migration 0026): these details came from outside AIBOS and
+        // Provenance (migration 0026): these details came from outside AI-BOS and
         // a human confirmed them. Recorded so nothing downstream mistakes an
-        // accepted suggestion for something AIBOS observed.
+        // accepted suggestion for something AI-BOS observed.
         identity_place_id: appliedMatch?.place_id || null,
         identity_source: appliedMatch?.source || null,
         identity_confirmed_at: appliedMatch ? new Date().toISOString() : null,
@@ -234,7 +234,7 @@ export default function OnboardingPage() {
     finally { setSeeding(false); }
   }
 
-  // The AIBOS workbook: a spreadsheet already laid out the way AIBOS reads,
+  // The AI-BOS workbook: a spreadsheet already laid out the way AI-BOS reads,
   // for an owner whose history lives on paper or nowhere yet.
   async function getWorkbook() {
     setGettingBook(true); setError(null);
@@ -263,7 +263,7 @@ export default function OnboardingPage() {
           {step === 4 ? 'Your business is set up' : 'Set up your business'}
         </h1>
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '0 0 24px' }}>
-          {step === 4 ? 'Now the first thing that makes AIBOS useful.' : 'Three things and you are in. Everything else can wait.'}
+          {step === 4 ? 'Now the first thing that makes AI-BOS useful.' : 'Three things and you are in. Everything else can wait.'}
         </p>
 
         <div className="section-card" style={{ padding: 24 }}>
@@ -346,7 +346,7 @@ export default function OnboardingPage() {
 
                   <button type="submit" disabled={!canFinish || saving} className="touch-target"
                     style={{ marginTop: 16, width: '100%', padding: '12px 28px', minHeight: 48, borderRadius: 10, border: 'none', background: 'var(--brand-fill)', color: 'var(--on-brand)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: canFinish && !saving ? 'pointer' : 'default', opacity: canFinish && !saving ? 1 : 0.5 }}>
-                    {saving ? 'Setting up…' : 'Start using AIBOS'}
+                    {saving ? 'Setting up…' : 'Start using AI-BOS'}
                   </button>
                 </form>
               )}
@@ -358,7 +358,7 @@ export default function OnboardingPage() {
                     style={{ display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', padding: 18, borderRadius: 'var(--radius-md)', border: '1px solid var(--cyan)', background: 'var(--cyan-dim)', cursor: 'pointer' }}>
                     <span aria-hidden style={{ display: 'inline-flex', color: 'var(--cyan)' }}><MessageSquare size={28} strokeWidth={2} /></span>
                     <span style={{ minWidth: 0 }}>
-                      <span style={{ display: 'block', fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)' }}>Tell AIBOS your last sale</span>
+                      <span style={{ display: 'block', fontSize: 'var(--fs-h3)', fontWeight: 700, color: 'var(--text-1)' }}>Tell AI-BOS your last sale</span>
                       <span style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>Type it or say it, the way you would tell a friend: “{industryOf(form.industry, form.industry).saleExample}”</span>
                     </span>
                   </button>
@@ -369,11 +369,11 @@ export default function OnboardingPage() {
                   <p className="eyebrow" style={{ margin: '0 0 4px' }}>Or start another way</p>
                   <button type="button" onClick={() => router.push('/dashboard/record?receipt=1')} style={quietRow}>
                     <span aria-hidden style={quietIcon()}><Camera size={22} strokeWidth={2} /></span>
-                    <span><span style={quietTitle}>Scan your last receipt</span><span style={quietSub}>Photograph it: AIBOS reads it and records the purchase.</span></span>
+                    <span><span style={quietTitle}>Scan your last receipt</span><span style={quietSub}>Photograph it: AI-BOS reads it and records the purchase.</span></span>
                   </button>
                   <button type="button" onClick={() => router.push('/dashboard/teach')} style={quietRow}>
                     <span aria-hidden style={quietIcon()}><BookOpen size={22} strokeWidth={2} /></span>
-                    <span><span style={quietTitle}>Teach AIBOS your business</span><span style={quietSub}>About five minutes of questions: your story, a normal month and your goals.</span></span>
+                    <span><span style={quietTitle}>Teach AI-BOS your business</span><span style={quietSub}>About five minutes of questions: your story, a normal month and your goals.</span></span>
                   </button>
                   <button type="button" onClick={() => void seedStarters()} disabled={seeding || seeded} style={{ ...quietRow, cursor: seeded ? 'default' : 'pointer' }}>
                     <span aria-hidden style={quietIcon(seeded)}>{seeded ? <CircleCheck size={22} strokeWidth={2} /> : <Package size={22} strokeWidth={2} />}</span>
@@ -385,8 +385,8 @@ export default function OnboardingPage() {
                   <button type="button" onClick={() => void getWorkbook()} disabled={gettingBook} style={{ ...quietRow, cursor: gettingBook ? 'default' : 'pointer' }}>
                     <span aria-hidden style={quietIcon(gotBook)}>{gotBook ? <CircleCheck size={22} strokeWidth={2} /> : <FileSpreadsheet size={22} strokeWidth={2} />}</span>
                     <span>
-                      <span style={quietTitle}>{gotBook ? 'Your AIBOS workbook is downloaded' : gettingBook ? 'Making your workbook…' : 'Get your AIBOS workbook'}</span>
-                      <span style={quietSub}>{gotBook ? 'Fill it in, then upload it on the Upload a file page.' : 'A spreadsheet laid out the way AIBOS reads: fill it in and upload it.'}</span>
+                      <span style={quietTitle}>{gotBook ? 'Your AI-BOS workbook is downloaded' : gettingBook ? 'Making your workbook…' : 'Get your AI-BOS workbook'}</span>
+                      <span style={quietSub}>{gotBook ? 'Fill it in, then upload it on the Upload a file page.' : 'A spreadsheet laid out the way AI-BOS reads: fill it in and upload it.'}</span>
                     </span>
                   </button>
 

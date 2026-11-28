@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import Rise from '@/components/marketing/Rise';
 
-// The owner's week, named plainly, with what AIBOS does instead. As the block
+// The owner's week, named plainly, with what AI-BOS does instead. As the block
 // comes into view each old job is struck through by the brand line and the
 // answer rises in its place, one row after another (marketing.css, "Pain to
 // promise"). Reduced motion or no script: the finished picture.
@@ -22,7 +22,7 @@ export default function PainPromise() {
           <h2 id="why-h" className="mkt-h1">You started a business, not a bookkeeping job.</h2>
           <p className="mkt-lead" style={{ marginTop: 20 }}>
             Running a business in Zambia is hard enough. These are the jobs that keep owners up at night,
-            and what AIBOS does instead.
+            and what AI-BOS does instead.
           </p>
         </div>
 

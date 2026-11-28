@@ -115,7 +115,7 @@ export default function BreakevenPage() {
     ? `From your entries over ${real.months === 1 ? 'your last full month' : `your last ${real.months} full months`}. Counted as fixed: ${fixedWords}. Everything else is counted as growing with sales. Mark an expense as fixed when you record it.`
     : fromBooks
       ? 'An estimate until your first full month is recorded: 40% of your costs are taken as fixed.'
-      : 'Your file does not say which costs are fixed, so 40% of your costs are taken as fixed. Record your costs in AIBOS to use your real ones.';
+      : 'Your file does not say which costs are fixed, so 40% of your costs are taken as fixed. Record your costs in AI-BOS to use your real ones.';
   const roomPct = currentRevenue > 0 ? (gap / currentRevenue) * 100 : 0;
 
   // ── The breakeven chart: spend = fixed costs + the share of each sale that
@@ -184,7 +184,7 @@ export default function BreakevenPage() {
             </p>
             {!figuresLoading && (
               <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', margin: 0, lineHeight: 1.6, maxWidth: 480 }}>
-                Record your sales and costs as they happen, or upload a file with a month, your sales and your costs. AIBOS then works out which costs are fixed, what each sale leaves you and the sales you need each month to break even.
+                Record your sales and costs as they happen, or upload a file with a month, your sales and your costs. AI-BOS then works out which costs are fixed, what each sale leaves you and the sales you need each month to break even.
               </p>
             )}
           </div>

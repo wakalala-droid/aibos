@@ -328,7 +328,7 @@ export default function DashboardHeader() {
           command centre, not the smallest control). Icon-only below lg. */}
       <button
         type="button"
-        aria-label="Search or ask AIBOS (Ctrl K)"
+        aria-label="Search or ask AI-BOS (Ctrl K)"
         aria-haspopup="dialog"
         aria-expanded={open === 'search'}
         onClick={() => setOpen(open === 'search' ? null : 'search')}
@@ -338,7 +338,7 @@ export default function DashboardHeader() {
           <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
           <path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
-        <span className="dash-searchbar-hint">Search or ask AIBOS…</span>
+        <span className="dash-searchbar-hint">Search or ask AI-BOS…</span>
         <kbd className="dash-searchbar-kbd">Ctrl K</kbd>
       </button>
 
@@ -354,7 +354,7 @@ export default function DashboardHeader() {
         <CurrencySelector />
       </div>
 
-      {/* AIBOS auto: the team runs the day by itself, asking only when it must. */}
+      {/* AI-BOS auto: the team runs the day by itself, asking only when it must. */}
       <div onMouseDownCapture={() => setOpen(null)} style={{ display: 'contents' }}>
         <AutoSwitch />
       </div>
@@ -429,7 +429,7 @@ export default function DashboardHeader() {
                 aria-controls="dash-search-listbox"
                 aria-activedescendant={options.length ? `dash-search-opt-${activeIdx}` : undefined}
                 placeholder="Find a page, a customer or a product, or ask a question…"
-                aria-label="Search pages, customers and products, or ask AIBOS"
+                aria-label="Search pages, customers and products, or ask AI-BOS"
                 style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-md)', background: 'var(--bg-input)', color: 'var(--text-1)', fontSize: 'var(--fs-body)' }}
               />
             </div>
@@ -473,7 +473,7 @@ export default function DashboardHeader() {
                       <path d="M19 14l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
                     </svg>
                     <span style={{ fontSize: 'var(--fs-body)', color: 'var(--cyan)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      Ask AIBOS: “{query.trim()}”
+                      Ask AI-BOS: “{query.trim()}”
                     </span>
                   </button>
                 );
@@ -501,7 +501,7 @@ export default function DashboardHeader() {
             <div style={{ maxHeight: 360, overflowY: 'auto' }}>
               {unread === 0 ? (
                 <p style={{ padding: '24px 16px', fontSize: 'var(--fs-body)', lineHeight: 1.6, color: 'var(--text-3)', margin: 0 }}>
-                  You are all clear. Nothing needs you right now. As you record, AIBOS flags anything that needs attention here.
+                  You are all clear. Nothing needs you right now. As you record, AI-BOS flags anything that needs attention here.
                 </p>
               ) : mergedAlerts.slice(0, 12).map((a, i) => {
                 const title = String(a.title ?? 'Alert');
@@ -551,7 +551,7 @@ export default function DashboardHeader() {
                 return <div key={i}>{body}</div>;
               })}
             </div>
-            {/* Alerts on the phone, with AIBOS closed (upgrade 10). */}
+            {/* Alerts on the phone, with AI-BOS closed (upgrade 10). */}
             <PhoneAlerts />
             <Link href="/dashboard/anomaly" onClick={() => setOpen(null)} style={{ display: 'block', textAlign: 'center', padding: '16px', borderTop: '1px solid var(--border)', fontSize: 'var(--fs-body)', lineHeight: 1.6, fontWeight: 600, color: 'var(--cyan)', textDecoration: 'none' }}>
               See unusual spending
@@ -590,7 +590,7 @@ export default function DashboardHeader() {
               </Link>
               {/* The review centre (20 Nov 2026): stars, words and who sees them. */}
               <Link href="/dashboard/reviews" role="menuitem" onClick={() => setOpen(null)} className="dash-row" style={{ display: 'block', padding: '10px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', color: 'var(--text-2)', textDecoration: 'none' }}>
-                Review AIBOS
+                Review AI-BOS
               </Link>
               <button type="button" role="menuitem" onClick={() => setOpen('shortcuts')} className="dash-row" style={{ width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 'var(--fs-body)', color: 'var(--text-2)' }}>
                 Keyboard shortcuts &amp; tips
@@ -624,11 +624,11 @@ export default function DashboardHeader() {
             </div>
             <div style={{ padding: '10px 16px 14px' }}>
               {[
-                ['Ctrl K', 'Search anything, or ask AIBOS a question'],
+                ['Ctrl K', 'Search anything, or ask AI-BOS a question'],
                 ['↑ ↓ + Enter', 'Move through search results and open one'],
                 ['Esc', 'Close any panel, menu or the assistant'],
-                ['Shift + Enter', 'New line when asking AIBOS'],
-                ['Hold a card', 'Long-press any metric and AIBOS explains it'],
+                ['Shift + Enter', 'New line when asking AI-BOS'],
+                ['Hold a card', 'Long-press any metric and AI-BOS explains it'],
               ].map(([key, tip]) => (
                 <div key={key} style={{ display: 'flex', gap: 12, alignItems: 'baseline', padding: '7px 0' }}>
                   <kbd style={{ flexShrink: 0, minWidth: 92, textAlign: 'center', fontSize: 'var(--fs-label)', color: 'var(--text-2)', background: 'var(--bg-badge)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-sm)', padding: '2px 8px', fontFamily: 'inherit' }}>{key}</kbd>

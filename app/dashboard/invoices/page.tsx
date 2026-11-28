@@ -1,7 +1,7 @@
 'use client';
 /**
  * Invoices — the get-paid loop (audit #7). Issue → share on WhatsApp (the
- * owner sends from their OWN phone — AIBOS never messages a customer) →
+ * owner sends from their OWN phone — AI-BOS never messages a customer) →
  * get paid. The accounting rides the spine: send posts a confirmed credit
  * Sale (+receivables), settlement posts the CustomerPayment (cash). Creating,
  * sending and the payment link are Pro ('invoices', since 22 Oct 2026);

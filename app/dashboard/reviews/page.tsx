@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * Review AIBOS (20 Nov 2026): an owner gives AIBOS one to five stars, says why
- * and chooses who sees it: the AIBOS team only, or the AIBOS website too with
+ * Review AI-BOS (20 Nov 2026): an owner gives AI-BOS one to five stars, says why
+ * and chooses who sees it: the AI-BOS team only, or the AI-BOS website too with
  * the name, business and town they type, and their logo only if they tick that
  * as well. One review each, which they can change or take back at any time.
  *
@@ -126,7 +126,7 @@ export default function ReviewAibosPage() {
     if (busy) return;
     setThanks('');
     if (rating < 1) return fail('stars', 'Choose from one to five stars.');
-    if (count < BODY_MIN) return fail('body', 'Say a little more: a sentence about what AIBOS does for you.');
+    if (count < BODY_MIN) return fail('body', 'Say a little more: a sentence about what AI-BOS does for you.');
     if (count > BODY_MAX) return fail('body', `Keep it to ${BODY_MAX} characters, about a short paragraph.`);
     if (!where) return fail('where', 'Choose who sees your review.');
     if (where === 'site' && !name.trim() && !business.trim()) {
@@ -190,8 +190,8 @@ export default function ReviewAibosPage() {
 
   const header = (
     <PageHeader
-      title="Review AIBOS"
-      subtitle="Tell us how AIBOS is working for you. You choose who sees it."
+      title="Review AI-BOS"
+      subtitle="Tell us how AI-BOS is working for you. You choose who sees it."
     />
   );
 
@@ -234,16 +234,16 @@ export default function ReviewAibosPage() {
         <section className="section-card" aria-labelledby="review-done-title">
           <div className="rs-sec-head" style={{ marginBottom: 12 }}>
             <h2 id="review-done-title" ref={doneTitle} tabIndex={-1} className="rs-sec-title">Your review</h2>
-            <Chip>{saved.show_on_site ? (saved.hidden ? 'Off the website' : 'On the AIBOS website') : 'AIBOS team only'}</Chip>
+            <Chip>{saved.show_on_site ? (saved.hidden ? 'Off the website' : 'On the AI-BOS website') : 'AI-BOS team only'}</Chip>
           </div>
 
           {thanks === 'site' && !saved.hidden && (
-            <Note tone="good">Thank you. Your review shows on the AIBOS website within a few minutes.</Note>
+            <Note tone="good">Thank you. Your review shows on the AI-BOS website within a few minutes.</Note>
           )}
-          {thanks === 'team' && <Note tone="good">Thank you. The AIBOS team reads every review.</Note>}
+          {thanks === 'team' && <Note tone="good">Thank you. The AI-BOS team reads every review.</Note>}
           {saved.hidden && (
             <Note tone="warn">
-              The AIBOS team took this review off the website. That happens only for abuse, spam or private
+              The AI-BOS team took this review off the website. That happens only for abuse, spam or private
               details such as a phone number. The team still reads it.
             </Note>
           )}
@@ -291,7 +291,7 @@ export default function ReviewAibosPage() {
       {editing && (
         <section className="section-card" aria-labelledby="review-form-title">
           <h2 id="review-form-title" ref={formTitle} tabIndex={-1} className="rs-sec-title">
-            {saved ? 'Change your review' : 'How is AIBOS working for you?'}
+            {saved ? 'Change your review' : 'How is AI-BOS working for you?'}
           </h2>
           <p className="rs-text is-quiet" style={{ marginTop: 6 }}>
             It takes a minute. Your words go as you write them, and you can change them later.
@@ -318,7 +318,7 @@ export default function ReviewAibosPage() {
             </fieldset>
 
             <div>
-              <label className="field-label" htmlFor="review-body">What would you tell another business owner about AIBOS?</label>
+              <label className="field-label" htmlFor="review-body">What would you tell another business owner about AI-BOS?</label>
               <textarea id="review-body" className="field" rows={5} value={body}
                 onChange={(e) => { setBody(e.target.value); if (problem?.field === 'body') setProblem(null); }}
                 aria-invalid={errorFor('body') ? true : undefined}
@@ -345,16 +345,16 @@ export default function ReviewAibosPage() {
                   value={where}
                   onChange={(v) => { setWhere(v); if (problem?.field === 'where') setProblem(null); }}
                   options={[
-                    { value: 'site', label: 'The AIBOS website too' },
-                    { value: 'team', label: 'The AIBOS team only' },
+                    { value: 'site', label: 'The AI-BOS website too' },
+                    { value: 'team', label: 'The AI-BOS team only' },
                   ]}
                 />
               </div>
               <p className="rs-text is-quiet" style={{ marginTop: 10, fontSize: 'var(--fs-label)' }}>
                 {where === 'site'
-                  ? 'Your stars, your words and the name below go on the AIBOS website for other owners to read. Leave out web addresses, emails and phone numbers.'
+                  ? 'Your stars, your words and the name below go on the AI-BOS website for other owners to read. Leave out web addresses, emails and phone numbers.'
                   : where === 'team'
-                    ? 'Only the AIBOS team reads it. Nothing goes on the website.'
+                    ? 'Only the AI-BOS team reads it. Nothing goes on the website.'
                     : 'Nothing goes on the website unless you choose it here.'}
               </p>
               {said('where')}

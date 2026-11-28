@@ -79,7 +79,7 @@ export default function TodayPanel() {
             {extras === null ? '' : products.length === 0 ? 'None yet' : lowStock.length ? `${lowStock.length} low` : 'All good'}
           </span>
           <span className="today-figure-sub">
-            {extras === null ? '' : products.length === 0 ? `Add your ${ind.stockWord} and AIBOS watches it`
+            {extras === null ? '' : products.length === 0 ? `Add your ${ind.stockWord} and AI-BOS watches it`
               : lowStock.length ? `${lowStock.slice(0, 2).map((p) => p.name).join(', ')}${lowStock.length > 2 ? ' and more' : ''} running low`
               : `${products.length} items, none low`}
           </span>

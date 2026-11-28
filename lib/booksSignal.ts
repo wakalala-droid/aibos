@@ -24,6 +24,8 @@ const QUIET: RegExp[] = [
   /^\/clients\//,
   // The live guide: minutes and tokens, never the books.
   /^\/live\//,
+  // The sphere's settings: a voice and two switches, never money.
+  /^\/assistant\//,
 ];
 
 let timer: ReturnType<typeof setTimeout> | null = null;

@@ -2,7 +2,7 @@
 
 // Drop or paste a receipt anywhere (UI/UX audit 2026-10 C4).
 //
-// Drag a receipt photo onto any page, or paste one, and AIBOS opens Record and
+// Drag a receipt photo onto any page, or paste one, and AI-BOS opens Record and
 // reads it as a proposed entry, exactly as the camera button there does. A
 // spreadsheet opens Upload a file with it already chosen. A FileDrop on the
 // page takes a file dropped on it first (it stops the event), so this only

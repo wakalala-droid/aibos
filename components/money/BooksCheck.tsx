@@ -55,7 +55,7 @@ export default function BooksCheckCard() {
       )}
       {!result && !error && (
         <p style={{ margin: 0, fontSize: 'var(--fs-body)', color: 'var(--text-3)', lineHeight: 1.55 }}>
-          AIBOS checks this every day by itself and tells you if anything disagrees. Check now to see it for yourself.
+          AI-BOS checks this every day by itself and tells you if anything disagrees. Check now to see it for yourself.
         </p>
       )}
       {result && (

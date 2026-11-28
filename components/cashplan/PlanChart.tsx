@@ -19,7 +19,7 @@ export function dayWords(iso: string | null | undefined): string {
 }
 
 /** The line the plan keeps above, as a sentence says it: "zero", "K5,000",
- *  or "your K20,000 cushion" when it is the cash the owner told AIBOS to keep
+ *  or "your K20,000 cushion" when it is the cash the owner told AI-BOS to keep
  *  (aibos-api cash_plan.floor_words). */
 export function floorWords(floor: number | null | undefined, fromCushion: boolean, sym: string): string {
   if (!floor || floor <= 0) return 'zero';

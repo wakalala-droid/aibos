@@ -87,14 +87,34 @@ interface AiAssistantCtx {
   online: boolean;
   suggestions: string[];
   setSuggestions: (s: string[]) => void;
-  sendMessage: (text: string) => void;
+  sendMessage: (text: string, opts?: SendOptions) => void;
   pushAssistant: (content: string) => void;
   clearConversation: () => void;
   /** Answer a job: yes, not now, or undo. */
   answerAction: (id: string, verb: ActionVerb) => void;
   /** Talk mode is on: jobs asked for are logged as spoken. */
   setTalking: (on: boolean) => void;
+  /** The sphere asks the same AI-BOS (owner, 28 Nov 2026: "one unified field
+   *  of intelligence"): the question goes into this conversation like any
+   *  other, and this resolves with the answer and its jobs once the turn is
+   *  over. The live guide's ask_aibos tool (components/guide/GuideSphere). */
+  ask: (text: string) => Promise<SphereAnswer>;
+  /** The sphere gives the owner's spoken yes, no or undo to the job waiting
+   *  (or, for undo, the one just done), and gets back what happened. */
+  answerLatest: (verb: ActionVerb) => Promise<string>;
 }
+
+/** How a question is asked. `deep`: straight to the model and its tools, past
+ *  the quick answers (today's takings, a benchmark, a scenario, a definition).
+ *  The sphere asks this way: its own model has already judged the question
+ *  needs the whole brain, and a quick answer would answer a smaller one (the
+ *  spoken report came back as "1 sale today"). Recording keeps its own path. */
+export interface SendOptions { deep?: boolean }
+
+/** What the sphere hears back from one question. */
+export interface SphereAnswer { reply: string; waiting: AiAction[]; done: AiAction[] }
+
+const pause = (ms: number) => new Promise<void>((ok) => { setTimeout(ok, ms); });
 
 const Ctx = createContext<AiAssistantCtx | null>(null);
 
@@ -462,7 +482,7 @@ function matchSpineIntent(raw: string): SpineIntent | null {
 // the assistant never posts to the books without an explicit yes.
 
 /** The iPhone app sells nothing (lib/iosApp.ts): a closed chat says so and sends nowhere. */
-const IOS_CHAT_LOCKED = 'Asking AIBOS is not part of your plan.';
+const IOS_CHAT_LOCKED = 'Asking AI-BOS is not part of your plan.';
 
 const CHAT_CONFIRM = /^(confirm|yes|yebo|yep|ok(ay)?|post it|do it)\b/i;
 const CHAT_CANCEL = /^(cancel|no|discard|void|scrap|don'?t)\b/i;
@@ -759,7 +779,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
   const setOpen = useCallback((v: boolean) => setOpenState(v), []);
   const toggle = useCallback(() => setOpenState((v) => !v), []);
 
-  // The "Ask AIBOS" shortcut on the installed app's icon lands on ?ask=1: open
+  // The "Ask AI-BOS" shortcut on the installed app's icon lands on ?ask=1: open
   // the assistant straight away, then tidy the address so a reload does not
   // open it again.
   useEffect(() => {
@@ -889,7 +909,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         const d = await res.json().catch(() => ({} as Record<string, unknown>));
         setOnline(true);
         pushAssistant(inIosApp() ? IOS_CHAT_LOCKED
-          : `${typeof d.detail === 'string' ? d.detail : 'Asking AIBOS is part of Pro.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AIBOS.`, true);
+          : `${typeof d.detail === 'string' ? d.detail : 'Asking AI-BOS is part of Pro.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AI-BOS.`, true);
         return 'answered';
       }
       // 503 = we could not establish the plan, no AI key, or the AI is
@@ -972,7 +992,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         setOnline(true);
         pushAssistant(gate.code === 402 && inIosApp() ? IOS_CHAT_LOCKED
           : gate.code === 402
-          ? `${gate.detail || 'Asking AIBOS is part of Pro.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AIBOS.`
+          ? `${gate.detail || 'Asking AI-BOS is part of Pro.'}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AI-BOS.`
           : (gate.detail || 'The chat is unavailable right now. This is a fault on our side.'), true);
         return 'answered';
       }
@@ -1018,8 +1038,9 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     }
   }, [pushAssistant, noteJobs]);
 
-  const sendMessage = useCallback(async (raw: string) => {
+  const sendMessage = useCallback(async (raw: string, opts?: SendOptions) => {
     const text = raw.trim().slice(0, MAX_CHARS);
+    const deep = opts?.deep === true;
     if (!text || loadingRef.current) return;
 
     // The conversation before this question, for the AI's memory below.
@@ -1036,7 +1057,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     if (inIosApp() && ASKS_TO_BUY.test(text)) { pushAssistant(NOT_SOLD_HERE); return; }
 
     // 0) A job is waiting on the owner's word, or one just done can be taken
-    //    back, or AIBOS offered to do these by itself. A short answer settles
+    //    back, or AI-BOS offered to do these by itself. A short answer settles
     //    it; anything else moves the conversation on and the job keeps its card.
     const waitingJob = pendingActionRef.current;
     const offer = autopilotOfferRef.current;
@@ -1111,7 +1132,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
           pushAssistant("I couldn't work out what kind of activity that is. Try phrasing it like “sold 3 bags of mealie meal for K450”, or use the **Record** page, which previews everything first.");
           return;
         }
-        // Through a job (Jarvis phase 2), so each yes counts towards AIBOS
+        // Through a job (Jarvis phase 2), so each yes counts towards AI-BOS
         // doing these by itself. Before the API's migration 0047 the job
         // route answers 503 and the entry is drafted the way it always was.
         if (JOB_ENTRY_TYPES.includes(proposal.event_type)) {
@@ -1162,7 +1183,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
 
     // 1) Spine intents — live business-state questions answered from recorded
     //    events with a real fetch (stock levels, deliveries, today's takings).
-    const intent = matchSpineIntent(text);
+    const intent = deep ? null : matchSpineIntent(text);
     if (intent) {
       setLoading(true);
       try {
@@ -1181,7 +1202,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     {
       const p = profileRef.current;
       const ind = industryOf(p?.business_type, p?.industry);
-      const bm = matchBenchmark(text, ind.key);
+      const bm = deep ? null : matchBenchmark(text, ind.key);
       if (bm) {
         const lines = [`**${bm.label}, ${ind.label} reference:** ${bm.range}.`, '', bm.explain];
         if (bm.metric === 'margin' && lv.margin !== undefined) {
@@ -1205,7 +1226,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     //     arithmetic on the owner's real monthly averages, assumptions stated
     //     out loud, ranged where the truth depends on cost behaviour.
     {
-      const sc = parseScenario(text);
+      const sc = deep ? null : parseScenario(text);
       if (sc) {
         pushAssistant(runScenario(sc, s.monthly, sym));
         return;
@@ -1213,7 +1234,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     }
 
     // 2) Local answer — definitions, explanations, direct metric lookups.
-    const local = localAnswer(text, lv);
+    const local = deep ? null : localAnswer(text, lv);
     if (local) { pushAssistant(local); return; }
 
     // 3) No data yet, and they're asking for THEIR figures → answer here. This
@@ -1300,8 +1321,8 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
         setOnline(true);
         const msg = typeof data.detail === 'string'
           ? data.detail
-          : 'Asking AIBOS is part of Pro.';
-        pushAssistant(inIosApp() ? IOS_CHAT_LOCKED : `${msg}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AIBOS.`, true);
+          : 'Asking AI-BOS is part of Pro.';
+        pushAssistant(inIosApp() ? IOS_CHAT_LOCKED : `${msg}\n\n[Upgrade to Pro](/checkout?plan=pro) to keep asking AI-BOS.`, true);
         return;
       }
       // 503 = the service is at fault (no AI key, the plan could not be read,
@@ -1336,6 +1357,42 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     }
   }, [pushAssistant, streamChat, answerAction, noteJobs]);
 
+  // ── The sphere's way in: ask and wait, answer and wait ──────────────────────
+  const idle = useCallback(async (ms: number) => {
+    const t0 = Date.now();
+    while (loadingRef.current && Date.now() - t0 < ms) await pause(150);
+  }, []);
+
+  const repliesSince = useCallback((before: number) => messagesRef.current.slice(before)
+    .filter((m) => m.role === 'assistant'), []);
+
+  const ask = useCallback(async (text: string): Promise<SphereAnswer> => {
+    await idle(30_000);
+    const before = messagesRef.current.length;
+    await sendMessage(text, { deep: true });
+    // A yes or an undo is handed on without waiting; let it start, then wait it out.
+    await pause(80);
+    await idle(110_000);
+    await pause(120);
+    const fresh = repliesSince(before);
+    const jobs = fresh.flatMap((m) => m.actions ?? []);
+    return {
+      reply: fresh.map((m) => m.content).join('\n\n'),
+      waiting: jobs.filter((j) => j.status === 'waiting'),
+      done: jobs.filter((j) => j.status === 'done'),
+    };
+  }, [idle, sendMessage, repliesSince]);
+
+  const answerLatest = useCallback(async (verb: ActionVerb): Promise<string> => {
+    const id = verb === 'undo' ? lastDoneRef.current : pendingActionRef.current;
+    if (!id) return verb === 'undo' ? 'There is nothing just done to undo.' : 'No job is waiting for an answer.';
+    await idle(30_000);
+    const before = messagesRef.current.length;
+    await answerAction(id, verb);
+    await pause(120);
+    return repliesSince(before).map((m) => m.content).join('\n\n') || 'Done.';
+  }, [idle, answerAction, repliesSince]);
+
   // ── Long-press explanation → answer instantly from the knowledge base ──────
   useEffect(() => {
     if (!explainTarget) return;
@@ -1348,7 +1405,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
     } else {
       const label = explainTarget.label || 'this component';
       const valueLine = explainTarget.value ? `\n\nIt currently shows ${explainTarget.value}.` : '';
-      pushAssistant(`**${label}**\n\nThis is part of your AIBOS dashboard. Ask me what you'd like to know about it and I'll pull the detail from your data.${valueLine}`);
+      pushAssistant(`**${label}**\n\nThis is part of your AI-BOS dashboard. Ask me what you'd like to know about it and I'll pull the detail from your data.${valueLine}`);
       setSuggestions([]);
     }
     setOpenState(true);
@@ -1449,7 +1506,7 @@ export function AiAssistantProvider({ children }: { children: React.ReactNode })
       open, setOpen, toggle,
       messages, loading, online, suggestions, setSuggestions,
       status: loading && !streaming ? (status ?? 'Working on it…') : null,
-      sendMessage, pushAssistant, clearConversation, answerAction, setTalking,
+      sendMessage, pushAssistant, clearConversation, answerAction, setTalking, ask, answerLatest,
     }}>
       {children}
     </Ctx.Provider>

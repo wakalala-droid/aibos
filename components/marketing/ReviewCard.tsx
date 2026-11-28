@@ -1,5 +1,5 @@
-// One owner's review of AIBOS, drawn the same way on the landing page and in
-// "How it will look" on Review AIBOS (app/dashboard/reviews), so an owner sees
+// One owner's review of AI-BOS, drawn the same way on the landing page and in
+// "How it will look" on Review AI-BOS (app/dashboard/reviews), so an owner sees
 // exactly what a visitor will. A kit bento card (hairline, one wash of light):
 // the stars in ink, their words as they wrote them, who said it and where,
 // and their logo only when they agreed to show it.
@@ -26,7 +26,7 @@ export function Stars({ rating, size = 20 }: { rating: number; size?: number }) 
 type Shown = Pick<PublicReview, 'rating' | 'body' | 'name' | 'business' | 'town' | 'logo'> & { month?: string };
 
 export default function ReviewCard({ review, className = '' }: { review: Shown; className?: string }) {
-  const who = whoSaid(review) || 'An AIBOS owner';
+  const who = whoSaid(review) || 'An AI-BOS owner';
   const where = whereWhen(review);
   return (
     <figure className={`bento review-card ${className}`.trim()}>

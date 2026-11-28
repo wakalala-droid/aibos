@@ -96,7 +96,7 @@ function Shell({ children }: { children: React.ReactNode }) {
               <Icon d={I.back} size={20} />
             </button>
             <Image src={isDark ? '/brand/aibos-mark-white-glyph.png' : '/brand/aibos-mark.png'} alt="" width={28} height={28} />
-            <Image src={isDark ? '/brand/aibos-wordmark-white.png' : '/brand/aibos-wordmark.png'} alt="AIBOS" width={74} height={19} />
+            <Image src={isDark ? '/brand/aibos-wordmark-white.png' : '/brand/aibos-wordmark.png'} alt="AI-BOS" width={74} height={19} />
           </div>
           <span className="co-secure">
             <Icon d={I.lock} size={16} />
@@ -483,7 +483,7 @@ function CheckoutInner() {
   const summary = (
     <Panel labelledBy="co-title" className="co-summary">
       <p className="co-eyebrow">{renewing || lapsedSame ? 'Renew' : 'Subscribe to'}</p>
-      <h1 id="co-title" className="co-h1">AIBOS {meta.name}</h1>
+      <h1 id="co-title" className="co-h1">AI-BOS {meta.name}</h1>
       <div className="co-price">
         <span className="co-price-fig">{fmt(usd)}</span>
         <span className="co-price-per">
@@ -510,7 +510,7 @@ function CheckoutInner() {
         {cardPlan ? (
           <>
             <div className="co-line">
-              <dt>AIBOS {meta.name}<span className="co-line-sub">Billed {billing === 'annual' ? 'yearly' : 'monthly'}</span></dt>
+              <dt>AI-BOS {meta.name}<span className="co-line-sub">Billed {billing === 'annual' ? 'yearly' : 'monthly'}</span></dt>
               <dd>{money(usd)}</dd>
             </div>
             <div className="co-line co-total">
@@ -525,7 +525,7 @@ function CheckoutInner() {
         ) : (
           <>
             <div className="co-line">
-              <dt>AIBOS {meta.name}<span className="co-line-sub">Billed {billing === 'annual' ? 'yearly' : 'monthly'}</span></dt>
+              <dt>AI-BOS {meta.name}<span className="co-line-sub">Billed {billing === 'annual' ? 'yearly' : 'monthly'}</span></dt>
               <dd>{money(usd)}</dd>
             </div>
             <div className="co-line">
@@ -553,7 +553,7 @@ function CheckoutInner() {
       {kwacha && rate && <div style={{ marginTop: 12 }}><KwachaNote rate={rate} /></div>}
 
       <ul className="co-trust">
-        {['Renews automatically. Cancel any time on Plan & billing', '30-day money-back guarantee on every payment', 'Your card details go to Paddle, never to AIBOS'].map((t) => (
+        {['Renews automatically. Cancel any time on Plan & billing', '30-day money-back guarantee on every payment', 'Your card details go to Paddle, never to AI-BOS'].map((t) => (
           <li key={t}><Icon d={I.shield} />{t}</li>
         ))}
       </ul>
@@ -681,7 +681,7 @@ function CheckoutInner() {
       <Note tone="info" icon="info">
         <p><strong>Card payments are opening very soon.</strong></p>
         <p>
-          To start {meta.name} today, email <a className="co-link" href={`mailto:${LEGAL.email}?subject=${encodeURIComponent(`Start AIBOS ${meta.name}`)}`}>{LEGAL.email}</a> or
+          To start {meta.name} today, email <a className="co-link" href={`mailto:${LEGAL.email}?subject=${encodeURIComponent(`Start AI-BOS ${meta.name}`)}`}>{LEGAL.email}</a> or
           call <a className="co-link" href={LEGAL.phoneHref}>{LEGAL.phoneDisplay}</a> and we will set it up for you.
         </p>
       </Note>
@@ -717,7 +717,7 @@ function CheckoutInner() {
           {!cardPlan && (
             <p className="co-fine">
               <Icon d={I.lock} size={16} />
-              <span>Card payments are handled by Paddle, our online reseller. Your card details never reach AIBOS and your statement shows PADDLE.NET.</span>
+              <span>Card payments are handled by Paddle, our online reseller. Your card details never reach AI-BOS and your statement shows PADDLE.NET.</span>
             </p>
           )}
         </>

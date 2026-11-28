@@ -1,6 +1,6 @@
 'use client';
 /**
- * AIBOS — Import history from a spreadsheet.
+ * AI-BOS — Import history from a spreadsheet.
  *
  * The old screen read ONE sheet and assumed row 1 held the headings. A
  * fifteen-sheet workbook came back as twenty-six columns called "Unnamed: 0"
@@ -30,7 +30,7 @@ import {
   type EventType, type Employee, type Product, type WorkbookSheet,
 } from '@/lib/api';
 
-/** What each sheet of the AIBOS workbook is filed as, in owner words. */
+/** What each sheet of the AI-BOS workbook is filed as, in owner words. */
 const WORKBOOK_FILED: Partial<Record<WorkbookSheet, string>> = {
   sales: 'sales', expenses: 'running costs, under the category you picked',
   stock: 'stock bought, against your products', wages: "each worker's wages",
@@ -200,7 +200,7 @@ export default function ImportPage() {
     <>
       <PageHeader
         title="Upload a file"
-        subtitle="Any spreadsheet, any layout. AIBOS reads every sheet at once, files each row where it belongs and updates your dashboards: one upload, nothing else to do."
+        subtitle="Any spreadsheet, any layout. AI-BOS reads every sheet at once, files each row where it belongs and updates your dashboards: one upload, nothing else to do."
       />
 
       {(phase === 'idle' || phase === 'scanning') && (
@@ -223,14 +223,14 @@ export default function ImportPage() {
 
       {phase === 'idle' && (
         <div style={{ marginTop: 16 }}>
-          <BentoCard icon={<FileSpreadsheet />} title="No spreadsheet yet?" tag="AIBOS workbook" motion="tilt"
-            text="Download the AIBOS workbook: a sheet each for sales, costs, stock, wages, products and workers, with your own products and workers already in its lists. Fill it in and upload it here. Keep adding to the same file: AIBOS only brings in the lines it does not have yet."
+          <BentoCard icon={<FileSpreadsheet />} title="No spreadsheet yet?" tag="AI-BOS workbook" motion="tilt"
+            text="Download the AI-BOS workbook: a sheet each for sales, costs, stock, wages, products and workers, with your own products and workers already in its lists. Fill it in and upload it here. Keep adding to the same file: AI-BOS only brings in the lines it does not have yet."
             foot={<>
               <button type="button" className="pill pill-primary" onClick={() => void getWorkbook()} disabled={workbookBusy}>
-                {workbookBusy ? 'Making your workbook…' : 'Download the AIBOS workbook'}
+                {workbookBusy ? 'Making your workbook…' : 'Download the AI-BOS workbook'}
               </button>
               <Link href="/dashboard/teach" className="pill pill-quiet" style={{ textDecoration: 'none' }}>
-                Teach AIBOS your business first
+                Teach AI-BOS your business first
               </Link>
             </>} />
         </div>
@@ -247,7 +247,7 @@ export default function ImportPage() {
 
           {/* What was in the file ------------------------------------------ */}
           <SectionCard
-            title="What AIBOS found"
+            title="What AI-BOS found"
             subtitle={`${scan.sheet_count} sheets · ${scan.table_count} tables · ${scan.nonzero_total.toLocaleString()} of ${scan.row_total.toLocaleString()} rows have a figure in`}
           >
             {scan.nonzero_total === 0 && (
@@ -277,10 +277,10 @@ export default function ImportPage() {
             </div>
             <p style={{ marginTop: 12, marginBottom: 0, color: 'var(--text-3)', fontSize: 'var(--fs-data)', lineHeight: 1.5 }}>
               {scan.workbook
-                ? 'This is your AIBOS workbook: each sheet is filed exactly as you laid it out, with no guessing.'
+                ? 'This is your AI-BOS workbook: each sheet is filed exactly as you laid it out, with no guessing.'
                 : scan.ai
                 ? 'The AI read the file and described each table below.'
-                : 'AIBOS read the file with its own rules.'}
+                : 'AI-BOS read the file with its own rules.'}
               {scan.ai_note ? ` ${scan.ai_note}` : ''}
               {' '}It already knows {scan.known.employees} worker{scan.known.employees === 1 ? '' : 's'},
               {' '}{scan.known.products} product{scan.known.products === 1 ? '' : 's'} and

@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * "Update your payment details: AIBOS is card only now", on screen.
+ * "Update your payment details: AI-BOS is card only now", on screen.
  *
  * The admin's card payment reminder (aibos-api billing.card_drive) lands in
  * the bell, but a row in the bell is easy to miss. This brings it up the way
  * a new version does: a floating notice at the bottom of the screen, with
  * "Set up card payment" (opens their checkout and marks it read) and "Later"
- * (hides it until AIBOS is next opened). It checks when the app opens and
+ * (hides it until AI-BOS is next opened). It checks when the app opens and
  * each time it comes back to the front.
  */
 

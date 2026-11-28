@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * AIBOS — Profile provider + hook.
+ * AI-BOS — Profile provider + hook.
  *
  * Supabase is the source of truth for tier/identity; the Zustand store is a
  * cache. On a signed-in user this provider:

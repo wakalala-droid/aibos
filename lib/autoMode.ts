@@ -1,7 +1,7 @@
 'use client';
 
 // lib/autoMode.ts
-// AIBOS auto (17 Nov 2026): one shared state for the switch at the top of
+// AI-BOS auto (17 Nov 2026): one shared state for the switch at the top of
 // every page and the team scene on Home, so flipping it in one
 // place shows everywhere at once. The API decides what auto may do
 // (aibos-api actions.AUTO_*): the safe jobs do themselves with an Undo, and
@@ -39,7 +39,7 @@ const useAutoStore = create<AutoStore>((set, get) => ({
       teamChanged();
       return true;
     } catch (e) {
-      set({ busy: false, error: e instanceof ApiError ? e.message : 'AIBOS could not switch just now. Try again in a moment.' });
+      set({ busy: false, error: e instanceof ApiError ? e.message : 'AI-BOS could not switch just now. Try again in a moment.' });
       return false;
     }
   },

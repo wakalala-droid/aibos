@@ -5,7 +5,7 @@
  *
  * A paid plan free for a set number of months (aibos-api gifts.py). It ends on
  * its own, nobody is asked to pay for it and the owner is welcomed by name the
- * next time they open AIBOS. A gift still running gets the months on its end.
+ * next time they open AI-BOS. A gift still running gets the months on its end.
  *
  * Built for referrals: when an owner brings another business, both get the
  * month (client plan, 26 Nov 2026). "Referred by" runs the same gift for the
@@ -306,7 +306,7 @@ export default function GiftPlanCard({ userId, profile, onGiven }: {
       </div>
       <p className="rs-text is-quiet">
         Free for a set number of months. It ends on its own, nobody is asked to pay for it and the owner is
-        welcomed by name the next time they open AIBOS.
+        welcomed by name the next time they open AI-BOS.
       </p>
       {own.kind === 'gift' && (
         <Note tone="info">
@@ -467,7 +467,7 @@ export default function GiftPlanCard({ userId, profile, onGiven }: {
             <Note key={`done-${o.planned.userId}`} tone="good">
               Given. {o.planned.label} has {planName(o.result.plan)} free until {longDay(o.result.until)}
               {o.result.extended_from ? `, ${span(o.result.months, true)} on the end of the gift that was to end on ${longDay(o.result.extended_from)}` : ''}.
-              The welcome waits for {o.planned.name} the next time they open AIBOS.
+              The welcome waits for {o.planned.name} the next time they open AI-BOS.
             </Note>
           ) : (
             <Note key={`done-${o.planned.userId}`} tone="bad">{o.planned.label}: {o.error}</Note>

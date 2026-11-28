@@ -19,7 +19,7 @@ import {
   type Recommendation, type SimResult, type AdviceTrackRecord,
 } from '@/lib/api';
 
-// The same words and marks as AIBOS's findings (InsightCard), no colour.
+// The same words and marks as AI-BOS's findings (InsightCard), no colour.
 const PRIORITY = {
   high:   { label: 'Act now',      icon: <AlertTriangle />, motion: 'pulse' as const },
   medium: { label: 'Worth a look', icon: <Lightbulb />,     motion: 'float' as const },
@@ -132,7 +132,7 @@ export function RecommendationList({ limit, seeAllHref, title = 'What to try', s
     <section className="bento-section" aria-labelledby="recs-title" style={limit ? { marginTop: 0, marginBottom: 24 } : { marginTop: 0 }}>
       <header className="bento-section-head">
         <div>
-          <p className="eyebrow">AIBOS suggests</p>
+          <p className="eyebrow">AI-BOS suggests</p>
           <h2 id="recs-title" className="bento-section-title">{title}</h2>
         </div>
         <div className="bento-section-sub" style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' }}>
@@ -147,7 +147,7 @@ export function RecommendationList({ limit, seeAllHref, title = 'What to try', s
         <div className="bento-grid">{[0, 1].map(i => <div key={i} className="skeleton span-3" style={{ height: 220, borderRadius: 'var(--radius-card)' }} />)}</div>
       ) : recs.length === 0 ? (
         <BentoCard icon={<Lightbulb />} title="Nothing to suggest" tag="All good"
-          text="Your numbers look healthy, or there is not enough activity yet for AIBOS to suggest anything." />
+          text="Your numbers look healthy, or there is not enough activity yet for AI-BOS to suggest anything." />
       ) : (
         <div className="bento-grid">
           {shown.map((r, i) => (
@@ -157,7 +157,7 @@ export function RecommendationList({ limit, seeAllHref, title = 'What to try', s
       )}
       {!limit && track?.available && track.total && track.total.shown > 0 && (
         <p style={{ fontSize: 'var(--fs-label)', color: 'var(--text-3)', margin: '16px 0 0' }}>
-          AIBOS&apos;s advice record: {track.total.shown} suggestion{track.total.shown === 1 ? '' : 's'} made,
+          AI-BOS&apos;s advice record: {track.total.shown} suggestion{track.total.shown === 1 ? '' : 's'} made,
           {' '}{track.total.accepted} taken and {track.total.dismissed} not relevant
           {typeof track.acceptance_rate === 'number' && <>. <strong style={{ color: 'var(--text-1)' }}>{track.acceptance_rate}% taken</strong> of those you decided on</>}
         </p>

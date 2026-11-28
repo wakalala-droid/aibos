@@ -5,7 +5,7 @@ import { LEGAL } from '@/lib/legal';
 export const metadata: Metadata = {
   title: 'Refund Policy',
   description:
-    'Every AIBOS payment has a 30-day money-back guarantee, no reason needed. How to ask, what happens to your plan and how to cancel the automatic renewal.',
+    'Every AI-BOS payment has a 30-day money-back guarantee, no reason needed. How to ask, what happens to your plan and how to cancel the automatic renewal.',
   alternates: { canonical: '/refunds' },
 };
 
@@ -19,7 +19,7 @@ const SECTIONS: { h: string; body: Part[][] }[] = [
   {
     h: '30 days to change your mind',
     body: [
-      ['If AIBOS is not right for you, ask for your money back within 30 days of any payment, including a renewal. You get the whole of that payment back. You do not have to give a reason.'],
+      ['If AI-BOS is not right for you, ask for your money back within 30 days of any payment, including a renewal. You get the whole of that payment back. You do not have to give a reason.'],
       ['Card payments are sold by our online reseller Paddle.com, so Paddle makes the refund, to the card or account you paid with. Paddle aims to refund within 14 days of approving it. When it shows on your statement depends on your bank.'],
     ],
   },

@@ -1,9 +1,9 @@
 'use client';
 /**
- * AIBOS — Contacts (audit #6): the customer & supplier ENTITIES AIBOS builds
+ * AI-BOS — Contacts (audit #6): the customer & supplier ENTITIES AI-BOS builds
  * from what you record, finally with a home. Shows who you deal with, how much
  * has flowed each way, and a MERGE TOOL to fold duplicate records into one
- * (AIBOS then remembers the alias so it never splits them again).
+ * (AI-BOS then remembers the alias so it never splits them again).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Combine, Search } from 'lucide-react';
@@ -181,7 +181,7 @@ export default function ContactsPage() {
         {mergeMode && selected.length === 2 && (
           <div style={{ marginTop: 16, padding: 16, borderRadius: 'var(--radius-md)', background: 'var(--pill-bg)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
             <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-1)', margin: 0, flex: '1 1 260px' }}>
-              Keep <strong>{keepName}</strong> and fold <strong>{dropName}</strong> into it? AIBOS remembers they&apos;re the same from now on.
+              Keep <strong>{keepName}</strong> and fold <strong>{dropName}</strong> into it? AI-BOS remembers they&apos;re the same from now on.
             </p>
             <button type="button" className="pill pill-primary" onClick={() => void doMerge()} disabled={busy}>
               {busy ? 'Merging…' : 'Merge them'}
